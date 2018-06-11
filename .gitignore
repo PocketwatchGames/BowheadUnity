@@ -3,3 +3,6 @@ Build/*
 Library/*
 Temp/*
 *.sln
+.vs/*
+obj/*
+*.csproj
