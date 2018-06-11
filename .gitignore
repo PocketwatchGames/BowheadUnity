@@ -1,0 +1,4 @@
+# contains files to ignore for this directory and all subdirectories
+Build/*
+Library/*
+Temp/*
