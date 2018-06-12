@@ -205,7 +205,7 @@ namespace Port {
                         Vector3 fp = footPoint + new Vector3(0, 0, -0.5f);
                         if (!World.isSolidBlock(world.getBlock(fp))) {
                             if (World.isSolidBlock(world.getBlock(fp + new Vector3(0, 0, -1)))) {
-                                if (world.getBlock(movePosition) != World.EBlockType.BLOCK_TYPE_WATER) {
+                                if (world.getBlock(movePosition) != EBlockType.BLOCK_TYPE_WATER) {
                                     move.z -= 1;
                                     interpolate = true;
                                 }
@@ -447,7 +447,7 @@ namespace Port {
                     State.activity = Activity.FALLING;
                 }
             }
-            else if (world.getBlock(State.position) == World.EBlockType.BLOCK_TYPE_WATER) {
+            else if (world.getBlock(State.position) == EBlockType.BLOCK_TYPE_WATER) {
                 State.activity = Activity.SWIMMING;
             }
             else if (onGround && State.velocity.z <= 0) {
@@ -708,11 +708,11 @@ namespace Port {
                 State.velocity.z = State.velocity.z - Data.swimSinkAcceleration * dt;
             }
             State.velocity.z += Data.gravity * dt;
-            if (world.getBlock(headPosition(State.position)) == World.EBlockType.BLOCK_TYPE_WATER) {
+            if (world.getBlock(headPosition(State.position)) == EBlockType.BLOCK_TYPE_WATER) {
                 State.velocity.z += -State.velocity.z * dt * Data.swimDragVertical;
                 State.velocity.z += Data.bouyancy * dt;
             }
-            if (world.getBlock(State.position) == World.EBlockType.BLOCK_TYPE_WATER) {
+            if (world.getBlock(State.position) == EBlockType.BLOCK_TYPE_WATER) {
                 State.velocity.z += -State.velocity.z * dt * Data.swimDragVertical;
                 State.velocity.z += Data.bouyancy * dt;
             }
@@ -842,7 +842,7 @@ namespace Port {
         }
 
         public bool IsWading() {
-            return State.activity == Activity.ONGROUND && world.getBlock(waistPosition(State.position)) == World.EBlockType.BLOCK_TYPE_WATER && world.getBlock(State.position) != World.EBlockType.BLOCK_TYPE_WATER;
+            return State.activity == Activity.ONGROUND && world.getBlock(waistPosition(State.position)) == EBlockType.BLOCK_TYPE_WATER && world.getBlock(State.position) != EBlockType.BLOCK_TYPE_WATER;
         }
 
         public float getGroundJumpVelocity() {

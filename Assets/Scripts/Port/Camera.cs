@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Port { 
-public class Camera : MonoBehaviour {
+public class CameraController : MonoBehaviour {
 
         World world;
         public float yaw;

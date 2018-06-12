@@ -336,7 +336,7 @@ namespace Port {
         }
 
 
-        void onLand() {
+        override public void onLand() {
             // Land on ground
             var block = world.getBlock(State.position);
             if (!World.isCapBlock(block)) {
@@ -906,7 +906,7 @@ namespace Port {
             }
             else {
                 var block = world.getBlock(footPosition(State.position));
-                if (block == World.EBlockType.BLOCK_TYPE_WATER) {
+                if (block == EBlockType.BLOCK_TYPE_WATER) {
                     Item waterItem = null;
                     var waterData = Item.GetData("Water");
                     foreach (var i in State.inventory) {

@@ -4,6 +4,8 @@ using UnityEngine;
 using System;
 
 namespace Port {
+
+
     public class World : MonoBehaviour {
 
         // Use this for initialization
@@ -23,28 +25,6 @@ namespace Port {
         const float SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
         const float DAYS_PER_SECOND = 1.0f / SECONDS_PER_DAY;
 
-
-
-
-        public enum EBlockType {
-            BLOCK_TYPE_AIR = 0,
-            BLOCK_TYPE_DIRT,
-            BLOCK_TYPE_GRASS,
-            BLOCK_TYPE_WATER,
-            BLOCK_TYPE_SAND,
-            BLOCK_TYPE_SNOW,
-            BLOCK_TYPE_ROCK,
-            BLOCK_TYPE_ICE,
-            BLOCK_TYPE_WOOD,
-            BLOCK_TYPE_LEAVES,
-            BLOCK_TYPE_NEEDLES,
-            BLOCK_TYPE_FLOWERS1,
-            BLOCK_TYPE_FLOWERS2,
-            BLOCK_TYPE_FLOWERS3,
-            BLOCK_TYPE_FLOWERS4,
-            NUM_BLOCK_TYPES,
-            BLOCK_TYPE_MAX = 0x20 - 1 // top 3 bits used for flags
-        }
 
 
 
@@ -75,7 +55,7 @@ namespace Port {
         public Queue<Critter> critterPool;
         public List<Item> items = new List<Item>();
         public List<Item> allItems = new List<Item>();
-        public Camera camera;
+        public CameraController camera;
 
         //FastNoiseSIMD* noise;
         //float* noiseFloats;
@@ -98,7 +78,7 @@ namespace Port {
 
         Player.CData playerData;
         void init() {
-            int seed = 185;
+            //int seed = 185;
             //	seed = 15485;
             //std::srand(seed);
             //noise = FastNoiseSIMD::NewFastNoiseSIMD(seed);
