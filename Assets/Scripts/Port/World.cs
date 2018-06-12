@@ -19,6 +19,45 @@ namespace Port {
 
 
 
+        const float SECONDS_PER_HOUR = 60;
+        const float SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
+        const float DAYS_PER_SECOND = 1.0f / SECONDS_PER_DAY;
+
+
+
+
+        public enum EBlockType {
+            BLOCK_TYPE_AIR = 0,
+            BLOCK_TYPE_DIRT,
+            BLOCK_TYPE_GRASS,
+            BLOCK_TYPE_WATER,
+            BLOCK_TYPE_SAND,
+            BLOCK_TYPE_SNOW,
+            BLOCK_TYPE_ROCK,
+            BLOCK_TYPE_ICE,
+            BLOCK_TYPE_WOOD,
+            BLOCK_TYPE_LEAVES,
+            BLOCK_TYPE_NEEDLES,
+            BLOCK_TYPE_FLOWERS1,
+            BLOCK_TYPE_FLOWERS2,
+            BLOCK_TYPE_FLOWERS3,
+            BLOCK_TYPE_FLOWERS4,
+            NUM_BLOCK_TYPES,
+            BLOCK_TYPE_MAX = 0x20 - 1 // top 3 bits used for flags
+        }
+
+
+
+        struct Data_t {
+            public float windSpeedStormy;
+            public float windSpeedWindy;
+            public float windSpeedBreezy;
+            public float maxWindSpeedVariance;
+            public float minWindSpeedVariance;
+        }
+        struct State_t {
+            public float worldTime;
+        }
 
 
 
@@ -26,44 +65,44 @@ namespace Port {
 
 
 
+        public UnityEngine.Random random = new UnityEngine.Random();
 
-
-
-
-
-
-
-
-
+        float time;
+        Data_t data;
+        State_t state;
         public Player player;
         public List<Critter> critters;
-        public List<Critter> critterPool;
-        public List<Item> items;
+        public Queue<Critter> critterPool;
+        public List<Item> items = new List<Item>();
+        public List<Item> allItems = new List<Item>();
+        public Camera camera;
 
-        FastNoiseSIMD* noise;
-        float* noiseFloats;
+        //FastNoiseSIMD* noise;
+        //float* noiseFloats;
 
         float GetPerlinNormal(int x, int y, int z, float scale) {
-            noise->SetFrequency(scale);
-            noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
-            const float v = noiseFloats[0];
-            return (v + 1) / 2;
+            //noise->SetFrequency(scale);
+            //noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
+            //const float v = noiseFloats[0];
+            //return (v + 1) / 2;
+            return 0.5f;
         }
 
         float GetPerlinValue(int x, int y, int z, float scale) {
-            noise->SetFrequency(scale);
-            noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
-            const float v = noiseFloats[0];
-            return v;
+            //noise->SetFrequency(scale);
+            //noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
+            //const float v = noiseFloats[0];
+            //return v;
+            return 0;
         }
 
         Player.CData playerData;
         void init() {
             int seed = 185;
             //	seed = 15485;
-            std::srand(seed);
-            noise = FastNoiseSIMD::NewFastNoiseSIMD(seed);
-            noiseFloats = noise->GetEmptySet(1, 1, 1);
+            //std::srand(seed);
+            //noise = FastNoiseSIMD::NewFastNoiseSIMD(seed);
+            //noiseFloats = noise->GetEmptySet(1, 1, 1);
 
             data.minWindSpeedVariance = 10;
             data.maxWindSpeedVariance = 100;
@@ -71,7 +110,7 @@ namespace Port {
             data.windSpeedWindy = 16;
             data.windSpeedStormy = 24;
 
-            Item::initData();
+            Item.initData();
 
 
             playerData = new Player.CData();
@@ -83,11 +122,11 @@ namespace Port {
             playerData.fallDamageVelocity = 20;
             playerData.collisionRadius = 0.5f;
 
-            playerData.weightClassItemCount[(int)WeightClass::LIGHT] = 0;
-            playerData.weightClassItemCount[(int)WeightClass::MEDIUM] = 4;
-            playerData.weightClassItemCount[(int)WeightClass::HEAVY] = 9;
-            playerData.weightClassItemCount[(int)WeightClass::ENCUMBERED] = 14;
-            playerData.weightClassItemCount[(int)WeightClass::IMMOBILE] = 19;
+            playerData.weightClassItemCount[(int)Player.WeightClass.LIGHT] = 0;
+            playerData.weightClassItemCount[(int)Player.WeightClass.MEDIUM] = 4;
+            playerData.weightClassItemCount[(int)Player.WeightClass.HEAVY] = 9;
+            playerData.weightClassItemCount[(int)Player.WeightClass.ENCUMBERED] = 14;
+            playerData.weightClassItemCount[(int)Player.WeightClass.IMMOBILE] = 19;
 
             playerData.maxStamina = 100;
             playerData.dodgeTime = 0.25f;
@@ -95,7 +134,7 @@ namespace Port {
             playerData.staminaRechargeTime = 1;
             playerData.stunLimit = 1.0f;
             playerData.stunRecoveryTime = 1.0f;
-            playerData.backStabAngle = deg2Rad(45f);
+            playerData.backStabAngle = 45f * Mathf.Deg2Rad;
             playerData.jumpSpeed = 12f;
             playerData.dodgeSpeed = 12f;
             playerData.jumpStaminaUse = 10;
@@ -132,51 +171,51 @@ namespace Port {
             player = new Player(playerData);
 
 
-            var bunny = Critter.createData("bunny");
-            bunny->maxHealth = 30;
-            bunny->maxStamina = 20.0f;
-            bunny->fallDamageVelocity = 20;
-            bunny->stunLimit = 1.0f;
-            bunny->stunRecoveryTime = 3.0f;
-            bunny->backStabAngle = deg2Rad(45f);
-            bunny->visionWeight = 2f;
-            bunny->smellWeight = 1f;
-            bunny->hearingWeight = 2f;
-            bunny->waryCooldownTime = 3f;
-            bunny->panicCooldownTime = 10f;
-            bunny->waryIncreaseAtMaxAwareness = 4f;
-            bunny->waryIncreaseAtMaxAwarenessWhilePanicked = 8f;
-            bunny->updatePanicked = bunny.bounceAndFlee;
+            var bunny = Critter.createData<Critter, Critter.CData>("bunny");
+            bunny.maxHealth = 30;
+            bunny.maxStamina = 20.0f;
+            bunny.fallDamageVelocity = 20;
+            bunny.stunLimit = 1.0f;
+            bunny.stunRecoveryTime = 3.0f;
+            bunny.backStabAngle = 45f * Mathf.Deg2Rad;
+            bunny.visionWeight = 2f;
+            bunny.smellWeight = 1f;
+            bunny.hearingWeight = 2f;
+            bunny.waryCooldownTime = 3f;
+            bunny.panicCooldownTime = 10f;
+            bunny.waryIncreaseAtMaxAwareness = 4f;
+            bunny.waryIncreaseAtMaxAwarenessWhilePanicked = 8f;
+            bunny.updatePanicked = Critter.bounceAndFlee;
 
-            bunny->collisionRadius = 0.5f;
-            bunny->height = 1f;
-            bunny->jumpSpeed = 8f;
-            bunny->dodgeSpeed = 0;
-            bunny->dodgeTime = 0;
-            bunny->swimJumpSpeed = 60f;
-            bunny->swimSinkAcceleration = 100f;
-            bunny->gravity = -30f;
-            bunny->bouyancy = 20f;
-            bunny->groundAcceleration = 2.0f;
-            bunny->groundMaxSpeed = 12f;
-            bunny->fallAcceleration = 30f;
-            bunny->swimAcceleration = 15f;
-            bunny->swimMaxSpeed = 10.0f;
-            bunny->swimDragVertical = 5.0f;
-            bunny->swimDragHorizontal = 0.25f;
-            bunny->fallDragHorizontal = 0.05f;
-            bunny->fallMaxHorizontalSpeed = 5.0f;
-            bunny->groundWindDrag = 0.01f;
-            bunny->slideThresholdSlope = 4;
-            bunny->slideThresholdFlat = 15;
+            bunny.collisionRadius = 0.5f;
+            bunny.height = 1f;
+            bunny.jumpSpeed = 8f;
+            bunny.dodgeSpeed = 0;
+            bunny.dodgeTime = 0;
+            bunny.swimJumpSpeed = 60f;
+            bunny.swimSinkAcceleration = 100f;
+            bunny.gravity = -30f;
+            bunny.bouyancy = 20f;
+            bunny.groundAcceleration = 2.0f;
+            bunny.groundMaxSpeed = 12f;
+            bunny.fallAcceleration = 30f;
+            bunny.swimAcceleration = 15f;
+            bunny.swimMaxSpeed = 10.0f;
+            bunny.swimDragVertical = 5.0f;
+            bunny.swimDragHorizontal = 0.25f;
+            bunny.fallDragHorizontal = 0.05f;
+            bunny.fallMaxHorizontalSpeed = 5.0f;
+            bunny.groundWindDrag = 0.01f;
+            bunny.slideThresholdSlope = 4;
+            bunny.slideThresholdFlat = 15;
 
-            var wolf = Critter.createData("wolf");
+            var wolf = Critter.createData<Critter, Critter.CData>("wolf");
             wolf.maxHealth = 100;
             wolf.maxStamina = 50.0f;
             wolf.fallDamageVelocity = 20;
             wolf.stunLimit = 1.0f;
             wolf.stunRecoveryTime = 3.0f;
-            wolf.backStabAngle = deg2Rad(45f);
+            wolf.backStabAngle = 45f * Mathf.Deg2Rad;
             wolf.visionWeight = 2f;
             wolf.smellWeight = 1f;
             wolf.hearingWeight = 2f;
@@ -184,7 +223,7 @@ namespace Port {
             wolf.panicCooldownTime = 10f;
             wolf.waryIncreaseAtMaxAwareness = 4f;
             wolf.waryIncreaseAtMaxAwarenessWhilePanicked = 8f;
-            wolf.updatePanicked = &Critter::approachAndAttack;
+            wolf.updatePanicked = Critter.approachAndAttack;
 
             wolf.collisionRadius = 0.5f;
             wolf.height = 1.5f;
@@ -209,17 +248,17 @@ namespace Port {
             wolf.slideThresholdFlat = 15;
 
             for (int i = 0; i < 80; i++) {
-                critterPool.push_back(new Critter(bunny));
+                critterPool.Enqueue(new Critter(bunny));
             }
             for (int i = 0; i < 30; i++) {
-                critterPool.push_back(new Critter(wolf));
+                critterPool.Enqueue(new Critter(wolf));
             }
 
             for (int i = 0; i < 100; i++) {
                 var item = new Item("Money");
                 item.State.count = 100;
-                item.State.position = new Vector3((float)(std::rand() % 1001 - 500) + 0.5f, (float)(std::rand() % 1001 - 500) + 0.5f, 500f);
-                items.push_back(item);
+                item.State.position = new Vector3(UnityEngine.Random.Range(-500f,500f) + 0.5f, UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f);
+                items.Add(item);
             }
 
             time = SECONDS_PER_HOUR * 8;
@@ -297,16 +336,15 @@ namespace Port {
         }
 
         void spawnNewCritter() {
-            if (critterPool.size() > 0) {
+            if (critterPool.Count > 0) {
                 Vector3 pos = player.State.position;
                 pos.z = 500;
-                pos.x += std::rand() % 1001 - 500 + 0.5f;
-                pos.y += std::rand() % 1001 - 500 + 0.5f;
-                if (cg->world.getTopmostBlock(500, &pos)) {
-                    Critter c = critterPool.back();
-                    critterPool.pop_back();
-                    critters.push_back(c);
-                    c->init();
+                pos.x += UnityEngine.Random.Range(-500f, 500f) + 0.5f;
+                pos.y += UnityEngine.Random.Range(-500f, 500f) + 0.5f;
+                if (getTopmostBlock(500, ref pos)) {
+                    Critter c = critterPool.Dequeue();
+                    critters.Add(c);
+                    c.init();
                     c.State.position = pos;
                     c.State.team = 1;
 
@@ -320,7 +358,7 @@ namespace Port {
                         c.State.inventory[0] = weapon;
                     }
 
-                    c->spawn(pos);
+                    c.spawn(pos);
                 }
 
             }
@@ -338,38 +376,36 @@ namespace Port {
                 player.update(dt, cameraYaw);
 
                 spawnNewCritter();
-                for (var c = critters.begin(); c != critters.end(); c++) {
-                    (*c)->update(dt);
+                foreach (var c in critters) {
+                    c.Update(dt);
 
-                    var diff = (*c).State.position - player.State.position;
-                    if (diff.getLength() > 500) {
-                        (*c)->removeFlag = true;
+                    var diff = c.State.position - player.State.position;
+                    if (diff.magnitude > 500) {
+                        c.removeFlag = true;
                     }
                 }
-                for (var c = critters.begin(); c != critters.end();) {
-                    if ((*c)->removeFlag) {
-                        critterPool.push_back(*c);
-                        c = critters.erase(c);
-                    }
-                    else {
-                        ++c;
+
+                foreach (var c in critters) {
+                    if (c.removeFlag) {
+                        critterPool.Enqueue(c);
                     }
                 }
+                critters.RemoveAll(c => c.removeFlag);
 
             }
 
             updateCollision(dt);
 
-            for (var i = items.begin(); i != items.end(); i++) {
-                if (!(*i).State.spawned) {
-                    var pos = (*i).State.position;
-                    if (cg->world.getTopmostBlock(500, &pos)) {
+            foreach (var i in items) {
+                if (!i.State.spawned) {
+                    var pos = i.State.position;
+                    if (getTopmostBlock(500, ref pos)) {
                         pos.z++;
-                        (*i)->spawn(pos);
+                        i.spawn(pos);
                     }
                 }
                 else {
-                    (*i)->update(dt);
+                    i.update(dt);
                 }
             }
 
@@ -377,18 +413,17 @@ namespace Port {
         }
 
         float getTimeOfDay() {
-            float i;
-            return std::modf(time / SECONDS_PER_DAY, &i) * 24;
+            return Mathf.Repeat(time, SECONDS_PER_DAY) / SECONDS_PER_DAY * 24;
         }
 
 
         void testCollision(float dt, Actor a1, Actor a2) {
             var diff = a2.State.position - a1.State.position;
             float dist = diff.magnitude;
-            float minDist = a1.Data->collisionRadius + a2.Data->collisionRadius;
+            float minDist = a1.Data.collisionRadius + a2.Data.collisionRadius;
             if (dist < minDist) {
-                float a2Speed = a2.State.velocity.safeGetLength();
-                float a1Speed = a1.State.velocity.safeGetLength();
+                float a2Speed = a2.State.velocity.magnitude;
+                float a1Speed = a1.State.velocity.magnitude;
                 float totalSpeed = a2Speed + a1Speed;
                 if (totalSpeed == 0) {
                     totalSpeed = 0.1f;
@@ -396,23 +431,23 @@ namespace Port {
                 float a2Move = a2Speed / totalSpeed;
                 var dir = diff.normalized;
                 if (a2Move > 0) {
-                    if (!a2.move(dir * a2Move * dist, dt)) {
+                    if (!a2.Move(dir * a2Move * dist, dt)) {
                         a2Move = 0;
                     }
                 }
                 if (a2Move < 1.0f) {
-                    a1.move(dir * -(1.0f - a2Move) * dist, dt);
+                    a1.Move(dir * -(1.0f - a2Move) * dist, dt);
                 }
             }
         }
         void updateCollision(float dt) {
-            for (int i = 0; i < critters.size(); i++) {
+            for (int i = 0; i < critters.Count; i++) {
                 var c = critters[i];
                 if (!c.State.spawned) {
                     continue;
                 }
 
-                for (int j = i; j < critters.size(); j++) {
+                for (int j = i; j < critters.Count; j++) {
                     var c2 = critters[j];
                     if (!c2.State.spawned) {
                         continue;
@@ -430,116 +465,124 @@ namespace Port {
         }
 
         public EBlockType getBlock(float x, float y, float z) {
-            VoxelBlockType_t blockType = EBlockType::BLOCK_TYPE_AIR;
-            if (cgi.getVoxel(cg->vsv, WorldVoxelPos_t((int)std::floor(x), (int)std::floor(y), (int)std::floor(z)), &blockType)) {
-                return (EBlockType)(blockType & BLOCK_TYPE_MASK);
+            if (y < 0) {
+                return EBlockType.BLOCK_TYPE_DIRT;
             }
-            return EBlockType::BLOCK_TYPE_AIR;
+            else {
+                return EBlockType.BLOCK_TYPE_AIR;
+            }
+            //EBlockType blockType = EBlockType.BLOCK_TYPE_AIR;
+            //if (getVoxel(cg->vsv, Vector3Int((int)Math.Floor(x), (int)Math.Floor(y), (int)Math.Floor(z)), ref blockType)) {
+            //    return (EBlockType)(blockType & BLOCK_TYPE_MASK);
+            //}
+            //return EBlockType.BLOCK_TYPE_AIR;
         }
 
         public bool getTopmostBlock(int checkDist, ref Vector3 from) {
-            int origZ = (int)from->z();
-            for (int zOffset = 0; zOffset < checkDist; zOffset++) {
-                from->z() = (float)(origZ - zOffset);
-                VoxelBlockType_t blockType = EBlockType::BLOCK_TYPE_AIR;
-                if (cgi.getVoxel(cg->vsv, WorldVoxelPos_t((int)std::floor(from->x()), (int)std::floor(from->y()), (int)std::floor(from->z())), &blockType)) {
-                    if (isSolidBlock((EBlockType)blockType))
-                        return true;
-                }
-            }
+            from.y = -1;
+            return true;
+            //int origZ = (int)from.y;
+            //for (int zOffset = 0; zOffset < checkDist; zOffset++) {
+            //    from->z() = (float)(origZ - zOffset);
+            //    EBlockType blockType = EBlockType.BLOCK_TYPE_AIR;
+            //    if (cgi.getVoxel(cg->vsv, WorldVoxelPos_t((int)std::floor(from->x()), (int)std::floor(from->y()), (int)std::floor(from->z())), &blockType)) {
+            //        if (isSolidBlock((EBlockType)blockType))
+            //            return true;
+            //    }
+            //}
+            //return false;
+        }
+
+
+        public static bool isCapBlock(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_SNOW) return true;
             return false;
         }
 
 
-        public bool isCapBlock(EBlockType type) {
-            if (type == EBlockType::BLOCK_TYPE_SNOW) return true;
-            return false;
-        }
-
-
-        public bool isSolidBlock(EBlockType type) {
-            if (type == EBlockType::BLOCK_TYPE_WATER
-                || type == EBlockType::BLOCK_TYPE_AIR
-                || type == EBlockType::BLOCK_TYPE_SNOW
-                || type == EBlockType::BLOCK_TYPE_FLOWERS1
-                || type == EBlockType::BLOCK_TYPE_FLOWERS2
-                || type == EBlockType::BLOCK_TYPE_FLOWERS3
-                || type == EBlockType::BLOCK_TYPE_FLOWERS4) {
+        public static bool isSolidBlock(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_WATER
+                || type == EBlockType.BLOCK_TYPE_AIR
+                || type == EBlockType.BLOCK_TYPE_SNOW
+                || type == EBlockType.BLOCK_TYPE_FLOWERS1
+                || type == EBlockType.BLOCK_TYPE_FLOWERS2
+                || type == EBlockType.BLOCK_TYPE_FLOWERS3
+                || type == EBlockType.BLOCK_TYPE_FLOWERS4) {
                 return false;
             }
             return true;
         }
 
-        public bool isClimbable(EBlockType type, bool skilledClimber) {
-            if (type == EBlockType::BLOCK_TYPE_LEAVES || type == EBlockType::BLOCK_TYPE_NEEDLES || type == EBlockType::BLOCK_TYPE_WOOD) {
+        public static bool isClimbable(EBlockType type, bool skilledClimber) {
+            if (type == EBlockType.BLOCK_TYPE_LEAVES || type == EBlockType.BLOCK_TYPE_NEEDLES || type == EBlockType.BLOCK_TYPE_WOOD) {
                 return true;
             }
             if (skilledClimber) {
-                if (type == EBlockType::BLOCK_TYPE_DIRT || type == EBlockType::BLOCK_TYPE_ROCK || type == EBlockType::BLOCK_TYPE_GRASS) {
+                if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_ROCK || type == EBlockType.BLOCK_TYPE_GRASS) {
                     return true;
                 }
             }
             return false;
         }
 
-        public bool isHangable(EBlockType type, bool skilledClimber) {
-            if (type == EBlockType::BLOCK_TYPE_DIRT || type == EBlockType::BLOCK_TYPE_ROCK || type == EBlockType::BLOCK_TYPE_GRASS) {
+        public static bool isHangable(EBlockType type, bool skilledClimber) {
+            if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_ROCK || type == EBlockType.BLOCK_TYPE_GRASS) {
                 return true;
             }
             return false;
         }
 
 
-        public float getFallDamage(EBlockType type) {
-            if (type == EBlockType::BLOCK_TYPE_SNOW)
+        public static float getFallDamage(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_SNOW)
                 return 0.5f;
-            else if (type == EBlockType::BLOCK_TYPE_SAND)
+            else if (type == EBlockType.BLOCK_TYPE_SAND)
                 return 0.75f;
-            else if (type == EBlockType::BLOCK_TYPE_DIRT || type == EBlockType::BLOCK_TYPE_GRASS)
+            else if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_GRASS)
                 return 0.9f;
             return 1.0f;
         }
 
-        public bool isTransparentBlock(EBlockType type) {
-            if (type == EBlockType::BLOCK_TYPE_AIR
-                || type == EBlockType::BLOCK_TYPE_WATER
-                || type == EBlockType::BLOCK_TYPE_NEEDLES
-                || type == EBlockType::BLOCK_TYPE_FLOWERS1
-                || type == EBlockType::BLOCK_TYPE_FLOWERS2
-                || type == EBlockType::BLOCK_TYPE_FLOWERS3
-                || type == EBlockType::BLOCK_TYPE_FLOWERS4
-                || type == EBlockType::BLOCK_TYPE_LEAVES
-                || type == EBlockType::BLOCK_TYPE_SNOW) {
+        public static bool isTransparentBlock(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_AIR
+                || type == EBlockType.BLOCK_TYPE_WATER
+                || type == EBlockType.BLOCK_TYPE_NEEDLES
+                || type == EBlockType.BLOCK_TYPE_FLOWERS1
+                || type == EBlockType.BLOCK_TYPE_FLOWERS2
+                || type == EBlockType.BLOCK_TYPE_FLOWERS3
+                || type == EBlockType.BLOCK_TYPE_FLOWERS4
+                || type == EBlockType.BLOCK_TYPE_LEAVES
+                || type == EBlockType.BLOCK_TYPE_SNOW) {
                 return true;
             }
             return false;
         }
 
-        public bool isDiggable(EBlockType type) {
-            if (type == EBlockType::BLOCK_TYPE_WATER) return false;
+        public static bool isDiggable(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_WATER) return false;
             return true;
         }
 
 
         public Vector3 getGroundNormal(Vector3 position) {
-            Vec3f_t normal = Vec3f_t::zAxis;
-            if (getGroundDiff(position, position + Vec3f_t::xAxis) > 0)
+            Vector3 normal = Vector3.up;
+            if (getGroundDiff(position, position + Vector3.right) > 0)
                 normal.x--;
-            if (getGroundDiff(position, position - Vec3f_t::xAxis) > 0)
+            if (getGroundDiff(position, position - Vector3.right) > 0)
                 normal.x++;
-            if (getGroundDiff(position, position + Vec3f_t::yAxis) > 0)
+            if (getGroundDiff(position, position + Vector3.forward) > 0)
                 normal.y--;
-            if (getGroundDiff(position, position - Vec3f_t::yAxis) > 0)
+            if (getGroundDiff(position, position - Vector3.forward) > 0)
                 normal.y++;
-            return normal.getNormalized();
+            return normal.normalized;
         }
         public int getGroundDiff(Vector3 position1, Vector3 position2) {
-            if (!World::isSolidBlock(getBlock(position2))) {
-                if (World::isSolidBlock(getBlock(position2 - Vec3f_t::zAxis))) {
+            if (!isSolidBlock(getBlock(position2))) {
+                if (isSolidBlock(getBlock(position2 - Vector3.up))) {
                     return -1;
                 }
             }
-            else if (World::isSolidBlock(getBlock(position2 + Vec3f_t::zAxis)) && !World::isSolidBlock(getBlock(position2 + 2 * Vec3f_t::zAxis))) {
+            else if (isSolidBlock(getBlock(position2 + Vector3.up)) && !isSolidBlock(getBlock(position2 + 2 * Vector3.up))) {
                 return 1;
             }
             return 0;
@@ -555,18 +598,18 @@ namespace Port {
                 0.3f * GetPerlinNormal((blockX + offsetX + 2254), (blockY + offsetY + 6563), 0, powerScaleInverse * 0.1f);
             return power;
         }
-        Vector3 getCurrent(int x, int y, int z) {
+        public Vector3 getCurrent(int x, int y, int z) {
             float inverseRegionSize = 0.01f;
             var center = getRiver(x, z);
-            Vec3f_t diff = Vec3f_t::zero;
+            Vector3 diff = Vector3.zero;
             diff += new Vector3(1, 0, 0) * Math.Abs(getRiver(x - 1, z) - center);
             diff += new Vector3(1, 0, 0) * Math.Abs(getRiver(x + 1, z) - center);
             diff += new Vector3(0, 0, 1) * Math.Abs(getRiver(x, z - 1) - center);
             diff += new Vector3(0, 0, 1) * Math.Abs(getRiver(x, z + 1) - center);
-            float currentSpeed = diff.getLength();
+            float currentSpeed = diff.magnitude;
             diff /= currentSpeed;
             currentSpeed *= 1000 * GetPerlinValue(x, y, z, inverseRegionSize);
-            return diff * std::clamp(currentSpeed, -8f, 8f);
+            return diff * Mathf.Clamp(currentSpeed, -8f, 8f);
         }
 
         public Vector3 getWind(Vector3 p) {
@@ -574,15 +617,15 @@ namespace Port {
         }
         public Vector3 getWind(int x, int y, int z) {
             float inverseRegionSize = 0.001f;
-            float windAngle = GetPerlinValue(x + 6543, z + 6543, 0, inverseRegionSize) * pi<float>() * 2;
-            var wind = new Vector3(Math.Cos(windAngle), Math.Sin(windAngle), 0);
-            float currentSpeed = data.minWindSpeedVariance + (data.maxWindSpeedVariance - data.minWindSpeedVariance) * std::powf(0.5f + 0.5f * GetPerlinValue((x + 88943), (y + 653), z, inverseRegionSize), 2f);
+            float windAngle = GetPerlinValue(x + 6543, z + 6543, 0, inverseRegionSize) * Mathf.PI * 2;
+            var wind = new Vector3(Mathf.Cos(windAngle), Mathf.Sin(windAngle), 0);
+            float currentSpeed = data.minWindSpeedVariance + (data.maxWindSpeedVariance - data.minWindSpeedVariance) * Mathf.Pow(0.5f + 0.5f * GetPerlinValue((x + 88943), (y + 653), z, inverseRegionSize), 2f);
 
             float timeScale = 0.002f;
             float weatherSpeed = (GetPerlinNormal((int)((state.worldTime + 46332) * timeScale), 876, 0, 1f) +
                 GetPerlinNormal(18740, (int)((state.worldTime + 7476) * timeScale), 0, 1f) +
                 GetPerlinNormal((int)((state.worldTime + 1454) * timeScale), (int)((state.worldTime + 76746) * timeScale), 0, 1f)) / 3;
-            weatherSpeed = std::powf(weatherSpeed, 2f);
+            weatherSpeed = Mathf.Pow(weatherSpeed, 2f);
             currentSpeed *= weatherSpeed;
 
             if (currentSpeed >= data.windSpeedStormy) {
@@ -603,52 +646,52 @@ namespace Port {
 
         public float getClimbFriction(EBlockType block) {
             switch (block) {
-                case EBlockType::BLOCK_TYPE_DIRT:
+                case EBlockType.BLOCK_TYPE_DIRT:
                     return 0.9f;
-                case EBlockType::BLOCK_TYPE_GRASS:
+                case EBlockType.BLOCK_TYPE_GRASS:
                     return 0.8f;
-                case EBlockType::BLOCK_TYPE_SAND:
+                case EBlockType.BLOCK_TYPE_SAND:
                     return 0.5f;
             }
             return 1.0f;
         }
 
-        public void getSlideThreshold(EBlockType foot, EBlockType mid, EBlockType head, out float slideFriction, out float slideThreshold) {
+        public static void getSlideThreshold(EBlockType foot, EBlockType mid, EBlockType head, out float slideFriction, out float slideThreshold) {
             slideThreshold = 100;
             slideFriction = 0.5f;
 
-            if (mid == EBlockType::BLOCK_TYPE_SNOW) {
+            if (mid == EBlockType.BLOCK_TYPE_SNOW) {
                 slideThreshold = 4;
                 slideFriction = 0.25f;
             }
-            else if (foot == EBlockType::BLOCK_TYPE_DIRT) {
+            else if (foot == EBlockType.BLOCK_TYPE_DIRT) {
                 slideThreshold = 25;
             }
-            else if (foot == EBlockType::BLOCK_TYPE_GRASS) {
+            else if (foot == EBlockType.BLOCK_TYPE_GRASS) {
                 slideThreshold = 25;
             }
-            else if (foot == EBlockType::BLOCK_TYPE_ROCK) {
+            else if (foot == EBlockType.BLOCK_TYPE_ROCK) {
                 slideThreshold = 25;
             }
-            else if (foot == EBlockType::BLOCK_TYPE_SAND) {
+            else if (foot == EBlockType.BLOCK_TYPE_SAND) {
                 slideThreshold = 4;
             }
         }
 
-        public float getWorkModifier(EBlockType foot, EBlockType mid, EBlockType head) {
+        public static float getWorkModifier(EBlockType foot, EBlockType mid, EBlockType head) {
             float workModifier = 0;
 
-            if (mid == EBlockType::BLOCK_TYPE_SNOW) {
+            if (mid == EBlockType.BLOCK_TYPE_SNOW) {
                 //workModifier = 1f;
             }
             //else if (mid == EBlockType.LongGrass || foot == EBlockType.LongGrass || head == EBlockType.LongGrass)
             //{
             //	workModifier = 15f;
             //}
-            else if (foot == EBlockType::BLOCK_TYPE_GRASS) {
+            else if (foot == EBlockType.BLOCK_TYPE_GRASS) {
                 workModifier = 1f;
             }
-            else if (foot == EBlockType::BLOCK_TYPE_SAND) {
+            else if (foot == EBlockType.BLOCK_TYPE_SAND) {
                 workModifier = 1f;
             }
             return workModifier;

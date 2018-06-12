@@ -34,7 +34,7 @@ namespace Port {
 
 
 
-        public class CState : Actor.CState {
+        new public class CState : Actor.CState {
             public Vector3 spawnPoint;
             public Vector2 mapPos;
 
@@ -49,7 +49,7 @@ namespace Port {
 
         };
 
-        public class CData : Actor.CData {
+        new public class CData : Actor.CData {
             public float maxThirst;
             public float temperatureSleepMinimum;
             public float temperatureSleepMaximum;
@@ -126,26 +126,26 @@ namespace Port {
             }
 
             Input_t input;
-            handleInput(dt, &input);
+            handleInput(dt, out input);
 
-            if (input.inputs[(int)InputType::INTERACT] == InputState::JUST_PRESSED) {
+            if (input.inputs[(int)InputType.INTERACT] == InputState.JUST_PRESSED) {
                 interact();
             }
 
-            if (input.inputs[(int)InputType::SELECT_LEFT] == InputState::JUST_PRESSED) {
+            if (input.inputs[(int)InputType.SELECT_LEFT] == InputState.JUST_PRESSED) {
                 selectPreviousInventory();
             }
-            else if (input.inputs[(int)InputType::SELECT_RIGHT] == InputState::JUST_PRESSED) {
+            else if (input.inputs[(int)InputType.SELECT_RIGHT] == InputState.JUST_PRESSED) {
                 selectNextInventory();
             }
 
-            if (input.IsPressed(InputType::SWAP)) {
+            if (input.IsPressed(InputType.SWAP)) {
             }
-            if (input.IsPressed(InputType::USE)) {
+            if (input.IsPressed(InputType.USE)) {
                 State.dropTimer = State.dropTimer + dt;
             }
             else {
-                if (input.inputs[(int)InputType::USE] == InputState::JUST_RELEASED) {
+                if (input.inputs[(int)InputType.USE] == InputState.JUST_RELEASED) {
                     var item = State.inventory[State.inventorySelected];
                     if (item != null) {
                         if (State.dropTimer >= Data.dropTime) {
@@ -164,11 +164,11 @@ namespace Port {
             Item itemLeft = State.inventory[(int)InventorySlot.LEFT_HAND];
             if (State.canAttack) {
                 if (itemLeft != null) {
-                    if (input.IsPressed(InputType::ATTACK_LEFT)) {
+                    if (input.IsPressed(InputType.ATTACK_LEFT)) {
                         itemLeft.charge(dt);
                     }
                     else {
-                        if (input.inputs[(int)InputType::ATTACK_LEFT] == InputState::JUST_RELEASED) {
+                        if (input.inputs[(int)InputType.ATTACK_LEFT] == InputState.JUST_RELEASED) {
                             itemLeft.attack(this);
                         }
                         itemLeft.State.chargeTime = 0;
@@ -178,11 +178,11 @@ namespace Port {
                     }
                 }
                 if (itemRight != null) {
-                    if (input.IsPressed(InputType::ATTACK_RIGHT)) {
+                    if (input.IsPressed(InputType.ATTACK_RIGHT)) {
                         itemRight.charge(dt);
                     }
                     else {
-                        if (input.inputs[(int)InputType::ATTACK_RIGHT] == InputState::JUST_RELEASED) {
+                        if (input.inputs[(int)InputType.ATTACK_RIGHT] == InputState.JUST_RELEASED) {
                             itemRight.attack(this);
                         }
                         itemRight.State.chargeTime = 0;
@@ -196,7 +196,7 @@ namespace Port {
             attackTargetPreview = getAttackTarget(State.yaw);
 
             bool shouldLock = false;
-            if (input.IsPressed(InputType::ATTACK_LEFT) || input.IsPressed(InputType::ATTACK_RIGHT)) {
+            if (input.IsPressed(InputType.ATTACK_LEFT) || input.IsPressed(InputType.ATTACK_RIGHT)) {
                 shouldLock = true;
             }
             if ((!shouldLock && !isCasting) || !isValidAttackTarget(State.attackTarget)) {
@@ -209,7 +209,7 @@ namespace Port {
 
 
 
-            base.update(dt, input);
+            base.Update(dt, input);
             updateStats(dt);
 
         }
@@ -218,7 +218,7 @@ namespace Port {
             if (actor == null)
                 return false;
             var diff = actor.State.position - State.position;
-            if (diff.safeGetLength() > 20) {
+            if (diff.magnitude > 20) {
                 return false;
             }
             return true;
@@ -227,22 +227,22 @@ namespace Port {
         Actor getAttackTarget(float yaw) {
 
             float maxDist = 40;
-            float maxTargetAngle = pi<float>();
+            float maxTargetAngle = Mathf.PI;
 
             Actor bestTarget = null;
             float bestTargetAngle = maxTargetAngle;
             foreach (var c in world.critters) {
                 var diff = c.State.position - State.position;
-                float dist = diff.safeGetLength();
+                float dist = diff.magnitude;
                 if (dist < maxDist) {
-                    float angleToEnemy = Math.Atan2(diff.y, diff.x);
+                    float angleToEnemy = Mathf.Atan2(diff.y, diff.x);
 
-                    float yawDiff = Math.Abs(constrainAngle(angleToEnemy - yaw));
+                    float yawDiff = Math.Abs(Mathf.Repeat(angleToEnemy - yaw, Mathf.PI*2));
 
                     // take the target's radius into account based on how far away they are
-                    yawDiff = Math.Max(0.001f, yawDiff - Math.Atan2(c.Data.collisionRadius, dist));
+                    yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(c.Data.collisionRadius, dist));
 
-                    float distT = (float)Math.Pow(dist / maxDist, 2);
+                    float distT = Mathf.Pow(dist / maxDist, 2);
                     yawDiff *= distT;
 
                     if (yawDiff < bestTargetAngle) {
@@ -308,63 +308,60 @@ namespace Port {
 
 
 
-        bool Input_t::IsPressed(InputType i) {
-            return inputs[(int)i] == InputState::PRESSED || inputs[(int)i] == InputState::JUST_PRESSED;
-        }
-
-        void handleInput(float dt, ref Input_t input) {
-            for (int i = 0; i < (int)InputType::COUNT; i++) {
-                if (cur.buttons & (0x1 << i)) {
-                    if (!(State.last.buttons & (0x1 << i))) {
-                        input.inputs[i] = InputState::JUST_PRESSED;
+        void handleInput(float dt, out Input_t input) {
+            input = new Input_t();
+            for (int i = 0; i < (int)InputType.COUNT; i++) {
+                if ((cur.buttons & (0x1 << i)) != 0) {
+                    if ((State.last.buttons & (0x1 << i)) == 0) {
+                        input.inputs[i] = InputState.JUST_PRESSED;
                     }
                     else {
-                        input.inputs[i] = InputState::PRESSED;
+                        input.inputs[i] = InputState.PRESSED;
                     }
                 }
                 else {
-                    if ((State.last.buttons & (0x1 << i))) {
-                        input.inputs[i] = InputState::JUST_RELEASED;
+                    if ((State.last.buttons & (0x1 << i)) != 0) {
+                        input.inputs[i] = InputState.JUST_RELEASED;
                     }
                     else {
-                        input.inputs[i] = InputState::RELEASED;
+                        input.inputs[i] = InputState.RELEASED;
                     }
                 }
             }
-            var forward = new Vector3((float)Math.Cos(cg.camera.yaw), (float)Math.Sin(cg.camera.yaw), 0);
+            var forward = new Vector3(Mathf.Cos(world.camera.yaw), Mathf.Sin(world.camera.yaw), 0);
             var right = Vector3.Cross(Vector3.down, forward);
             input.movement += forward * cur.fwd / 127f;
             input.movement += right * cur.right / 127f;
-            input.yaw = (float)Math.Atan2(input.movement.y, input.movement.x);
+            input.yaw = Mathf.Atan2(input.movement.y, input.movement.x);
         }
 
 
         void onLand() {
             // Land on ground
             var block = world.getBlock(State.position);
-            if (!World::isCapBlock(block)) {
+            if (!World.isCapBlock(block)) {
                 block = world.getBlock(footPosition(State.position));
             }
-            float d = -State.velocity.z / Data.fallDamageVelocity * World::getFallDamage(block);
+            float d = -State.velocity.z / Data.fallDamageVelocity * World.getFallDamage(block);
             if (d > 0) {
                 damage(d);
                 useStamina((float)d);
                 stun((float)d);
-                cg.camera.shake(0.2f, d * 0.2f, d * 0.05f);
+                world.camera.shake(0.2f, d * 0.2f, d * 0.05f);
             }
             else {
-                cg.camera.shake(0.15f, 0.05f, 0.01f);
+                world.camera.shake(0.15f, 0.05f, 0.01f);
             }
         }
 
         public Item getInteractTarget() {
             float closestDist = 2;
             Item closestItem = null;
-            for (var i = world.items.begin(); i != world.items.end(); i++) {
-                float dist = ((*i).State.position - State.position).getLength();
+            foreach (var i in world.items) {
+                float dist = (i.State.position - State.position).magnitude;
                 if (dist < closestDist) {
                     closestDist = dist;
-                    closestItem = *i;
+                    closestItem = i;
                 }
             }
             return closestItem;
@@ -420,7 +417,7 @@ namespace Port {
                     else {
                         if (packSlots == 0) {
                             State.inventory[i++] = item;
-                            foreach (var c in item.contained) {
+                            foreach (var c in item.State.contained) {
                                 State.inventory[i++] = c;
                             }
                             return true;
@@ -693,7 +690,7 @@ namespace Port {
                 for (int i = 0; i < item.Data.slots; i++) {
                     var packItem = State.inventory[i + slot + 1];
                     if (packItem != null) {
-                        item.contained.push_back(packItem);
+                        item.State.contained.Add(packItem);
                     }
                 }
             }
@@ -729,7 +726,7 @@ namespace Port {
             removeFromInventory(item);
 
             item.State.position = handPosition(State.position);
-            world.items.push_back(item);
+            world.items.Add(item);
         }
 
 
@@ -850,7 +847,7 @@ namespace Port {
                         if (oldSlot < (int)InventorySlot.PACK) {
                             // if we are moving an equipped item to the pack, bump everything right
                             int emptySlot = (int)InventorySlot.PACK + 1;
-                            for (emptySlot; emptySlot < lastPackSlot; emptySlot++) {
+                            for (; emptySlot < lastPackSlot; emptySlot++) {
                                 if (State.inventory[emptySlot] == null) {
                                     break;
                                 }
@@ -868,7 +865,7 @@ namespace Port {
                             State.inventory[oldSlot] = null;
                         }
                         else {
-                            for (newSlot; newSlot <= lastPackSlot; newSlot++) {
+                            for (; newSlot <= lastPackSlot; newSlot++) {
                                 var itemInNewSlot = State.inventory[newSlot];
                                 if (itemInNewSlot != null) {
                                     if (itemInNewSlot.Data.itemType == Item.ItemType.PACK) {
@@ -904,12 +901,12 @@ namespace Port {
             var t = getInteractTarget();
             if (t != null) {
                 if (pickUp(t)) {
-                    world.items.remove(t);
+                    world.items.Remove(t);
                 }
             }
             else {
                 var block = world.getBlock(footPosition(State.position));
-                if (block == EBlockType::BLOCK_TYPE_WATER) {
+                if (block == World.EBlockType.BLOCK_TYPE_WATER) {
                     Item waterItem = null;
                     var waterData = Item.GetData("Water");
                     foreach (var i in State.inventory) {

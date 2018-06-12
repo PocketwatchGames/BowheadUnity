@@ -30,7 +30,7 @@ namespace Port {
         }
 
 
-        public class CState : Entity.CState {
+        new public class CState : Entity.CState {
             public bool inMotion;
             public Vector3 position;
             public Vector3 velocity;
@@ -40,9 +40,10 @@ namespace Port {
             public float castTime;
             public float cooldown;
             public float chargeTime;
+            public List<Item> contained = new List<Item>();
         }
 
-        public class CData : Entity.CData {
+        new public class CData : Entity.CData {
             public class AttackData {
                 public float castTime;
                 public float cooldown;
@@ -75,14 +76,14 @@ namespace Port {
 
             public static CData Create(string name, ItemType c, int slots=0) {
 
-                var i = createData(name);
+                var i = createData<Item, Item.CData>(name);
                 i.itemType = c;
                 i.slots = slots;
 
                 return i;
             }
             public static CData CreateLoot(string name, int slots, float power, CData.UseFn useFn) {
-                var i = createData(name);
+                var i = createData<Item, Item.CData>(name);
                 i.itemType = ItemType.LOOT;
                 i.slots = slots;
                 i.power = power;
@@ -112,7 +113,7 @@ namespace Port {
 
 
 
-        void initData() {
+        public static void initData() {
             CData.Create("Pack", ItemType.PACK, 4);
             CData.Create("HP Potion", ItemType.LOOT, 4);
             CData.Create("Hat", ItemType.CLOTHING);
@@ -255,13 +256,13 @@ namespace Port {
 
 
         public Item(CData data) : base(data, new Entity.CState()) {
-            contained.clear();
-            allItems.push_back(this);
+            State.contained.Clear();
+            world.allItems.Add(this);
         }
 
         public Item(string data) : base(GetData(data), new Entity.CState()) {
-            contained.clear();
-            allItems.push_back(this);
+            State.contained.Clear();
+            world.allItems.Add(this);
         }
 
         ~Item() {
@@ -294,7 +295,7 @@ namespace Port {
 
             State.castTime = attackData.castTime;
             State.chargeTime = 0;
-            Vector3 attackDir = new Vector3((float)Math.Cos(actor.State.yaw), (float)Math.Sin(actor.State.yaw), 0);
+            Vector3 attackDir = new Vector3(Mathf.Cos(actor.State.yaw), Mathf.Sin(actor.State.yaw), 0);
             float stepAmt = attackData.stepDistance;
             if (stepAmt != 0 && actor.State.activity == Actor.Activity.ONGROUND) {
                 actor.State.moveImpulse = attackDir * stepAmt;
@@ -317,10 +318,10 @@ namespace Port {
                 enemy.hit(owner, this, attackData);
 
                 if (State.attackType == 0) {
-                    cg.camera.shake(0.15f, 0.05f, 0.01f);
+                    world.camera.shake(0.15f, 0.05f, 0.01f);
                 }
                 else {
-                    cg.camera.shake(0.2f, 0.2f, 0.05f);
+                    world.camera.shake(0.2f, 0.2f, 0.05f);
                 }
                 return true;
             }
@@ -346,7 +347,7 @@ namespace Port {
             else {
                 hit |= checkIfHit(actor, attackPos, attackDir, actor.State.position, d, world.player);
             }
-            RendererWorld::createMarker(attackPos, d.attackRadius * 2, 0.1f, hit ? new Color(1, 0, 0, 1f) : new Color(0, 0, 0, 1f));
+            //RendererWorld.createMarker(attackPos, d.attackRadius * 2, 0.1f, hit ? new Color(1, 0, 0, 1f) : new Color(0, 0, 0, 1f));
 
             actor.useStamina(d.staminaUse);
 
@@ -378,11 +379,11 @@ namespace Port {
             }
 
         }
-        void update(float dt) {
+        public void update(float dt) {
 
             if (!State.inMotion) {
                 if (State.velocity != Vector3.zero
-                    || !World::isSolidBlock(world.getBlock(State.position))) {
+                    || !World.isSolidBlock(world.getBlock(State.position))) {
                     State.inMotion = true;
                 }
             }
@@ -390,7 +391,7 @@ namespace Port {
             if (State.inMotion) {
                 var newVel = State.velocity;
                 {
-                    bool onGround = World::isSolidBlock(world.getBlock(State.position)) && State.velocity.z <= 0;
+                    bool onGround = World.isSolidBlock(world.getBlock(State.position)) && State.velocity.z <= 0;
                     if (!onGround) {
                         float gravity = -30f;
                         newVel.z += gravity * dt;
@@ -401,7 +402,7 @@ namespace Port {
                 var newPos = State.position;
                 {
                     newPos.z += State.velocity.z * dt;
-                    bool onGround = World::isSolidBlock(world.getBlock(newPos)) && State.velocity.z <= 0;
+                    bool onGround = World.isSolidBlock(world.getBlock(newPos)) && State.velocity.z <= 0;
                     if (onGround) {
                         float bounceVel = -5f;
                         float bounceCoefficient = 0.5f;
@@ -419,17 +420,17 @@ namespace Port {
                     }
                     State.velocity = newVel;
                     var moveXY = new Vector3(State.velocity.x * dt, State.velocity.y * dt, 0);
-                    if (!World::isSolidBlock(world.getBlock(newPos + moveXY)) && State.velocity.z) {
+                    if (!World.isSolidBlock(world.getBlock(newPos + moveXY)) && State.velocity.z != 0) {
                         State.position = newPos + moveXY;
                     }
                     else {
                         var moveX = new Vector3(State.velocity.x * dt, 0, 0);
-                        if (!World::isSolidBlock(world.getBlock(newPos + moveX)) && State.velocity.z) {
+                        if (!World.isSolidBlock(world.getBlock(newPos + moveX)) && State.velocity.z != 0) {
                             State.position = newPos + moveX;
                         }
                         else {
                             var moveY = new Vector3(0, State.velocity.y * dt, 0);
-                            if (!World::isSolidBlock(world.getBlock(newPos + moveY)) && State.velocity.z) {
+                            if (!World.isSolidBlock(world.getBlock(newPos + moveY)) && State.velocity.z != 0) {
                                 State.position = newPos + moveY;
                             }
                         }
@@ -438,7 +439,7 @@ namespace Port {
             }
         }
 
-        void interrupt(Actor owner) {
+        public void interrupt(Actor owner) {
 
             if (State.castTime > 0) {
                 owner.State.moveImpulseTimer = 0;
@@ -448,9 +449,9 @@ namespace Port {
 
         }
 
-        bool UseWater(Item item, Actor actor) {
+        static bool UseWater(Item item, Actor actor) {
             // TODO: This static cast is not good
-            Player player = static_cast<Player*>(actor);
+            Player player = actor as Player;
             if (player == null)
                 return false;
             if (player.State.thirst >= player.State.maxThirst) {
@@ -460,7 +461,7 @@ namespace Port {
             return true;
         }
 
-        bool UseFood(Item item, Actor actor) {
+        static bool UseFood(Item item, Actor actor) {
             if (actor.State.health >= actor.State.maxHealth) {
                 return false;
             }
@@ -497,7 +498,7 @@ namespace Port {
 
                 owner.useStamina(defense.defendStaminaUse);
 
-                var parry = data.parries[getCurCharge()];
+                var parry = Data.parries[getCurCharge()];
                 if (parry != null) {
                     attacker.hit(owner, this, parry);
                 }

@@ -22,7 +22,7 @@ namespace Port {
 
 
 
-         public class CState : Actor.CState {
+        new public class CState : Actor.CState {
 
             public float wary;
             public float panic;
@@ -32,8 +32,8 @@ namespace Port {
             public Item[] loot = new Item[MAX_INVENTORY_SIZE];
         };
 
-        public class CData : Actor.CData {
-            public delegate void updateFn(float dt, Critter c, ref Input_t input);
+        new public class CData : Actor.CData {
+            public delegate void updateFn(Critter c, float dt, ref Input_t input);
             public float fallDamageVelocity;
 
             public float visionWeight;
@@ -61,6 +61,10 @@ namespace Port {
 
         #region core
 
+
+        public Critter(CData data) : base(data, new Actor.CState()) {
+
+        }
 
 
         // TODO: move cameraYaw into the PlayerCmd struct
@@ -90,7 +94,7 @@ namespace Port {
             }
 
             Input_t input;
-            updateBrain(dt, input);
+            updateBrain(dt, out input);
 
             base.Update(dt, input);
 
@@ -99,11 +103,11 @@ namespace Port {
         
                 {
                     if (weapon != null) {
-                        if (input.IsPressed(InputType::ATTACK_RIGHT)) {
+                        if (input.IsPressed(InputType.ATTACK_RIGHT)) {
                             weapon.charge(dt);
                         }
                         else {
-                            if (input.inputs[(int)InputType::ATTACK_RIGHT] == InputState::JUST_RELEASED) {
+                            if (input.inputs[(int)InputType.ATTACK_RIGHT] == InputState.JUST_RELEASED) {
                                 weapon.attack(this);
                             }
                             weapon.State.chargeTime = 0;
@@ -129,15 +133,14 @@ namespace Port {
                 foreach (var i in State.loot) {
                     if (i != null) {
                         i.State.position = State.position;
-                        i.State.velocity = new Vector3((float)(std::rand() % 21 - 10), (float)(std::rand() % 21 - 10), 18);
-                        world.items.push_back(i);
+                        i.State.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f,10f), 18);
+                        world.items.Add(i);
                     }
                 }
             }
         }
 
-        void init() {
-            memset(&State, 0, sizeof(State));
+        public void init() {
             removeFlag = false;
 
             State.canClimb = false;
@@ -149,7 +152,7 @@ namespace Port {
             State.canAttack = true;
         }
 
-        void spawn(Vector3 pos) {
+        public void spawn(Vector3 pos) {
             State.spawned = true;
             State.position = pos;
             State.maxHealth = Data.maxHealth;
@@ -160,7 +163,9 @@ namespace Port {
 
         #region brain
 
-        void updateBrain(float dt, ref Input_t input) {
+        void updateBrain(float dt, out Input_t input) {
+            input = new Input_t();
+
             //	foreach(var p in player.world.Players)
             {
                 Player p = world.player;
@@ -189,14 +194,14 @@ namespace Port {
             input.yaw = State.yaw;
             if (isPanicked()) {
                 if (Data.updatePanicked != null) {
-                    Data.updatePanicked(dt, this, input);
+                    Data.updatePanicked(this, dt, ref input);
                 }
             }
             else {
                 input.movement = Vector3.zero;
                 if (State.hasLastKnownPosition) {
                     var diff = State.lastKnownPosition - State.position;
-                    input.yaw = Math.Atan2(diff.y, diff.x);
+                    input.yaw = Mathf.Atan2(diff.y, diff.x);
                 }
             }
 
@@ -215,53 +220,53 @@ namespace Port {
 
         }
 
-        public void bounceAndFlee(float dt, ref Input_t input) {
+        public static void bounceAndFlee(Critter c, float dt, ref Input_t input) {
 
-            input.inputs[(int)InputType::JUMP] = InputState::RELEASED;
-            input.inputs[(int)InputType::ATTACK_RIGHT] = InputState::RELEASED;
-            if (State.hasLastKnownPosition) {
-                var diff = State.position - State.lastKnownPosition;
+            input.inputs[(int)InputType.JUMP] = InputState.RELEASED;
+            input.inputs[(int)InputType.ATTACK_RIGHT] = InputState.RELEASED;
+            if (c.State.hasLastKnownPosition) {
+                var diff = c.State.position - c.State.lastKnownPosition;
                 diff.z = 0;
                 if (diff == Vector3.zero) {
                     diff.x = 1;
                 }
                 input.movement = diff.normalized;
-                input.yaw = Math.Atan2(input.movement.y, input.movement.x);
+                input.yaw = Mathf.Atan2(input.movement.y, input.movement.x);
             }
-            if (State.canJump && State.activity == Activity.ONGROUND) {
-                input.inputs[(int)InputType::JUMP] = InputState::JUST_PRESSED;
+            if (c.State.canJump && c.State.activity == Activity.ONGROUND) {
+                input.inputs[(int)InputType.JUMP] = InputState.JUST_PRESSED;
             }
         }
 
-        public void approachAndAttack(float dt, ref Input_t input) {
+        public static void approachAndAttack(Critter c, float dt, ref Input_t input) {
             input.movement = Vector3.zero;
-            input.inputs[(int)InputType::JUMP] = InputState::RELEASED;
-            input.inputs[(int)InputType::ATTACK_RIGHT] = InputState::RELEASED;
-            if (State.hasLastKnownPosition) {
-                var diff = State.position - State.lastKnownPosition;
+            input.inputs[(int)InputType.JUMP] = InputState.RELEASED;
+            input.inputs[(int)InputType.ATTACK_RIGHT] = InputState.RELEASED;
+            if (c.State.hasLastKnownPosition) {
+                var diff = c.State.position - c.State.lastKnownPosition;
 
                 if (diff.z <= -3) {
-                    if (State.canJump && State.activity == Activity.ONGROUND) {
-                        input.inputs[(int)InputType::JUMP] = InputState::JUST_PRESSED;
+                    if (c.State.canJump && c.State.activity == Activity.ONGROUND) {
+                        input.inputs[(int)InputType.JUMP] = InputState.JUST_PRESSED;
                     }
                 }
                 diff.z = 0;
                 if (diff == Vector3.zero) {
                     diff.x = 1;
                 }
-                var desiredPos = State.lastKnownPosition + diff.normalized * 5;
-                var move = desiredPos - State.position;
+                var desiredPos = c.State.lastKnownPosition + diff.normalized * 5;
+                var move = desiredPos - c.State.position;
                 move.z = 0;
 
                 if (move.magnitude > 0.5f) {
                     input.movement = move.normalized;
                 }
                 else {
-                    if (State.canAttack && State.activity == Activity.ONGROUND) {
-                        input.inputs[(int)InputType::ATTACK_RIGHT] = InputState::JUST_RELEASED;
+                    if (c.State.canAttack && c.State.activity == Activity.ONGROUND) {
+                        input.inputs[(int)InputType.ATTACK_RIGHT] = InputState.JUST_RELEASED;
                     }
                 }
-                input.yaw = Math.Atan2(-diff.y, -diff.x);
+                input.yaw = Mathf.Atan2(-diff.y, -diff.x);
             }
         }
 
@@ -276,16 +281,16 @@ float canSmell(Player player) {
 
     float smell = 0;
     if (dist < basicSmellDist) {
-        smell = Math.Max(0f, (float)Math.Pow(1f - dist / basicSmellDist, 2));
+        smell = Math.Max(0f, Mathf.Pow(1f - dist / basicSmellDist, 2));
     }
 
     float windCarryTime = 5f;
     var wind = world.getWind(player.State.position);
-    float maxWindCarryDist = Math.Sqrt(wind.magnitude) * windCarryTime;
+    float maxWindCarryDist = Mathf.Sqrt(wind.magnitude) * windCarryTime;
     float windCarrySmell = 0;
     if (dist < maxWindCarryDist && wind != Vector3.zero) {
         windCarrySmell = 1f - dist / maxWindCarryDist;
-        float windCarryAngleDot = wind.normalized.dot(diff.normalized);
+        float windCarryAngleDot = Vector3.Dot(wind.normalized,diff.normalized);
         windCarrySmell *= windCarryAngleDot;
     }
 
@@ -305,11 +310,11 @@ float canHear(Player player) {
         return 1f;
 
     float fullSpeedAudibleDistance = 30f;
-    float playerSound = std::clamp(1f - (distance / (fullSpeedAudibleDistance * playerSpeed)), 0f, 1f);
+    float playerSound = Mathf.Clamp(1f - (distance / (fullSpeedAudibleDistance * playerSpeed)), 0f, 1f);
     if (playerSound <= 0)
         return 0;
 
-    return (float)Math.Pow(playerSound, 0.25f);
+    return Mathf.Pow(playerSound, 0.25f);
 }
 float canSee(Player player) {
     var diff = player.State.position - State.position;
@@ -339,14 +344,14 @@ float canSee(Player player) {
     if (dist > visionDistance)
         return 0;
 
-    float angleToPlayer = Math.Atan2(diff.y, diff.x);
-    float angleDiff = Math.Abs(constrainAngle(angleToPlayer - State.yaw));
-    float maxVisionAngle = pi_over_2<float>();
+    float angleToPlayer = Mathf.Atan2(diff.y, diff.x);
+    float angleDiff = Mathf.Abs(Mathf.Repeat(angleToPlayer - State.yaw, Mathf.PI*2));
+    float maxVisionAngle = Mathf.PI/2;
     if (angleDiff > maxVisionAngle)
         return 0;
 
-    float canSeeAngle = (float)Math.Pow(1.0f - angleDiff / maxVisionAngle, 0.333f);
-    float canSeeDistance = (float)Math.Pow(1.0f - dist / visionDistance, 0.333f);
+    float canSeeAngle = Mathf.Pow(1.0f - angleDiff / maxVisionAngle, 0.333f);
+    float canSeeDistance = Mathf.Pow(1.0f - dist / visionDistance, 0.333f);
     return canSeeAngle * canSeeDistance;
 }
 

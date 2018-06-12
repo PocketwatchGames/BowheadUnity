@@ -83,8 +83,8 @@ namespace Port {
         }
 
 
-        public class CState : Entity.CState {
-            PlayerCmd_t last;
+        new public class CState : Entity.CState {
+            public PlayerCmd_t last;
 
             public bool spawned;
             public Activity activity;
@@ -130,8 +130,49 @@ namespace Port {
             public bool lockedToTarget;
         };
 
+        public enum InputState {
+            RELEASED,
+	JUST_RELEASED,
+	JUST_PRESSED,
+	PRESSED,
+}
+        public enum InputType {
+            JUMP,
+	INTERACT,
+	USE,
+	SWAP,
+	ATTACK_LEFT,
+	ATTACK_RIGHT,
+	SELECT_LEFT,
+	SELECT_RIGHT,
+	MAP,
+	CROUCH,
+	COUNT
+        }
+
+        public struct PlayerCmd_t {
+            public int serverTime;
+            public float[] angles;
+            public int buttons;
+            public byte fwd, right, up;
+        };
+
+        public class Input_t {
+            public Vector3 movement = Vector3.zero;
+            public float yaw = 0;
+            public InputState[] inputs = new InputState[(int)InputType.COUNT];
+
+            public bool IsPressed(InputType i) {
+                return inputs[(int)i] == InputState.PRESSED || inputs[(int)i] == InputState.JUST_PRESSED;
+            }
+            public bool inMotion;
+            public Vector3 position;
+            public Vector3 velocity;
+        };
+
 
         public PlayerCmd_t cur;
+        public bool removeFlag;
 
 
         new public CData Data { get { return GetData<CData>(); } }
@@ -162,9 +203,9 @@ namespace Port {
                     if (State.activity == Activity.ONGROUND) {
                         // Step down
                         Vector3 fp = footPoint + new Vector3(0, 0, -0.5f);
-                        if (!World::isSolidBlock(world.getBlock(fp))) {
-                            if (World::isSolidBlock(world.getBlock(fp + new Vector3(0, 0, -1)))) {
-                                if (world.getBlock(movePosition) != EBlockType::BLOCK_TYPE_WATER) {
+                        if (!World.isSolidBlock(world.getBlock(fp))) {
+                            if (World.isSolidBlock(world.getBlock(fp + new Vector3(0, 0, -1)))) {
+                                if (world.getBlock(movePosition) != World.EBlockType.BLOCK_TYPE_WATER) {
                                     move.z -= 1;
                                     interpolate = true;
                                 }
@@ -187,7 +228,7 @@ namespace Port {
                 Vector3 footPoint = footPosition(position) + move;
                 Vector3 headPoint = headPosition(position) + move + new Vector3(0, 0, 1.0f);
 
-                if (World::isSolidBlock(world.getBlock(footPoint)) && !World::isSolidBlock(world.getBlock(movePosition)) && !World::isSolidBlock(world.getBlock(headPoint))) {
+                if (World.isSolidBlock(world.getBlock(footPoint)) && !World.isSolidBlock(world.getBlock(movePosition)) && !World.isSolidBlock(world.getBlock(headPoint))) {
                     move += new Vector3(0, 0, 1);
 
                     position += move;
@@ -205,10 +246,10 @@ namespace Port {
             if (!IsOpen(p))
                 return false;
             var handblock = world.getBlock(handPosition(handHoldPos));
-            bool isClimbable = World::isClimbable(handblock, State.canClimbWell);
+            bool isClimbable = World.isClimbable(handblock, State.canClimbWell);
             if (!isClimbable) {
-                bool isHangPosition = fmodf(p.z, 1f) > 0.9f;
-                if (isHangPosition && World::isHangable(handblock, State.canClimbWell) && !World::isSolidBlock(world.getBlock(p)) && !World::isSolidBlock(world.getBlock(handPosition(p))) && !World::isSolidBlock(world.getBlock(handPosition(handHoldPos) + Vector3(0, 0, 1)))) {
+                bool isHangPosition = Mathf.Repeat(p.z, 1f) > 0.9f;
+                if (isHangPosition && World.isHangable(handblock, State.canClimbWell) && !World.isSolidBlock(world.getBlock(p)) && !World.isSolidBlock(world.getBlock(handPosition(p))) && !World.isSolidBlock(world.getBlock(handPosition(handHoldPos) + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -221,16 +262,16 @@ namespace Port {
         bool CanClimb(Vector3 checkDir, Vector3 checkPos) {
             var p = checkPos;
             var handHoldPos = p + checkDir.normalized * Data.climbWallRange;
-            if (!isOpen(p))
+            if (!IsOpen(p))
                 return false;
             var handblock = world.getBlock(handPosition(handHoldPos));
-            bool isClimbable = World::isClimbable(handblock, State.canClimbWell);
+            bool isClimbable = World.isClimbable(handblock, State.canClimbWell);
             if (!isClimbable) {
-                bool isHangPosition = fmodf(p.z, 1f) > 0.9f;
+                bool isHangPosition = Mathf.Repeat(p.z, 1f) > 0.9f;
                 if (isHangPosition
-                    && World::isHangable(handblock, State.canClimbWell)
-                    && !World::isSolidBlock(world.getBlock(handPosition(handHoldPos)))
-                    && !World::isSolidBlock(world.getBlock(handHoldPos + Vector3(0, 0, 1)))) {
+                    && World.isHangable(handblock, State.canClimbWell)
+                    && !World.isSolidBlock(world.getBlock(handPosition(handHoldPos)))
+                    && !World.isSolidBlock(world.getBlock(handHoldPos + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -242,9 +283,9 @@ namespace Port {
 
         Vector3 getClimbingVector(Vector3 i, Vector3 surfaceNormal) {
             var axis = Vector3.Cross(-Vector3.up, surfaceNormal);
-            var rotation = Quaternion.AxisAngle(axis, pi_over_2<float>());
+            var rotation = Quaternion.AngleAxis(Mathf.PI / 2, axis);
             Matrix4x4 climbMatrix = Matrix4x4.Rotate(rotation);
-            var climbingVector = climbMatrix.multiply(i);
+            var climbingVector = climbMatrix.MultiplyVector(i);
 
             // If we're climbing nearly exaclty up, change it to up
             if (Math.Abs(climbingVector.z) > Math.Sqrt(Math.Pow(climbingVector.x, 2) + Math.Pow(climbingVector.y, 2))) {
@@ -253,11 +294,11 @@ namespace Port {
             }
             else if (Math.Abs(climbingVector.x) > Math.Abs(climbingVector.y)) {
                 float inputSpeed = climbingVector.magnitude;
-                climbingVector = new Vector3((float)Math.Sign(climbingVector.x), 0f, 0f) * inputSpeed;
+                climbingVector = new Vector3(Mathf.Sign(climbingVector.x), 0f, 0f) * inputSpeed;
             }
             else {
                 float inputSpeed = climbingVector.magnitude;
-                climbingVector = new Vector3(0f, (float)Math.Sign(climbingVector.y), 0f) * inputSpeed;
+                climbingVector = new Vector3(0f, Mathf.Sign(climbingVector.y), 0f) * inputSpeed;
             }
             return climbingVector;
         }
@@ -266,21 +307,21 @@ namespace Port {
             floorHeight = 0;
             Vector3 floorPosition = footPosition(position) + new Vector3(0, 0, -0.1f);
 
-            if (!World::isSolidBlock(world.getBlock(floorPosition))) {
+            if (!World.isSolidBlock(world.getBlock(floorPosition))) {
                 return false;
             }
 
-            while (World::isSolidBlock(world.getBlock(floorPosition))) {
-                floorPosition.z = (float)Math.Floor(floorPosition.z) + 1;
+            while (World.isSolidBlock(world.getBlock(floorPosition))) {
+                floorPosition.z = Mathf.Floor(floorPosition.z) + 1;
             }
             floorHeight = floorPosition.z;
             return true;
         }
 
         bool IsOpen(Vector3 position) {
-            return !World::isSolidBlock(world.getBlock(footPosition(position)))
-                && !World::isSolidBlock(world.getBlock(waistPosition(position)))
-                && !World::isSolidBlock(world.getBlock(headPosition(position)));
+            return !World.isSolidBlock(world.getBlock(footPosition(position)))
+                && !World.isSolidBlock(world.getBlock(waistPosition(position)))
+                && !World.isSolidBlock(world.getBlock(headPosition(position)));
         }
 
 
@@ -318,12 +359,12 @@ namespace Port {
             State.interpolateTime = Math.Max(0, State.interpolateTime - dt);
             if (State.canTurn) {
                 if (State.activity == Activity.CLIMBING) {
-                    State.yaw = (float)Math.Atan2(-State.climbingNormal.y, -State.climbingNormal.x);
+                    State.yaw = Mathf.Atan2(-State.climbingNormal.y, -State.climbingNormal.x);
                 }
                 else {
                     if (State.lockedToTarget) {
                         var diff = State.attackTarget.State.position - State.position;
-                        State.yaw = (float)Math.Atan2(diff.y, diff.x);
+                        State.yaw = Mathf.Atan2(diff.y, diff.x);
                     }
                     else if (input.movement != Vector3.zero) {
                         State.yaw = input.yaw;
@@ -379,7 +420,7 @@ namespace Port {
             }
 
             // Collide head
-            if (World::isSolidBlock(world.getBlock(headPosition(State.position)))) {
+            if (World.isSolidBlock(world.getBlock(headPosition(State.position)))) {
                 // TODO: this is broken
                 State.position.z = Math.Min(State.position.z, (int)headPosition(State.position).z - Data.height);
                 State.velocity.z = Math.Min(0, State.velocity.z);
@@ -406,7 +447,7 @@ namespace Port {
                     State.activity = Activity.FALLING;
                 }
             }
-            else if (world.getBlock(State.position) == EBlockType::BLOCK_TYPE_WATER) {
+            else if (world.getBlock(State.position) == World.EBlockType.BLOCK_TYPE_WATER) {
                 State.activity = Activity.SWIMMING;
             }
             else if (onGround && State.velocity.z <= 0) {
@@ -431,7 +472,7 @@ namespace Port {
                 //	{
                 //		State.physics = PhysicsState::CLIMBING;
                 //		setPosition(climbDownPos, 0.1f);
-                //		State.climbingNormal = Vector3((float)Math.Sign(wallNormal.x), (float)Math.Sign(wallNormal.y), 0);
+                //		State.climbingNormal = Vector3(Mathf.Sign(wallNormal.x), Mathf.Sign(wallNormal.y), 0);
                 //		State.velocity = Vector3.zero;
                 //		if (State.climbingNormal.x != 0)
                 //			State.velocity.y = 0;
@@ -446,12 +487,12 @@ namespace Port {
 
                 if (State.canClimb) {
                     if (firstCheck.magnitude > 0 && CanClimb(firstCheck, State.position)) {
-                        State.climbingNormal = -new Vector3((float)Math.Sign(firstCheck.x), (float)Math.Sign(firstCheck.y), 0);
+                        State.climbingNormal = -new Vector3(Mathf.Sign(firstCheck.x), Mathf.Sign(firstCheck.y), 0);
                         State.velocity = Vector3.zero;
                         State.activity = Activity.CLIMBING;
                     }
                     else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, State.position)) {
-                        State.climbingNormal = -new Vector3((float)Math.Sign(secondCheck.x), (float)Math.Sign(secondCheck.y), 0);
+                        State.climbingNormal = -new Vector3(Mathf.Sign(secondCheck.x), Mathf.Sign(secondCheck.y), 0);
                         State.velocity = Vector3.zero;
                         State.activity = Activity.CLIMBING;
                     }
@@ -462,7 +503,7 @@ namespace Port {
 
         }
 
-        bool Move(Vector3 moveXY, float dt) {
+        public bool Move(Vector3 moveXY, float dt) {
             float moveXYLength = moveXY.magnitude;
             if (moveXYLength > 0) {
                 bool interpolate = false;
@@ -500,7 +541,7 @@ namespace Port {
         private void UpdateFalling(float dt, Input_t input) {
             if (State.fallJumpTimer > 0) {
                 State.fallJumpTimer = Math.Max(0, State.fallJumpTimer - dt);
-                if (input.inputs[(int)InputType::JUMP] == InputState::JUST_PRESSED) {
+                if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
                     if (State.canJump) {
                         var jumpDir = input.movement * Data.dodgeSpeed;
                         jumpDir.z += getGroundJumpVelocity();
@@ -509,7 +550,7 @@ namespace Port {
                     State.fallJumpTimer = 0;
                 }
             }
-            if (input.IsPressed(InputType::JUMP)) {
+            if (input.IsPressed(InputType.JUMP)) {
                 if (State.velocity.z >= 0) {
                     State.velocity.z += Data.jumpBoostAcceleration * dt;
                 }
@@ -519,12 +560,12 @@ namespace Port {
             if (input.movement != Vector3.zero) {
                 float acceleration = Data.fallAcceleration;
                 float maxSpeed = getGroundMaxSpeed();
-                maxSpeed = MathHelper.Clamp(maxSpeed, Data.fallMaxHorizontalSpeed, Math.Max(State.maxHorizontalSpeed, Data.fallMaxHorizontalSpeed));
+                maxSpeed = Mathf.Clamp(maxSpeed, Data.fallMaxHorizontalSpeed, Math.Max(State.maxHorizontalSpeed, Data.fallMaxHorizontalSpeed));
 
                 var normalizedVelocity = State.velocity / maxSpeed;
                 normalizedVelocity.z = 0;
                 var normalizedInput = input.movement.normalized;
-                float dot = normalizedInput.dot(normalizedVelocity);
+                float dot = Vector3.Dot(normalizedInput, normalizedVelocity);
                 float accelerationPotential = Math.Min(1.0f, 1.0f - dot);
                 State.velocity += input.movement * acceleration * accelerationPotential * dt;
 
@@ -542,7 +583,7 @@ namespace Port {
         }
 
         private void UpdateGround(float dt, Input_t input) {
-            if (input.inputs[(int)InputType::JUMP] == InputState::JUST_PRESSED) {
+            if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
                 if (State.canJump) {
                     var jumpDir = input.movement * Data.dodgeSpeed;
                     jumpDir.z += getGroundJumpVelocity();
@@ -557,8 +598,8 @@ namespace Port {
             var midblock = world.getBlock(waistPosition(State.position));
             var topblock = world.getBlock(headPosition(State.position));
             float slideFriction, slideThreshold;
-            World::getSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
-            float workModifier = World::getWorkModifier(block, midblock, topblock);
+            World.getSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
+            float workModifier = World.getWorkModifier(block, midblock, topblock);
             if (IsWading()) {
                 workModifier += Data.swimDragHorizontal;
             }
@@ -653,8 +694,8 @@ namespace Port {
         }
 
         private void UpdateSwimming(float dt, Input_t input) {
-            if (input.inputs[(int)InputType::JUMP] == InputState::PRESSED) {
-                if (input.inputs[(int)InputType::JUMP] == InputState::JUST_PRESSED) {
+            if (input.inputs[(int)InputType.JUMP] == InputState.PRESSED) {
+                if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
                     if (State.canJump) {
                         var jumpDir = input.movement * Data.dodgeSpeed;
                         jumpDir.z += Data.swimJumpBoostAcceleration;
@@ -663,15 +704,15 @@ namespace Port {
                 }
                 State.velocity.z = Math.Min(State.velocity.z + Data.swimMaxSpeed * dt, Data.swimJumpSpeed);
             }
-            if (input.inputs[(int)InputType::CROUCH] == InputState::PRESSED) {
+            if (input.inputs[(int)InputType.CROUCH] == InputState.PRESSED) {
                 State.velocity.z = State.velocity.z - Data.swimSinkAcceleration * dt;
             }
             State.velocity.z += Data.gravity * dt;
-            if (world.getBlock(headPosition(State.position)) == EBlockType::BLOCK_TYPE_WATER) {
+            if (world.getBlock(headPosition(State.position)) == World.EBlockType.BLOCK_TYPE_WATER) {
                 State.velocity.z += -State.velocity.z * dt * Data.swimDragVertical;
                 State.velocity.z += Data.bouyancy * dt;
             }
-            if (world.getBlock(State.position) == EBlockType::BLOCK_TYPE_WATER) {
+            if (world.getBlock(State.position) == World.EBlockType.BLOCK_TYPE_WATER) {
                 State.velocity.z += -State.velocity.z * dt * Data.swimDragVertical;
                 State.velocity.z += Data.bouyancy * dt;
             }
@@ -687,13 +728,13 @@ namespace Port {
 
                 var normalizedInput = input.movement.normalized;
                 var normalizedVelocity = State.velocity / Data.swimMaxSpeed;
-                float dot = normalizedInput.dot(normalizedVelocity);
+                float dot = Vector3.Dot(normalizedInput, normalizedVelocity);
                 float accelerationPotential = Math.Min(1.0f, 1.0f - dot);
 
                 State.velocity += input.movement * Data.swimAcceleration * accelerationPotential * dt;
             }
 
-            State.maxHorizontalSpeed = (float)Math.Sqrt(State.velocity.x * State.velocity.x + State.velocity.y * State.velocity.y);
+            State.maxHorizontalSpeed = Mathf.Sqrt(State.velocity.x * State.velocity.x + State.velocity.y * State.velocity.y);
 
         }
 
@@ -701,7 +742,7 @@ namespace Port {
 
             State.maxHorizontalSpeed = Data.groundMaxSpeed;
 
-            if (input.inputs[(int)InputType::JUMP] == InputState::JUST_PRESSED) {
+            if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
                 State.activity = Activity.FALLING;
 
 
@@ -724,13 +765,13 @@ namespace Port {
                             jumpDir.z = Data.jumpSpeed;
                         }
                     }
-                    Jump(jumpDir);
+                    jump(jumpDir);
                     return;
                 }
             }
 
 
-            if (!input.IsPressed(InputType::CROUCH) || input.IsPressed(InputType::JUMP)) {
+            if (!input.IsPressed(InputType.CROUCH) || input.IsPressed(InputType.JUMP)) {
                 var climbingInput = getClimbingVector(input.movement, State.climbingNormal);
                 State.velocity = climbingInput * Data.climbSpeed;
             }
@@ -801,7 +842,7 @@ namespace Port {
         }
 
         public bool IsWading() {
-            return State.activity == Activity.ONGROUND && world.getBlock(waistPosition(State.position)) == EBlockType::BLOCK_TYPE_WATER && world.getBlock(State.position) != EBlockType::BLOCK_TYPE_WATER;
+            return State.activity == Activity.ONGROUND && world.getBlock(waistPosition(State.position)) == World.EBlockType.BLOCK_TYPE_WATER && world.getBlock(State.position) != World.EBlockType.BLOCK_TYPE_WATER;
         }
 
         public float getGroundJumpVelocity() {
@@ -889,7 +930,7 @@ namespace Port {
             State.velocity += dir;
         }
 
-        void stun(float s) {
+        public void stun(float s) {
             // Can't stun further if already stunned
             if (State.stunned || s <= 0) {
                 return;
@@ -902,7 +943,7 @@ namespace Port {
                 foreach(var w in State.inventory)
                 {
                     if (w != null) {
-                        w->interrupt(this);
+                        w.interrupt(this);
                     }
                 }
             }
@@ -918,7 +959,7 @@ namespace Port {
             float remainingDamage;
 
             Vector3 dirToEnemy = (attacker.State.position - State.position).normalized;
-            const float angleToEnemy = constrainAngle(Math.Atan2(dirToEnemy.y, dirToEnemy.x) - State.yaw);
+            float angleToEnemy = Mathf.Repeat(Mathf.Atan2(dirToEnemy.y, dirToEnemy.x) - State.yaw, Mathf.PI*2);
             if (attackData.attackDamageBackstab > 0 && Math.Abs(angleToEnemy) < Data.backStabAngle) {
                 remainingStun = attackData.stunPowerBackstab;
                 remainingDamage = attackData.attackDamageBackstab;
@@ -957,6 +998,11 @@ namespace Port {
                 useStamina(attackData.staminaDrain);
                 stun(remainingStun);
             }
+        }
+
+
+        virtual public void onLand() {
+
         }
     }
 }
