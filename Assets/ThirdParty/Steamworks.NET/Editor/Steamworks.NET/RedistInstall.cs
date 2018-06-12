@@ -3,17 +3,17 @@ using UnityEditor;
 using System.IO;
 
 // This copys various files into their required locations when Unity is launched to make installation a breeze.
-[InitializeOnLoad]
+//[InitializeOnLoad]
 public class RedistInstall {
 	static RedistInstall() {
 		CopyFile("Assets/ThirdParty/Steamworks.NET/Plugins/Steamworks.NET/redist", "steam_appid.txt", false);
 
 		// We only need to copy the dll into the project root on <= Unity 5.0
-#if UNITY_EDITOR_WIN && (!UNITY_5 || UNITY_5_0)
+#if UNITY_EDITOR_WIN && (!UNITY_5 || UNITY_5_0 || UNITY_2018)
 	#if UNITY_EDITOR_64
-		CopyFile("Assets/Plugins/x86_64", "steam_api64.dll", true);
+		CopyFile("Assets/ThirdParty/Steamworks.NET//Plugins/x86_64", "steam_api64.dll", true);
 	#else
-		CopyFile("Assets/Plugins/x86", "steam_api.dll", true);
+		CopyFile("Assets/ThirdParty/Steamworks.NET//Plugins/x86", "steam_api.dll", true);
 	#endif
 #endif
 	}

@@ -209,7 +209,7 @@ namespace Bowhead {
 
 			void ClientPrecache();
 		}
-		public GameObject actorPrefab;
+		public GameObject defaultActorPrefab;
 		public RandomNumberTable randomNumberTable;
 		public RandomNumberTable dropNumberTable;
 		public PhysicalContactMatrix physicalContactMatrix;
@@ -217,7 +217,7 @@ namespace Bowhead {
 		public MetaGame.InventoryItemLibrary inventoryItemLibrary;
 		public Actors.Spells.SpellLibrary coopSpellLibrary;
 
-		//[HideInInspector]
+		[HideInInspector]
 		public Object[] indexedObjects;
 
 		public void OnBeforeSerialize() { }
@@ -303,7 +303,7 @@ namespace Bowhead {
 			var gameManager = AssetDatabase.LoadAssetAtPath<GameManager>("Assets/Prefabs/GameManager.prefab");
 			if (gameManager != null) {
 
-				var progress = new EditorProgressBar("Re-indexing Bowhead Assets...", 4);
+				var progress = new EditorProgressBar("Re-indexing Bowhead Assets...", 3);
 
 				List<Object> indexedObjects = (gameManager.staticData.indexedObjects != null) ? new List<Object>(gameManager.staticData.indexedObjects) : new List<Object>();
 				bool changed;
@@ -313,11 +313,11 @@ namespace Bowhead {
 				changed = IndexAssetTypes(typeof(StaticVersionedAsset), indexedObjects) || changed;
 				progress.Step(null);
 				changed = IndexAssetTypes(typeof(StaticVersionedAssetWithSerializationCallback), indexedObjects) || changed;
-				progress.Step("Indexing Inventory");
-				var updatedInventory = MetaGame.InventoryItemLibrary.Index(gameManager);
+				//progress.Step("Indexing Inventory");
+				//var updatedInventory = MetaGame.InventoryItemLibrary.Index(gameManager);
 				progress.Close();
 								
-				if (changed || updatedInventory) {
+				if (changed/* || updatedInventory*/) {
 					if (changed) {
 						gameManager.staticData.indexedObjects = indexedObjects.ToArray();
 					}

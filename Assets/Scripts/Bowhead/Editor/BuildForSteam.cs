@@ -44,7 +44,7 @@ namespace Bowhead {
 		}
 
 		static readonly Platform[] PLATFORMS = {
-			new Platform("MacOSX", new[] { 346930 }, new [] { 346932 }, new [] { BuildTarget.StandaloneOSXIntel64 }, EDeploymentType.ClientGame),
+			new Platform("MacOSX", new[] { 346930 }, new [] { 346932 }, new [] { BuildTarget.StandaloneOSX }, EDeploymentType.ClientGame),
             new Platform("Windows", new[] { 346930 }, new [] { 346931 }, new [] { BuildTarget.StandaloneWindows }, EDeploymentType.ClientGame),
 			new Platform("Backend Game Server", new[] { 447460 }, new [] { 447462 }, new [] { BuildTarget.StandaloneLinux }, EDeploymentType.BackendServer)
 		};
@@ -67,7 +67,7 @@ namespace Bowhead {
 
 			public static string GetAppPath(BuildTarget target) {
 				switch (target) {
-					case BuildTarget.StandaloneOSXIntel64:
+					case BuildTarget.StandaloneOSX:
 						return GetTargetPath(target) + "/Bowhead.app";
 					case BuildTarget.StandaloneWindows: goto case BuildTarget.StandaloneWindows64;
 					case BuildTarget.StandaloneWindows64:
@@ -81,7 +81,7 @@ namespace Bowhead {
 
 			public static string GetTargetPath(BuildTarget target) {
 				switch (target) {
-					case BuildTarget.StandaloneOSXIntel64:
+					case BuildTarget.StandaloneOSX:
 						return Utils.projectRootDirectory + "/Build/Steam/OSX";
 					case BuildTarget.StandaloneWindows:
 						return Utils.projectRootDirectory + "/Build/Steam/Windows/x86";
@@ -96,7 +96,7 @@ namespace Bowhead {
 
 			public static string GetAssemblyPath(BuildTarget target) {
 				switch (target) {
-					case BuildTarget.StandaloneOSXIntel64:
+					case BuildTarget.StandaloneOSX:
 						return Utils.projectRootDirectory + "/Build/Steam/OSX/Bowhead.app/Contents/Resources/Data/Managed/Assembly-CSharp.dll";
 					case BuildTarget.StandaloneWindows:
 						return Utils.projectRootDirectory + "/Build/Steam/Windows/x86/Deadhold_Data/Managed/Assembly-CSharp.dll";

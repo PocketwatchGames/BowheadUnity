@@ -23,7 +23,7 @@ namespace Bowhead.Client {
 			Transform sceneGroup,
 			System.Reflection.Assembly[] assemblies,
 			NetDriver driver
-		) : base(sceneGroup, GameManager.instance.staticData.actorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
+		) : base(sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
 		}
 
 		public Decal NewDecal(float lifetime, Decal.UpdateDecalDelegate update, Vector3 position, Vector3 scale, Quaternion rotation, Material material, bool visible) {

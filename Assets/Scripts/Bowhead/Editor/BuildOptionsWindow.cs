@@ -11,16 +11,9 @@ public class BuildOptionsWindow : EditorWindow {
 	static string currentScriptFlags;
 
 	static void AddScriptFlags() {
-		AddFlag("No Friendly Units (Debug)", "Debugging for AI, units can attack friendlies.", "NO_FRIENDLIES", false);
 		AddFlag("Shipping Build", "Remove code not meant for public consumption", "SHIP", false);
-		AddFlag("Enable Login Server", "Game will connect to login server.", "LOGIN_SERVER", false);
-		AddFlag("Loopback Login Server", "Game will connect to login server running locally.", "LOGIN_LOOPBACK", true);
-		AddHiddenFlag("Game Server", "Compile as backend game server.", "DEDICATED_SERVER;BACKEND_SERVER", false);
 		AddFlag("Enable Profiling", "Enable Profiling", "PROFILING", false);
 		AddFlag("Steam Integration", "Use Steam API", "STEAM_API", false);
-		AddFlag("Enable Unsafe Code", "Enable Unsafe Code", "USE_UNSAFE_CODE", true);
-		AddFlag("UMA2 Lean And Clean", "UMA2 Lean And Clean", "UMA2_LEAN_AND_CLEAN", true);
-		AddFlag("Apex Multi-threaded pathing support", "Apex Multi-threaded pathing support", "APEX_MULTITHREADED_PATHING", true);
 	}
 
 	static BuildOptionsWindow() {

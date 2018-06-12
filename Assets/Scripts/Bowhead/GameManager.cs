@@ -125,7 +125,7 @@ namespace Bowhead {
 		NetIOMetrics[] clientNetStat = new NetIOMetrics[] { NetIOMetrics.zero, NetIOMetrics.zero };
 		NetIOMetrics[] serverNetStat = new NetIOMetrics[] { NetIOMetrics.zero, NetIOMetrics.zero };
 		SoundManager _soundManager;
-		//TMPro.TMP_Text _guiStatus;
+		TMPro.TMP_Text _guiStatus;
 		bool _pendingCommand;
 		bool _startup;
 
@@ -461,7 +461,7 @@ namespace Bowhead {
 			EnableAll();
 
 			_fpsCounter = GetComponent<AFPSCounter>();
-			_soundManager = GetComponentInChildren<SoundManager>();
+			_soundManager = GetComponent<SoundManager>();
 
 #if UNITY_EDITOR
 			_fpsCounter.OperationMode = OperationMode.Normal;
@@ -581,9 +581,9 @@ namespace Bowhead {
 
 			//menuManager = GameObject.Find("MainMenu").GetChildComponent<MenuManager>("TopMenuManager");
 
-			//_guiStatus = GameObject.Find("MainMenu/MainMenuPanel/VersionInfoStatus/Status").GetComponent<TMPro.TMP_Text>();
-			//_guiStatus.text = string.Empty;
-			//GameObject.Find("MainMenu/MainMenuPanel/VersionInfoStatus/Version").GetComponent<TMPro.TMP_Text>().text = BuildInfo.ID;
+			_guiStatus = GameObject.Find("MainMenuCanvas/MainMenuPanel/VersionInfoStatus/Status").GetComponent<TMPro.TMP_Text>();
+			_guiStatus.text = string.Empty;
+			GameObject.Find("MainMenuCanvas/MainMenuPanel/VersionInfoStatus/Version").GetComponent<TMPro.TMP_Text>().text = BuildInfo.ID;
 
 			Cursor.visible = true;
 			SetScreenModeCursorLockState();
@@ -591,14 +591,14 @@ namespace Bowhead {
 
 			if (_startup) {
 				_startup = false;
-				if (UserPrefs.instance.GetInt("PlayedIntro", 0) == 0) {
-					UserPrefs.instance.SetInt("PlayedIntro", 1);
-					UserPrefs.instance.Save();
-					StartCoroutine(LoadCinematic());
-				} else {
-					StartCoroutine(LoadNormal());
-					Play(Vector3.zero, clientData.sounds.ui.mainMenu.mainMenuStingers);
-				}
+				//if (UserPrefs.instance.GetInt("PlayedIntro", 0) == 0) {
+				//	UserPrefs.instance.SetInt("PlayedIntro", 1);
+				//	UserPrefs.instance.Save();
+				//	StartCoroutine(LoadCinematic());
+				//} else {
+				//	StartCoroutine(LoadNormal());
+				//	Play(Vector3.zero, clientData.sounds.ui.mainMenu.mainMenuStingers);
+				//}
 			} else {
 				if (clientInventory != null) {
 					clientInventory.RefreshClientInventory();
@@ -1407,11 +1407,11 @@ namespace Bowhead {
 
 				staticData.physicalContactMatrix.ClientPrecache();
 
-				var loadingCanvas = Instantiate(clientData.loadingCanvasPrefab);
-				loadingCanvas.name = "LoadingCanvas";
-				loadingCanvas.transform.SetParent(transform, false);
-				loadingCanvas.transform.SetSiblingIndex(1);
-				loadingCanvas.SetActive(false);
+				//var loadingCanvas = Instantiate(clientData.loadingCanvasPrefab);
+				//loadingCanvas.name = "LoadingCanvas";
+				//loadingCanvas.transform.SetParent(transform, false);
+				//loadingCanvas.transform.SetSiblingIndex(1);
+				//loadingCanvas.SetActive(false);
 
 				//loadingScreenState.root = loadingCanvas;
 				GetLoadingScreenElements();

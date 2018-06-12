@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ff6f0ddbcc19974e81e0802ace21b42, type: 3}
+  m_Name: PhysicalContactMatrix
+  m_EditorClassIdentifier: 
+  contacts: []
+  defaultContact:
+    material1: {fileID: 0}
+    material2: {fileID: 0}
+    fxPrefab:
+      _assetPath: 
+      _editorPath: 
+    soundCue: {fileID: 0}
+    maxContactRate: 0
+    maxLivingContacts: 0
+    bloodSplatterRadius: {x: 0, y: 0}
+    bloodSplatterSize: {x: 0, y: 0}
+    bloodSplatterCount:
+      x: 0
+      y: 0

@@ -235,14 +235,14 @@ namespace Bowhead.MetaGame {
 			_inventory = new DictionaryList<ulong, InventoryItem>();
 			_unlockedAbilities = new Dictionary<AbilityClass, UnlockedAbility>();
 
-			var spellLibrary = GameManager.instance.staticData.coopSpellLibrary;
+			//var spellLibrary = GameManager.instance.staticData.coopSpellLibrary;
 
-			for (int i = 0; i < spellLibrary.deities.Length; ++i) {
-				var deity = spellLibrary.deities[i];
-				if (deity != null) {
-					_deityStats.Add(deity, new DeityStats(deity, i));
-				}
-			}
+			//for (int i = 0; i < spellLibrary.deities.Length; ++i) {
+			//	var deity = spellLibrary.deities[i];
+			//	if (deity != null) {
+			//		_deityStats.Add(deity, new DeityStats(deity, i));
+			//	}
+			//}
 			
 			GameManager.instance.StartCoroutine(CoLoadInventory());
 		}

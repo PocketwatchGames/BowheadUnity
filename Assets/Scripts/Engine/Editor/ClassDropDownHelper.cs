@@ -110,7 +110,7 @@ public static class ClassDropDownHelper {
 			_classes[classTag] = classData;
 		}
 
-		var typeIndexes = classData.classTypeIndexes;
+		//var typeIndexes = classData.classTypeIndexes;
 
 		int index;
 		if (string.IsNullOrEmpty(current) || !classData.classTypeIndexes.TryGetValue(current, out index)) {
@@ -161,7 +161,7 @@ public static class ClassDropDownHelper {
 			_classes[classTag] = classData;
 		}
 
-		var typeIndexes = classData.classTypeIndexes;
+		//var typeIndexes = classData.classTypeIndexes;
 
 		int index;
 		if (string.IsNullOrEmpty(current) || !classData.classTypeIndexes.TryGetValue(current, out index)) {

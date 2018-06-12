@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3eda5788f1836c54fbf72f971f47b514, type: 3}
+  m_Name: ClientData
+  m_EditorClassIdentifier: 
+  decalUnitCube: {fileID: 0}
+  formationDecalMaterial: {fileID: 0}
+  formationInvalidDecalMaterial: {fileID: 0}
+  formationWaypointDecalMaterial: {fileID: 0}
+  formationFeedbackDecalMaterial: {fileID: 0}
+  attackLocationDecalMaterial: {fileID: 0}
+  orientDecal: {fileID: 0}
+  bloodDecalMaterials: []
+  explosionDecalMaterials: []
+  bloodSplats: []
+  presetSaved: {fileID: 0}
+  presetRecalled: {fileID: 0}
+  loadingCanvasPrefab: {fileID: 0}
+  minimapPrefab: {fileID: 0}
+  hudCanvasPrefab: {fileID: 0}
+  dialogDarkenCanvasPrefab: {fileID: 0}
+  dialogNormalCanvasPrefab: {fileID: 0}
+  messageBoxPrefab: {fileID: 0}
+  defaultLineEditorDialogPrefab: {fileID: 0}
+  playerConnecting: {fileID: 0}
+  playerUnknownDeity: {fileID: 0}
+  playerGenerating: {fileID: 0}
+  sounds:
+    ui:
+      mainMenu:
+        menuTransition: {fileID: 0}
+        lobbyPanelTransition: {fileID: 0}
+        matchStart: {fileID: 0}
+        matchAbort: {fileID: 0}
+        roomJoined: {fileID: 0}
+        roomLeft: {fileID: 0}
+        playerJoinedRoom: {fileID: 0}
+        playerLeftRoom: {fileID: 0}
+        lobbyJoined: {fileID: 0}
+        lobbyLeft: {fileID: 0}
+        lobbyCreateError: {fileID: 0}
+        playerJoinedLobby: {fileID: 0}
+        playerLeftLobby: {fileID: 0}
+        mainMenuStingers: {fileID: 0}
+        mainMenuIntro: {fileID: 0}
+        tierSelected: []
+        difficultySelected: []
+      settings:
+        beginBindKey: {fileID: 0}
+        didBindKey: {fileID: 0}
+        cancelBindKey: {fileID: 0}
+      widgets:
+        dropDown:
+          open: {fileID: 0}
+          close: {fileID: 0}
+          hover: {fileID: 0}
+          select: {fileID: 0}
+        spinner:
+          up: {fileID: 0}
+          down: {fileID: 0}
+        accordian:
+          fold: {fileID: 0}
+          unfold: {fileID: 0}
+          select: {fileID: 0}
+        buttonClick: {fileID: 0}
+      trading:
+        primarySpellSelected: {fileID: 0}
+        secondarySpellSelected: {fileID: 0}
+        gemSocketed: {fileID: 0}
+        gemUnsocketed: {fileID: 0}
+        runeSocketed: {fileID: 0}
+        runeUnsocketed: {fileID: 0}
+        itemVendored: {fileID: 0}
+        dragGem: {fileID: 0}
+        dragRune: {fileID: 0}
+      missions:
+        objectiveAdded: {fileID: 0}
+        objectiveSuccess: {fileID: 0}
+        objectiveFailed: {fileID: 0}
+        objectiveIncremented: {fileID: 0}
+      recvChatMsg: {fileID: 0}
+      sendChatMsg: {fileID: 0}
+    game:
+      announcer:
+        _5MinRemaining: {fileID: 0}
+        _1MinRemaining: {fileID: 0}
+        _30SecRemaining: {fileID: 0}
+        gameOn: {fileID: 0}
+        gameOver: {fileID: 0}
+        gameOverStinger: {fileID: 0}
+        gameStartCampaign: {fileID: 0}
+        gameStartHorde: {fileID: 0}
+        victory: {fileID: 0}
+        overtime: {fileID: 0}
+        overtimeStinger: {fileID: 0}
+        flagCaptured: {fileID: 0}
+        flagLost: {fileID: 0}
+        flagContested: {fileID: 0}
+        flagUnderAttack: {fileID: 0}
+        flagDestroyed: {fileID: 0}
+        playerEliminated: {fileID: 0}
+        teamEliminated: {fileID: 0}
+        casualty: {fileID: 0}
+        casualties: {fileID: 0}
+        massCasualties: {fileID: 0}
+        unitsReceived: {fileID: 0}
+        unitsDetached: {fileID: 0}
+        waveComplete: {fileID: 0}
+        assassinsSpawnedStinger: {fileID: 0}
+      abilitySounds:
+        cast: {fileID: 0}
+        notReady: {fileID: 0}
+        placingTotem: {fileID: 0}
+        invalidTotemPlacement: {fileID: 0}
+        placedTotem: {fileID: 0}
+      soulStoneAwarded: {fileID: 0}
+      enterResurrectMode: {fileID: 0}
+      eliteSeen: {fileID: 0}
+      endMatchScreenShow: {fileID: 0}
+      endMatchScreenClose: {fileID: 0}
+  itemQualityColors:
+    trash: {r: 0, g: 0, b: 0, a: 0}
+    common: {r: 0, g: 0, b: 0, a: 0}
+    rare: {r: 0, g: 0, b: 0, a: 0}
+    epic: {r: 0, g: 0, b: 0, a: 0}
+    legendary: {r: 0, g: 0, b: 0, a: 0}
+  pickupCursor: {fileID: 0}

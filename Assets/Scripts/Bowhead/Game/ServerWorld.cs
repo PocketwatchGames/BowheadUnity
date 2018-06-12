@@ -20,7 +20,7 @@ namespace Bowhead.Server {
 			string serverMessage,
 			System.Reflection.Assembly[] assemblies,
 			NetDriver driver
-		) : base(sceneGroup, GameManager.instance.staticData.actorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, serverName, serverMessage, assemblies, driver) {
+		) : base(sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, serverName, serverMessage, assemblies, driver) {
 			//_unitMovement = new Actors.UnitMovement();
         }
 
