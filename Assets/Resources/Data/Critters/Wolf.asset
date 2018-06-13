@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96d667e044cd848449b5256afdddb0da, type: 3}
+  m_Name: Wolf
+  m_EditorClassIdentifier: 
+  Name: 
+  height: 0
+  recoveryTime: 0
+  staminaRechargeTime: 0
+  maxHealth: 0
+  maxStamina: 0
+  dodgeTime: 0
+  collisionRadius: 0
+  stunLimit: 0
+  stunRecoveryTime: 0
+  backStabAngle: 0
+  jumpSpeed: 0
+  dodgeSpeed: 0
+  jumpBoostAcceleration: 0
+  jumpStaminaUse: 0
+  groundAcceleration: 0
+  crouchSpeed: 0
+  walkSpeed: 0
+  walkStartTime: 0
+  walkStopTime: 0
+  groundMaxSpeed: 0
+  groundWindDrag: 0
+  slideThresholdSlope: 0
+  slideThresholdFlat: 0
+  gravity: 0
+  fallJumpTime: 0
+  fallAcceleration: 0
+  fallDragHorizontal: 0
+  fallMaxHorizontalSpeed: 0
+  climbWallRange: 0
+  climbGrabMinZVel: 0
+  climbSpeed: 0
+  bouyancy: 0
+  swimJumpSpeed: 0
+  swimSinkAcceleration: 0
+  swimJumpBoostAcceleration: 0
+  swimAcceleration: 0
+  swimMaxSpeed: 0
+  swimDragVertical: 0
+  swimDragHorizontal: 0
+  fallDamageVelocity: 0
+  visionWeight: 0
+  smellWeight: 0
+  hearingWeight: 0
+  waryCooldownTime: 0
+  panicCooldownTime: 0
+  waryIncreaseAtMaxAwareness: 0
+  waryIncreaseAtMaxAwarenessWhilePanicked: 0

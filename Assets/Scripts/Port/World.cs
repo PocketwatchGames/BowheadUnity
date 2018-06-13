@@ -8,14 +8,19 @@ namespace Port {
 
     public class World : MonoBehaviour {
 
+        #region State
+        public float worldTime;
+        #endregion
+
+
         // Use this for initialization
         void Start() {
-
+            init();
         }
 
         // Update is called once per frame
         void Update() {
-
+            update(Time.deltaTime, camera.yaw);
         }
 
 
@@ -35,25 +40,20 @@ namespace Port {
             public float maxWindSpeedVariance;
             public float minWindSpeedVariance;
         }
-        struct State_t {
-            public float worldTime;
-        }
 
 
 
 
-
-
+        public DataManager dataManager = new DataManager();
 
         public UnityEngine.Random random = new UnityEngine.Random();
 
         float time;
         Data_t data;
-        State_t state;
         public Player player;
-        public List<Critter> critters;
-        public Queue<Critter> critterPool;
-        public List<Item> items = new List<Item>();
+        public Queue<Critter> critterPool = new Queue<Critter>();
+        public GameObject critters;
+        public GameObject items;
         public List<Item> allItems = new List<Item>();
         public CameraController camera;
 
@@ -76,7 +76,7 @@ namespace Port {
             return 0;
         }
 
-        Player.CData playerData;
+        PlayerData playerData;
         void init() {
             //int seed = 185;
             //	seed = 15485;
@@ -84,16 +84,22 @@ namespace Port {
             //noise = FastNoiseSIMD::NewFastNoiseSIMD(seed);
             //noiseFloats = noise->GetEmptySet(1, 1, 1);
 
+            items = new GameObject("items");
+            items.transform.parent = transform;
+
+            critters = new GameObject("critters");
+            critters.transform.parent = transform;
+
             data.minWindSpeedVariance = 10;
             data.maxWindSpeedVariance = 100;
             data.windSpeedBreezy = 8;
             data.windSpeedWindy = 16;
             data.windSpeedStormy = 24;
 
-            Item.initData();
+            DataManager.initData();
 
-
-            playerData = new Player.CData();
+/*
+            playerData = new PlayerData();
             playerData.maxHealth = 200;
             playerData.temperatureSleepMinimum = 50;
             playerData.temperatureSleepMaximum = 100;
@@ -145,100 +151,105 @@ namespace Port {
             playerData.slideThresholdFlat = 15;
             playerData.climbGrabMinZVel = -20f;
             playerData.height = 2;
-
+            */
 
             // init the player state
-            player = new Player(playerData);
+            player = Instantiate(DataManager.GetPrefab("Player").GetComponent<Player>());
+            player.transform.parent = transform;
+            player.init(player.Data, this);
+
+            camera.setTarget(player);
 
 
-            var bunny = Critter.createData<Critter, Critter.CData>("bunny");
-            bunny.maxHealth = 30;
-            bunny.maxStamina = 20.0f;
-            bunny.fallDamageVelocity = 20;
-            bunny.stunLimit = 1.0f;
-            bunny.stunRecoveryTime = 3.0f;
-            bunny.backStabAngle = 45f * Mathf.Deg2Rad;
-            bunny.visionWeight = 2f;
-            bunny.smellWeight = 1f;
-            bunny.hearingWeight = 2f;
-            bunny.waryCooldownTime = 3f;
-            bunny.panicCooldownTime = 10f;
-            bunny.waryIncreaseAtMaxAwareness = 4f;
-            bunny.waryIncreaseAtMaxAwarenessWhilePanicked = 8f;
-            bunny.updatePanicked = Critter.bounceAndFlee;
+            //var bunny = Critter.createData<CritterData>("bunny");
+            //bunny.maxHealth = 30;
+            //bunny.maxStamina = 20.0f;
+            //bunny.fallDamageVelocity = 20;
+            //bunny.stunLimit = 1.0f;
+            //bunny.stunRecoveryTime = 3.0f;
+            //bunny.backStabAngle = 45f * Mathf.Deg2Rad;
+            //bunny.visionWeight = 2f;
+            //bunny.smellWeight = 1f;
+            //bunny.hearingWeight = 2f;
+            //bunny.waryCooldownTime = 3f;
+            //bunny.panicCooldownTime = 10f;
+            //bunny.waryIncreaseAtMaxAwareness = 4f;
+            //bunny.waryIncreaseAtMaxAwarenessWhilePanicked = 8f;
+            //bunny.updatePanicked = Critter.bounceAndFlee;
 
-            bunny.collisionRadius = 0.5f;
-            bunny.height = 1f;
-            bunny.jumpSpeed = 8f;
-            bunny.dodgeSpeed = 0;
-            bunny.dodgeTime = 0;
-            bunny.swimJumpSpeed = 60f;
-            bunny.swimSinkAcceleration = 100f;
-            bunny.gravity = -30f;
-            bunny.bouyancy = 20f;
-            bunny.groundAcceleration = 2.0f;
-            bunny.groundMaxSpeed = 12f;
-            bunny.fallAcceleration = 30f;
-            bunny.swimAcceleration = 15f;
-            bunny.swimMaxSpeed = 10.0f;
-            bunny.swimDragVertical = 5.0f;
-            bunny.swimDragHorizontal = 0.25f;
-            bunny.fallDragHorizontal = 0.05f;
-            bunny.fallMaxHorizontalSpeed = 5.0f;
-            bunny.groundWindDrag = 0.01f;
-            bunny.slideThresholdSlope = 4;
-            bunny.slideThresholdFlat = 15;
+            //bunny.collisionRadius = 0.5f;
+            //bunny.height = 1f;
+            //bunny.jumpSpeed = 8f;
+            //bunny.dodgeSpeed = 0;
+            //bunny.dodgeTime = 0;
+            //bunny.swimJumpSpeed = 60f;
+            //bunny.swimSinkAcceleration = 100f;
+            //bunny.gravity = -30f;
+            //bunny.bouyancy = 20f;
+            //bunny.groundAcceleration = 2.0f;
+            //bunny.groundMaxSpeed = 12f;
+            //bunny.fallAcceleration = 30f;
+            //bunny.swimAcceleration = 15f;
+            //bunny.swimMaxSpeed = 10.0f;
+            //bunny.swimDragVertical = 5.0f;
+            //bunny.swimDragHorizontal = 0.25f;
+            //bunny.fallDragHorizontal = 0.05f;
+            //bunny.fallMaxHorizontalSpeed = 5.0f;
+            //bunny.groundWindDrag = 0.01f;
+            //bunny.slideThresholdSlope = 4;
+            //bunny.slideThresholdFlat = 15;
 
-            var wolf = Critter.createData<Critter, Critter.CData>("wolf");
-            wolf.maxHealth = 100;
-            wolf.maxStamina = 50.0f;
-            wolf.fallDamageVelocity = 20;
-            wolf.stunLimit = 1.0f;
-            wolf.stunRecoveryTime = 3.0f;
-            wolf.backStabAngle = 45f * Mathf.Deg2Rad;
-            wolf.visionWeight = 2f;
-            wolf.smellWeight = 1f;
-            wolf.hearingWeight = 2f;
-            wolf.waryCooldownTime = 3f;
-            wolf.panicCooldownTime = 10f;
-            wolf.waryIncreaseAtMaxAwareness = 4f;
-            wolf.waryIncreaseAtMaxAwarenessWhilePanicked = 8f;
-            wolf.updatePanicked = Critter.approachAndAttack;
+            //var wolf = Critter.createData<CritterData>("wolf");
+            //wolf.maxHealth = 100;
+            //wolf.maxStamina = 50.0f;
+            //wolf.fallDamageVelocity = 20;
+            //wolf.stunLimit = 1.0f;
+            //wolf.stunRecoveryTime = 3.0f;
+            //wolf.backStabAngle = 45f * Mathf.Deg2Rad;
+            //wolf.visionWeight = 2f;
+            //wolf.smellWeight = 1f;
+            //wolf.hearingWeight = 2f;
+            //wolf.waryCooldownTime = 3f;
+            //wolf.panicCooldownTime = 10f;
+            //wolf.waryIncreaseAtMaxAwareness = 4f;
+            //wolf.waryIncreaseAtMaxAwarenessWhilePanicked = 8f;
+            //wolf.updatePanicked = Critter.approachAndAttack;
 
-            wolf.collisionRadius = 0.5f;
-            wolf.height = 1.5f;
-            wolf.jumpSpeed = 8f;
-            wolf.dodgeSpeed = 0;
-            wolf.dodgeTime = 0;
-            wolf.swimJumpSpeed = 60f;
-            wolf.swimSinkAcceleration = 100f;
-            wolf.gravity = -30f;
-            wolf.bouyancy = 20f;
-            wolf.groundAcceleration = 2.0f;
-            wolf.groundMaxSpeed = 12f;
-            wolf.fallAcceleration = 30f;
-            wolf.swimAcceleration = 15f;
-            wolf.swimMaxSpeed = 10.0f;
-            wolf.swimDragVertical = 5.0f;
-            wolf.swimDragHorizontal = 0.25f;
-            wolf.fallDragHorizontal = 0.05f;
-            wolf.fallMaxHorizontalSpeed = 5.0f;
-            wolf.groundWindDrag = 0.01f;
-            wolf.slideThresholdSlope = 4;
-            wolf.slideThresholdFlat = 15;
+            //wolf.collisionRadius = 0.5f;
+            //wolf.height = 1.5f;
+            //wolf.jumpSpeed = 8f;
+            //wolf.dodgeSpeed = 0;
+            //wolf.dodgeTime = 0;
+            //wolf.swimJumpSpeed = 60f;
+            //wolf.swimSinkAcceleration = 100f;
+            //wolf.gravity = -30f;
+            //wolf.bouyancy = 20f;
+            //wolf.groundAcceleration = 2.0f;
+            //wolf.groundMaxSpeed = 12f;
+            //wolf.fallAcceleration = 30f;
+            //wolf.swimAcceleration = 15f;
+            //wolf.swimMaxSpeed = 10.0f;
+            //wolf.swimDragVertical = 5.0f;
+            //wolf.swimDragHorizontal = 0.25f;
+            //wolf.fallDragHorizontal = 0.05f;
+            //wolf.fallMaxHorizontalSpeed = 5.0f;
+            //wolf.groundWindDrag = 0.01f;
+            //wolf.slideThresholdSlope = 4;
+            //wolf.slideThresholdFlat = 15;
+
 
             for (int i = 0; i < 80; i++) {
-                critterPool.Enqueue(new Critter(bunny));
+                critterPool.Enqueue(CreateCritter("Bunny"));
             }
             for (int i = 0; i < 30; i++) {
-                critterPool.Enqueue(new Critter(wolf));
+                critterPool.Enqueue(CreateCritter("Wolf"));
             }
 
             for (int i = 0; i < 100; i++) {
-                var item = new Item("Money");
-                item.State.count = 100;
-                item.State.position = new Vector3(UnityEngine.Random.Range(-500f,500f) + 0.5f, UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f);
-                items.Add(item);
+                var item = CreateItem("Money");
+                item.transform.parent = items.transform;
+                item.count = 100;
+                item.position = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
             }
 
             time = SECONDS_PER_HOUR * 8;
@@ -266,6 +277,29 @@ namespace Port {
 
             //noise->FreeNoiseSet(noiseFloats);
             //delete noise;
+        }
+
+        public Item itemPrefab;
+        public Item CreateItem(string data) {
+            var i = Instantiate<Item>(itemPrefab);
+            i.transform.parent = transform;
+            i.init(Item.GetData(data), this);
+            return i;
+        }
+        public Item CreateItem(ItemData data) {
+            var i = Instantiate<Item>(itemPrefab);
+            i.init(data, this);
+            return i;
+        }
+
+        public Critter CreateCritter(string prefabName) {
+            var p = DataManager.GetPrefab(prefabName);
+            if (p == null) {
+                return null;
+            }
+            var i = Instantiate<Critter>(p.GetComponent<Critter>());
+            i.init(i.Data, this);
+            return i;
         }
 
         static Color[] dayColors = { new Color(0.7f, 0.7f, 1.0f, 1.0f), new Color(0.05f, 0.05f, 0.05f, 1.0f), new Color(0.90f, 0.90f, 0.95f, 1.0f), new Color(0.80f, 0.80f, 0.65f, 1.0f), new Color(0.45f, 0.45f, 0.70f, 1.0f), };
@@ -317,25 +351,25 @@ namespace Port {
 
         void spawnNewCritter() {
             if (critterPool.Count > 0) {
-                Vector3 pos = player.State.position;
-                pos.z = 500;
+                Vector3 pos = player.position;
+                pos.y = 500;
                 pos.x += UnityEngine.Random.Range(-500f, 500f) + 0.5f;
-                pos.y += UnityEngine.Random.Range(-500f, 500f) + 0.5f;
+                pos.z += UnityEngine.Random.Range(-500f, 500f) + 0.5f;
                 if (getTopmostBlock(500, ref pos)) {
                     Critter c = critterPool.Dequeue();
-                    critters.Add(c);
+                    c.transform.parent = critters.transform;
                     c.init();
-                    c.State.position = pos;
-                    c.State.team = 1;
+                    c.position = pos;
+                    c.team = 1;
 
                     if (c.Data == Critter.GetData("bunny")) {
-                        var item = new Item("Raw Meat");
-                        item.State.count = 1;
-                        c.State.loot[0] = item;
+                        var item = CreateItem("Raw Meat");
+                        item.count = 1;
+                        c.loot[0] = item;
                     }
                     else if (c.Data == Critter.GetData("wolf")) {
-                        var weapon = new Item("Teeth");
-                        c.State.inventory[0] = weapon;
+                        var weapon = CreateItem("Teeth");
+                        c.inventory[0] = weapon;
                     }
 
                     c.spawn(pos);
@@ -346,41 +380,42 @@ namespace Port {
 
         void update(float dt, float cameraYaw) {
 
-            if (!player.State.spawned) {
-                var spawnPoint = new Vector3(0.5f, 0.5f, 500);
+            if (!player.spawned) {
+                var spawnPoint = new Vector3(0.5f, 500, 0.5f);
                 if (getTopmostBlock(500, ref spawnPoint)) {
-                    player.spawn(spawnPoint + new Vector3(0, 0, 1));
+                    player.spawn(spawnPoint + new Vector3(0, 1, 0));
                 }
             }
             else {
                 player.update(dt, cameraYaw);
 
                 spawnNewCritter();
-                foreach (var c in critters) {
+                var cs = critters.GetComponentsInAllChildren<Critter>();
+                foreach (var c in cs) {
                     c.Update(dt);
 
-                    var diff = c.State.position - player.State.position;
+                    var diff = c.position - player.position;
                     if (diff.magnitude > 500) {
                         c.removeFlag = true;
                     }
                 }
 
-                foreach (var c in critters) {
+                foreach (var c in cs) {
                     if (c.removeFlag) {
                         critterPool.Enqueue(c);
+                        c.transform.parent = null;
                     }
                 }
-                critters.RemoveAll(c => c.removeFlag);
 
             }
 
-            updateCollision(dt);
+            //updateCollision(dt);
 
-            foreach (var i in items) {
-                if (!i.State.spawned) {
-                    var pos = i.State.position;
+            foreach (var i in items.GetComponentsInAllChildren<Item>()) {
+                if (!i.spawned) {
+                    var pos = i.position;
                     if (getTopmostBlock(500, ref pos)) {
-                        pos.z++;
+                        pos.y++;
                         i.spawn(pos);
                     }
                 }
@@ -398,12 +433,12 @@ namespace Port {
 
 
         void testCollision(float dt, Actor a1, Actor a2) {
-            var diff = a2.State.position - a1.State.position;
+            var diff = a2.position - a1.position;
             float dist = diff.magnitude;
             float minDist = a1.Data.collisionRadius + a2.Data.collisionRadius;
             if (dist < minDist) {
-                float a2Speed = a2.State.velocity.magnitude;
-                float a1Speed = a1.State.velocity.magnitude;
+                float a2Speed = a2.velocity.magnitude;
+                float a1Speed = a1.velocity.magnitude;
                 float totalSpeed = a2Speed + a1Speed;
                 if (totalSpeed == 0) {
                     totalSpeed = 0.1f;
@@ -421,15 +456,16 @@ namespace Port {
             }
         }
         void updateCollision(float dt) {
-            for (int i = 0; i < critters.Count; i++) {
-                var c = critters[i];
-                if (!c.State.spawned) {
+            var cs = critters.GetComponentsInAllChildren<Critter>();
+            for (int i = 0; i < cs.Length; i++) {
+                var c = cs[i];
+                if (!c.spawned) {
                     continue;
                 }
 
-                for (int j = i; j < critters.Count; j++) {
-                    var c2 = critters[j];
-                    if (!c2.State.spawned) {
+                for (int j = i; j < cs.Length; j++) {
+                    var c2 = cs[j];
+                    if (!c2.spawned) {
                         continue;
                     }
                     testCollision(dt, c, c2);
@@ -551,9 +587,9 @@ namespace Port {
             if (getGroundDiff(position, position - Vector3.right) > 0)
                 normal.x++;
             if (getGroundDiff(position, position + Vector3.forward) > 0)
-                normal.y--;
+                normal.z--;
             if (getGroundDiff(position, position - Vector3.forward) > 0)
-                normal.y++;
+                normal.z++;
             return normal.normalized;
         }
         public int getGroundDiff(Vector3 position1, Vector3 position2) {
@@ -602,9 +638,9 @@ namespace Port {
             float currentSpeed = data.minWindSpeedVariance + (data.maxWindSpeedVariance - data.minWindSpeedVariance) * Mathf.Pow(0.5f + 0.5f * GetPerlinValue((x + 88943), (y + 653), z, inverseRegionSize), 2f);
 
             float timeScale = 0.002f;
-            float weatherSpeed = (GetPerlinNormal((int)((state.worldTime + 46332) * timeScale), 876, 0, 1f) +
-                GetPerlinNormal(18740, (int)((state.worldTime + 7476) * timeScale), 0, 1f) +
-                GetPerlinNormal((int)((state.worldTime + 1454) * timeScale), (int)((state.worldTime + 76746) * timeScale), 0, 1f)) / 3;
+            float weatherSpeed = (GetPerlinNormal((int)((worldTime + 46332) * timeScale), 876, 0, 1f) +
+                GetPerlinNormal(18740, (int)((worldTime + 7476) * timeScale), 0, 1f) +
+                GetPerlinNormal((int)((worldTime + 1454) * timeScale), (int)((worldTime + 76746) * timeScale), 0, 1f)) / 3;
             weatherSpeed = Mathf.Pow(weatherSpeed, 2f);
             currentSpeed *= weatherSpeed;
 

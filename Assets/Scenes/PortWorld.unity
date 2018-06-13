@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -124,6 +124,7 @@ GameObject:
   - component: {fileID: 319274348}
   - component: {fileID: 319274347}
   - component: {fileID: 319274346}
+  - component: {fileID: 319274350}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -192,8 +193,87 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &319274350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 319274345}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51c15bfe64f8ce74888571ee00cc0c16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  world: {fileID: 807073565}
+  yaw: 0
+  pitch: 0
+  target: {fileID: 0}
+  position: {x: 0, y: 0, z: 0}
+  isLooking: 0
+  shakeTime: 0
+  shakeTimeTotal: 0
+  shakeAngleMag: 0
+  shakePositionMag: 0
+  _playerPosition: {x: 0, y: 0, z: 0}
+  _cameraVelocity: {x: 0, y: 0, z: 0}
+  _lookAtVelocity: {x: 0, y: 0, z: 0}
+  _lookAt: {x: 0, y: 0, z: 0}
+--- !u!1 &807073563
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 807073564}
+  - component: {fileID: 807073565}
+  m_Layer: 0
+  m_Name: World
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &807073564
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 807073563}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.0700932, y: -4.7803407, z: -4.452238}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &807073565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 807073563}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55cb98f7666ba8a479a7f7f0d033bbd7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  worldTime: 0
+  player: {fileID: 0}
+  playerPrefab: {fileID: 114840936817083890, guid: 53db23551070e174cb5e42fa6dd00f91,
+    type: 2}
+  critters: []
+  items: []
+  allItems: []
+  camera: {fileID: 319274350}
+  itemPrefab: {fileID: 114959488331675696, guid: 4a2333dd31df2b247b1da3a0dd881c5e,
+    type: 2}
+  bunnyPrefab: {fileID: 114547185820236068, guid: eb254075761c9b947a7359c5e51e650d,
+    type: 2}
+  wolfPrefab: {fileID: 114101272646643852, guid: ca1ec740005a1e04987479d4cee6995e,
+    type: 2}
 --- !u!1 &1988942741
 GameObject:
   m_ObjectHideFlags: 0
@@ -257,5 +337,5 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}

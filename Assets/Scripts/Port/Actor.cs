@@ -4,13 +4,110 @@ using UnityEngine;
 using System;
 
 namespace Port {
+
+    public class ActorData : EntityData {
+        public float height;
+        public float recoveryTime;
+        public float staminaRechargeTime;
+        public float maxHealth;
+        public float maxStamina;
+        public float dodgeTime;
+        public float collisionRadius;
+        public float stunLimit;
+        public float stunRecoveryTime;
+        public float backStabAngle;
+
+        public float jumpSpeed;
+        public float dodgeSpeed;
+        public float jumpBoostAcceleration;
+        public float jumpStaminaUse;
+        public float groundAcceleration; // accel = veldiff * groundAccel * dt
+        public float crouchSpeed;
+        public float walkSpeed;
+        public float walkStartTime;
+        public float walkStopTime;
+        public float groundMaxSpeed;
+        public float groundWindDrag;
+        public float slideThresholdSlope;
+        public float slideThresholdFlat;
+
+        public float gravity;
+        public float fallJumpTime;
+        public float fallAcceleration;
+        public float fallDragHorizontal;
+        public float fallMaxHorizontalSpeed;
+
+        public float climbWallRange;
+        public float climbGrabMinZVel;
+        public float climbSpeed;
+
+        public float bouyancy;
+        public float swimJumpSpeed;
+        public float swimSinkAcceleration;
+        public float swimJumpBoostAcceleration;
+        public float swimAcceleration;
+        public float swimMaxSpeed;
+        public float swimDragVertical;
+        public float swimDragHorizontal;
+
+    }
+
+
+
+
     public class Actor : Entity {
 
+        #region State
+        public Actor.PlayerCmd_t last;
+
+        public bool spawned;
+        public Actor.Activity activity;
+        public Vector3 position;
+        public Vector3 velocity;
+        public float yaw;
+        public int team;
+
+        public Item[] inventory = new Item[Actor.MAX_INVENTORY_SIZE];
+
+        public float health;
+        public float maxHealth;
+        public float stamina;
+        public float maxStamina;
+        public bool recovering;
+        public float recoveryTimer;
+        public float dodgeTimer;
+        public bool stunned;
+        public float stunTimer;
+        public float stunAmount;
+
+        public Actor attackTarget;
+
+        public Vector3 moveImpulse;
+        public float moveImpulseTimer;
+
+        public Vector3 interpolateFrom;
+        public float interpolateTime;
+        public float interpolateTimeTotal;
+
+        public Vector3 climbingNormal;
+        public float fallJumpTimer;
+        public float maxHorizontalSpeed;
+        public bool sliding;
+        public bool canMove;
+        public bool canRun;
+        public bool canJump;
+        public bool canClimb;
+        public bool canClimbWell;
+        public bool canSwim;
+        public bool canTurn;
+        public bool canAttack;
+        public bool lockedToTarget;
+        #endregion
 
 
         // Use this for initialization
         void Start() {
-
+            
         }
 
         // Update is called once per frame
@@ -35,119 +132,26 @@ namespace Port {
         }
 
 
-        new public class CData : Entity.CData {
-            public float height;
-            public float recoveryTime;
-            public float staminaRechargeTime;
-            public float maxHealth;
-            public float maxStamina;
-            public float dodgeTime;
-            public float collisionRadius;
-            public float stunLimit;
-            public float stunRecoveryTime;
-            public float backStabAngle;
 
-            public float jumpSpeed;
-            public float dodgeSpeed;
-            public float jumpBoostAcceleration;
-            public float jumpStaminaUse;
-            public float groundAcceleration; // accel = veldiff * groundAccel * dt
-            public float crouchSpeed;
-            public float walkSpeed;
-            public float walkStartTime;
-            public float walkStopTime;
-            public float groundMaxSpeed;
-            public float groundWindDrag;
-            public float slideThresholdSlope;
-            public float slideThresholdFlat;
-
-            public float gravity;
-            public float fallJumpTime;
-            public float fallAcceleration;
-            public float fallDragHorizontal;
-            public float fallMaxHorizontalSpeed;
-
-            public float climbWallRange;
-            public float climbGrabMinZVel;
-            public float climbSpeed;
-
-            public float bouyancy;
-            public float swimJumpSpeed;
-            public float swimSinkAcceleration;
-            public float swimJumpBoostAcceleration;
-            public float swimAcceleration;
-            public float swimMaxSpeed;
-            public float swimDragVertical;
-            public float swimDragHorizontal;
-
-        }
-
-
-        new public class CState : Entity.CState {
-            public PlayerCmd_t last;
-
-            public bool spawned;
-            public Activity activity;
-            public Vector3 position;
-            public Vector3 velocity;
-            public float yaw;
-            public int team;
-
-            public Item[] inventory = new Item[MAX_INVENTORY_SIZE];
-
-            public float health;
-            public float maxHealth;
-            public float stamina;
-            public float maxStamina;
-            public bool recovering;
-            public float recoveryTimer;
-            public float dodgeTimer;
-            public bool stunned;
-            public float stunTimer;
-            public float stunAmount;
-
-            public Actor attackTarget;
-
-            public Vector3 moveImpulse;
-            public float moveImpulseTimer;
-
-            public Vector3 interpolateFrom;
-            public float interpolateTime;
-            public float interpolateTimeTotal;
-
-            public Vector3 climbingNormal;
-            public float fallJumpTimer;
-            public float maxHorizontalSpeed;
-            public bool sliding;
-            public bool canMove;
-            public bool canRun;
-            public bool canJump;
-            public bool canClimb;
-            public bool canClimbWell;
-            public bool canSwim;
-            public bool canTurn;
-            public bool canAttack;
-            public bool lockedToTarget;
-        };
 
         public enum InputState {
             RELEASED,
-	JUST_RELEASED,
-	JUST_PRESSED,
-	PRESSED,
-}
+            JUST_RELEASED,
+            JUST_PRESSED,
+            PRESSED,
+        }
         public enum InputType {
             JUMP,
-	INTERACT,
-	USE,
-	SWAP,
-	ATTACK_LEFT,
-	ATTACK_RIGHT,
-	SELECT_LEFT,
-	SELECT_RIGHT,
-	MAP,
-	CROUCH,
-	COUNT
+            INTERACT,
+            USE,
+            SWAP,
+            ATTACK_LEFT,
+            ATTACK_RIGHT,
+            SELECT_LEFT,
+            SELECT_RIGHT,
+            MAP,
+            CROUCH,
+            COUNT
         }
 
         public struct PlayerCmd_t {
@@ -175,17 +179,13 @@ namespace Port {
         public bool removeFlag;
 
 
-        new public CData Data { get { return GetData<CData>(); } }
-        new public CState State { get { return GetState<CState>(); } }
-        public static CData GetData(string dataName) { return GetData<CData>(dataName); }
+        new public ActorData Data { get { return GetData<ActorData>(); } }
+        public static ActorData GetData(string dataName) { return DataManager.GetData<ActorData>(dataName); }
 
 
-        protected Actor(CData d, CState s) : base(d,s) {
-
-        }
 
         public void UpdatePlayerCmd(PlayerCmd_t cmd) {
-            State.last = cur;
+            last = cur;
             cur = cmd;
         }
 
@@ -200,7 +200,7 @@ namespace Port {
 
                 // Step forward
                 if (IsOpen(position + moveVector)) {
-                    if (State.activity == Activity.ONGROUND) {
+                    if (activity == Activity.ONGROUND) {
                         // Step down
                         Vector3 fp = footPoint + new Vector3(0, 0, -0.5f);
                         if (!World.isSolidBlock(world.getBlock(fp))) {
@@ -246,14 +246,14 @@ namespace Port {
             if (!IsOpen(p))
                 return false;
             var handblock = world.getBlock(handPosition(handHoldPos));
-            bool isClimbable = World.isClimbable(handblock, State.canClimbWell);
+            bool isClimbable = World.isClimbable(handblock, canClimbWell);
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.z, 1f) > 0.9f;
-                if (isHangPosition && World.isHangable(handblock, State.canClimbWell) && !World.isSolidBlock(world.getBlock(p)) && !World.isSolidBlock(world.getBlock(handPosition(p))) && !World.isSolidBlock(world.getBlock(handPosition(handHoldPos) + Vector3.up))) {
+                if (isHangPosition && World.isHangable(handblock, canClimbWell) && !World.isSolidBlock(world.getBlock(p)) && !World.isSolidBlock(world.getBlock(handPosition(p))) && !World.isSolidBlock(world.getBlock(handPosition(handHoldPos) + Vector3.up))) {
                     isClimbable = true;
                 }
             }
-            if (State.velocity.z > Data.climbGrabMinZVel && isClimbable) {
+            if (velocity.z > Data.climbGrabMinZVel && isClimbable) {
                 return true;
             }
             return false;
@@ -265,17 +265,17 @@ namespace Port {
             if (!IsOpen(p))
                 return false;
             var handblock = world.getBlock(handPosition(handHoldPos));
-            bool isClimbable = World.isClimbable(handblock, State.canClimbWell);
+            bool isClimbable = World.isClimbable(handblock, canClimbWell);
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.z, 1f) > 0.9f;
                 if (isHangPosition
-                    && World.isHangable(handblock, State.canClimbWell)
+                    && World.isHangable(handblock, canClimbWell)
                     && !World.isSolidBlock(world.getBlock(handPosition(handHoldPos)))
                     && !World.isSolidBlock(world.getBlock(handHoldPos + Vector3.up))) {
                     isClimbable = true;
                 }
             }
-            if (State.velocity.z > Data.climbGrabMinZVel && isClimbable) {
+            if (velocity.z > Data.climbGrabMinZVel && isClimbable) {
                 return true;
             }
             return false;
@@ -288,33 +288,33 @@ namespace Port {
             var climbingVector = climbMatrix.MultiplyVector(i);
 
             // If we're climbing nearly exaclty up, change it to up
-            if (Math.Abs(climbingVector.z) > Math.Sqrt(Math.Pow(climbingVector.x, 2) + Math.Pow(climbingVector.y, 2))) {
+            if (Math.Abs(climbingVector.y) > Math.Sqrt(Math.Pow(climbingVector.x, 2) + Math.Pow(climbingVector.z, 2))) {
                 float inputSpeed = climbingVector.magnitude;
-                climbingVector = new Vector3(0, 0, Math.Sign(climbingVector.z) * inputSpeed);
+                climbingVector = new Vector3(0, Math.Sign(climbingVector.y) * inputSpeed, 0);
             }
-            else if (Math.Abs(climbingVector.x) > Math.Abs(climbingVector.y)) {
+            else if (Math.Abs(climbingVector.x) > Math.Abs(climbingVector.z)) {
                 float inputSpeed = climbingVector.magnitude;
                 climbingVector = new Vector3(Mathf.Sign(climbingVector.x), 0f, 0f) * inputSpeed;
             }
             else {
                 float inputSpeed = climbingVector.magnitude;
-                climbingVector = new Vector3(0f, Mathf.Sign(climbingVector.y), 0f) * inputSpeed;
+                climbingVector = new Vector3(0f, 0f, Mathf.Sign(climbingVector.z)) * inputSpeed;
             }
             return climbingVector;
         }
 
         bool CheckFloor(Vector3 position, out float floorHeight) {
             floorHeight = 0;
-            Vector3 floorPosition = footPosition(position) + new Vector3(0, 0, -0.1f);
+            Vector3 floorPosition = footPosition(position) + new Vector3(0, -0.1f, 0);
 
             if (!World.isSolidBlock(world.getBlock(floorPosition))) {
                 return false;
             }
 
             while (World.isSolidBlock(world.getBlock(floorPosition))) {
-                floorPosition.z = Mathf.Floor(floorPosition.z) + 1;
+                floorPosition.y = Mathf.Floor(floorPosition.y) + 1;
             }
-            floorHeight = floorPosition.z;
+            floorHeight = floorPosition.y;
             return true;
         }
 
@@ -326,137 +326,137 @@ namespace Port {
 
 
         protected void Update(float dt, Input_t input) {
-            if (State.recoveryTimer > 0) {
-                State.recoveryTimer = Math.Max(0, State.recoveryTimer - dt);
+            if (recoveryTimer > 0) {
+                recoveryTimer = Math.Max(0, recoveryTimer - dt);
             }
             else {
-                if (State.stamina < State.maxStamina) {
-                    State.stamina = Math.Min(State.maxStamina, State.stamina + dt * State.maxStamina / Data.staminaRechargeTime);
+                if (stamina < maxStamina) {
+                    stamina = Math.Min(maxStamina, stamina + dt * maxStamina / Data.staminaRechargeTime);
                 }
                 else {
-                    State.recovering = false;
+                    recovering = false;
                 }
             }
 
-            if (State.stunned) {
-                State.stunAmount = 0;
-                State.stunTimer = Math.Max(0, State.stunTimer - dt);
-                if (State.stunTimer <= 0) {
-                    State.stunned = false;
+            if (stunned) {
+                stunAmount = 0;
+                stunTimer = Math.Max(0, stunTimer - dt);
+                if (stunTimer <= 0) {
+                    stunned = false;
                 }
             }
-            else if (State.stunAmount > 0) {
-                State.stunAmount = Math.Max(0, State.stunAmount - dt * Data.stunLimit / Data.stunRecoveryTime);
+            else if (stunAmount > 0) {
+                stunAmount = Math.Max(0, stunAmount - dt * Data.stunLimit / Data.stunRecoveryTime);
             }
             else {
-                State.stunned = false;
+                stunned = false;
             }
 
-            if (State.dodgeTimer > 0) {
-                State.dodgeTimer = Math.Max(0, State.dodgeTimer - dt);
+            if (dodgeTimer > 0) {
+                dodgeTimer = Math.Max(0, dodgeTimer - dt);
             }
 
-            State.interpolateTime = Math.Max(0, State.interpolateTime - dt);
-            if (State.canTurn) {
-                if (State.activity == Activity.CLIMBING) {
-                    State.yaw = Mathf.Atan2(-State.climbingNormal.y, -State.climbingNormal.x);
+            interpolateTime = Math.Max(0, interpolateTime - dt);
+            if (canTurn) {
+                if (activity == Activity.CLIMBING) {
+                    yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
                 }
                 else {
-                    if (State.lockedToTarget) {
-                        var diff = State.attackTarget.State.position - State.position;
-                        State.yaw = Mathf.Atan2(diff.y, diff.x);
+                    if (lockedToTarget) {
+                        var diff = attackTarget.position - position;
+                        yaw = Mathf.Atan2(diff.x, diff.z);
                     }
                     else if (input.movement != Vector3.zero) {
-                        State.yaw = input.yaw;
+                        yaw = input.yaw;
                     }
                 }
             }
 
 
-            if (State.activity == Activity.CLIMBING) {
+            if (activity == Activity.CLIMBING) {
                 UpdateClimbing(dt, input);
             }
-            else if (State.activity == Activity.SWIMMING) {
+            else if (activity == Activity.SWIMMING) {
                 UpdateSwimming(dt, input);
             }
-            else if (State.activity == Activity.ONGROUND) {
+            else if (activity == Activity.ONGROUND) {
                 UpdateGround(dt, input);
             }
-            else if (State.activity == Activity.FALLING) {
+            else if (activity == Activity.FALLING) {
                 UpdateFalling(dt, input);
             }
 
-            if (!State.canMove) {
-                State.velocity = Vector3.zero;
+            if (!canMove) {
+                velocity = Vector3.zero;
             }
-            if (State.moveImpulseTimer > 0) {
-                var m = State.moveImpulse * (dt / State.moveImpulseTimer);
-                State.velocity = m / dt;
-                State.moveImpulse -= m;
-                State.moveImpulseTimer = Math.Max(0, State.moveImpulseTimer - dt);
+            if (moveImpulseTimer > 0) {
+                var m = moveImpulse * (dt / moveImpulseTimer);
+                velocity = m / dt;
+                moveImpulse -= m;
+                moveImpulseTimer = Math.Max(0, moveImpulseTimer - dt);
             }
 
-            State.position.z += State.velocity.z * dt;
+            position.y += velocity.y * dt;
 
             // Collide feet
             float floorPosition;
-            bool onGround = CheckFloor(State.position, out floorPosition);
+            bool onGround = CheckFloor(position, out floorPosition);
             if (onGround) {
-                if (State.velocity.z <= 0) {
+                if (velocity.y <= 0) {
 
-                    if (State.activity != Activity.ONGROUND) {
+                    if (activity != Activity.ONGROUND) {
                         onLand();
-                        if (State.velocity.z < 0) {
-                            Vector3 groundNormal = world.getGroundNormal(footPosition(State.position));
-                            float slopeAccel = 1f + Vector3.Dot(State.velocity.normalized,-groundNormal);
+                        if (velocity.y < 0) {
+                            Vector3 groundNormal = world.getGroundNormal(footPosition(position));
+                            float slopeAccel = 1f + Vector3.Dot(velocity.normalized, -groundNormal);
                             if (slopeAccel < 1f) {
-                                State.velocity += State.velocity * slopeAccel;
+                                velocity += velocity * slopeAccel;
                             }
                         }
                     }
-                    State.velocity.z = Math.Max(0, State.velocity.z);
+                    velocity.y = Math.Max(0, velocity.y);
                 }
-                State.position.z = floorPosition + Data.height / 2;
+                position.y = floorPosition + Data.height / 2;
             }
 
             // Collide head
-            if (World.isSolidBlock(world.getBlock(headPosition(State.position)))) {
+            if (World.isSolidBlock(world.getBlock(headPosition(position)))) {
                 // TODO: this is broken
-                State.position.z = Math.Min(State.position.z, (int)headPosition(State.position).z - Data.height);
-                State.velocity.z = Math.Min(0, State.velocity.z);
+                position.y = Math.Min(position.y, (int)headPosition(position).y - Data.height);
+                velocity.y = Math.Min(0, velocity.y);
             }
 
 
-            if (State.activity != Activity.CLIMBING) {
+            if (activity != Activity.CLIMBING) {
                 // Collide XY
-                Vector3 moveXY = new Vector3(State.velocity.x, State.velocity.y, 0) * dt;
-                Move(moveXY, dt);
+                Vector3 moveXZ = new Vector3(velocity.x, 0, velocity.z) * dt;
+                Move(moveXZ, dt);
             }
 
             Vector3 firstCheck, secondCheck;
-            if (Math.Abs(input.movement.x) > Math.Abs(input.movement.y)) {
+            if (Math.Abs(input.movement.x) > Math.Abs(input.movement.z)) {
                 firstCheck = new Vector3(input.movement.x, 0, 0);
-                secondCheck = new Vector3(0, input.movement.y, 0);
+                secondCheck = new Vector3(0, 0, input.movement.z);
             }
             else {
-                firstCheck = new Vector3(0, input.movement.y, 0);
+                firstCheck = new Vector3(0, 0, input.movement.z);
                 secondCheck = new Vector3(input.movement.x, 0, 0);
             }
-            if (State.activity == Activity.CLIMBING) {
-                if (!State.canClimb) {
-                    State.activity = Activity.FALLING;
+            if (activity == Activity.CLIMBING) {
+                if (!canClimb) {
+                    activity = Activity.FALLING;
                 }
             }
-            else if (world.getBlock(State.position) == EBlockType.BLOCK_TYPE_WATER) {
-                State.activity = Activity.SWIMMING;
+            else if (world.getBlock(position) == EBlockType.BLOCK_TYPE_WATER) {
+                activity = Activity.SWIMMING;
             }
-            else if (onGround && State.velocity.z <= 0) {
-                State.activity = Activity.ONGROUND;
+            else if (onGround && velocity.y <= 0) {
+                activity = Activity.ONGROUND;
 
-                //if (State.Crouched)
+                //if (Crouched)
                 //{
                 //	bool interpolate = false;
-                //	Vector3 climbDownPos = State.position + Vector3(0, 0, -2f);
+                //	Vector3 climbDownPos = position + Vector3(0, 0, -2f);
                 //	Vector3 wallNormal;
                 //	if (canClimb(-firstCheck, climbDownPos + firstCheck * Data.WallJumpRange / 2)) {
                 //		interpolate = true;
@@ -470,58 +470,58 @@ namespace Port {
                 //	}
                 //	if (interpolate)
                 //	{
-                //		State.physics = PhysicsState::CLIMBING;
+                //		physics = PhysicsState::CLIMBING;
                 //		setPosition(climbDownPos, 0.1f);
-                //		State.climbingNormal = Vector3(Mathf.Sign(wallNormal.x), Mathf.Sign(wallNormal.y), 0);
-                //		State.velocity = Vector3.zero;
-                //		if (State.climbingNormal.x != 0)
-                //			State.velocity.y = 0;
-                //		if (State.climbingNormal.y != 0)
-                //			State.velocity.x = 0;
+                //		climbingNormal = Vector3(Mathf.Sign(wallNormal.x), Mathf.Sign(wallNormal.y), 0);
+                //		velocity = Vector3.zero;
+                //		if (climbingNormal.x != 0)
+                //			velocity.y = 0;
+                //		if (climbingNormal.y != 0)
+                //			velocity.x = 0;
                 //	}
                 //}
 
             }
             else {
-                State.activity = Activity.FALLING;
+                activity = Activity.FALLING;
 
-                if (State.canClimb) {
-                    if (firstCheck.magnitude > 0 && CanClimb(firstCheck, State.position)) {
-                        State.climbingNormal = -new Vector3(Mathf.Sign(firstCheck.x), Mathf.Sign(firstCheck.y), 0);
-                        State.velocity = Vector3.zero;
-                        State.activity = Activity.CLIMBING;
+                if (canClimb) {
+                    if (firstCheck.magnitude > 0 && CanClimb(firstCheck, position)) {
+                        climbingNormal = -new Vector3(Mathf.Sign(firstCheck.x), 0, Mathf.Sign(firstCheck.z));
+                        velocity = Vector3.zero;
+                        activity = Activity.CLIMBING;
                     }
-                    else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, State.position)) {
-                        State.climbingNormal = -new Vector3(Mathf.Sign(secondCheck.x), Mathf.Sign(secondCheck.y), 0);
-                        State.velocity = Vector3.zero;
-                        State.activity = Activity.CLIMBING;
+                    else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, position)) {
+                        climbingNormal = -new Vector3(Mathf.Sign(secondCheck.x), 0, Mathf.Sign(secondCheck.z));
+                        velocity = Vector3.zero;
+                        activity = Activity.CLIMBING;
                     }
                 }
 
             }
 
-
+            transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw, Vector3.up));
         }
 
-        public bool Move(Vector3 moveXY, float dt) {
-            float moveXYLength = moveXY.magnitude;
-            if (moveXYLength > 0) {
+        public bool Move(Vector3 moveXZ, float dt) {
+            float moveXZLength = moveXZ.magnitude;
+            if (moveXZLength > 0) {
                 bool interpolate = false;
-                Vector3 newPosition = State.position;
+                Vector3 newPosition = position;
                 Vector3 firstCheck, secondCheck;
-                if (Math.Abs(moveXY.x) > Math.Abs(moveXY.y)) {
-                    firstCheck = new Vector3(moveXY.x, 0, 0);
-                    secondCheck = new Vector3(0, moveXY.y, 0);
+                if (Math.Abs(moveXZ.x) > Math.Abs(moveXZ.z)) {
+                    firstCheck = new Vector3(moveXZ.x, 0, 0);
+                    secondCheck = new Vector3(0, 0, moveXZ.z);
                 }
                 else {
-                    firstCheck = new Vector3(0, moveXY.y, 0);
-                    secondCheck = new Vector3(moveXY.x, 0, 0);
+                    firstCheck = new Vector3(0, 0, moveXZ.z);
+                    secondCheck = new Vector3(moveXZ.x, 0, 0);
                 }
 
-                Vector3 firstClimbDownPos = newPosition + firstCheck + new Vector3(0, 0, -1.05f);
-                Vector3 secondClimbDownPos = newPosition + secondCheck + new Vector3(0, 0, -1.05f);
+                Vector3 firstClimbDownPos = newPosition + firstCheck + new Vector3(0, -1.05f, 0);
+                Vector3 secondClimbDownPos = newPosition + secondCheck + new Vector3(0, -1.05f, 0);
 
-                if (CanMoveTo(moveXY, true, dt, ref newPosition, ref interpolate)) {
+                if (CanMoveTo(moveXZ, true, dt, ref newPosition, ref interpolate)) {
                     return true;
                 }
                 else if (CanMoveTo(firstCheck, true, dt, ref newPosition, ref interpolate)) {
@@ -539,64 +539,64 @@ namespace Port {
         }
 
         private void UpdateFalling(float dt, Input_t input) {
-            if (State.fallJumpTimer > 0) {
-                State.fallJumpTimer = Math.Max(0, State.fallJumpTimer - dt);
+            if (fallJumpTimer > 0) {
+                fallJumpTimer = Math.Max(0, fallJumpTimer - dt);
                 if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
-                    if (State.canJump) {
+                    if (canJump) {
                         var jumpDir = input.movement * Data.dodgeSpeed;
-                        jumpDir.z += getGroundJumpVelocity();
+                        jumpDir.y += getGroundJumpVelocity();
                         jump(jumpDir);
                     }
-                    State.fallJumpTimer = 0;
+                    fallJumpTimer = 0;
                 }
             }
             if (input.IsPressed(InputType.JUMP)) {
-                if (State.velocity.z >= 0) {
-                    State.velocity.z += Data.jumpBoostAcceleration * dt;
+                if (velocity.y >= 0) {
+                    velocity.y += Data.jumpBoostAcceleration * dt;
                 }
             }
-            State.velocity.z += Data.gravity * dt;
+            velocity.y += Data.gravity * dt;
 
             if (input.movement != Vector3.zero) {
                 float acceleration = Data.fallAcceleration;
                 float maxSpeed = getGroundMaxSpeed();
-                maxSpeed = Mathf.Clamp(maxSpeed, Data.fallMaxHorizontalSpeed, Math.Max(State.maxHorizontalSpeed, Data.fallMaxHorizontalSpeed));
+                maxSpeed = Mathf.Clamp(maxSpeed, Data.fallMaxHorizontalSpeed, Math.Max(maxHorizontalSpeed, Data.fallMaxHorizontalSpeed));
 
-                var normalizedVelocity = State.velocity / maxSpeed;
-                normalizedVelocity.z = 0;
+                var normalizedVelocity = velocity / maxSpeed;
+                normalizedVelocity.y = 0;
                 var normalizedInput = input.movement.normalized;
                 float dot = Vector3.Dot(normalizedInput, normalizedVelocity);
                 float accelerationPotential = Math.Min(1.0f, 1.0f - dot);
-                State.velocity += input.movement * acceleration * accelerationPotential * dt;
+                velocity += input.movement * acceleration * accelerationPotential * dt;
 
             }
 
             // For parachutes and such
             float airFriction = getFallingAirFriction();
-            State.velocity.z -= State.velocity.z * dt * airFriction;
+            velocity.y -= velocity.y * dt * airFriction;
 
-            var wind = world.getWind(State.position);
-            var velDiff = (wind - new Vector3(State.velocity.x, State.velocity.y, 0));
+            var wind = world.getWind(position);
+            var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
             velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
-            State.velocity += velDiff * dt * getHorizontalAirFriction();
+            velocity += velDiff * dt * getHorizontalAirFriction();
 
         }
 
         private void UpdateGround(float dt, Input_t input) {
             if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
-                if (State.canJump) {
+                if (canJump) {
                     var jumpDir = input.movement * Data.dodgeSpeed;
-                    jumpDir.z += getGroundJumpVelocity();
+                    jumpDir.y += getGroundJumpVelocity();
                     jump(jumpDir);
                 }
-                State.fallJumpTimer = 0;
+                fallJumpTimer = 0;
             }
             else {
-                State.fallJumpTimer = Data.fallJumpTime;
+                fallJumpTimer = Data.fallJumpTime;
             }
-            var block = world.getBlock(footPosition(State.position));
-            var midblock = world.getBlock(waistPosition(State.position));
-            var topblock = world.getBlock(headPosition(State.position));
+            var block = world.getBlock(footPosition(position));
+            var midblock = world.getBlock(waistPosition(position));
+            var topblock = world.getBlock(headPosition(position));
             float slideFriction, slideThreshold;
             World.getSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
             float workModifier = World.getWorkModifier(block, midblock, topblock);
@@ -604,20 +604,20 @@ namespace Port {
                 workModifier += Data.swimDragHorizontal;
             }
 
-            Vector3 groundNormal = world.getGroundNormal(footPosition(State.position));
+            Vector3 groundNormal = world.getGroundNormal(footPosition(position));
 
 
-            float curVel = State.velocity.magnitude;
+            float curVel = velocity.magnitude;
             Vector3 velChange = Vector3.zero;
 
-            if (input.movement == Vector3.zero && curVel < Data.walkSpeed && !State.sliding) {
+            if (input.movement == Vector3.zero && curVel < Data.walkSpeed && !sliding) {
                 if (curVel > 0) {
                     // Stopping (only when not sliding)
                     float stopAccel = dt * Data.walkSpeed / Data.walkStopTime;
                     if (curVel < stopAccel)
-                        velChange = -State.velocity;
+                        velChange = -velocity;
                     else
-                        velChange = -State.velocity.normalized * stopAccel;
+                        velChange = -velocity.normalized * stopAccel;
                 }
             }
             else {
@@ -635,7 +635,7 @@ namespace Port {
 
                 {
                     var desiredVel = input.movement * maxSpeed;
-                    var velDiff = desiredVel - State.velocity;
+                    var velDiff = desiredVel - velocity;
                     velDiff.z = 0;
                     if (velDiff != Vector3.zero) {
                         acceleration *= velDiff.magnitude;
@@ -652,23 +652,23 @@ namespace Port {
                     }
 
                     if (acceleration > slideThreshold) {
-                        State.sliding = true;
+                        sliding = true;
                     }
                     else {
-                        State.sliding = false;
+                        sliding = false;
                     }
                 }
                 {
                     // Wind blowing you while running or skidding
-                    var wind = world.getWind(State.position);
-                    var velDiff = (wind - new Vector3(State.velocity.x, State.velocity.y, 0));
+                    var wind = world.getWind(position);
+                    var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
                     velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
                     velChange += velDiff * dt * getHorizontalAirFriction();
                 }
             }
 
             // Sliding
-            if (State.sliding) {
+            if (sliding) {
                 // Reduce our movement impulse (reduce control while sliding)
                 velChange *= slideFriction;
 
@@ -683,12 +683,12 @@ namespace Port {
             }
 
             // Apply friction for travelling through snow/sand/water
-            velChange += -State.velocity * dt * workModifier;
+            velChange += -velocity * dt * workModifier;
 
-            State.velocity += velChange;
+            velocity += velChange;
 
-            Vector2 horizontalVel = new Vector2(State.velocity.x, State.velocity.y);
-            State.maxHorizontalSpeed = horizontalVel.magnitude;
+            Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
+            maxHorizontalSpeed = horizontalVel.magnitude;
 
 
         }
@@ -696,73 +696,73 @@ namespace Port {
         private void UpdateSwimming(float dt, Input_t input) {
             if (input.inputs[(int)InputType.JUMP] == InputState.PRESSED) {
                 if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
-                    if (State.canJump) {
+                    if (canJump) {
                         var jumpDir = input.movement * Data.dodgeSpeed;
-                        jumpDir.z += Data.swimJumpBoostAcceleration;
+                        jumpDir.y += Data.swimJumpBoostAcceleration;
                         jump(jumpDir);
                     }
                 }
-                State.velocity.z = Math.Min(State.velocity.z + Data.swimMaxSpeed * dt, Data.swimJumpSpeed);
+                velocity.y = Math.Min(velocity.y + Data.swimMaxSpeed * dt, Data.swimJumpSpeed);
             }
             if (input.inputs[(int)InputType.CROUCH] == InputState.PRESSED) {
-                State.velocity.z = State.velocity.z - Data.swimSinkAcceleration * dt;
+                velocity.y = velocity.y - Data.swimSinkAcceleration * dt;
             }
-            State.velocity.z += Data.gravity * dt;
-            if (world.getBlock(headPosition(State.position)) == EBlockType.BLOCK_TYPE_WATER) {
-                State.velocity.z += -State.velocity.z * dt * Data.swimDragVertical;
-                State.velocity.z += Data.bouyancy * dt;
+            velocity.y += Data.gravity * dt;
+            if (world.getBlock(headPosition(position)) == EBlockType.BLOCK_TYPE_WATER) {
+                velocity.y += -velocity.y * dt * Data.swimDragVertical;
+                velocity.y += Data.bouyancy * dt;
             }
-            if (world.getBlock(State.position) == EBlockType.BLOCK_TYPE_WATER) {
-                State.velocity.z += -State.velocity.z * dt * Data.swimDragVertical;
-                State.velocity.z += Data.bouyancy * dt;
+            if (world.getBlock(position) == EBlockType.BLOCK_TYPE_WATER) {
+                velocity.y += -velocity.y * dt * Data.swimDragVertical;
+                velocity.y += Data.bouyancy * dt;
             }
 
-            var current = world.getCurrent((int)State.position.x, (int)State.position.y, (int)State.position.z);
-            var velDiff = (current - new Vector3(State.velocity.x, State.velocity.y, 0));
+            var current = world.getCurrent((int)position.x, (int)position.y, (int)position.z);
+            var velDiff = (current - new Vector3(velocity.x, 0, velocity.z));
             velDiff *= velDiff.magnitude; // drag is exponential, thanks zeno!
-            State.velocity += velDiff * dt * Data.swimDragHorizontal;
+            velocity += velDiff * dt * Data.swimDragHorizontal;
 
             if (input.movement == Vector3.zero) {
             }
             else {
 
                 var normalizedInput = input.movement.normalized;
-                var normalizedVelocity = State.velocity / Data.swimMaxSpeed;
+                var normalizedVelocity = velocity / Data.swimMaxSpeed;
                 float dot = Vector3.Dot(normalizedInput, normalizedVelocity);
                 float accelerationPotential = Math.Min(1.0f, 1.0f - dot);
 
-                State.velocity += input.movement * Data.swimAcceleration * accelerationPotential * dt;
+                velocity += input.movement * Data.swimAcceleration * accelerationPotential * dt;
             }
 
-            State.maxHorizontalSpeed = Mathf.Sqrt(State.velocity.x * State.velocity.x + State.velocity.y * State.velocity.y);
+            maxHorizontalSpeed = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 
         }
 
         private void UpdateClimbing(float dt, Input_t input) {
 
-            State.maxHorizontalSpeed = Data.groundMaxSpeed;
+            maxHorizontalSpeed = Data.groundMaxSpeed;
 
             if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
-                State.activity = Activity.FALLING;
+                activity = Activity.FALLING;
 
 
-                Vector3 climbingInput = getClimbingVector(input.movement, State.climbingNormal);
-                if (State.canJump) {
+                Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
+                if (canJump) {
                     Vector3 jumpDir = Vector3.zero;
-                    if (climbingInput.z < 0) {
+                    if (climbingInput.y < 0) {
                         // Push away from wall
                         jumpDir += input.movement * Data.groundMaxSpeed;
-                        jumpDir.z += Data.jumpSpeed;
+                        jumpDir.y += Data.jumpSpeed;
                     }
                     else {
-                        if (climbingInput.z > 0) {
+                        if (climbingInput.y > 0) {
                             // jumping up jumps away from the wall slightly so we don't reattach right away
                             jumpDir += climbingInput * Data.jumpSpeed;
-                            jumpDir += State.climbingNormal * Data.jumpSpeed / 2;
+                            jumpDir += climbingNormal * Data.jumpSpeed / 2;
                         }
-                        else if (climbingInput.z >= 0) {
+                        else if (climbingInput.y >= 0) {
                             // left right jumps get a vertical boost
-                            jumpDir.z = Data.jumpSpeed;
+                            jumpDir.y = Data.jumpSpeed;
                         }
                     }
                     jump(jumpDir);
@@ -772,53 +772,53 @@ namespace Port {
 
 
             if (!input.IsPressed(InputType.CROUCH) || input.IsPressed(InputType.JUMP)) {
-                var climbingInput = getClimbingVector(input.movement, State.climbingNormal);
-                State.velocity = climbingInput * Data.climbSpeed;
+                var climbingInput = getClimbingVector(input.movement, climbingNormal);
+                velocity = climbingInput * Data.climbSpeed;
             }
 
-            var vertMovePosition = new Vector3(State.position.x, State.position.y, State.position.z + State.velocity.z * dt);
+            var vertMovePosition = new Vector3(position.x, position.y + velocity.y * dt, position.z);
 
             // collide feet
             float floorPosition;
             bool onGround = CheckFloor(vertMovePosition, out floorPosition);
             if (onGround) {
-                State.activity = Activity.ONGROUND;
-                State.velocity.z = Math.Max(0, State.velocity.z);
-                State.position.z = floorPosition + 1;
+                activity = Activity.ONGROUND;
+                velocity.y = Math.Max(0, velocity.y);
+                position.y = floorPosition + 1;
             }
             else {
                 bool interpolate = false;
-                Vector3 move = State.velocity * dt;
-                Vector3 newPosition = State.position + move;
+                Vector3 move = velocity * dt;
+                Vector3 newPosition = position + move;
 
                 if (move.magnitude > 0) {
 
                     bool isOpen = CanMoveTo(move, true, dt, ref newPosition, ref interpolate);
                     if (isOpen) {
-                        if (IsClimbPosition(newPosition, -State.climbingNormal * Data.climbWallRange)) {
+                        if (IsClimbPosition(newPosition, -climbingNormal * Data.climbWallRange)) {
                             SetPosition(newPosition);
                         }
                         //else if (move.z > 0)
                         //{
                         //	move.z++;
-                        //	move += -State.climbingNormal*Data.WallJumpRange;
+                        //	move += -climbingNormal*Data.WallJumpRange;
                         //	if (tryMoveTo(move, true, dt, newPosition, interpolate))
                         //	{
                         //		moved = true;
                         //		interpolate = true;
                         //	}
                         //}
-                        else if (move.magnitude > 0 && (move.x != 0 || move.y != 0)) {
+                        else if (move.magnitude > 0 && (move.x != 0 || move.z != 0)) {
                             Vector3 newWallNormal = move.normalized;
-                            move += -State.climbingNormal * Data.climbWallRange;
+                            move += -climbingNormal * Data.climbWallRange;
                             bool isWrapAroundOpen = CanMoveTo(move, true, dt, ref newPosition, ref interpolate);
                             if (isWrapAroundOpen && IsClimbPosition(newPosition, -newWallNormal * Data.climbWallRange)) {
-                                State.climbingNormal = newWallNormal;
+                                climbingNormal = newWallNormal;
                                 SetPosition(newPosition, 0.1f);
                             }
                         }
                         else {
-                            State.velocity = Vector3.zero;
+                            velocity = Vector3.zero;
                         }
                     }
                     else if (IsClimbPosition(newPosition, move.normalized * Data.climbWallRange)) {
@@ -827,22 +827,22 @@ namespace Port {
                 }
             }
 
-            if (!IsClimbPosition(State.position, -State.climbingNormal * Data.climbWallRange)) {
-                State.activity = Activity.FALLING;
+            if (!IsClimbPosition(position, -climbingNormal * Data.climbWallRange)) {
+                activity = Activity.FALLING;
             }
 
         }
 
-        public void SetPosition(Vector3 p, float interpolateTime=0) {
+        public void SetPosition(Vector3 p, float interpolateTime = 0) {
             if (interpolateTime > 0) {
-                State.interpolateFrom = renderPosition();
-                State.interpolateTime = State.interpolateTimeTotal = Math.Max(interpolateTime, State.interpolateTime);
+                interpolateFrom = renderPosition();
+                interpolateTime = interpolateTimeTotal = Math.Max(interpolateTime, interpolateTime);
             }
-            State.position = p;
+            position = p;
         }
 
         public bool IsWading() {
-            return State.activity == Activity.ONGROUND && world.getBlock(waistPosition(State.position)) == EBlockType.BLOCK_TYPE_WATER && world.getBlock(State.position) != EBlockType.BLOCK_TYPE_WATER;
+            return activity == Activity.ONGROUND && world.getBlock(waistPosition(position)) == EBlockType.BLOCK_TYPE_WATER && world.getBlock(position) != EBlockType.BLOCK_TYPE_WATER;
         }
 
         public float getGroundJumpVelocity() {
@@ -858,7 +858,7 @@ namespace Port {
             return v;
         }
         public float getGroundMaxSpeed() {
-            if (State.canRun) {
+            if (canRun) {
                 return Data.groundMaxSpeed;
             }
             else {
@@ -894,54 +894,54 @@ namespace Port {
         }
 
         public Vector3 footPosition(Vector3 p) {
-            return p + new Vector3(0, 0, -Data.height / 2 + 0.05f);
+            return p + new Vector3(0, -Data.height / 2 + 0.05f, 0);
         }
         public Vector3 waistPosition(Vector3 p) {
-            return p + new Vector3(0, 0, -0.05f);
+            return p + new Vector3(0, -0.05f, 0);
         }
         public Vector3 headPosition(Vector3 p) {
-            return p + new Vector3(0, 0, Data.height / 2 - 0.05f);
+            return p + new Vector3(0, Data.height / 2 - 0.05f, 0);
         }
 
         public Vector3 handPosition(Vector3 p) {
-            return p + new Vector3(0, 0, Data.height / 2 - 0.05f);
+            return p + new Vector3(0, Data.height / 2 - 0.05f, 0);
         }
 
         public Vector3 renderPosition() {
-            Vector3 p = State.position;
-            if (State.interpolateTime <= 0)
-                return p;
-            return p + (State.interpolateFrom - p) * State.interpolateTime / State.interpolateTimeTotal;
+            return position;
+            //Vector3 p = position;
+            //if (interpolateTime <= 0)
+            //    return p;
+            //return p + (interpolateFrom - p) * interpolateTime / interpolateTimeTotal;
         }
 
         public void useStamina(float s) {
-            if (State.stamina <= 0)
+            if (stamina <= 0)
                 return;
-            State.stamina -= s;
-            State.recoveryTimer = Data.recoveryTime;
-            if (State.stamina <= 0) {
-                State.recovering = true;
+            stamina -= s;
+            recoveryTimer = Data.recoveryTime;
+            if (stamina <= 0) {
+                recovering = true;
             }
         }
 
         void jump(Vector3 dir) {
             useStamina(Data.jumpStaminaUse);
-            State.dodgeTimer = State.dodgeTimer + Data.dodgeTime;
-            State.velocity += dir;
+            dodgeTimer = dodgeTimer + Data.dodgeTime;
+            velocity += dir;
         }
 
         public void stun(float s) {
             // Can't stun further if already stunned
-            if (State.stunned || s <= 0) {
+            if (stunned || s <= 0) {
                 return;
             }
 
-            State.stunAmount += s;
-            if (State.stunAmount >= Data.stunLimit) {
-                State.stunned = true;
-                State.stunTimer = Data.stunRecoveryTime;
-                foreach(var w in State.inventory)
-                {
+            stunAmount += s;
+            if (stunAmount >= Data.stunLimit) {
+                stunned = true;
+                stunTimer = Data.stunRecoveryTime;
+                foreach (var w in inventory) {
                     if (w != null) {
                         w.interrupt(this);
                     }
@@ -951,15 +951,15 @@ namespace Port {
 
 
         public void damage(float d) {
-            State.health = State.health - d;
+            health = health - d;
         }
 
-        public void hit(Actor attacker, Item weapon, Item.CData.AttackData attackData) {
+        public void hit(Actor attacker, Item weapon, ItemData.AttackData attackData) {
             float remainingStun;
             float remainingDamage;
 
-            Vector3 dirToEnemy = (attacker.State.position - State.position).normalized;
-            float angleToEnemy = Mathf.Repeat(Mathf.Atan2(dirToEnemy.y, dirToEnemy.x) - State.yaw, Mathf.PI*2);
+            Vector3 dirToEnemy = (attacker.position - position).normalized;
+            float angleToEnemy = Mathf.Repeat(Mathf.Atan2(dirToEnemy.z, dirToEnemy.z) - yaw, Mathf.PI * 2);
             if (attackData.attackDamageBackstab > 0 && Math.Abs(angleToEnemy) < Data.backStabAngle) {
                 remainingStun = attackData.stunPowerBackstab;
                 remainingDamage = attackData.attackDamageBackstab;
@@ -970,12 +970,12 @@ namespace Port {
             }
 
 
-            if (State.dodgeTimer > 0) {
+            if (dodgeTimer > 0) {
                 return;
             }
 
             // Check if we're blocking with shield
-            foreach (var w in State.inventory) {
+            foreach (var w in inventory) {
                 if (w != null) {
                     w.defend(this, attacker, weapon, attackData, ref remainingStun, ref remainingDamage);
                 }
@@ -988,11 +988,11 @@ namespace Port {
             if (remainingStun > 0) {
 
                 if (attackData.knockback != 0) {
-                    State.moveImpulseTimer = 0.1f;
-                    var kb = (State.position - attacker.State.position);
-                    kb.z = 0;
+                    moveImpulseTimer = 0.1f;
+                    var kb = (position - attacker.position);
+                    kb.y = 0;
                     kb.Normalize();
-                    State.moveImpulse = attackData.knockback * kb;
+                    moveImpulse = attackData.knockback * kb;
                 }
 
                 useStamina(attackData.staminaDrain);
