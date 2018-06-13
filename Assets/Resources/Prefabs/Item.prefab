@@ -97,6 +97,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   world: {fileID: 0}
+  _data: {fileID: 0}
+  inMotion: 0
+  position: {x: 0, y: 0, z: 0}
+  velocity: {x: 0, y: 0, z: 0}
+  spawned: 0
+  count: 0
+  attackType: 0
+  castTime: 0
+  cooldown: 0
+  chargeTime: 0
+  contained: []
+  yaw: 0
 --- !u!135 &135126170332528004
 SphereCollider:
   m_ObjectHideFlags: 1

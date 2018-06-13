@@ -97,61 +97,7 @@ namespace Port {
             data.windSpeedStormy = 24;
 
             DataManager.initData();
-
-/*
-            playerData = new PlayerData();
-            playerData.maxHealth = 200;
-            playerData.temperatureSleepMinimum = 50;
-            playerData.temperatureSleepMaximum = 100;
-            playerData.maxThirst = 100;
-            playerData.dropTime = 0.5f;
-            playerData.fallDamageVelocity = 20;
-            playerData.collisionRadius = 0.5f;
-
-            playerData.weightClassItemCount[(int)Player.WeightClass.LIGHT] = 0;
-            playerData.weightClassItemCount[(int)Player.WeightClass.MEDIUM] = 4;
-            playerData.weightClassItemCount[(int)Player.WeightClass.HEAVY] = 9;
-            playerData.weightClassItemCount[(int)Player.WeightClass.ENCUMBERED] = 14;
-            playerData.weightClassItemCount[(int)Player.WeightClass.IMMOBILE] = 19;
-
-            playerData.maxStamina = 100;
-            playerData.dodgeTime = 0.25f;
-            playerData.recoveryTime = 2;
-            playerData.staminaRechargeTime = 1;
-            playerData.stunLimit = 1.0f;
-            playerData.stunRecoveryTime = 1.0f;
-            playerData.backStabAngle = 45f * Mathf.Deg2Rad;
-            playerData.jumpSpeed = 12f;
-            playerData.dodgeSpeed = 12f;
-            playerData.jumpStaminaUse = 10;
-            playerData.fallJumpTime = 0.25f;
-            playerData.climbSpeed = 2f;
-            playerData.swimJumpSpeed = 60f;
-            playerData.swimSinkAcceleration = 100f;
-            playerData.swimJumpBoostAcceleration = 12f;
-            playerData.jumpBoostAcceleration = 24f;
-            playerData.gravity = -50f;
-            playerData.bouyancy = 20f;
-            playerData.groundAcceleration = 2.0f;
-            playerData.groundMaxSpeed = 12f;
-            playerData.fallAcceleration = 30f;
-            playerData.swimAcceleration = 15f;
-            playerData.swimMaxSpeed = 10.0f;
-            playerData.swimDragVertical = 5.0f;
-            playerData.swimDragHorizontal = 0.25f;
-            playerData.fallDragHorizontal = 0.05f;
-            playerData.fallMaxHorizontalSpeed = 5.0f;
-            playerData.climbWallRange = 0.25f;
-            playerData.walkSpeed = 8f;
-            playerData.crouchSpeed = 4f;
-            playerData.walkStartTime = 0.15f;
-            playerData.walkStopTime = 0.15f;
-            playerData.groundWindDrag = 0.01f;
-            playerData.slideThresholdSlope = 4;
-            playerData.slideThresholdFlat = 15;
-            playerData.climbGrabMinZVel = -20f;
-            playerData.height = 2;
-            */
+            
 
             // init the player state
             player = Instantiate(DataManager.GetPrefab("Player").GetComponent<Player>());
@@ -159,83 +105,6 @@ namespace Port {
             player.init(player.Data, this);
 
             camera.setTarget(player);
-
-
-            //var bunny = Critter.createData<CritterData>("bunny");
-            //bunny.maxHealth = 30;
-            //bunny.maxStamina = 20.0f;
-            //bunny.fallDamageVelocity = 20;
-            //bunny.stunLimit = 1.0f;
-            //bunny.stunRecoveryTime = 3.0f;
-            //bunny.backStabAngle = 45f * Mathf.Deg2Rad;
-            //bunny.visionWeight = 2f;
-            //bunny.smellWeight = 1f;
-            //bunny.hearingWeight = 2f;
-            //bunny.waryCooldownTime = 3f;
-            //bunny.panicCooldownTime = 10f;
-            //bunny.waryIncreaseAtMaxAwareness = 4f;
-            //bunny.waryIncreaseAtMaxAwarenessWhilePanicked = 8f;
-            //bunny.updatePanicked = Critter.bounceAndFlee;
-
-            //bunny.collisionRadius = 0.5f;
-            //bunny.height = 1f;
-            //bunny.jumpSpeed = 8f;
-            //bunny.dodgeSpeed = 0;
-            //bunny.dodgeTime = 0;
-            //bunny.swimJumpSpeed = 60f;
-            //bunny.swimSinkAcceleration = 100f;
-            //bunny.gravity = -30f;
-            //bunny.bouyancy = 20f;
-            //bunny.groundAcceleration = 2.0f;
-            //bunny.groundMaxSpeed = 12f;
-            //bunny.fallAcceleration = 30f;
-            //bunny.swimAcceleration = 15f;
-            //bunny.swimMaxSpeed = 10.0f;
-            //bunny.swimDragVertical = 5.0f;
-            //bunny.swimDragHorizontal = 0.25f;
-            //bunny.fallDragHorizontal = 0.05f;
-            //bunny.fallMaxHorizontalSpeed = 5.0f;
-            //bunny.groundWindDrag = 0.01f;
-            //bunny.slideThresholdSlope = 4;
-            //bunny.slideThresholdFlat = 15;
-
-            //var wolf = Critter.createData<CritterData>("wolf");
-            //wolf.maxHealth = 100;
-            //wolf.maxStamina = 50.0f;
-            //wolf.fallDamageVelocity = 20;
-            //wolf.stunLimit = 1.0f;
-            //wolf.stunRecoveryTime = 3.0f;
-            //wolf.backStabAngle = 45f * Mathf.Deg2Rad;
-            //wolf.visionWeight = 2f;
-            //wolf.smellWeight = 1f;
-            //wolf.hearingWeight = 2f;
-            //wolf.waryCooldownTime = 3f;
-            //wolf.panicCooldownTime = 10f;
-            //wolf.waryIncreaseAtMaxAwareness = 4f;
-            //wolf.waryIncreaseAtMaxAwarenessWhilePanicked = 8f;
-            //wolf.updatePanicked = Critter.approachAndAttack;
-
-            //wolf.collisionRadius = 0.5f;
-            //wolf.height = 1.5f;
-            //wolf.jumpSpeed = 8f;
-            //wolf.dodgeSpeed = 0;
-            //wolf.dodgeTime = 0;
-            //wolf.swimJumpSpeed = 60f;
-            //wolf.swimSinkAcceleration = 100f;
-            //wolf.gravity = -30f;
-            //wolf.bouyancy = 20f;
-            //wolf.groundAcceleration = 2.0f;
-            //wolf.groundMaxSpeed = 12f;
-            //wolf.fallAcceleration = 30f;
-            //wolf.swimAcceleration = 15f;
-            //wolf.swimMaxSpeed = 10.0f;
-            //wolf.swimDragVertical = 5.0f;
-            //wolf.swimDragHorizontal = 0.25f;
-            //wolf.fallDragHorizontal = 0.05f;
-            //wolf.fallMaxHorizontalSpeed = 5.0f;
-            //wolf.groundWindDrag = 0.01f;
-            //wolf.slideThresholdSlope = 4;
-            //wolf.slideThresholdFlat = 15;
 
 
             for (int i = 0; i < 80; i++) {
@@ -246,7 +115,7 @@ namespace Port {
             }
 
             for (int i = 0; i < 100; i++) {
-                var item = CreateItem("Money");
+                var item = CreateItem("Money") as Loot;
                 item.transform.parent = items.transform;
                 item.count = 100;
                 item.position = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
@@ -363,7 +232,7 @@ namespace Port {
                     c.team = 1;
 
                     if (c.Data == Critter.GetData("bunny")) {
-                        var item = CreateItem("Raw Meat");
+                        var item = CreateItem("Raw Meat") as Loot;
                         item.count = 1;
                         c.loot[0] = item;
                     }
@@ -387,12 +256,12 @@ namespace Port {
                 }
             }
             else {
-                player.update(dt, cameraYaw);
+                player.Tick(dt, cameraYaw);
 
                 spawnNewCritter();
                 var cs = critters.GetComponentsInAllChildren<Critter>();
                 foreach (var c in cs) {
-                    c.Update(dt);
+                    c.Tick(dt);
 
                     var diff = c.position - player.position;
                     if (diff.magnitude > 500) {

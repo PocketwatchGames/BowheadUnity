@@ -8,16 +8,6 @@ namespace Port {
 
     public class Critter : Actor {
 
-        // Use this for initialization
-        void Start() {
-
-        }
-
-        // Update is called once per frame
-        void Update() {
-
-        }
-
 
         #region State
         public float wary;
@@ -26,6 +16,8 @@ namespace Port {
         public Vector3 lastKnownPosition;
 
         public Item[] loot = new Item[Actor.MAX_INVENTORY_SIZE];
+        public CritterBehavior behaviorPanic;
+
         #endregion
 
 
@@ -43,10 +35,12 @@ namespace Port {
 
         public void init(CritterData data, World world) {
             base.init(data, world);
+
+            behaviorPanic = CritterBehavior.Create(data.panicBehavior);
         }
 
         // TODO: move cameraYaw into the PlayerCmd struct
-        public void Update(float dt) {
+        public void Tick(float dt) {
 
             canClimb = false;
             canClimbWell = false;
@@ -74,27 +68,29 @@ namespace Port {
             Input_t input;
             updateBrain(dt, out input);
 
-            base.Update(dt, input);
+            base.Tick(dt, input);
 
             if (canAttack) {
                 foreach (var weapon in inventory) {
-                    if (weapon != null) {
+                    Weapon w = weapon as Weapon;
+                    if (w != null) {
                         if (input.IsPressed(InputType.ATTACK_RIGHT)) {
-                            weapon.charge(dt);
+                            w.charge(dt);
                         }
                         else {
                             if (input.inputs[(int)InputType.ATTACK_RIGHT] == InputState.JUST_RELEASED) {
-                                weapon.attack(this);
+                                w.attack(this);
                             }
-                            weapon.chargeTime = 0;
+                            w.chargeTime = 0;
                         }
                     }
                 }
             }
             else {
                 foreach (var weapon in inventory) {
-                    if (weapon != null) {
-                        weapon.chargeTime = 0;
+                    Weapon w = weapon as Weapon;
+                    if (w != null) {
+                        w.chargeTime = 0;
                     }
                 }
             }
@@ -167,8 +163,8 @@ namespace Port {
 
             input.yaw = yaw;
             if (isPanicked()) {
-                if (Data.updatePanicked != null) {
-                    Data.updatePanicked(this, dt, ref input);
+                if (behaviorPanic != null) {
+                    behaviorPanic.update(this, dt, ref input);
                 }
             }
             else {
@@ -193,57 +189,6 @@ namespace Port {
             //input.yaw = constrainAngle(yaw + turn);
 
         }
-
-        public static void bounceAndFlee(Critter c, float dt, ref Input_t input) {
-
-            input.inputs[(int)InputType.JUMP] = InputState.RELEASED;
-            input.inputs[(int)InputType.ATTACK_RIGHT] = InputState.RELEASED;
-            if (c.hasLastKnownPosition) {
-                var diff = c.position - c.lastKnownPosition;
-                diff.z = 0;
-                if (diff == Vector3.zero) {
-                    diff.x = 1;
-                }
-                input.movement = diff.normalized;
-                input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
-            }
-            if (c.canJump && c.activity == Activity.ONGROUND) {
-                input.inputs[(int)InputType.JUMP] = InputState.JUST_PRESSED;
-            }
-        }
-
-        public static void approachAndAttack(Critter c, float dt, ref Input_t input) {
-            input.movement = Vector3.zero;
-            input.inputs[(int)InputType.JUMP] = InputState.RELEASED;
-            input.inputs[(int)InputType.ATTACK_RIGHT] = InputState.RELEASED;
-            if (c.hasLastKnownPosition) {
-                var diff = c.position - c.lastKnownPosition;
-
-                if (diff.z <= -3) {
-                    if (c.canJump && c.activity == Activity.ONGROUND) {
-                        input.inputs[(int)InputType.JUMP] = InputState.JUST_PRESSED;
-                    }
-                }
-                diff.z = 0;
-                if (diff == Vector3.zero) {
-                    diff.x = 1;
-                }
-                var desiredPos = c.lastKnownPosition + diff.normalized * 5;
-                var move = desiredPos - c.position;
-                move.z = 0;
-
-                if (move.magnitude > 0.5f) {
-                    input.movement = move.normalized;
-                }
-                else {
-                    if (c.canAttack && c.activity == Activity.ONGROUND) {
-                        input.inputs[(int)InputType.ATTACK_RIGHT] = InputState.JUST_RELEASED;
-                    }
-                }
-                input.yaw = Mathf.Atan2(-diff.x, -diff.z);
-            }
-        }
-
 
         float canSmell(Player player) {
             float basicSmellDist = 1;

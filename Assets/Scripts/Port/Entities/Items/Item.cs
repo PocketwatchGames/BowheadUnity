@@ -15,12 +15,6 @@ namespace Port {
         public Vector3 position;
         public Vector3 velocity;
         public bool spawned;
-        public int count;
-        public int attackType;
-        public float castTime;
-        public float cooldown;
-        public float chargeTime;
-        public List<Item> contained = new List<Item>();
         public float yaw;
 
         #endregion
@@ -34,23 +28,6 @@ namespace Port {
         void Update() {
             transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw, Vector3.up));
         }
-
-
-        public enum ItemType {
-            NONE,
-            MONEY,
-            CLOTHING,
-            LEFT_HAND,
-            RIGHT_HAND,
-            BOTH_HANDS,
-            PACK,
-            LOOT,
-            COUNT,
-        }
-
-
-
-
 
 
         new public ItemData Data { get { return GetData<ItemData>(); } }
@@ -207,18 +184,20 @@ namespace Port {
 
         }
 
+        virtual public void updateCast(float dt, Actor actor) {
+        }
 
+        public virtual void onSlotChange() {
 
-        public void init(ItemData data, World world) {
+        }
+
+        virtual public void init(ItemData data, World world) {
             base.init(data, world);
-            contained.Clear();
             world.allItems.Add(this);
         }
 
         public void init(string data) {
-            base.init(GetData(data), world);
-            contained.Clear();
-            world.allItems.Add(this);
+            init(GetData(data), world);
         }
 
 
@@ -227,113 +206,6 @@ namespace Port {
             spawned = true;
         }
 
-        public bool use(Actor actor) {
-            if (Data.use == null) {
-                return true;
-            }
-            return Data.use(this, actor);
-        }
-
-        public void charge(float dt) {
-            if (cooldown <= 0) {
-                chargeTime += dt;
-            }
-        }
-
-        public bool attack(Actor actor) {
-            if (castTime > 0 || cooldown > 0) {
-                return false;
-            }
-            attackType = getCurCharge();
-            var attackData = getCurAttackData();
-
-            castTime = attackData.castTime;
-            chargeTime = 0;
-            Vector3 attackDir = new Vector3(Mathf.Cos(actor.yaw), Mathf.Sin(actor.yaw), 0);
-            float stepAmt = attackData.stepDistance;
-            if (stepAmt != 0 && actor.activity == Actor.Activity.ONGROUND) {
-                actor.moveImpulse = attackDir * stepAmt;
-                actor.moveImpulseTimer = attackData.castTime;
-                actor.velocity = Vector3.zero;
-            }
-            if (castTime <= 0) {
-                activate(actor);
-            }
-            return true;
-        }
-
-        bool checkIfHit(Actor owner, Vector3 attackPos, Vector3 dir, Vector3 attackerPos, ItemData.AttackData attackData, Actor enemy) {
-
-            float critterRadius = 1.0f;
-            var diff = enemy.waistPosition(enemy.position) - attackPos;
-            float dist = diff.magnitude;
-            if (dist <= attackData.attackRadius + critterRadius) {
-
-                enemy.hit(owner, this, attackData);
-
-                if (attackType == 0) {
-                    world.camera.shake(0.15f, 0.05f, 0.01f);
-                }
-                else {
-                    world.camera.shake(0.2f, 0.2f, 0.05f);
-                }
-                return true;
-            }
-            return false;
-        }
-        void activate(Actor actor) {
-            var d = getCurAttackData();
-
-            castTime = 0;
-            cooldown = d.cooldown;
-
-            Vector3 attackDir = new Vector3((float)Math.Cos(actor.yaw), (float)Math.Sin(actor.yaw), 0);
-            Vector3 attackPos = actor.position + attackDir * d.attackRange;
-            bool hit = false;
-
-            if (actor.team == 0) {
-                var cs = world.critters.GetComponentsInAllChildren<Critter>();
-                foreach (var c in cs) {
-                    if (c.spawned) {
-                        hit |= checkIfHit(actor, attackPos, attackDir, actor.position, d, c);
-                    }
-                }
-            }
-            else {
-                hit |= checkIfHit(actor, attackPos, attackDir, actor.position, d, world.player);
-            }
-            //RendererWorld.createMarker(attackPos, d.attackRadius * 2, 0.1f, hit ? new Color(1, 0, 0, 1f) : new Color(0, 0, 0, 1f));
-
-            actor.useStamina(d.staminaUse);
-
-        }
-
-
-
-
-        public void updateCast(float dt, Actor actor) {
-
-            if (cooldown > 0) {
-                cooldown = Math.Max(0, cooldown - dt);
-                if (cooldown > 0) {
-                    actor.canMove = false;
-                    actor.canTurn = false;
-                }
-            }
-            if (castTime > 0) {
-                actor.canMove = false;
-                castTime = Math.Max(0, castTime - dt);
-                actor.canTurn = false;
-                if (castTime <= 0) {
-                    activate(actor);
-                }
-            }
-
-            if (chargeTime > 0) {
-                actor.canRun = false;
-            }
-
-        }
         public void update(float dt) {
 
             if (!inMotion) {
@@ -398,72 +270,7 @@ namespace Port {
 
         }
 
-        public void interrupt(Actor owner) {
 
-            if (castTime > 0) {
-                owner.moveImpulseTimer = 0;
-            }
-            chargeTime = 0;
-            castTime = 0;
-
-        }
-
-        static bool UseWater(Item item, Actor actor) {
-            // TODO: This static cast is not good
-            Player player = actor as Player;
-            if (player == null)
-                return false;
-            if (player.thirst >= player.maxThirst) {
-                return false;
-            }
-            player.thirst = Math.Min(player.thirst + item.Data.power, player.maxThirst);
-            return true;
-        }
-
-        static bool UseFood(Item item, Actor actor) {
-            if (actor.health >= actor.maxHealth) {
-                return false;
-            }
-            actor.health = Math.Min(actor.health + item.Data.power, actor.maxHealth);
-            return true;
-        }
-
-        int getCurCharge() {
-            if (Data.chargeTime > 0 && chargeTime >= Data.chargeTime) {
-                return 1;
-            }
-            else {
-                return 0;
-            }
-        }
-        ItemData.AttackData getCurAttackData() {
-            return Data.attacks[attackType];
-        }
-        ItemData.AttackData getCurChargeData() {
-            int chargeIndex = getCurCharge();
-            return Data.attacks[chargeIndex];
-        }
-
-
-        public void defend(Actor owner, Actor attacker, Item weapon, ItemData.AttackData attackData, ref float remainingStun, ref float remainingDamage) {
-            if (chargeTime > 0) {
-                var defense = getCurChargeData();
-                if (defense == null) {
-                    return;
-                }
-
-                remainingDamage = Math.Max(0, remainingDamage - defense.defendDamageAbsorb);
-                remainingStun = Math.Max(0, remainingStun - defense.defendPower);
-
-                owner.useStamina(defense.defendStaminaUse);
-
-                var parry = Data.parries[getCurCharge()];
-                if (parry != null) {
-                    attacker.hit(owner, this, parry);
-                }
-            }
-
-        }
 
     }
 }

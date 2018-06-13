@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Port {
+
+
     [CreateAssetMenuAttribute]
     public class CritterData : ActorData {
-        public delegate void updateFn(Critter c, float dt, ref Actor.Input_t input);
-        public float fallDamageVelocity;
+        [Header("Critter")]
 
         public float visionWeight;
         public float smellWeight;
@@ -15,8 +16,9 @@ namespace Port {
         public float panicCooldownTime;
         public float waryIncreaseAtMaxAwareness;
         public float waryIncreaseAtMaxAwarenessWhilePanicked;
-        public updateFn updatePanicked;
+        public CritterBehaviorType panicBehavior;
     };
+
+    
+
 }
-
-

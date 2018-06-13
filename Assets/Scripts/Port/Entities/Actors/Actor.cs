@@ -5,55 +5,25 @@ using System;
 
 namespace Port {
 
-    public class ActorData : EntityData {
-        public float height;
-        public float recoveryTime;
-        public float staminaRechargeTime;
-        public float maxHealth;
-        public float maxStamina;
-        public float dodgeTime;
-        public float collisionRadius;
-        public float stunLimit;
-        public float stunRecoveryTime;
-        public float backStabAngle;
-
-        public float jumpSpeed;
-        public float dodgeSpeed;
-        public float jumpBoostAcceleration;
-        public float jumpStaminaUse;
-        public float groundAcceleration; // accel = veldiff * groundAccel * dt
-        public float crouchSpeed;
-        public float walkSpeed;
-        public float walkStartTime;
-        public float walkStopTime;
-        public float groundMaxSpeed;
-        public float groundWindDrag;
-        public float slideThresholdSlope;
-        public float slideThresholdFlat;
-
-        public float gravity;
-        public float fallJumpTime;
-        public float fallAcceleration;
-        public float fallDragHorizontal;
-        public float fallMaxHorizontalSpeed;
-
-        public float climbWallRange;
-        public float climbGrabMinZVel;
-        public float climbSpeed;
-
-        public float bouyancy;
-        public float swimJumpSpeed;
-        public float swimSinkAcceleration;
-        public float swimJumpBoostAcceleration;
-        public float swimAcceleration;
-        public float swimMaxSpeed;
-        public float swimDragVertical;
-        public float swimDragHorizontal;
-
+    public enum InputState {
+        RELEASED,
+        JUST_RELEASED,
+        JUST_PRESSED,
+        PRESSED,
     }
-
-
-
+    public enum InputType {
+        JUMP,
+        INTERACT,
+        USE,
+        SWAP,
+        ATTACK_LEFT,
+        ATTACK_RIGHT,
+        SELECT_LEFT,
+        SELECT_RIGHT,
+        MAP,
+        CROUCH,
+        COUNT
+    }
 
     public class Actor : Entity {
 
@@ -105,23 +75,6 @@ namespace Port {
         #endregion
 
 
-        // Use this for initialization
-        void Start() {
-            
-        }
-
-        // Update is called once per frame
-        void Update() {
-
-        }
-
-
-
-
-
-
-
-
         public const int MAX_INVENTORY_SIZE = 32;
 
         public enum Activity {
@@ -134,25 +87,6 @@ namespace Port {
 
 
 
-        public enum InputState {
-            RELEASED,
-            JUST_RELEASED,
-            JUST_PRESSED,
-            PRESSED,
-        }
-        public enum InputType {
-            JUMP,
-            INTERACT,
-            USE,
-            SWAP,
-            ATTACK_LEFT,
-            ATTACK_RIGHT,
-            SELECT_LEFT,
-            SELECT_RIGHT,
-            MAP,
-            CROUCH,
-            COUNT
-        }
 
         public struct PlayerCmd_t {
             public int serverTime;
@@ -325,7 +259,7 @@ namespace Port {
         }
 
 
-        protected void Update(float dt, Input_t input) {
+        protected void Tick(float dt, Input_t input) {
             if (recoveryTimer > 0) {
                 recoveryTimer = Math.Max(0, recoveryTimer - dt);
             }
@@ -942,8 +876,9 @@ namespace Port {
                 stunned = true;
                 stunTimer = Data.stunRecoveryTime;
                 foreach (var w in inventory) {
-                    if (w != null) {
-                        w.interrupt(this);
+                    var weapon = w as Weapon;
+                    if (weapon != null) {
+                        weapon.interrupt(this);
                     }
                 }
             }
@@ -954,7 +889,7 @@ namespace Port {
             health = health - d;
         }
 
-        public void hit(Actor attacker, Item weapon, ItemData.AttackData attackData) {
+        public void hit(Actor attacker, Item weapon, WeaponData.AttackData attackData) {
             float remainingStun;
             float remainingDamage;
 
@@ -976,8 +911,9 @@ namespace Port {
 
             // Check if we're blocking with shield
             foreach (var w in inventory) {
-                if (w != null) {
-                    w.defend(this, attacker, weapon, attackData, ref remainingStun, ref remainingDamage);
+                var shield = w as Weapon;
+                if (shield != null) {
+                    shield.defend(this, attacker, weapon, attackData, ref remainingStun, ref remainingDamage);
                 }
             }
 

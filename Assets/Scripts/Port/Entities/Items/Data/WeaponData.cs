@@ -3,8 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Port {
+
     [CreateAssetMenuAttribute]
-    public class ItemData : EntityData {
+    public class WeaponData : ItemData {
+
+        public enum Hand {
+            LEFT,
+            RIGHT,
+            BOTH,
+            RANGED
+        }
 
         [System.Serializable]
         public class AttackData {
@@ -25,17 +33,11 @@ namespace Port {
             public float attackDamageBackstab;
         }
 
-        public delegate bool UseFn(Item item, Actor actor);
-
-        public Item.ItemType itemType;
-        public int slots;
+        public Hand hand;
         public float chargeTime;
-        public float power;
         public Vector3 weaponSize;
         public AttackData[] attacks;
         public AttackData[] parries;
-
-        public UseFn use;
 
 
     }
