@@ -6,7 +6,7 @@ using System;
 namespace Port {
 
 
-    abstract public class Item {
+    abstract public class Item : ScriptableObject {
 
 
         [HideInInspector]

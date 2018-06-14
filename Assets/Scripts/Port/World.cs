@@ -97,10 +97,11 @@ namespace Port {
             data.windSpeedStormy = 24;
 
             DataManager.initData();
-            
+
 
             // init the player state
-            player = Instantiate(DataManager.GetPrefab("Player").GetComponent<Player>());
+            var prefab = DataManager.GetPrefab<Player>("Player");
+            player = Instantiate(prefab);
             player.transform.parent = transform;
             player.init(player.Data, this);
 
@@ -115,18 +116,20 @@ namespace Port {
             }
 
             for (int i = 0; i < 100; i++) {
-                var item = CreateWorldItem(Item.Create(Item.GetData("Money"), this));
-                item.transform.parent = items.transform;
+                var item = CreateWorldItem(Item.Create(Money.GetData("Money"), this));
                 item.position = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
                 (item.item as Money).count = 100;
             }
 
             time = SECONDS_PER_HOUR * 8;
         }
-        public WorldItem worldItemPrefab;
         public WorldItem CreateWorldItem(Item item) {
-            var i = Instantiate<WorldItem>(worldItemPrefab);
-            i.transform.parent = transform;
+            var p = DataManager.GetPrefab<WorldItem>("Item");
+            if (p == null) {
+                return null;
+            }
+            var i = Instantiate<WorldItem>(p);
+            i.transform.parent = items.transform;
             i.init(item, this);
             return i;
         }
@@ -135,11 +138,11 @@ namespace Port {
         }
 
         public Critter CreateCritter(string prefabName) {
-            var p = DataManager.GetPrefab(prefabName);
+            var p = DataManager.GetPrefab<Critter>(prefabName);
             if (p == null) {
                 return null;
             }
-            var i = Instantiate<Critter>(p.GetComponent<Critter>());
+            var i = Instantiate<Critter>(p);
             i.init(i.Data, this);
             return i;
         }

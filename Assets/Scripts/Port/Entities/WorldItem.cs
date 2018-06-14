@@ -16,7 +16,8 @@ namespace Port {
 
         #endregion
 
-        virtual public void init(Item i, World world) {
+        virtual public void init(Item i, World w) {
+            world = w;
             world.allItems.Add(this);
             item = i;
         }

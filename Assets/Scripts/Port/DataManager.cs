@@ -29,10 +29,10 @@ namespace Port {
             }
             return null;
         }
-        public static GameObject GetPrefab(string name) {
+        public static T GetPrefab<T>(string name) where T : MonoBehaviour {
             GameObject o;
             if (_entityPrefabs.TryGetValue(name, out o)) {
-                return o;
+                return o.GetComponent<T>();
             }
             return null;
         }

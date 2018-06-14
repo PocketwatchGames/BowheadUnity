@@ -97,7 +97,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   world: {fileID: 0}
-  _data: {fileID: 11400000, guid: 91ec3ad9712a39046b9702024d5f79a9, type: 2}
+  _data: {fileID: 11400000, guid: 0e77a8b767627304dbc82fa17ba496c5, type: 2}
   spawned: 0
   activity: 0
   position: {x: 0, y: 0, z: 0}
