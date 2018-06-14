@@ -15,7 +15,7 @@ namespace Port {
         #endregion
 
         new public WeaponData Data { get { return GetData<WeaponData>(); } }
-        public static WeaponData GetData(string dataName) { return DataManager.GetData<WeaponData>(dataName); }
+        public static WeaponData GetData(string dataName) { return DataManager.GetItemData<WeaponData>(dataName); }
 
 
         public override void onSlotChange() {

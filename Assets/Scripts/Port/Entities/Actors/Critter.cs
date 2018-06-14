@@ -102,9 +102,10 @@ namespace Port {
 
                 foreach (var i in loot) {
                     if (i != null) {
-                        i.position = position;
-                        i.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
-                        i.transform.parent = world.items.transform;
+                        var worldItem = world.CreateWorldItem(i);
+                        worldItem.position = position;
+                        worldItem.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
+                        worldItem.transform.parent = world.items.transform;
                     }
                 }
             }

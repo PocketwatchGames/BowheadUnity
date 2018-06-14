@@ -8,13 +8,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 70ef54d252fbaed40b7fd2f1a5ffa14e, type: 3}
-  m_Name: 2HSword
+  m_Script: {fileID: 11500000, guid: ee9ff1e0881b6eb419a0c8ea5b33e1b7, type: 3}
+  m_Name: Helmet
   m_EditorClassIdentifier: 
-  itemType: 0
-  slots: 0
-  chargeTime: 0
-  power: 0
-  weaponSize: {x: 0, y: 0, z: 0}
-  attacks: []
-  parries: []

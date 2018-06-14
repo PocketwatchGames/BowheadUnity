@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Port {
 
 
-    public class ItemData : EntityData {
+    public class ItemData : ScriptableObject {
     }
 
 }

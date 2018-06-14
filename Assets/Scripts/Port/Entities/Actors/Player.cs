@@ -250,7 +250,6 @@ namespace Port {
             // NOTE: andy these will leak unless you delete these somewhere.
 
             pickUp(world.CreateItem("Pack"));
-            pickUp(world.CreateItem("Pack"));
             pickUp(world.CreateItem("Hat"));
             pickUp(world.CreateItem("Helmet"));
             pickUp(world.CreateItem("Sword"));
@@ -337,10 +336,10 @@ namespace Port {
             }
         }
 
-        public Item getInteractTarget() {
+        public WorldItem getInteractTarget() {
             float closestDist = 2;
-            Item closestItem = null;
-            foreach (var i in world.items.GetComponentsInAllChildren<Item>()) {
+            WorldItem closestItem = null;
+            foreach (var i in world.items.GetComponentsInAllChildren<WorldItem>()) {
                 float dist = (i.position - position).magnitude;
                 if (dist < closestDist) {
                     closestDist = dist;
@@ -385,19 +384,19 @@ namespace Port {
 
         bool pickUp(Item item) {
             Money m;
-            if (m = item as Money) { 
+            if ((m = item as Money) != null) { 
                 money += m.Data.count;
                 return true;
             }
 
             Pack p;
-            if (p = item as Pack) {
+            if ((p = item as Pack) != null) {
                 int packSlots = 0;
                 // find the first available pack slot (there might be empty slots in a previous pack)
                 for (int i = (int)InventorySlot.PACK; i < MAX_INVENTORY_SIZE - (p.Data.slots + 1); i++) {
                     var j = inventory[i];
                     Pack p2;
-                    if (p2 = j as Pack) {
+                    if ((p2 = j as Pack) != null) {
                         packSlots = p2.Data.slots;
                     }
                     else {
@@ -420,7 +419,7 @@ namespace Port {
             }
 
             Weapon weapon;
-            if (weapon = item as Weapon) {
+            if ((weapon = item as Weapon) != null) {
                 if (weapon.Data.hand == WeaponData.Hand.BOTH && inventory[(int)InventorySlot.LEFT_HAND] == null && inventory[(int)InventorySlot.RIGHT_HAND] == null) {
                     inventory[(int)InventorySlot.RIGHT_HAND] = item;
                     return true;
@@ -448,7 +447,7 @@ namespace Port {
             }
 
             Loot loot;
-            if (loot = item as Loot) {
+            if ((loot = item as Loot) != null) {
                 if (loot.Data.stackSize > 0) {
                     for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
                         var item2 = inventory[i] as Loot;
@@ -484,7 +483,7 @@ namespace Port {
             }
 
             Loot loot;
-            if ((loot = item as Loot) && loot.use(this)) {
+            if ((loot = item as Loot) != null && loot.use(this)) {
                 loot.count--;
                 if (loot.count <= 0) {
                     removeFromInventory(item);
@@ -531,7 +530,7 @@ namespace Port {
             }
 
             Clothing clothing;
-            if (clothing = item as Clothing) {
+            if ((clothing = item as Clothing) != null) {
                 if (inventory[(int)InventorySlot.CLOTHING] == null) {
                     setItemSlot(item, (int)InventorySlot.CLOTHING);
                     return true;
@@ -549,7 +548,7 @@ namespace Port {
             }
 
             Weapon weapon;
-            if (weapon = item as Weapon) {
+            if ((weapon = item as Weapon) != null) {
 
                 if (weapon.Data.hand == WeaponData.Hand.BOTH) {
                     int slotsRequired = 0;
@@ -658,7 +657,7 @@ namespace Port {
                     return false;
                 }
                 Pack pack;
-                if (pack = item as Pack) {
+                if ((pack = item as Pack) != null) {
                     packSlots = pack.Data.slots;
                 }
                 else {
@@ -688,7 +687,7 @@ namespace Port {
             }
 
             Pack pack;
-            if (pack = item as Pack) {
+            if ((pack = item as Pack) != null) {
                 for (int i = 0; i < pack.Data.slots; i++) {
                     var packItem = inventory[i + slot + 1];
                     if (packItem != null) {
@@ -727,8 +726,9 @@ namespace Port {
         void drop(Item item) {
             removeFromInventory(item);
 
-            item.position = handPosition(position);
-            item.transform.parent = world.items.transform;
+            var worldItem = world.CreateWorldItem(item);
+            worldItem.position = handPosition(position);
+            worldItem.transform.parent = world.items.transform;
         }
 
 
@@ -737,7 +737,7 @@ namespace Port {
                 var curItem = inventory[inventorySelected];
                 if (curItem != null) {
                     Pack pack;
-                    if (pack = curItem as Pack) {
+                    if ((pack = curItem as Pack) != null) {
                         int newSlot = inventorySelected - 1;
                         while (newSlot >= 0 && !(inventory[newSlot] is Pack)) {
                             newSlot--;
@@ -798,7 +798,7 @@ namespace Port {
                 var curItem = inventory[inventorySelected];
                 if (curItem != null) {
                     Pack pack;
-                    if (pack = curItem as Pack) {
+                    if ((pack = curItem as Pack) != null) {
                         int newSlot = inventorySelected + 1;
                         while (newSlot < MAX_INVENTORY_SIZE && !(inventory[newSlot] is Pack)) {
                             newSlot++;
@@ -904,8 +904,8 @@ namespace Port {
         void interact() {
             var t = getInteractTarget();
             if (t != null) {
-                if (pickUp(t)) {
-                    t.transform.parent = null;
+                if (pickUp(t.item)) {
+                    Destroy(t);
                 }
             }
             else {
@@ -915,7 +915,7 @@ namespace Port {
                     var waterData = Loot.GetData("Water");
                     foreach (var i in inventory) {
                         var other = i as Loot;
-                        if (other && i.Data == waterData && other.count < waterData.stackSize) {
+                        if (other != null && i.Data == waterData && other.count < waterData.stackSize) {
                             waterItem = other;
                             break;
                         }
@@ -923,7 +923,7 @@ namespace Port {
                     if (waterItem == null) {
                         int[] newSlot = new int[1];
                         if (findEmptyPackSlots(1, ref newSlot)) {
-                            waterItem = world.CreateItem(waterData) as Loot;
+                            waterItem = Item.Create(waterData, world) as Loot;
                             pickUp(waterItem);
                         }
                     }

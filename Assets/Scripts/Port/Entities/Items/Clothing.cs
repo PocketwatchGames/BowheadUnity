@@ -10,7 +10,7 @@ namespace Port {
         #endregion
 
         new public ClothingData Data { get { return GetData<ClothingData>(); } }
-        public static ClothingData GetData(string dataName) { return DataManager.GetData<ClothingData>(dataName); }
+        public static ClothingData GetData(string dataName) { return DataManager.GetItemData<ClothingData>(dataName); }
 
 
     }

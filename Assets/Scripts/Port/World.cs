@@ -54,7 +54,7 @@ namespace Port {
         public Queue<Critter> critterPool = new Queue<Critter>();
         public GameObject critters;
         public GameObject items;
-        public List<Item> allItems = new List<Item>();
+        public List<WorldItem> allItems = new List<WorldItem>();
         public CameraController camera;
 
         //FastNoiseSIMD* noise;
@@ -115,50 +115,23 @@ namespace Port {
             }
 
             for (int i = 0; i < 100; i++) {
-                var item = CreateItem("Money") as Loot;
+                var item = CreateWorldItem(Item.Create(Item.GetData("Money"), this));
                 item.transform.parent = items.transform;
-                item.count = 100;
                 item.position = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
+                (item.item as Money).count = 100;
             }
 
             time = SECONDS_PER_HOUR * 8;
         }
-        void shutdown() {
-            //delete player;
-            //delete playerData;
-
-            //for (var c : critters) {
-            //    delete c;
-            //}
-            //for (var c : critterPool) {
-            //    delete c;
-            //}
-            //for (var i : Item::allItems) {
-            //    delete i;
-            //}
-
-
-            //Entity::freeData();
-
-            //items.clear();
-            //critterPool.clear();
-            //critters.clear();
-
-            //noise->FreeNoiseSet(noiseFloats);
-            //delete noise;
-        }
-
-        public Item itemPrefab;
-        public Item CreateItem(string data) {
-            var i = Instantiate<Item>(itemPrefab);
+        public WorldItem worldItemPrefab;
+        public WorldItem CreateWorldItem(Item item) {
+            var i = Instantiate<WorldItem>(worldItemPrefab);
             i.transform.parent = transform;
-            i.init(Item.GetData(data), this);
+            i.init(item, this);
             return i;
         }
-        public Item CreateItem(ItemData data) {
-            var i = Instantiate<Item>(itemPrefab);
-            i.init(data, this);
-            return i;
+        public Item CreateItem(string item) {
+            return Item.Create(Item.GetData(item), this);
         }
 
         public Critter CreateCritter(string prefabName) {
@@ -280,7 +253,7 @@ namespace Port {
 
             //updateCollision(dt);
 
-            foreach (var i in items.GetComponentsInAllChildren<Item>()) {
+            foreach (var i in items.GetComponentsInAllChildren<WorldItem>()) {
                 if (!i.spawned) {
                     var pos = i.position;
                     if (getTopmostBlock(500, ref pos)) {
