@@ -232,6 +232,39 @@ namespace Port {
                 }
             }
             else {
+
+                Actor.PlayerCmd_t cmd = new Actor.PlayerCmd_t();
+                Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal"), Input.GetAxis("MoveVertical"));
+                cmd.fwd = (sbyte)(move.y*127);
+                cmd.right = (sbyte)(move.x*127);
+                if (Input.GetButton("Jump")) {
+                    cmd.buttons |= 1 << (int)InputType.JUMP;
+                }
+                if (Input.GetButton("AttackLeft")) {
+                    cmd.buttons |= 1 << (int)InputType.ATTACK_LEFT;
+                }
+                if (Input.GetButton("AttackRight")) {
+                    cmd.buttons |= 1 << (int)InputType.ATTACK_RIGHT;
+                }
+                if (Input.GetButton("Interact")) {
+                    cmd.buttons |= 1 << (int)InputType.INTERACT;
+                }
+                if (Input.GetButton("SelectLeft")) {
+                    cmd.buttons |= 1 << (int)InputType.SELECT_LEFT;
+                }
+                if (Input.GetButton("SelectRight")) {
+                    cmd.buttons |= 1 << (int)InputType.SELECT_RIGHT;
+                }
+                if (Input.GetButton("Use")) {
+                    cmd.buttons |= 1 << (int)InputType.USE;
+                }
+                if (Input.GetButton("Map")) {
+                    cmd.buttons |= 1 << (int)InputType.MAP;
+                }
+
+                player.UpdatePlayerCmd(cmd);
+
+
                 player.Tick(dt, cameraYaw);
 
                 spawnNewCritter();

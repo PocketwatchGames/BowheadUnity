@@ -105,7 +105,7 @@ namespace Port {
             public int serverTime;
             public float[] angles;
             public int buttons;
-            public byte fwd, right, up;
+            public sbyte fwd, right, up;
         };
 
         public class Input_t {
@@ -150,7 +150,7 @@ namespace Port {
                         if (!World.isSolidBlock(world.getBlock(fp))) {
                             if (World.isSolidBlock(world.getBlock(fp + new Vector3(0, 0, -1)))) {
                                 if (world.getBlock(movePosition) != EBlockType.BLOCK_TYPE_WATER) {
-                                    move.z -= 1;
+                                    move.y -= 1;
                                     interpolate = true;
                                 }
                             }
@@ -192,12 +192,12 @@ namespace Port {
             var handblock = world.getBlock(handPosition(handHoldPos));
             bool isClimbable = World.isClimbable(handblock, canClimbWell);
             if (!isClimbable) {
-                bool isHangPosition = Mathf.Repeat(p.z, 1f) > 0.9f;
+                bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
                 if (isHangPosition && World.isHangable(handblock, canClimbWell) && !World.isSolidBlock(world.getBlock(p)) && !World.isSolidBlock(world.getBlock(handPosition(p))) && !World.isSolidBlock(world.getBlock(handPosition(handHoldPos) + Vector3.up))) {
                     isClimbable = true;
                 }
             }
-            if (velocity.z > Data.climbGrabMinZVel && isClimbable) {
+            if (velocity.y > Data.climbGrabMinZVel && isClimbable) {
                 return true;
             }
             return false;
@@ -211,7 +211,7 @@ namespace Port {
             var handblock = world.getBlock(handPosition(handHoldPos));
             bool isClimbable = World.isClimbable(handblock, canClimbWell);
             if (!isClimbable) {
-                bool isHangPosition = Mathf.Repeat(p.z, 1f) > 0.9f;
+                bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
                 if (isHangPosition
                     && World.isHangable(handblock, canClimbWell)
                     && !World.isSolidBlock(world.getBlock(handPosition(handHoldPos)))
@@ -219,7 +219,7 @@ namespace Port {
                     isClimbable = true;
                 }
             }
-            if (velocity.z > Data.climbGrabMinZVel && isClimbable) {
+            if (velocity.y > Data.climbGrabMinZVel && isClimbable) {
                 return true;
             }
             return false;
@@ -466,6 +466,7 @@ namespace Port {
                 Vector3 secondClimbDownPos = newPosition + secondCheck + new Vector3(0, -1.05f, 0);
 
                 if (CanMoveTo(moveXZ, true, dt, ref newPosition, ref interpolate)) {
+                    SetPosition(newPosition, interpolate ? 0.1f : 0);
                     return true;
                 }
                 else if (CanMoveTo(firstCheck, true, dt, ref newPosition, ref interpolate)) {
@@ -580,7 +581,7 @@ namespace Port {
                 {
                     var desiredVel = input.movement * maxSpeed;
                     var velDiff = desiredVel - velocity;
-                    velDiff.z = 0;
+                    velDiff.y = 0;
                     if (velDiff != Vector3.zero) {
                         acceleration *= velDiff.magnitude;
                         velDiff = velDiff.normalized;
@@ -619,7 +620,7 @@ namespace Port {
                 // Slide down any hills
                 float slopeDot = Vector3.Dot(groundNormal, Vector3.up);
                 Vector3 slideDir = groundNormal;
-                slideDir.z = 0;
+                slideDir.y = 0;
                 if (slideDir != Vector3.zero) {
                     slideDir = slideDir.normalized;
                     velChange += (1.0f - slopeDot) * dt * -Data.gravity * slideDir * (1f - slideFriction);
@@ -742,9 +743,9 @@ namespace Port {
                         if (IsClimbPosition(newPosition, -climbingNormal * Data.climbWallRange)) {
                             SetPosition(newPosition);
                         }
-                        //else if (move.z > 0)
+                        //else if (move.y > 0)
                         //{
-                        //	move.z++;
+                        //	move.y++;
                         //	move += -climbingNormal*Data.WallJumpRange;
                         //	if (tryMoveTo(move, true, dt, newPosition, interpolate))
                         //	{
@@ -904,7 +905,7 @@ namespace Port {
             float remainingDamage;
 
             Vector3 dirToEnemy = (attacker.position - position).normalized;
-            float angleToEnemy = Mathf.Repeat(Mathf.Atan2(dirToEnemy.z, dirToEnemy.z) - yaw, Mathf.PI * 2);
+            float angleToEnemy = Mathf.Repeat(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) - yaw, Mathf.PI * 2);
             if (attackData.attackDamageBackstab > 0 && Math.Abs(angleToEnemy) < Data.backStabAngle) {
                 remainingStun = attackData.stunPowerBackstab;
                 remainingDamage = attackData.attackDamageBackstab;

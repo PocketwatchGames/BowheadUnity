@@ -313,10 +313,11 @@ namespace Port {
                     }
                 }
             }
-            var forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Sin(cameraYaw));
-            var right = Vector3.Cross(Vector3.down, forward);
-            input.movement += forward * cur.fwd / 127f;
-            input.movement += right * cur.right / 127f;
+            var forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Cos(cameraYaw));
+            var right = Vector3.Cross(Vector3.up, forward);
+            input.movement += forward * (float)cur.fwd / 127f;
+            input.movement += right * (float)cur.right / 127f;
+
             input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
         }
 
