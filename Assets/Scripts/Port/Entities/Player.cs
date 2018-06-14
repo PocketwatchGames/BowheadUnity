@@ -10,14 +10,17 @@ namespace Port {
     public class Player : Actor {
 
         #region State
+        [Header("Player")]
         public Vector3 spawnPoint;
         public Vector2 mapPos;
 
+        [Header("Inventory")]
         public int money;
-        public float dropTimer;
+        public WeightClass weight;
         public int inventorySelected;
+        public float dropTimer;
 
-        public Player.WeightClass weight;
+        [Header("Player Stats")]
         public float thirst;
         public float maxThirst;
         public float temperature;

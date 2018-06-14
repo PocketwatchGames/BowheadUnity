@@ -28,17 +28,24 @@ namespace Port {
     public class Actor : Entity {
 
         #region State
-        public Actor.PlayerCmd_t last;
 
+        [Header("Basic")]
+        public bool removeFlag;
         public bool spawned;
-        public Actor.Activity activity;
+        public int team;
+
+        [Header("Input")]
+        public PlayerCmd_t cur;
+        public PlayerCmd_t last;
+
+        [Header("Physics")]
         public Vector3 position;
         public Vector3 velocity;
         public float yaw;
-        public int team;
+        public Vector3 moveImpulse;
+        public float moveImpulseTimer;
 
-        public Item[] inventory = new Item[Actor.MAX_INVENTORY_SIZE];
-
+        [Header("Stats")]
         public float health;
         public float maxHealth;
         public float stamina;
@@ -50,15 +57,13 @@ namespace Port {
         public float stunTimer;
         public float stunAmount;
 
-        public Actor attackTarget;
-
-        public Vector3 moveImpulse;
-        public float moveImpulseTimer;
-
+        [Header("Rendering")]
         public Vector3 interpolateFrom;
         public float interpolateTime;
         public float interpolateTimeTotal;
 
+        [Header("Gameplay")]
+        public Actor.Activity activity;
         public Vector3 climbingNormal;
         public float fallJumpTimer;
         public float maxHorizontalSpeed;
@@ -71,7 +76,15 @@ namespace Port {
         public bool canSwim;
         public bool canTurn;
         public bool canAttack;
+
+        [Header("Combat")]
+        public Actor attackTarget;
         public bool lockedToTarget;
+
+        [Header("Inventory")]
+        [SerializeField]
+        public Item[] inventory = new Item[Actor.MAX_INVENTORY_SIZE];
+
         #endregion
 
 
@@ -108,9 +121,6 @@ namespace Port {
             public Vector3 velocity;
         };
 
-
-        public PlayerCmd_t cur;
-        public bool removeFlag;
 
 
         new public ActorData Data { get { return GetData<ActorData>(); } }

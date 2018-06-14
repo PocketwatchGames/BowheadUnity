@@ -5,8 +5,7 @@ using System;
 
 namespace Port {
 
-
-    abstract public class Item : ScriptableObject {
+    public class Item : ScriptableObject {
 
 
         [HideInInspector]
@@ -52,7 +51,7 @@ namespace Port {
         }
 
         // Use this for initialization
-        public static ItemData GetData(string dataName) { return DataManager.GetItemData<ItemData>(dataName); }
+        public static ItemData GetData(string dataName) { return DataManager.GetItemData(dataName); }
 
 
         virtual public void updateCast(float dt, Actor actor) {

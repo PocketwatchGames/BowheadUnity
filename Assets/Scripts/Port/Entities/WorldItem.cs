@@ -12,6 +12,7 @@ namespace Port {
         public Vector3 velocity;
         public bool spawned;
         public float yaw;
+        [SerializeField]
         public Item item;
 
         #endregion

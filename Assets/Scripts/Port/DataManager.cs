@@ -6,7 +6,8 @@ namespace Port {
     public class DataManager {
 
         private static Dictionary<System.Type, Dictionary<string, EntityData>> _allData = new Dictionary<System.Type, Dictionary<string, EntityData>>();
-        private static Dictionary<System.Type, Dictionary<string, ItemData>> _allItemData = new Dictionary<System.Type, Dictionary<string, ItemData>>();
+        private static Dictionary<string, ItemData> _allItemData = new Dictionary<string, ItemData>();
+        private static Dictionary<System.Type, Dictionary<string, ItemData>> _itemData = new Dictionary<System.Type, Dictionary<string, ItemData>>();
         private static Dictionary<string, GameObject> _entityPrefabs = new Dictionary<string, GameObject>();
 
         public static T GetData<T>(string name) where T : EntityData {
@@ -21,11 +22,19 @@ namespace Port {
         }
         public static T GetItemData<T>(string name) where T : ItemData {
             Dictionary<string, ItemData> classLookup;
-            if (_allItemData.TryGetValue(typeof(T), out classLookup)) {
+            var t = typeof(T);
+            if (_itemData.TryGetValue(t, out classLookup)) {
                 ItemData data;
                 if (classLookup.TryGetValue(name, out data)) {
                     return data as T;
                 }
+            }
+            return null;
+        }
+        public static ItemData GetItemData(string name) {
+            ItemData data;
+            if (_allItemData.TryGetValue(name, out data)) {
+                return data;
             }
             return null;
         }
@@ -50,10 +59,11 @@ namespace Port {
 
         public static void Add(ItemData d) {
 
+            _allItemData.Add(d.name, d);
             Dictionary<string, ItemData> classLookup;
-            if (!_allItemData.TryGetValue(d.GetType(), out classLookup)) {
+            if (!_itemData.TryGetValue(d.GetType(), out classLookup)) {
                 classLookup = new Dictionary<string, ItemData>();
-                _allItemData.Add(d.GetType(), classLookup);
+                _itemData.Add(d.GetType(), classLookup);
             }
             classLookup.Add(d.name, d);
 
