@@ -290,7 +290,7 @@ InputManager:
     sensitivity: 1
     snap: 0
     invert: 0
-    type: 2
+    type: 0
     axis: 4
     joyNum: 0
   - serializedVersion: 3
@@ -306,39 +306,23 @@ InputManager:
     sensitivity: 1
     snap: 0
     invert: 0
-    type: 2
+    type: 0
     axis: 4
     joyNum: 0
   - serializedVersion: 3
-    m_Name: SelectLeft
-    descriptiveName: SelectLeft
+    m_Name: SelectInventory
+    descriptiveName: SelectInventory
     descriptiveNegativeName: 
-    negativeButton: 
-    positiveButton: 
-    altNegativeButton: 
-    altPositiveButton: 
-    gravity: 0
-    dead: 0.1
-    sensitivity: 1
+    negativeButton: q
+    positiveButton: e
+    altNegativeButton: joystick button 4
+    altPositiveButton: joystick button 5
+    gravity: 1000000
+    dead: 0
+    sensitivity: 1000000
     snap: 0
     invert: 0
-    type: 2
-    axis: 4
-    joyNum: 0
-  - serializedVersion: 3
-    m_Name: SelectRight
-    descriptiveName: SelectRight
-    descriptiveNegativeName: 
-    negativeButton: 
-    positiveButton: 
-    altNegativeButton: 
-    altPositiveButton: 
-    gravity: 0
-    dead: 0.1
-    sensitivity: 1
-    snap: 0
-    invert: 0
-    type: 2
+    type: 0
     axis: 4
     joyNum: 0
   - serializedVersion: 3
@@ -346,14 +330,14 @@ InputManager:
     descriptiveName: Map
     descriptiveNegativeName: 
     negativeButton: 
-    positiveButton: 
+    positiveButton: tab
     altNegativeButton: 
-    altPositiveButton: 
+    altPositiveButton: joystick button 6
     gravity: 0
     dead: 0.1
     sensitivity: 1
     snap: 0
     invert: 0
-    type: 2
+    type: 0
     axis: 4
     joyNum: 0

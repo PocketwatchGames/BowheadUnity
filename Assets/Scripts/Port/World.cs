@@ -249,15 +249,6 @@ namespace Port {
                 if (Input.GetButton("Interact")) {
                     cmd.buttons |= 1 << (int)InputType.INTERACT;
                 }
-                if (Input.GetButton("SelectLeft")) {
-                    cmd.buttons |= 1 << (int)InputType.SELECT_LEFT;
-                }
-                if (Input.GetButton("SelectRight")) {
-                    cmd.buttons |= 1 << (int)InputType.SELECT_RIGHT;
-                }
-                if (Input.GetButton("Use")) {
-                    cmd.buttons |= 1 << (int)InputType.USE;
-                }
                 if (Input.GetButton("Map")) {
                     cmd.buttons |= 1 << (int)InputType.MAP;
                 }
