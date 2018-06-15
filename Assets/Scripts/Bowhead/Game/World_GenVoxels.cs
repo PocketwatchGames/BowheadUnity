@@ -97,7 +97,7 @@ public partial class World {
                         bool isCave = false;
                         if (ypos > lowerGroundHeight && ypos <= upperGroundHeight) {
                             // Let's see about some caves er valleys!
-                            float caveNoise = GetPerlinValue(ref noise, (int)xpos, (int)ypos, (int)zpos, 0.01f) * (0.015f * zpos) + 0.1f;
+                            float caveNoise = GetPerlinValue(ref noise, (int)xpos, (int)ypos, (int)zpos, 0.01f) * (0.015f * ypos) + 0.1f;
                             caveNoise += GetPerlinValue(ref noise, (int)xpos, (int)ypos, (int)zpos, 0.1f) * 0.06f + 0.1f;
                             caveNoise += GetPerlinValue(ref noise, (int)xpos, (int)ypos, (int)zpos, 0.2f) * 0.02f + 0.01f;
                             isCave = caveNoise > GetPerlinNormal(ref noise, (int)xpos, (int)ypos, (int)zpos, 0.01f) * 0.3f + 0.4f;
@@ -169,7 +169,7 @@ public partial class World {
                 for (int x = 0; x < VOXEL_CHUNK_SIZE_XZ; ++x) {
                     for (int z = 0; z < VOXEL_CHUNK_SIZE_XZ; ++z) {
                         var xpos = (int)v3.x + x;
-                        var zpos = (int)v3.y + z;
+                        var zpos = (int)v3.z + z;
                         for (int y = VOXEL_CHUNK_SIZE_Y - 1; y >= 0; --y) {
                             var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
                             var ypos = (int)v3.y + y;
