@@ -64,10 +64,10 @@ public class ExampleActor : Actor {
 	}
 
 	void OnRep_position() {
-		Debug.Log("OnRep_position");
+		//Debug.Log("OnRep_position");
 	}
 
 	void OnRep_rotation() {
-		Debug.Log("OnRep_rotation");
+		//Debug.Log("OnRep_rotation");
 	}
 }

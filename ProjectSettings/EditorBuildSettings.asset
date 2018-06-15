@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/ActorReplicationTest.unity
     guid: 84986830474400f45991cdafe25030fe
+  - enabled: 1
+    path: Assets/Scenes/Loading.unity
+    guid: 3bb14c307e040ce42a3c1e7ef4e7be66
   m_configObjects: {}

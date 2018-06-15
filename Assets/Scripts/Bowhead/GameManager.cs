@@ -131,13 +131,16 @@ namespace Bowhead {
 
 			public bool isDone {
 				get {
-					return _first.isDone && _second.isDone;
+					return _first.isDone && ((_second == null) || _second.isDone);
 				}
 			}
 
 			public float progress {
 				get {
-					return (_first.progress + _second.progress) / 2f;
+					if (_second != null) {
+						return (_first.progress + _second.progress) / 2f;
+					}
+					return _first.progress;
 				}
 			}
 		}
@@ -1001,24 +1004,30 @@ namespace Bowhead {
 
 		public void StartAsyncTravel() {
 
-			int startIndex = travelLevel.IndexOf(".");
-			if (startIndex == -1) {
-				throw new Exception(travelLevel + " is missing game mode extension!");
-			}
+			//int startIndex = travelLevel.IndexOf(".");
+			//if (startIndex == -1) {
+			//	throw new Exception(travelLevel + " is missing game mode extension!");
+			//}
 
-			var mainScene = travelLevel.Substring(0, startIndex);
-			
-			var first = SceneManager.LoadSceneAsync(mainScene);
-			if (first != null) {
-				var second = SceneManager.LoadSceneAsync(travelLevel, LoadSceneMode.Additive);
-				if (second != null) {
-                    SetAsyncLevelLoadOperation(new AsyncSceneLoad(first, second));
-					return;
-				} else {
-					Debug.LogError("Failed to load " + travelLevel);
-				}
-			} else {
-				Debug.LogError("Failed to load " + mainScene);
+			//var mainScene = travelLevel.Substring(0, startIndex);
+
+			//var first = SceneManager.LoadSceneAsync(mainScene);
+			//if (first != null) {
+			//	var second = SceneManager.LoadSceneAsync(travelLevel, LoadSceneMode.Additive);
+			//	if (second != null) {
+			//                 SetAsyncLevelLoadOperation(new AsyncSceneLoad(first, second));
+			//		return;
+			//	} else {
+			//		Debug.LogError("Failed to load " + travelLevel);
+			//	}
+			//} else {
+			//	Debug.LogError("Failed to load " + mainScene);
+			//}
+
+			var level = SceneManager.LoadSceneAsync(travelLevel);
+			if (level != null) {
+				SetAsyncLevelLoadOperation(new AsyncSceneLoad(level, null));
+				return;
 			}
 						
 			TravelToMainMenu();
@@ -1159,6 +1168,39 @@ namespace Bowhead {
 			if (_client != null) {
 				CaptureLoadingScreenCameraMask();
 			}
+		}
+
+#if UNITY_EDITOR
+		[CFunc]
+		static void LookupLevelName(string levelName, string gameType, int numPlayers, int numPlayersPerTeam) {
+			var type = Type.GetType(gameType);
+			if (type != null) {
+				var lvl = GetLevelName(levelName, type, numPlayers, numPlayersPerTeam);
+				Debug.Log(lvl);
+			}
+		}
+#endif
+
+		static string GetLevelName(string levelName, Type gameMode, int numPlayers, int numPlayersPerTeam) {
+			var levelToLoad = levelName + "." + gameMode.FullName;
+			string test;
+
+			if (numPlayersPerTeam == 1) {
+				test = levelToLoad + "." + numPlayers + "Players";
+			} else {
+				test = levelToLoad + "." + numPlayersPerTeam + "v" + numPlayersPerTeam;
+			}
+
+			var index = LEVELS.FindIndex((x) => x.name == levelName);
+			if (index != -1) { // check for player count specialized sublevel.
+				var lvl = LEVELS[index];
+				for (int i = 0; i < lvl.sublevels.Length; ++i) {
+					if (lvl.sublevels[i] == test) {
+						return test;
+					}
+				}
+			}
+			return levelToLoad;
 		}
 
 		bool HostGame(string levelName, int teamSize, Type gameModeType, Type netDriverType, int port) {
@@ -1733,23 +1775,21 @@ namespace Bowhead {
 
 			this.numPlayers = numPlayers;
 
-			//if (_guiStatus != null) {
-			//	_guiStatus.color = Color.white;
-			//	_guiStatus.text = "Starting " + mapName + "...";
-			//	yield return null;
-			//}
+			if (_guiStatus != null) {
+				_guiStatus.color = Color.white;
+				_guiStatus.text = "Starting " + mapName + "...";
+				yield return null;
+			}
 
 			Type netDriver = (dedicatedServer || (numPlayers > 1)) ? typeof(SocketNetDriver) : typeof(LocalGameNetDriver);
 			if (HostGame(mapName, teamSize, gameModeType, netDriver, port)) {
 				Console.CloseImmediate();
 			} else {
 				_pendingCommand = false;
-				//if (_guiStatus != null) {
-				//	_guiStatus.text = string.Empty;
-				//}
+				if (_guiStatus != null) {
+					_guiStatus.text = string.Empty;
+				}
 			}
-
-			yield return null;
 		}
 
 //		public void PlayTutorial(bool mp) {
@@ -1784,22 +1824,20 @@ namespace Bowhead {
 
 		IEnumerator CoConnect(string address) {
 			Debug.Log("Traveling to " + address);
-			//if (_guiStatus != null) {
-			//	_guiStatus.color = Color.white;
-			//	_guiStatus.text = "Connecting to " + address + " ...";
-			//	yield return null;
-			//}
+			if (_guiStatus != null) {
+				_guiStatus.color = Color.white;
+				_guiStatus.text = "Connecting to " + address + " ...";
+				yield return null;
+			}
 
 			if (JoinGame(address, typeof(SocketNetDriver))) {
 				Console.CloseImmediate();
 			} else {
 				_pendingCommand = false;
-				//if (_guiStatus != null) {
-				//	_guiStatus.text = string.Empty;
-				//}
+				if (_guiStatus != null) {
+					_guiStatus.text = string.Empty;
+				}
 			}
-
-			yield return null;
 		}
 
 		[CFunc]
@@ -1845,23 +1883,21 @@ namespace Bowhead {
 			this.numPlayers = numPlayers;
 			serverPerfTest = true;
 
-			//if (_guiStatus != null) {
-			//	_guiStatus.color = Color.white;
-			//	_guiStatus.text = "Starting " + mapName + "...";
-			//	yield return null;
-			//}
+			if (_guiStatus != null) {
+				_guiStatus.color = Color.white;
+				_guiStatus.text = "Starting " + mapName + "...";
+				yield return null;
+			}
 
 			Type netDriver = (dedicatedServer || (numPlayers > 1)) ? typeof(SocketNetDriver) : typeof(LocalGameNetDriver);
 			if (HostGame(mapName, teamSize, gameModeType, netDriver, port)) {
 				Console.CloseImmediate();
 			} else {
 				_pendingCommand = false;
-				//if (_guiStatus != null) {
-				//	_guiStatus.text = string.Empty;
-				//}
+				if (_guiStatus != null) {
+					_guiStatus.text = string.Empty;
+				}
 			}
-
-			yield return null;
 		}
 
 		[CFunc]
