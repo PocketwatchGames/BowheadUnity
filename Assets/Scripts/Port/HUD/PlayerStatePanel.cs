@@ -12,12 +12,15 @@ namespace Port {
         Slider _health;
         Slider _water;
         Slider _stamina;
+        MoneyPanel _money;
+
 
         // Use this for initialization
         void Start() {
             _health = transform.GetAnyChildComponent<Slider>("Health");
             _water = transform.GetAnyChildComponent<Slider>("Water");
             _stamina = transform.GetAnyChildComponent<Slider>("Stamina");
+            _money = transform.GetAnyChildComponent<MoneyPanel>("Money");
         }
 
         // Update is called once per frame
@@ -33,6 +36,11 @@ namespace Port {
 
         public void Init(Player player) {
             _player = player;
+            _player.onMoneyChange += onMoneyChange;
+        }
+
+        private void onMoneyChange() {
+            _money.SetMoney(_player.money.ToString());
         }
     }
 }

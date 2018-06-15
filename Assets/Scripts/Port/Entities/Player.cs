@@ -17,7 +17,6 @@ namespace Port {
         [Header("Inventory")]
         public int money;
         public WeightClass weight;
-        public int inventorySelected;
         public float dropTimer;
 
         [Header("Player Stats")]
@@ -32,7 +31,7 @@ namespace Port {
             CLOTHING = 0,
             LEFT_HAND = 1,
             RIGHT_HAND = 2,
-            PACK = 3
+            PACK = 3,
         }
         public enum WeightClass {
             LIGHT,
@@ -56,7 +55,9 @@ namespace Port {
 
 
 
-
+        public delegate void onMoneyChangeFn();
+        public event onMoneyChangeFn onMoneyChange;
+        public event onMoneyChangeFn onInventoryChange;
 
 
 
@@ -117,31 +118,7 @@ namespace Port {
                 interact();
             }
 
-            if (input.inputs[(int)InputType.SELECT_LEFT] == InputState.JUST_PRESSED) {
-                selectPreviousInventory();
-            }
-            else if (input.inputs[(int)InputType.SELECT_RIGHT] == InputState.JUST_PRESSED) {
-                selectNextInventory();
-            }
-
             if (input.IsPressed(InputType.SWAP)) {
-            }
-            if (input.IsPressed(InputType.USE)) {
-                dropTimer = dropTimer + dt;
-            }
-            else {
-                if (input.inputs[(int)InputType.USE] == InputState.JUST_RELEASED) {
-                    var item = inventory[inventorySelected];
-                    if (item != null) {
-                        if (dropTimer >= Data.dropTime) {
-                            drop(item);
-                        }
-                        else {
-                            use(item);
-                        }
-                    }
-                }
-                dropTimer = 0;
             }
 
             bool isCasting = false;
@@ -385,11 +362,15 @@ namespace Port {
 
         #region inventory
 
+        void setInventorySlot(int index, Item item) {
+            inventory[index] = item;
+            onInventoryChange();
+        }
 
         bool pickUp(Item item) {
             Money m;
-            if ((m = item as Money) != null) { 
-                money += m.Data.count;
+            if ((m = item as Money) != null) {
+                SetMoney(money + m.Data.count * m.count);
                 return true;
             }
 
@@ -405,9 +386,9 @@ namespace Port {
                     }
                     else {
                         if (packSlots == 0) {
-                            inventory[i++] = item;
+                            setInventorySlot(i++, item);
                             foreach (var c in p.contained) {
-                                inventory[i++] = c;
+                                setInventorySlot(i++, c);
                             }
                             return true;
                         }
@@ -418,14 +399,14 @@ namespace Port {
             }
 
             if (item is Clothing && inventory[(int)InventorySlot.CLOTHING] == null) {
-                inventory[(int)InventorySlot.CLOTHING] = item;
+                setInventorySlot((int)InventorySlot.CLOTHING, item);
                 return true;
             }
 
             Weapon weapon;
             if ((weapon = item as Weapon) != null) {
                 if (weapon.Data.hand == WeaponData.Hand.BOTH && inventory[(int)InventorySlot.LEFT_HAND] == null && inventory[(int)InventorySlot.RIGHT_HAND] == null) {
-                    inventory[(int)InventorySlot.RIGHT_HAND] = item;
+                    setInventorySlot((int)InventorySlot.RIGHT_HAND, item);
                     return true;
                 }
                 if (weapon.Data.hand == WeaponData.Hand.LEFT || weapon.Data.hand == WeaponData.Hand.RIGHT) {
@@ -440,11 +421,11 @@ namespace Port {
                         slotPreference2 = (int)InventorySlot.LEFT_HAND;
                     }
                     if (inventory[slotPreference1] == null) {
-                        inventory[slotPreference1] = item;
+                        setInventorySlot(slotPreference1, item);
                         return true;
                     }
                     if (inventory[slotPreference2] == null) {
-                        inventory[slotPreference2] = item;
+                        setInventorySlot(slotPreference2, item);
                         return true;
                     }
                 }
@@ -469,13 +450,13 @@ namespace Port {
 
             int[] slots = new int[1];
             if (findEmptyPackSlots(1, ref slots)) {
-                inventory[slots[0]] = item;
+                setInventorySlot(slots[0], item);
                 return true;
             }
             return false;
         }
 
-        bool use(Item item) {
+        public bool use(Item item) {
             if (item == null) {
                 return false;
             }
@@ -500,17 +481,17 @@ namespace Port {
         void setItemSlot(Item item, int newSlot) {
             for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
                 if (inventory[i] == item) {
-                    inventory[i] = null;
+                    setInventorySlot(i, null);
                     break;
                 }
             }
 
-            inventory[newSlot] = item;
+            setInventorySlot(newSlot, item);
 
             item.onSlotChange();
         }
 
-        bool equip(Item item) {
+        public bool equip(Item item) {
             int[] emptyPackSlots = new int[2];
 
             bool inInventory = false;
@@ -702,32 +683,30 @@ namespace Port {
 
 
             if (slot == (int)InventorySlot.CLOTHING) {
-                inventory[slot] = null;
+                setInventorySlot(slot, null);
             }
             else if (slot == (int)InventorySlot.LEFT_HAND) {
-                inventory[slot] = null;
+                setInventorySlot(slot, null);
             }
             else if (slot == (int)InventorySlot.RIGHT_HAND) {
-                inventory[slot] = null;
+                setInventorySlot(slot, null);
             }
             else if (pack != null) {
                 for (int i = slot; i < MAX_INVENTORY_SIZE - packSlots - 1; i++) {
-                    inventory[i] = inventory[i + packSlots + 1];
+                    setInventorySlot(i, inventory[i + packSlots + 1]);
                 }
             }
             else {
                 for (int j = slot; j < slot + packSlots; j++) {
-                    inventory[j] = inventory[j + 1];
+                    setInventorySlot(j, inventory[j + 1]);
                 }
-                inventory[slot + packSlots] = null;
+                setInventorySlot(slot + packSlots, null);
             }
 
-            if (inventory[inventorySelected] == null) {
-                selectPreviousInventory();
-            }
+            onInventoryChange.Invoke();
         }
 
-        void drop(Item item) {
+        public void drop(Item item) {
             removeFromInventory(item);
 
             var worldItem = world.CreateWorldItem(item);
@@ -735,175 +714,6 @@ namespace Port {
             worldItem.transform.parent = world.items.transform;
         }
 
-
-        void selectPreviousInventory() {
-            if (dropTimer >= Data.dropTime) {
-                var curItem = inventory[inventorySelected];
-                if (curItem != null) {
-                    Pack pack;
-                    if ((pack = curItem as Pack) != null) {
-                        int newSlot = inventorySelected - 1;
-                        while (newSlot >= 0 && !(inventory[newSlot] is Pack)) {
-                            newSlot--;
-                        }
-                        if (newSlot >= 0) {
-                            List<Item> newInventory = new List<Item>();
-                            for (int i = 0; i < newSlot; i++) {
-                                newInventory.Add(inventory[i]);
-                            }
-                            for (int i = 0; i < pack.Data.slots + 1; i++) {
-                                newInventory.Add(inventory[i + inventorySelected]);
-                            }
-                            for (int i = newSlot; i < MAX_INVENTORY_SIZE; i++) {
-                                if (i < inventorySelected || i > inventorySelected + pack.Data.slots) {
-                                    newInventory.Add(inventory[i]);
-                                }
-                            }
-                            int index = 0;
-                            foreach (var i in newInventory) {
-                                inventory[index++] = i;
-                            }
-                            inventorySelected = newSlot;
-                        }
-                    }
-                    else {
-                        int newSlot = inventorySelected - 1;
-                        for (; newSlot > (int)InventorySlot.PACK; newSlot--) {
-                            var itemInNewSlot = inventory[newSlot];
-                            Pack p2;
-                            if (itemInNewSlot is Pack) {
-                                continue;
-                            }
-                            inventory[inventorySelected] = itemInNewSlot;
-                            inventory[newSlot] = curItem;
-                            inventorySelected = newSlot;
-                            return;
-
-                        }
-                    }
-                }
-            }
-            else {
-                for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
-                    inventorySelected--;
-                    if (inventorySelected < 0) {
-                        inventorySelected = MAX_INVENTORY_SIZE - 1;
-                    }
-                    if (inventory[inventorySelected] != null) {
-                        break;
-                    }
-                }
-                dropTimer = 0;
-            }
-        }
-
-        void selectNextInventory() {
-            if (dropTimer >= Data.dropTime) {
-                var curItem = inventory[inventorySelected];
-                if (curItem != null) {
-                    Pack pack;
-                    if ((pack = curItem as Pack) != null) {
-                        int newSlot = inventorySelected + 1;
-                        while (newSlot < MAX_INVENTORY_SIZE && !(inventory[newSlot] is Pack)) {
-                            newSlot++;
-                        }
-                        if (newSlot < MAX_INVENTORY_SIZE) {
-                            List<Item> newInventory = new List<Item>();
-                            for (int i = 0; i < inventorySelected; i++) {
-                                newInventory.Add(inventory[i]);
-                            }
-                            Pack p2 = inventory[newSlot] as Pack;
-                            for (int i = newSlot; i < newSlot + p2.Data.slots + 1; i++) {
-                                newInventory.Add(inventory[i]);
-                            }
-                            for (int i = 0; i < pack.Data.slots + 1; i++) {
-                                newInventory.Add(inventory[i + inventorySelected]);
-                            }
-                            for (int i = newSlot + p2.Data.slots + 1; i < MAX_INVENTORY_SIZE; i++) {
-                                newInventory.Add(inventory[i]);
-                            }
-                            int index = 0;
-                            foreach (var i in newInventory) {
-                                inventory[index++] = i;
-                            }
-                            inventorySelected = newSlot;
-                        }
-                    }
-                    else {
-                        int lastPackSlot;
-                        int curPackSlotsRemaining = 0;
-                        for (lastPackSlot = (int)InventorySlot.PACK; lastPackSlot < MAX_INVENTORY_SIZE; lastPackSlot++) {
-                            var item = inventory[lastPackSlot];
-
-                            Pack p;
-                            if ((p = item as Pack) != null) {
-                                curPackSlotsRemaining = p.Data.slots;
-                                continue;
-                            }
-                            if (curPackSlotsRemaining == 0) {
-                                if (inventorySelected < (int)InventorySlot.PACK) {
-                                    return;
-                                }
-                                lastPackSlot--;
-                                break;
-                            }
-                            curPackSlotsRemaining--;
-                            if (item == null && lastPackSlot > inventorySelected) {
-                                break;
-                            }
-                        }
-                        int oldSlot = inventorySelected;
-                        int newSlot = oldSlot + 1;
-                        if (oldSlot < (int)InventorySlot.PACK) {
-                            // if we are moving an equipped item to the pack, bump everything right
-                            int emptySlot = (int)InventorySlot.PACK + 1;
-                            for (; emptySlot < lastPackSlot; emptySlot++) {
-                                if (inventory[emptySlot] == null) {
-                                    break;
-                                }
-                            }
-                            int lastEmptySlot = emptySlot;
-                            for (int curSlot = emptySlot - 1; curSlot > (int)InventorySlot.PACK; curSlot--) {
-                                if (inventory[curSlot] is Pack) {
-                                    continue;
-                                }
-                                inventory[lastEmptySlot] = inventory[curSlot];
-                                lastEmptySlot = curSlot;
-                            }
-                            inventorySelected = (int)InventorySlot.PACK + 1;
-                            inventory[(int)InventorySlot.PACK + 1] = curItem;
-                            inventory[oldSlot] = null;
-                        }
-                        else {
-                            for (; newSlot <= lastPackSlot; newSlot++) {
-                                var itemInNewSlot = inventory[newSlot];
-                                if (itemInNewSlot is Pack) {
-                                    continue;
-                                }
-                                inventory[oldSlot] = itemInNewSlot;
-                                inventory[newSlot] = curItem;
-                                inventorySelected = newSlot;
-                                return;
-
-                            }
-                        }
-
-                    }
-                }
-            }
-            else {
-                for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
-                    inventorySelected++;
-                    if (inventorySelected >= MAX_INVENTORY_SIZE) {
-                        inventorySelected = 0;
-                    }
-                    if (inventory[inventorySelected] != null) {
-                        break;
-                    }
-                }
-                dropTimer = 0;
-            }
-        }
 
         void interact() {
             var t = getInteractTarget();
@@ -939,6 +749,9 @@ namespace Port {
         }
         #endregion
 
-
+        public void SetMoney(int m) {
+            money = m;
+            onMoneyChange();
+        }
     }
 }
