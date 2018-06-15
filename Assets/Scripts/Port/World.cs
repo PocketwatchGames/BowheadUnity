@@ -214,7 +214,7 @@ namespace Port {
                     }
                     else if (c.Data == Critter.GetData("wolf")) {
                         var weapon = CreateItem("Teeth");
-                        c.inventory[0] = weapon;
+                        c.SetInventorySlot(0, weapon);
                     }
 
                     c.spawn(pos);

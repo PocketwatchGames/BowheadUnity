@@ -60,8 +60,8 @@ namespace Port {
             }
 
             for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
-                if (inventory[i] != null) {
-                    inventory[i].updateCast(dt, this);
+                if (GetInventorySlot(i) != null) {
+                    GetInventorySlot(i).updateCast(dt, this);
                 }
             }
 
@@ -71,7 +71,7 @@ namespace Port {
             base.Tick(dt, input);
 
             if (canAttack) {
-                foreach (var weapon in inventory) {
+                foreach (var weapon in getInventory()) {
                     Weapon w = weapon as Weapon;
                     if (w != null) {
                         if (input.IsPressed(InputType.ATTACK_RIGHT)) {
@@ -87,7 +87,7 @@ namespace Port {
                 }
             }
             else {
-                foreach (var weapon in inventory) {
+                foreach (var weapon in getInventory()) {
                     Weapon w = weapon as Weapon;
                     if (w != null) {
                         w.chargeTime = 0;

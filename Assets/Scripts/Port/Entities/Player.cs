@@ -57,7 +57,6 @@ namespace Port {
 
         public delegate void onMoneyChangeFn();
         public event onMoneyChangeFn onMoneyChange;
-        public event onMoneyChangeFn onInventoryChange;
 
 
 
@@ -106,8 +105,8 @@ namespace Port {
 
 
             for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
-                if (inventory[i] != null) {
-                    inventory[i].updateCast(dt, this);
+                if (GetInventorySlot(i) != null) {
+                    GetInventorySlot(i).updateCast(dt, this);
                 }
             }
 
@@ -122,8 +121,8 @@ namespace Port {
             }
 
             bool isCasting = false;
-            var itemRight = inventory[(int)InventorySlot.RIGHT_HAND] as Weapon;
-            var itemLeft = inventory[(int)InventorySlot.LEFT_HAND] as Weapon;
+            var itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
+            var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
             if (canAttack) {
                 if (itemLeft != null) {
                     if (input.IsPressed(InputType.ATTACK_LEFT)) {
@@ -337,7 +336,7 @@ namespace Port {
 
             int itemCount = 0;
             for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
-                if (inventory[i] != null) {
+                if (GetInventorySlot(i) != null) {
                     itemCount++;
                 }
             }
@@ -362,11 +361,6 @@ namespace Port {
 
         #region inventory
 
-        void setInventorySlot(int index, Item item) {
-            inventory[index] = item;
-            onInventoryChange();
-        }
-
         bool pickUp(Item item) {
             Money m;
             if ((m = item as Money) != null) {
@@ -379,16 +373,16 @@ namespace Port {
                 int packSlots = 0;
                 // find the first available pack slot (there might be empty slots in a previous pack)
                 for (int i = (int)InventorySlot.PACK; i < MAX_INVENTORY_SIZE - (p.Data.slots + 1); i++) {
-                    var j = inventory[i];
+                    var j = GetInventorySlot(i);
                     Pack p2;
                     if ((p2 = j as Pack) != null) {
                         packSlots = p2.Data.slots;
                     }
                     else {
                         if (packSlots == 0) {
-                            setInventorySlot(i++, item);
+                            SetInventorySlot(i++, item);
                             foreach (var c in p.contained) {
-                                setInventorySlot(i++, c);
+                                SetInventorySlot(i++, c);
                             }
                             return true;
                         }
@@ -398,15 +392,15 @@ namespace Port {
                 return false;
             }
 
-            if (item is Clothing && inventory[(int)InventorySlot.CLOTHING] == null) {
-                setInventorySlot((int)InventorySlot.CLOTHING, item);
+            if (item is Clothing && GetInventorySlot((int)InventorySlot.CLOTHING) == null) {
+                SetInventorySlot((int)InventorySlot.CLOTHING, item);
                 return true;
             }
 
             Weapon weapon;
             if ((weapon = item as Weapon) != null) {
-                if (weapon.Data.hand == WeaponData.Hand.BOTH && inventory[(int)InventorySlot.LEFT_HAND] == null && inventory[(int)InventorySlot.RIGHT_HAND] == null) {
-                    setInventorySlot((int)InventorySlot.RIGHT_HAND, item);
+                if (weapon.Data.hand == WeaponData.Hand.BOTH && GetInventorySlot((int)InventorySlot.LEFT_HAND) == null && GetInventorySlot((int)InventorySlot.RIGHT_HAND) == null) {
+                    SetInventorySlot((int)InventorySlot.RIGHT_HAND, item);
                     return true;
                 }
                 if (weapon.Data.hand == WeaponData.Hand.LEFT || weapon.Data.hand == WeaponData.Hand.RIGHT) {
@@ -420,12 +414,12 @@ namespace Port {
                         slotPreference1 = (int)InventorySlot.RIGHT_HAND;
                         slotPreference2 = (int)InventorySlot.LEFT_HAND;
                     }
-                    if (inventory[slotPreference1] == null) {
-                        setInventorySlot(slotPreference1, item);
+                    if (GetInventorySlot(slotPreference1) == null) {
+                        SetInventorySlot(slotPreference1, item);
                         return true;
                     }
-                    if (inventory[slotPreference2] == null) {
-                        setInventorySlot(slotPreference2, item);
+                    if (GetInventorySlot(slotPreference2) == null) {
+                        SetInventorySlot(slotPreference2, item);
                         return true;
                     }
                 }
@@ -435,7 +429,7 @@ namespace Port {
             if ((loot = item as Loot) != null) {
                 if (loot.Data.stackSize > 0) {
                     for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
-                        var item2 = inventory[i] as Loot;
+                        var item2 = GetInventorySlot(i) as Loot;
                         if (item2 != null && item2.Data == item.Data) {
                             int numToTransfer = Math.Min(loot.count, item2.Data.stackSize - item2.count);
                             loot.count -= numToTransfer;
@@ -450,7 +444,7 @@ namespace Port {
 
             int[] slots = new int[1];
             if (findEmptyPackSlots(1, ref slots)) {
-                setInventorySlot(slots[0], item);
+                SetInventorySlot(slots[0], item);
                 return true;
             }
             return false;
@@ -480,13 +474,13 @@ namespace Port {
 
         void setItemSlot(Item item, int newSlot) {
             for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
-                if (inventory[i] == item) {
-                    setInventorySlot(i, null);
+                if (GetInventorySlot(i) == item) {
+                    SetInventorySlot(i, null);
                     break;
                 }
             }
 
-            setInventorySlot(newSlot, item);
+            SetInventorySlot(newSlot, item);
 
             item.onSlotChange();
         }
@@ -497,11 +491,11 @@ namespace Port {
             bool inInventory = false;
             int curSlot = -1;
             for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
-                if (inventory[i] == item) {
+                if (GetInventorySlot(i) == item) {
                     // unequip
                     if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND) {
                         if (findEmptyPackSlots(1, ref emptyPackSlots)) {
-                            setItemSlot(inventory[i], emptyPackSlots[0]);
+                            setItemSlot(GetInventorySlot(i), emptyPackSlots[0]);
                             return true;
                         }
                         return false;
@@ -516,14 +510,14 @@ namespace Port {
 
             Clothing clothing;
             if ((clothing = item as Clothing) != null) {
-                if (inventory[(int)InventorySlot.CLOTHING] == null) {
+                if (GetInventorySlot((int)InventorySlot.CLOTHING) == null) {
                     setItemSlot(item, (int)InventorySlot.CLOTHING);
                     return true;
                 }
                 else {
                     if (inInventory || findEmptyPackSlots(1, ref emptyPackSlots)) {
-                        if (inventory[(int)InventorySlot.CLOTHING] != null) {
-                            setItemSlot(inventory[(int)InventorySlot.CLOTHING], emptyPackSlots[0]);
+                        if (GetInventorySlot((int)InventorySlot.CLOTHING) != null) {
+                            setItemSlot(GetInventorySlot((int)InventorySlot.CLOTHING), emptyPackSlots[0]);
                         }
                         setItemSlot(item, (int)InventorySlot.CLOTHING);
                         return true;
@@ -537,10 +531,10 @@ namespace Port {
 
                 if (weapon.Data.hand == WeaponData.Hand.BOTH) {
                     int slotsRequired = 0;
-                    if (inventory[(int)InventorySlot.LEFT_HAND] != null) {
+                    if (GetInventorySlot((int)InventorySlot.LEFT_HAND) != null) {
                         slotsRequired++;
                     }
-                    if (inventory[(int)InventorySlot.RIGHT_HAND] != null) {
+                    if (GetInventorySlot((int)InventorySlot.RIGHT_HAND) != null) {
                         slotsRequired++;
                     }
                     int swapInventorySlot = emptyPackSlots[0];
@@ -553,11 +547,11 @@ namespace Port {
                             emptyPackSlots[0] = swapInventorySlot;
                         }
                         int slotIndex = 0;
-                        if (inventory[(int)InventorySlot.LEFT_HAND] != null) {
-                            setItemSlot(inventory[(int)InventorySlot.LEFT_HAND], emptyPackSlots[slotIndex++]);
+                        if (GetInventorySlot((int)InventorySlot.LEFT_HAND) != null) {
+                            setItemSlot(GetInventorySlot((int)InventorySlot.LEFT_HAND), emptyPackSlots[slotIndex++]);
                         }
-                        if (inventory[(int)InventorySlot.RIGHT_HAND] != null) {
-                            setItemSlot(inventory[(int)InventorySlot.RIGHT_HAND], emptyPackSlots[slotIndex++]);
+                        if (GetInventorySlot((int)InventorySlot.RIGHT_HAND) != null) {
+                            setItemSlot(GetInventorySlot((int)InventorySlot.RIGHT_HAND), emptyPackSlots[slotIndex++]);
                         }
                         setItemSlot(item, (int)InventorySlot.RIGHT_HAND);
                         return true;
@@ -574,9 +568,9 @@ namespace Port {
                         slotPreference1 = (int)InventorySlot.RIGHT_HAND;
                         slotPreference2 = (int)InventorySlot.LEFT_HAND;
                     }
-                    var slot1Weapon = inventory[slotPreference1] as Weapon;
-                    var slot2Weapon = inventory[slotPreference2] as Weapon;
-                    var slotBothWeapon = inventory[(int)InventorySlot.RIGHT_HAND] as Weapon;
+                    var slot1Weapon = GetInventorySlot(slotPreference1) as Weapon;
+                    var slot2Weapon = GetInventorySlot(slotPreference2) as Weapon;
+                    var slotBothWeapon = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
 
                     // if the item in our left hand is two-handed, unequip and equip the desired item in preferred hand
                     if (slotBothWeapon != null && slotBothWeapon.Data.hand == WeaponData.Hand.BOTH) {
@@ -631,7 +625,7 @@ namespace Port {
             int packSlots = 0;
             int emptySlotIndex = 0;
             for (int i = (int)InventorySlot.PACK; i < MAX_INVENTORY_SIZE; i++) {
-                var item = inventory[i];
+                var item = GetInventorySlot(i);
                 if (item == null) {
                     if (packSlots > 0) {
                         slots[emptySlotIndex++] = i;
@@ -658,14 +652,14 @@ namespace Port {
 
 
             for (var i = 0; i < MAX_INVENTORY_SIZE; i++) {
-                var checkItem = inventory[i] as Pack;
+                var checkItem = GetInventorySlot(i) as Pack;
                 if (checkItem != null) {
                     packSlots = checkItem.Data.slots;
                 }
                 else {
                     packSlots--;
                 }
-                if (inventory[i] == item) {
+                if (GetInventorySlot(i) == item) {
                     slot = i;
                     break;
                 }
@@ -674,7 +668,7 @@ namespace Port {
             Pack pack;
             if ((pack = item as Pack) != null) {
                 for (int i = 0; i < pack.Data.slots; i++) {
-                    var packItem = inventory[i + slot + 1];
+                    var packItem = GetInventorySlot(i + slot + 1);
                     if (packItem != null) {
                         pack.contained.Add(packItem);
                     }
@@ -683,27 +677,26 @@ namespace Port {
 
 
             if (slot == (int)InventorySlot.CLOTHING) {
-                setInventorySlot(slot, null);
+                SetInventorySlot(slot, null);
             }
             else if (slot == (int)InventorySlot.LEFT_HAND) {
-                setInventorySlot(slot, null);
+                SetInventorySlot(slot, null);
             }
             else if (slot == (int)InventorySlot.RIGHT_HAND) {
-                setInventorySlot(slot, null);
+                SetInventorySlot(slot, null);
             }
             else if (pack != null) {
                 for (int i = slot; i < MAX_INVENTORY_SIZE - packSlots - 1; i++) {
-                    setInventorySlot(i, inventory[i + packSlots + 1]);
+                    SetInventorySlot(i, GetInventorySlot(i + packSlots + 1));
                 }
             }
             else {
                 for (int j = slot; j < slot + packSlots; j++) {
-                    setInventorySlot(j, inventory[j + 1]);
+                    SetInventorySlot(j, GetInventorySlot(j + 1));
                 }
-                setInventorySlot(slot + packSlots, null);
+                SetInventorySlot(slot + packSlots, null);
             }
 
-            onInventoryChange.Invoke();
         }
 
         public void drop(Item item) {
@@ -727,7 +720,7 @@ namespace Port {
                 if (block == EBlockType.BLOCK_TYPE_WATER) {
                     Loot waterItem = null;
                     var waterData = Loot.GetData("Water");
-                    foreach (var i in inventory) {
+                    foreach (var i in getInventory()) {
                         var other = i as Loot;
                         if (other != null && i.Data == waterData && other.count < waterData.stackSize) {
                             waterItem = other;

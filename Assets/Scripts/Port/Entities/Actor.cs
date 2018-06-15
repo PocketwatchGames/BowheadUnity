@@ -83,7 +83,7 @@ namespace Port {
 
         [Header("Inventory")]
         [SerializeField]
-        public Item[] inventory = new Item[Actor.MAX_INVENTORY_SIZE];
+        protected Item[] _inventory = new Item[Actor.MAX_INVENTORY_SIZE];
 
         #endregion
 
@@ -126,6 +126,8 @@ namespace Port {
         new public ActorData Data { get { return GetData<ActorData>(); } }
         public static ActorData GetData(string dataName) { return DataManager.GetData<ActorData>(dataName); }
 
+        public delegate void onInventoryChangeFn();
+        public event onInventoryChangeFn onInventoryChange;
 
 
         public void UpdatePlayerCmd(PlayerCmd_t cmd) {
@@ -886,7 +888,7 @@ namespace Port {
             if (stunAmount >= Data.stunLimit) {
                 stunned = true;
                 stunTimer = Data.stunRecoveryTime;
-                foreach (var w in inventory) {
+                foreach (var w in getInventory()) {
                     var weapon = w as Weapon;
                     if (weapon != null) {
                         weapon.interrupt(this);
@@ -921,7 +923,7 @@ namespace Port {
             }
 
             // Check if we're blocking with shield
-            foreach (var w in inventory) {
+            foreach (var w in getInventory()) {
                 var shield = w as Weapon;
                 if (shield != null) {
                     shield.defend(this, attacker, weapon, attackData, ref remainingStun, ref remainingDamage);
@@ -950,6 +952,20 @@ namespace Port {
 
         virtual public void onLand() {
 
+        }
+
+
+        public Item[] getInventory() {
+            return _inventory;
+        }
+
+        public void SetInventorySlot(int index, Item item) {
+            _inventory[index] = item;
+            onInventoryChange();
+        }
+
+        public Item GetInventorySlot(int index) {
+            return _inventory[index];
         }
     }
 }
