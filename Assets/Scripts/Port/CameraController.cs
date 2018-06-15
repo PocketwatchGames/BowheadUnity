@@ -29,32 +29,34 @@ namespace Port {
         }
 
         // Update is called once per frame
-        void Update() {
-            handleInput(0, Time.deltaTime);
-            update(Time.deltaTime);
+        void LateUpdate() {
 
-            var c = GetComponent<Camera>();
-            if (c != null) {
-                c.transform.SetPositionAndRotation(position, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
+            HandleInput(0, Time.deltaTime);
+            Tick(Time.deltaTime);
+
+            transform.SetPositionAndRotation(position, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
+        }
+
+        public void SetTarget(Player player) {
+            if (target != null) {
+                target.OnLand -= OnLand;
+            }
+
+            target = player;
+            player.OnLand += OnLand;
+        }
+
+        private void OnLand(float damage) {
+            if (damage > 0) {
+                world.camera.Shake(0.2f, damage * 0.2f, damage * 0.05f);
+            }
+            else{
+                world.camera.Shake(0.15f, 0.05f, 0.01f);
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-        public void setTarget(Player player) {
-            target = player;
-        }
-
         Vector3 _oldMousePosition;
-        void handleInput(int playerNum, float dt) {
+        void HandleInput(int playerNum, float dt) {
 
 
             float mouseTurnSpeed = 360f * Mathf.Deg2Rad;
@@ -83,7 +85,7 @@ namespace Port {
             _oldMousePosition = m;
         }
 
-        void update(float dt) {
+        void Tick(float dt) {
             if (target != null) {
 
                 float minDist = Mathf.Sqrt(Mathf.Max(0, pitch) / (Mathf.PI / 2)) * 20 + 20;
@@ -209,7 +211,7 @@ namespace Port {
         }
 
 
-        void initialize() {
+        void Init() {
             position = Vector3.zero;
 
             yaw = 0f;
@@ -217,13 +219,13 @@ namespace Port {
         }
 
 
-        public void shake(float time, float pos, float angle) {
+        public void Shake(float time, float pos, float angle) {
             shakeTime = shakeTimeTotal = time;
             shakeAngleMag = angle;
             shakePositionMag = pos;
         }
 
-        void getPositionAngles(out Vector3 _pos, out float _yaw, out float _pitch) {
+        void GetPositionAngles(out Vector3 _pos, out float _yaw, out float _pitch) {
             _pos = position;
             _yaw = yaw;
             _pitch = pitch;

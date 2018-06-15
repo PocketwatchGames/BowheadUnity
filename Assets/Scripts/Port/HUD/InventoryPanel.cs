@@ -22,20 +22,20 @@ namespace Port {
 
         private InventoryContainer _mainContainer;
         private List<InventoryContainer> _packContainers = new List<InventoryContainer>();
-        private InventorySlot[] _slots = new InventorySlot[Player.MAX_INVENTORY_SIZE];
+        private InventorySlot[] _slots = new InventorySlot[Player.MaxInventorySize];
 
         public void Init(Player player) {
             _player = player;
             var r = _inventorySlotPrefab.GetComponent<RectTransform>().rect;
             slotSize = new Vector3(r.width, r.height, 0);
 
-            _player.onInventoryChange += onInventoryChange;
+            _player.onInventoryChange += OnInventoryChange;
 
             _mainContainer = Instantiate(_inventoryContainerPrefab, transform, false);
             Rebuild();
         }
 
-        private void onInventoryChange() {
+        private void OnInventoryChange() {
             _mainContainer.transform.DestroyAllChildren();
             foreach (var p in _packContainers) {
                 GameObject.Destroy(p);
@@ -73,7 +73,7 @@ namespace Port {
 
             int packSlotsRemaining = 0;
             InventoryContainer curPackContainer = null;
-            for (int slot = (int)Player.InventorySlot.PACK; slot < Player.MAX_INVENTORY_SIZE; slot++) {
+            for (int slot = (int)Player.InventorySlot.PACK; slot < Player.MaxInventorySize; slot++) {
                 var item = _player.GetInventorySlot(slot);
                 if (packSlotsRemaining == 0) {
                     var p = item as Pack;
@@ -117,10 +117,10 @@ namespace Port {
                     var item = _player.GetInventorySlot(inventorySelected);
                     if (item != null) {
                         if (dropTimer >= dropTime) {
-                            _player.drop(item);
+                            _player.Drop(item);
                         }
                         else {
-                            _player.use(item);
+                            _player.Use(item);
                         }
                     }
                 }
@@ -135,10 +135,10 @@ namespace Port {
             }
             else {
                 int s = inventorySelected;
-                for (int i = 0; i < Player.MAX_INVENTORY_SIZE; i++) {
+                for (int i = 0; i < Player.MaxInventorySize; i++) {
                     s--;
                     if (s < 0) {
-                        s = Player.MAX_INVENTORY_SIZE - 1;
+                        s = Player.MaxInventorySize - 1;
                     }
                     if (_player.GetInventorySlot(s) != null) {
                         break;
@@ -155,9 +155,9 @@ namespace Port {
             }
             else {
                 int s = inventorySelected;
-                for (int i = 0; i < Player.MAX_INVENTORY_SIZE; i++) {
+                for (int i = 0; i < Player.MaxInventorySize; i++) {
                     s++;
-                    if (s >= Player.MAX_INVENTORY_SIZE) {
+                    if (s >= Player.MaxInventorySize) {
                         s = 0;
                     }
                     if (_player.GetInventorySlot(s) != null) {
@@ -197,7 +197,7 @@ namespace Port {
                         for (int i = 0; i < pack.Data.slots + 1; i++) {
                             newInventory.Add(_player.GetInventorySlot(i + inventorySelected));
                         }
-                        for (int i = newSlot; i < Player.MAX_INVENTORY_SIZE; i++) {
+                        for (int i = newSlot; i < Player.MaxInventorySize; i++) {
                             if (i < inventorySelected || i > inventorySelected + pack.Data.slots) {
                                 newInventory.Add(_player.GetInventorySlot(i));
                             }
@@ -234,10 +234,10 @@ namespace Port {
                 Pack pack;
                 if ((pack = curItem as Pack) != null) {
                     int newSlot = inventorySelected + 1;
-                    while (newSlot < Player.MAX_INVENTORY_SIZE && !(_player.GetInventorySlot(newSlot)is Pack)) {
+                    while (newSlot < Player.MaxInventorySize && !(_player.GetInventorySlot(newSlot)is Pack)) {
                         newSlot++;
                     }
-                    if (newSlot < Player.MAX_INVENTORY_SIZE) {
+                    if (newSlot < Player.MaxInventorySize) {
                         List<Item> newInventory = new List<Item>();
                         for (int i = 0; i < inventorySelected; i++) {
                             newInventory.Add(_player.GetInventorySlot(i));
@@ -249,7 +249,7 @@ namespace Port {
                         for (int i = 0; i < pack.Data.slots + 1; i++) {
                             newInventory.Add(_player.GetInventorySlot(i + inventorySelected));
                         }
-                        for (int i = newSlot + p2.Data.slots + 1; i < Player.MAX_INVENTORY_SIZE; i++) {
+                        for (int i = newSlot + p2.Data.slots + 1; i < Player.MaxInventorySize; i++) {
                             newInventory.Add(_player.GetInventorySlot(i));
                         }
                         int index = 0;
@@ -262,7 +262,7 @@ namespace Port {
                 else {
                     int lastPackSlot;
                     int curPackSlotsRemaining = 0;
-                    for (lastPackSlot = (int)Player.InventorySlot.PACK; lastPackSlot < Player.MAX_INVENTORY_SIZE; lastPackSlot++) {
+                    for (lastPackSlot = (int)Player.InventorySlot.PACK; lastPackSlot < Player.MaxInventorySize; lastPackSlot++) {
                         var item = _player.GetInventorySlot(lastPackSlot);
 
                         Pack p;

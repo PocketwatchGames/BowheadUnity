@@ -21,7 +21,7 @@ namespace Port {
             return _data as D;
         }
 
-        public virtual void init(EntityData d, World w) {
+        public virtual void Create(EntityData d, World w) {
             _data = d;
             world = w;
         }

@@ -103,9 +103,9 @@ namespace Port {
             var prefab = DataManager.GetPrefab<Player>("Player");
             player = Instantiate(prefab);
             player.transform.parent = transform;
-            player.init(player.Data, this);
+            player.Init(player.Data, this);
 
-            camera.setTarget(player);
+            camera.SetTarget(player);
 
 
             for (int i = 0; i < 80; i++) {
@@ -130,7 +130,7 @@ namespace Port {
             }
             var i = Instantiate<WorldItem>(p);
             i.transform.parent = items.transform;
-            i.init(item, this);
+            i.Create(item, this);
             return i;
         }
         public Item CreateItem(string item) {
@@ -143,7 +143,7 @@ namespace Port {
                 return null;
             }
             var i = Instantiate<Critter>(p);
-            i.init(i.Data, this);
+            i.Create(i.Data, this);
             return i;
         }
 
@@ -203,7 +203,7 @@ namespace Port {
                 if (getTopmostBlock(500, ref pos)) {
                     Critter c = critterPool.Dequeue();
                     c.transform.parent = critters.transform;
-                    c.init();
+                    c.Init();
                     c.position = pos;
                     c.team = 1;
 
@@ -217,7 +217,7 @@ namespace Port {
                         c.SetInventorySlot(0, weapon);
                     }
 
-                    c.spawn(pos);
+                    c.Spawn(pos);
                 }
 
             }
@@ -228,7 +228,7 @@ namespace Port {
             if (!player.spawned) {
                 var spawnPoint = new Vector3(0.5f, 500, 0.5f);
                 if (getTopmostBlock(500, ref spawnPoint)) {
-                    player.spawn(spawnPoint + new Vector3(0, 1, 0));
+                    player.Spawn(spawnPoint + new Vector3(0, 1, 0));
                 }
             }
             else {
@@ -238,19 +238,19 @@ namespace Port {
                 cmd.fwd = (sbyte)(move.y*127);
                 cmd.right = (sbyte)(move.x*127);
                 if (Input.GetButton("Jump")) {
-                    cmd.buttons |= 1 << (int)InputType.JUMP;
+                    cmd.buttons |= 1 << (int)InputType.Jump;
                 }
                 if (Input.GetButton("AttackLeft")) {
-                    cmd.buttons |= 1 << (int)InputType.ATTACK_LEFT;
+                    cmd.buttons |= 1 << (int)InputType.AttackLeft;
                 }
                 if (Input.GetButton("AttackRight")) {
-                    cmd.buttons |= 1 << (int)InputType.ATTACK_RIGHT;
+                    cmd.buttons |= 1 << (int)InputType.AttackRight;
                 }
                 if (Input.GetButton("Interact")) {
-                    cmd.buttons |= 1 << (int)InputType.INTERACT;
+                    cmd.buttons |= 1 << (int)InputType.Interact;
                 }
                 if (Input.GetButton("Map")) {
-                    cmd.buttons |= 1 << (int)InputType.MAP;
+                    cmd.buttons |= 1 << (int)InputType.Map;
                 }
 
                 player.UpdatePlayerCmd(cmd);
@@ -285,11 +285,11 @@ namespace Port {
                     var pos = i.position;
                     if (getTopmostBlock(500, ref pos)) {
                         pos.y++;
-                        i.spawn(pos);
+                        i.Spawn(pos);
                     }
                 }
                 else {
-                    i.update(dt);
+                    i.Tick(dt);
                 }
             }
 

@@ -40,7 +40,7 @@ namespace Port {
             chargeTime = 0;
             Vector3 attackDir = new Vector3(Mathf.Cos(actor.yaw), Mathf.Sin(actor.yaw), 0);
             float stepAmt = attackData.stepDistance;
-            if (stepAmt != 0 && actor.activity == Actor.Activity.ONGROUND) {
+            if (stepAmt != 0 && actor.activity == Actor.Activity.OnGround) {
                 actor.moveImpulse = attackDir * stepAmt;
                 actor.moveImpulseTimer = attackData.castTime;
                 actor.velocity = Vector3.zero;
@@ -61,10 +61,10 @@ namespace Port {
                 enemy.hit(owner, this, attackData);
 
                 if (attackType == 0) {
-                    world.camera.shake(0.15f, 0.05f, 0.01f);
+                    world.camera.Shake(0.15f, 0.05f, 0.01f);
                 }
                 else {
-                    world.camera.shake(0.2f, 0.2f, 0.05f);
+                    world.camera.Shake(0.2f, 0.2f, 0.05f);
                 }
                 return true;
             }

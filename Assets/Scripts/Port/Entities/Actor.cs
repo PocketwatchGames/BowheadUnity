@@ -6,23 +6,23 @@ using System;
 namespace Port {
 
     public enum InputState {
-        RELEASED,
-        JUST_RELEASED,
-        JUST_PRESSED,
-        PRESSED,
+        Released,
+        JustReleased,
+        JustPressed,
+        Pressed,
     }
     public enum InputType {
-        JUMP,
-        INTERACT,
-        USE,
-        SWAP,
-        ATTACK_LEFT,
-        ATTACK_RIGHT,
-        SELECT_LEFT,
-        SELECT_RIGHT,
-        MAP,
-        CROUCH,
-        COUNT
+        Jump,
+        Interact,
+        Use,
+        Swap,
+        AttackLeft,
+        AttackRight,
+        SelectLeft,
+        SelectRight,
+        Map,
+        Crouch,
+        Count
     }
 
     public class Actor : Entity {
@@ -83,18 +83,18 @@ namespace Port {
 
         [Header("Inventory")]
         [SerializeField]
-        protected Item[] _inventory = new Item[Actor.MAX_INVENTORY_SIZE];
+        protected Item[] _inventory = new Item[Actor.MaxInventorySize];
 
         #endregion
 
 
-        public const int MAX_INVENTORY_SIZE = 32;
+        public const int MaxInventorySize = 32;
 
         public enum Activity {
-            FALLING,
-            SWIMMING,
-            CLIMBING,
-            ONGROUND,
+            Falling,
+            Swimming,
+            Climbing,
+            OnGround,
         }
 
 
@@ -111,10 +111,10 @@ namespace Port {
         public class Input_t {
             public Vector3 movement = Vector3.zero;
             public float yaw = 0;
-            public InputState[] inputs = new InputState[(int)InputType.COUNT];
+            public InputState[] inputs = new InputState[(int)InputType.Count];
 
             public bool IsPressed(InputType i) {
-                return inputs[(int)i] == InputState.PRESSED || inputs[(int)i] == InputState.JUST_PRESSED;
+                return inputs[(int)i] == InputState.Pressed || inputs[(int)i] == InputState.JustPressed;
             }
             public bool inMotion;
             public Vector3 position;
@@ -146,7 +146,7 @@ namespace Port {
 
                 // Step forward
                 if (IsOpen(position + moveVector)) {
-                    if (activity == Activity.ONGROUND) {
+                    if (activity == Activity.OnGround) {
                         // Step down
                         Vector3 fp = footPoint + new Vector3(0, 0, -0.5f);
                         if (!World.isSolidBlock(world.getBlock(fp))) {
@@ -304,7 +304,7 @@ namespace Port {
 
             interpolateTime = Math.Max(0, interpolateTime - dt);
             if (canTurn) {
-                if (activity == Activity.CLIMBING) {
+                if (activity == Activity.Climbing) {
                     yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
                 }
                 else {
@@ -319,16 +319,16 @@ namespace Port {
             }
 
 
-            if (activity == Activity.CLIMBING) {
+            if (activity == Activity.Climbing) {
                 UpdateClimbing(dt, input);
             }
-            else if (activity == Activity.SWIMMING) {
+            else if (activity == Activity.Swimming) {
                 UpdateSwimming(dt, input);
             }
-            else if (activity == Activity.ONGROUND) {
+            else if (activity == Activity.OnGround) {
                 UpdateGround(dt, input);
             }
-            else if (activity == Activity.FALLING) {
+            else if (activity == Activity.Falling) {
                 UpdateFalling(dt, input);
             }
 
@@ -350,8 +350,8 @@ namespace Port {
             if (onGround) {
                 if (velocity.y <= 0) {
 
-                    if (activity != Activity.ONGROUND) {
-                        onLand();
+                    if (activity != Activity.OnGround) {
+                        LandOnGround();
                         if (velocity.y < 0) {
                             Vector3 groundNormal = world.getGroundNormal(footPosition(position));
                             float slopeAccel = 1f + Vector3.Dot(velocity.normalized, -groundNormal);
@@ -373,7 +373,7 @@ namespace Port {
             }
 
 
-            if (activity != Activity.CLIMBING) {
+            if (activity != Activity.Climbing) {
                 // Collide XY
                 Vector3 moveXZ = new Vector3(velocity.x, 0, velocity.z) * dt;
                 Move(moveXZ, dt);
@@ -388,16 +388,16 @@ namespace Port {
                 firstCheck = new Vector3(0, 0, input.movement.z);
                 secondCheck = new Vector3(input.movement.x, 0, 0);
             }
-            if (activity == Activity.CLIMBING) {
+            if (activity == Activity.Climbing) {
                 if (!canClimb) {
-                    activity = Activity.FALLING;
+                    activity = Activity.Falling;
                 }
             }
             else if (world.getBlock(position) == EBlockType.BLOCK_TYPE_WATER) {
-                activity = Activity.SWIMMING;
+                activity = Activity.Swimming;
             }
             else if (onGround && velocity.y <= 0) {
-                activity = Activity.ONGROUND;
+                activity = Activity.OnGround;
 
                 //if (Crouched)
                 //{
@@ -429,18 +429,18 @@ namespace Port {
 
             }
             else {
-                activity = Activity.FALLING;
+                activity = Activity.Falling;
 
                 if (canClimb) {
                     if (firstCheck.magnitude > 0 && CanClimb(firstCheck, position)) {
                         climbingNormal = -new Vector3(Mathf.Sign(firstCheck.x), 0, Mathf.Sign(firstCheck.z));
                         velocity = Vector3.zero;
-                        activity = Activity.CLIMBING;
+                        activity = Activity.Climbing;
                     }
                     else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, position)) {
                         climbingNormal = -new Vector3(Mathf.Sign(secondCheck.x), 0, Mathf.Sign(secondCheck.z));
                         velocity = Vector3.zero;
-                        activity = Activity.CLIMBING;
+                        activity = Activity.Climbing;
                     }
                 }
 
@@ -488,7 +488,7 @@ namespace Port {
         private void UpdateFalling(float dt, Input_t input) {
             if (fallJumpTimer > 0) {
                 fallJumpTimer = Math.Max(0, fallJumpTimer - dt);
-                if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
+                if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
                     if (canJump) {
                         var jumpDir = input.movement * Data.dodgeSpeed;
                         jumpDir.y += getGroundJumpVelocity();
@@ -497,7 +497,7 @@ namespace Port {
                     fallJumpTimer = 0;
                 }
             }
-            if (input.IsPressed(InputType.JUMP)) {
+            if (input.IsPressed(InputType.Jump)) {
                 if (velocity.y >= 0) {
                     velocity.y += Data.jumpBoostAcceleration * dt;
                 }
@@ -530,7 +530,7 @@ namespace Port {
         }
 
         private void UpdateGround(float dt, Input_t input) {
-            if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
+            if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
                 if (canJump) {
                     var jumpDir = input.movement * Data.dodgeSpeed;
                     jumpDir.y += getGroundJumpVelocity();
@@ -641,8 +641,8 @@ namespace Port {
         }
 
         private void UpdateSwimming(float dt, Input_t input) {
-            if (input.inputs[(int)InputType.JUMP] == InputState.PRESSED) {
-                if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
+            if (input.inputs[(int)InputType.Jump] == InputState.Pressed) {
+                if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
                     if (canJump) {
                         var jumpDir = input.movement * Data.dodgeSpeed;
                         jumpDir.y += Data.swimJumpBoostAcceleration;
@@ -651,7 +651,7 @@ namespace Port {
                 }
                 velocity.y = Math.Min(velocity.y + Data.swimMaxSpeed * dt, Data.swimJumpSpeed);
             }
-            if (input.inputs[(int)InputType.CROUCH] == InputState.PRESSED) {
+            if (input.inputs[(int)InputType.Crouch] == InputState.Pressed) {
                 velocity.y = velocity.y - Data.swimSinkAcceleration * dt;
             }
             velocity.y += Data.gravity * dt;
@@ -689,8 +689,8 @@ namespace Port {
 
             maxHorizontalSpeed = Data.groundMaxSpeed;
 
-            if (input.inputs[(int)InputType.JUMP] == InputState.JUST_PRESSED) {
-                activity = Activity.FALLING;
+            if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+                activity = Activity.Falling;
 
 
                 Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
@@ -718,7 +718,7 @@ namespace Port {
             }
 
 
-            if (!input.IsPressed(InputType.CROUCH) || input.IsPressed(InputType.JUMP)) {
+            if (!input.IsPressed(InputType.Crouch) || input.IsPressed(InputType.Jump)) {
                 var climbingInput = getClimbingVector(input.movement, climbingNormal);
                 velocity = climbingInput * Data.climbSpeed;
             }
@@ -729,7 +729,7 @@ namespace Port {
             float floorPosition;
             bool onGround = CheckFloor(vertMovePosition, out floorPosition);
             if (onGround) {
-                activity = Activity.ONGROUND;
+                activity = Activity.OnGround;
                 velocity.y = Math.Max(0, velocity.y);
                 position.y = floorPosition + 1;
             }
@@ -775,7 +775,7 @@ namespace Port {
             }
 
             if (!IsClimbPosition(position, -climbingNormal * Data.climbWallRange)) {
-                activity = Activity.FALLING;
+                activity = Activity.Falling;
             }
 
         }
@@ -789,7 +789,7 @@ namespace Port {
         }
 
         public bool IsWading() {
-            return activity == Activity.ONGROUND && world.getBlock(waistPosition(position)) == EBlockType.BLOCK_TYPE_WATER && world.getBlock(position) != EBlockType.BLOCK_TYPE_WATER;
+            return activity == Activity.OnGround && world.getBlock(waistPosition(position)) == EBlockType.BLOCK_TYPE_WATER && world.getBlock(position) != EBlockType.BLOCK_TYPE_WATER;
         }
 
         public float getGroundJumpVelocity() {
@@ -950,7 +950,7 @@ namespace Port {
         }
 
 
-        virtual public void onLand() {
+        virtual public void LandOnGround() {
 
         }
 

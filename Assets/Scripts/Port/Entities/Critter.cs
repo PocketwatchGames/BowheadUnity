@@ -15,7 +15,7 @@ namespace Port {
         public bool hasLastKnownPosition;
         public Vector3 lastKnownPosition;
 
-        public Item[] loot = new Item[Actor.MAX_INVENTORY_SIZE];
+        public Item[] loot = new Item[MaxInventorySize];
         public CritterBehavior behaviorPanic;
 
         #endregion
@@ -33,10 +33,11 @@ namespace Port {
         #region core
 
 
-        public void init(CritterData data, World world) {
-            base.init(data, world);
+        public void Create(CritterData data, World world) {
+            base.Create(data, world);
 
             behaviorPanic = CritterBehavior.Create(data.panicBehavior);
+            Init();
         }
 
         // TODO: move cameraYaw into the PlayerCmd struct
@@ -59,14 +60,14 @@ namespace Port {
                 canMove = false;
             }
 
-            for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
+            for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) != null) {
                     GetInventorySlot(i).updateCast(dt, this);
                 }
             }
 
             Input_t input;
-            updateBrain(dt, out input);
+            UpdateBrain(dt, out input);
 
             base.Tick(dt, input);
 
@@ -74,11 +75,11 @@ namespace Port {
                 foreach (var weapon in getInventory()) {
                     Weapon w = weapon as Weapon;
                     if (w != null) {
-                        if (input.IsPressed(InputType.ATTACK_RIGHT)) {
+                        if (input.IsPressed(InputType.AttackRight)) {
                             w.charge(dt);
                         }
                         else {
-                            if (input.inputs[(int)InputType.ATTACK_RIGHT] == InputState.JUST_RELEASED) {
+                            if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
                                 w.attack(this);
                             }
                             w.chargeTime = 0;
@@ -111,7 +112,7 @@ namespace Port {
             }
         }
 
-        public void init() {
+        public void Init() {
             removeFlag = false;
 
             canClimb = false;
@@ -123,7 +124,7 @@ namespace Port {
             canAttack = true;
         }
 
-        public void spawn(Vector3 pos) {
+        public void Spawn(Vector3 pos) {
             spawned = true;
             position = pos;
             maxHealth = Data.maxHealth;
@@ -134,16 +135,16 @@ namespace Port {
 
         #region brain
 
-        void updateBrain(float dt, out Input_t input) {
+        void UpdateBrain(float dt, out Input_t input) {
             input = new Input_t();
 
             //	foreach(var p in player.world.Players)
             {
                 Player p = world.player;
 
-                float awareness = (canSee(p) * Data.visionWeight + canSmell(p) * Data.smellWeight + canHear(p) * Data.hearingWeight) / (Data.visionWeight + Data.smellWeight + Data.hearingWeight);
+                float awareness = (CanSee(p) * Data.visionWeight + CanSmell(p) * Data.smellWeight + CanHear(p) * Data.hearingWeight) / (Data.visionWeight + Data.smellWeight + Data.hearingWeight);
 
-                float waryIncrease = isPanicked() ? Data.waryIncreaseAtMaxAwarenessWhilePanicked : Data.waryIncreaseAtMaxAwareness;
+                float waryIncrease = IsPanicked() ? Data.waryIncreaseAtMaxAwarenessWhilePanicked : Data.waryIncreaseAtMaxAwareness;
                 waryIncrease *= awareness;
                 if (awareness > 0) {
                     float maxWary = 2f;
@@ -163,9 +164,9 @@ namespace Port {
             }
 
             input.yaw = yaw;
-            if (isPanicked()) {
+            if (IsPanicked()) {
                 if (behaviorPanic != null) {
-                    behaviorPanic.update(this, dt, ref input);
+                    behaviorPanic.Tick(this, dt, ref input);
                 }
             }
             else {
@@ -191,7 +192,7 @@ namespace Port {
 
         }
 
-        float canSmell(Player player) {
+        float CanSmell(Player player) {
             float basicSmellDist = 1;
 
             var diff = position - player.position;
@@ -216,8 +217,8 @@ namespace Port {
 
             return Math.Max(smell, windCarrySmell);
         }
-        float canHear(Player player) {
-            if (player.activity != Activity.ONGROUND)
+        float CanHear(Player player) {
+            if (player.activity != Activity.OnGround)
                 return 0;
             float playerSpeed = player.velocity.magnitude / player.Data.groundMaxSpeed;
             if (playerSpeed == 0)
@@ -236,7 +237,7 @@ namespace Port {
 
             return Mathf.Pow(playerSound, 0.25f);
         }
-        float canSee(Player player) {
+        float CanSee(Player player) {
             var diff = player.position - position;
             float dist = diff.magnitude;
 
@@ -276,7 +277,7 @@ namespace Port {
         }
 
 
-        bool isPanicked() {
+        bool IsPanicked() {
             return panic > 0;
         }
 

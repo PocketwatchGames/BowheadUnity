@@ -55,19 +55,17 @@ namespace Port {
 
 
 
-        public delegate void onMoneyChangeFn();
-        public event onMoneyChangeFn onMoneyChange;
+        public delegate void OnMoneyChangeFn();
+        public event OnMoneyChangeFn OnMoneyChange;
 
-
-
-
-
+        public delegate void OnLandFn(float damage);
+        public event OnLandFn OnLand;
 
 
         #region core functions
 
-        public void init(PlayerData data, World world) {
-            base.init(data, world);
+        public void Init(PlayerData data, World world) {
+            base.Create(data, world);
             attackTargetPreview = null;
         }
 
@@ -99,25 +97,25 @@ namespace Port {
                 canMove = false;
             }
 
-            if (activity == Activity.SWIMMING || activity == Activity.CLIMBING) {
+            if (activity == Activity.Swimming || activity == Activity.Climbing) {
                 canAttack = false;
             }
 
 
-            for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
+            for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) != null) {
                     GetInventorySlot(i).updateCast(dt, this);
                 }
             }
 
             Input_t input;
-            handleInput(dt, cameraYaw, out input);
+            HandleInput(dt, cameraYaw, out input);
 
-            if (input.inputs[(int)InputType.INTERACT] == InputState.JUST_PRESSED) {
-                interact();
+            if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
+                Interact();
             }
 
-            if (input.IsPressed(InputType.SWAP)) {
+            if (input.IsPressed(InputType.Swap)) {
             }
 
             bool isCasting = false;
@@ -125,11 +123,11 @@ namespace Port {
             var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
             if (canAttack) {
                 if (itemLeft != null) {
-                    if (input.IsPressed(InputType.ATTACK_LEFT)) {
+                    if (input.IsPressed(InputType.AttackLeft)) {
                         itemLeft.charge(dt);
                     }
                     else {
-                        if (input.inputs[(int)InputType.ATTACK_LEFT] == InputState.JUST_RELEASED) {
+                        if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
                             itemLeft.attack(this);
                         }
                         itemLeft.chargeTime = 0;
@@ -139,11 +137,11 @@ namespace Port {
                     }
                 }
                 if (itemRight != null) {
-                    if (input.IsPressed(InputType.ATTACK_RIGHT)) {
+                    if (input.IsPressed(InputType.AttackRight)) {
                         itemRight.charge(dt);
                     }
                     else {
-                        if (input.inputs[(int)InputType.ATTACK_RIGHT] == InputState.JUST_RELEASED) {
+                        if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
                             itemRight.attack(this);
                         }
                         itemRight.chargeTime = 0;
@@ -154,13 +152,13 @@ namespace Port {
                 }
             }
 
-            attackTargetPreview = getAttackTarget(yaw);
+            attackTargetPreview = GetAttackTarget(yaw);
 
             bool shouldLock = false;
-            if (input.IsPressed(InputType.ATTACK_LEFT) || input.IsPressed(InputType.ATTACK_RIGHT)) {
+            if (input.IsPressed(InputType.AttackLeft) || input.IsPressed(InputType.AttackRight)) {
                 shouldLock = true;
             }
-            if ((!shouldLock && !isCasting) || !isValidAttackTarget(attackTarget)) {
+            if ((!shouldLock && !isCasting) || !IsValidAttackTarget(attackTarget)) {
                 attackTarget = null;
             }
             if (shouldLock && attackTarget == null) {
@@ -171,70 +169,29 @@ namespace Port {
 
 
             base.Tick(dt, input);
-            updateStats(dt);
+            UpdateStats(dt);
 
-        }
-
-        bool isValidAttackTarget(Actor actor) {
-            if (actor == null)
-                return false;
-            var diff = actor.position - position;
-            if (diff.magnitude > 20) {
-                return false;
-            }
-            return true;
-        }
-
-        Actor getAttackTarget(float yaw) {
-
-            float maxDist = 40;
-            float maxTargetAngle = Mathf.PI;
-
-            Actor bestTarget = null;
-            float bestTargetAngle = maxTargetAngle;
-            var cs = world.critters.GetComponentsInAllChildren<Critter>();
-            foreach (var c in cs) {
-                var diff = c.position - position;
-                float dist = diff.magnitude;
-                if (dist < maxDist) {
-                    float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
-
-                    float yawDiff = Math.Abs(Mathf.Repeat(angleToEnemy - yaw, Mathf.PI*2));
-
-                    // take the target's radius into account based on how far away they are
-                    yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(c.Data.collisionRadius, dist));
-
-                    float distT = Mathf.Pow(dist / maxDist, 2);
-                    yawDiff *= distT;
-
-                    if (yawDiff < bestTargetAngle) {
-                        bestTarget = c;
-                        bestTargetAngle = yawDiff;
-                    }
-                }
-            }
-            return bestTarget;
         }
 
         ////////////
         // Spawning
         ////////////
 
-        public void spawn(Vector3 pos) {
+        public void Spawn(Vector3 pos) {
             position = pos;
             spawned = true;
 
-            setSpawnPoint(pos);
+            SetSpawnPoint(pos);
 
             // NOTE: andy these will leak unless you delete these somewhere.
 
-            pickUp(world.CreateItem("Pack"));
-            pickUp(world.CreateItem("Hat"));
-            pickUp(world.CreateItem("Helmet"));
-            pickUp(world.CreateItem("Sword"));
-            pickUp(world.CreateItem("2HSword"));
-            pickUp(world.CreateItem("Shield"));
-            pickUp(world.CreateItem("Spear"));
+            PickUp(world.CreateItem("Pack"));
+            PickUp(world.CreateItem("Hat"));
+            PickUp(world.CreateItem("Helmet"));
+            PickUp(world.CreateItem("Sword"));
+            PickUp(world.CreateItem("2HSword"));
+            PickUp(world.CreateItem("Shield"));
+            PickUp(world.CreateItem("Spear"));
 
             //Equip(new game.items.Clothing("Cloak"));
             //AddInventory(new Clothing("Backpack"));
@@ -244,11 +201,11 @@ namespace Port {
             //SetMapPos(new Vector2(spawnPoint.X, spawnPoint.Z));
             //int exploreSize = 1024;
             //Explore(this, new EventArgsExplore(){ region = new Rectangle((int)(mapPos.X - exploreSize / 2), (int)(mapPos.Y - exploreSize / 2), exploreSize, exploreSize) });
-            respawn();
+            Respawn();
 
         }
 
-        public void respawn() {
+        public void Respawn() {
             position = spawnPoint;
             maxHealth = Data.maxHealth;
             health = maxHealth;
@@ -259,33 +216,35 @@ namespace Port {
             team = 0;
         }
 
-        public void setSpawnPoint(Vector3 sp) {
+        public void SetSpawnPoint(Vector3 sp) {
             spawnPoint = sp;
         }
 
-        public void setMapPos(Vector2 p) {
+        public void SetMapPos(Vector2 p) {
             mapPos = p;
         }
 
+        #endregion
 
+        #region Tick
 
-        void handleInput(float dt, float cameraYaw, out Input_t input) {
+        void HandleInput(float dt, float cameraYaw, out Input_t input) {
             input = new Input_t();
-            for (int i = 0; i < (int)InputType.COUNT; i++) {
+            for (int i = 0; i < (int)InputType.Count; i++) {
                 if ((cur.buttons & (0x1 << i)) != 0) {
                     if ((last.buttons & (0x1 << i)) == 0) {
-                        input.inputs[i] = InputState.JUST_PRESSED;
+                        input.inputs[i] = InputState.JustPressed;
                     }
                     else {
-                        input.inputs[i] = InputState.PRESSED;
+                        input.inputs[i] = InputState.Pressed;
                     }
                 }
                 else {
                     if ((last.buttons & (0x1 << i)) != 0) {
-                        input.inputs[i] = InputState.JUST_RELEASED;
+                        input.inputs[i] = InputState.JustReleased;
                     }
                     else {
-                        input.inputs[i] = InputState.RELEASED;
+                        input.inputs[i] = InputState.Released;
                     }
                 }
             }
@@ -298,44 +257,12 @@ namespace Port {
         }
 
 
-        override public void onLand() {
-            // Land on ground
-            var block = world.getBlock(position);
-            if (!World.isCapBlock(block)) {
-                block = world.getBlock(footPosition(position));
-            }
-            float d = -velocity.y / Data.fallDamageVelocity * World.getFallDamage(block);
-            if (d > 0) {
-                damage(d);
-                useStamina((float)d);
-                stun((float)d);
-                world.camera.shake(0.2f, d * 0.2f, d * 0.05f);
-            }
-            else {
-                world.camera.shake(0.15f, 0.05f, 0.01f);
-            }
-        }
-
-        public WorldItem getInteractTarget() {
-            float closestDist = 2;
-            WorldItem closestItem = null;
-            foreach (var i in world.items.GetComponentsInAllChildren<WorldItem>()) {
-                float dist = (i.position - position).magnitude;
-                if (dist < closestDist) {
-                    closestDist = dist;
-                    closestItem = i;
-                }
-            }
-            return closestItem;
-
-        }
-
-        void updateStats(float dt) {
+        void UpdateStats(float dt) {
             //float time = dt / 60 / 24;
             //float sleep = 0;
 
             int itemCount = 0;
-            for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
+            for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) != null) {
                     itemCount++;
                 }
@@ -349,9 +276,24 @@ namespace Port {
 
             if (health <= 0) {
                 health = maxHealth;
-                respawn();
+                Respawn();
             }
 
+        }
+
+        override public void LandOnGround() {
+            // Land on ground
+            var block = world.getBlock(position);
+            if (!World.isCapBlock(block)) {
+                block = world.getBlock(footPosition(position));
+            }
+            float d = -velocity.y / Data.fallDamageVelocity * World.getFallDamage(block);
+            if (d > 0) {
+                damage(d);
+                useStamina((float)d);
+                stun((float)d);
+            }
+            OnLand(d);
         }
 
 
@@ -361,7 +303,12 @@ namespace Port {
 
         #region inventory
 
-        bool pickUp(Item item) {
+        public void SetMoney(int m) {
+            money = m;
+            OnMoneyChange();
+        }
+
+        bool PickUp(Item item) {
             Money m;
             if ((m = item as Money) != null) {
                 SetMoney(money + m.Data.count * m.count);
@@ -372,7 +319,7 @@ namespace Port {
             if ((p = item as Pack) != null) {
                 int packSlots = 0;
                 // find the first available pack slot (there might be empty slots in a previous pack)
-                for (int i = (int)InventorySlot.PACK; i < MAX_INVENTORY_SIZE - (p.Data.slots + 1); i++) {
+                for (int i = (int)InventorySlot.PACK; i < MaxInventorySize - (p.Data.slots + 1); i++) {
                     var j = GetInventorySlot(i);
                     Pack p2;
                     if ((p2 = j as Pack) != null) {
@@ -428,7 +375,7 @@ namespace Port {
             Loot loot;
             if ((loot = item as Loot) != null) {
                 if (loot.Data.stackSize > 0) {
-                    for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
+                    for (int i = 0; i < MaxInventorySize; i++) {
                         var item2 = GetInventorySlot(i) as Loot;
                         if (item2 != null && item2.Data == item.Data) {
                             int numToTransfer = Math.Min(loot.count, item2.Data.stackSize - item2.count);
@@ -443,14 +390,14 @@ namespace Port {
             }
 
             int[] slots = new int[1];
-            if (findEmptyPackSlots(1, ref slots)) {
+            if (FindEmptyPackSlots(1, ref slots)) {
                 SetInventorySlot(slots[0], item);
                 return true;
             }
             return false;
         }
 
-        public bool use(Item item) {
+        public bool Use(Item item) {
             if (item == null) {
                 return false;
             }
@@ -458,22 +405,22 @@ namespace Port {
             if (item is Clothing
                 || item is Pack
                 || item is Weapon) {
-                return equip(item);
+                return Equip(item);
             }
 
             Loot loot;
             if ((loot = item as Loot) != null && loot.use(this)) {
                 loot.count--;
                 if (loot.count <= 0) {
-                    removeFromInventory(item);
+                    RemoveFromInventory(item);
                 }
                 return true;
             }
             return false;
         }
 
-        void setItemSlot(Item item, int newSlot) {
-            for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
+        void SetItemSlot(Item item, int newSlot) {
+            for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) == item) {
                     SetInventorySlot(i, null);
                     break;
@@ -485,17 +432,17 @@ namespace Port {
             item.onSlotChange();
         }
 
-        public bool equip(Item item) {
+        public bool Equip(Item item) {
             int[] emptyPackSlots = new int[2];
 
             bool inInventory = false;
             int curSlot = -1;
-            for (int i = 0; i < MAX_INVENTORY_SIZE; i++) {
+            for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) == item) {
                     // unequip
                     if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND) {
-                        if (findEmptyPackSlots(1, ref emptyPackSlots)) {
-                            setItemSlot(GetInventorySlot(i), emptyPackSlots[0]);
+                        if (FindEmptyPackSlots(1, ref emptyPackSlots)) {
+                            SetItemSlot(GetInventorySlot(i), emptyPackSlots[0]);
                             return true;
                         }
                         return false;
@@ -511,15 +458,15 @@ namespace Port {
             Clothing clothing;
             if ((clothing = item as Clothing) != null) {
                 if (GetInventorySlot((int)InventorySlot.CLOTHING) == null) {
-                    setItemSlot(item, (int)InventorySlot.CLOTHING);
+                    SetItemSlot(item, (int)InventorySlot.CLOTHING);
                     return true;
                 }
                 else {
-                    if (inInventory || findEmptyPackSlots(1, ref emptyPackSlots)) {
+                    if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
                         if (GetInventorySlot((int)InventorySlot.CLOTHING) != null) {
-                            setItemSlot(GetInventorySlot((int)InventorySlot.CLOTHING), emptyPackSlots[0]);
+                            SetItemSlot(GetInventorySlot((int)InventorySlot.CLOTHING), emptyPackSlots[0]);
                         }
-                        setItemSlot(item, (int)InventorySlot.CLOTHING);
+                        SetItemSlot(item, (int)InventorySlot.CLOTHING);
                         return true;
                     }
                 }
@@ -541,19 +488,19 @@ namespace Port {
                     if (inInventory) {
                         slotsRequired--;
                     }
-                    if (slotsRequired <= 0 || findEmptyPackSlots(slotsRequired, ref emptyPackSlots)) {
+                    if (slotsRequired <= 0 || FindEmptyPackSlots(slotsRequired, ref emptyPackSlots)) {
                         if (inInventory) {
                             emptyPackSlots[1] = emptyPackSlots[0];
                             emptyPackSlots[0] = swapInventorySlot;
                         }
                         int slotIndex = 0;
                         if (GetInventorySlot((int)InventorySlot.LEFT_HAND) != null) {
-                            setItemSlot(GetInventorySlot((int)InventorySlot.LEFT_HAND), emptyPackSlots[slotIndex++]);
+                            SetItemSlot(GetInventorySlot((int)InventorySlot.LEFT_HAND), emptyPackSlots[slotIndex++]);
                         }
                         if (GetInventorySlot((int)InventorySlot.RIGHT_HAND) != null) {
-                            setItemSlot(GetInventorySlot((int)InventorySlot.RIGHT_HAND), emptyPackSlots[slotIndex++]);
+                            SetItemSlot(GetInventorySlot((int)InventorySlot.RIGHT_HAND), emptyPackSlots[slotIndex++]);
                         }
-                        setItemSlot(item, (int)InventorySlot.RIGHT_HAND);
+                        SetItemSlot(item, (int)InventorySlot.RIGHT_HAND);
                         return true;
                     }
                 }
@@ -574,43 +521,43 @@ namespace Port {
 
                     // if the item in our left hand is two-handed, unequip and equip the desired item in preferred hand
                     if (slotBothWeapon != null && slotBothWeapon.Data.hand == WeaponData.Hand.BOTH) {
-                        if (inInventory || findEmptyPackSlots(1, ref emptyPackSlots)) {
-                            setItemSlot(slotBothWeapon, emptyPackSlots[0]);
-                            setItemSlot(weapon, (int)InventorySlot.RIGHT_HAND);
+                        if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
+                            SetItemSlot(slotBothWeapon, emptyPackSlots[0]);
+                            SetItemSlot(weapon, (int)InventorySlot.RIGHT_HAND);
                             return true;
                         }
                     }
                     else {
                         // if our preferred slot is empty, equip in that slot
                         if (slot1Weapon == null) {
-                            setItemSlot(weapon, slotPreference1);
+                            SetItemSlot(weapon, slotPreference1);
                             return true;
                         }
                         // if our preferred slot is full but the secondary slot is empty
                         else if (slot2Weapon == null) {
                             // but the secondary slot has an off-hand item, rearrange (eg. move shield to left hand and equip sword in right)
                             if (slot1Weapon.Data.hand != weapon.Data.hand) {
-                                setItemSlot(slot1Weapon, slotPreference2);
-                                setItemSlot(weapon, slotPreference1);
+                                SetItemSlot(slot1Weapon, slotPreference2);
+                                SetItemSlot(weapon, slotPreference1);
                             }
                             // item in our primary hand is of same type, equip in off-hand
                             else {
-                                setItemSlot(weapon, slotPreference2);
+                                SetItemSlot(weapon, slotPreference2);
                             }
                             return true;
                         }
                         // if both slots are full
-                        if (inInventory || findEmptyPackSlots(1, ref emptyPackSlots)) {
+                        if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
                             // if our preferred hand has an offhand item in it, unequip that and equip the item in preferred hand
                             if (slot1Weapon.Data.hand != weapon.Data.hand || slot2Weapon.Data.hand == weapon.Data.hand) {
-                                setItemSlot(slot1Weapon, emptyPackSlots[0]);
-                                setItemSlot(weapon, slotPreference1);
+                                SetItemSlot(slot1Weapon, emptyPackSlots[0]);
+                                SetItemSlot(weapon, slotPreference1);
 
                             }
                             // our preferred hand has an item of the same type, unequip the secondary item and equip in secondary slot
                             else {
-                                setItemSlot(slot2Weapon, emptyPackSlots[0]);
-                                setItemSlot(weapon, slotPreference2);
+                                SetItemSlot(slot2Weapon, emptyPackSlots[0]);
+                                SetItemSlot(weapon, slotPreference2);
                             }
                             return true;
                         }
@@ -621,10 +568,10 @@ namespace Port {
             return false;
         }
 
-        bool findEmptyPackSlots(int count, ref int[] slots) {
+        bool FindEmptyPackSlots(int count, ref int[] slots) {
             int packSlots = 0;
             int emptySlotIndex = 0;
-            for (int i = (int)InventorySlot.PACK; i < MAX_INVENTORY_SIZE; i++) {
+            for (int i = (int)InventorySlot.PACK; i < MaxInventorySize; i++) {
                 var item = GetInventorySlot(i);
                 if (item == null) {
                     if (packSlots > 0) {
@@ -646,12 +593,12 @@ namespace Port {
             return false;
         }
 
-        void removeFromInventory(Item item) {
+        void RemoveFromInventory(Item item) {
             int slot = 0;
             int packSlots = 0;
 
 
-            for (var i = 0; i < MAX_INVENTORY_SIZE; i++) {
+            for (var i = 0; i < MaxInventorySize; i++) {
                 var checkItem = GetInventorySlot(i) as Pack;
                 if (checkItem != null) {
                     packSlots = checkItem.Data.slots;
@@ -686,7 +633,7 @@ namespace Port {
                 SetInventorySlot(slot, null);
             }
             else if (pack != null) {
-                for (int i = slot; i < MAX_INVENTORY_SIZE - packSlots - 1; i++) {
+                for (int i = slot; i < MaxInventorySize - packSlots - 1; i++) {
                     SetInventorySlot(i, GetInventorySlot(i + packSlots + 1));
                 }
             }
@@ -699,19 +646,23 @@ namespace Port {
 
         }
 
-        public void drop(Item item) {
-            removeFromInventory(item);
+        public void Drop(Item item) {
+            RemoveFromInventory(item);
 
             var worldItem = world.CreateWorldItem(item);
             worldItem.position = handPosition(position);
             worldItem.transform.parent = world.items.transform;
         }
 
+        #endregion
 
-        void interact() {
-            var t = getInteractTarget();
+
+        #region World Interaction
+
+        void Interact() {
+            var t = GetInteractTarget();
             if (t != null) {
-                if (pickUp(t.item)) {
+                if (PickUp(t.item)) {
                     Destroy(t);
                 }
             }
@@ -729,9 +680,9 @@ namespace Port {
                     }
                     if (waterItem == null) {
                         int[] newSlot = new int[1];
-                        if (findEmptyPackSlots(1, ref newSlot)) {
+                        if (FindEmptyPackSlots(1, ref newSlot)) {
                             waterItem = Item.Create(waterData, world) as Loot;
-                            pickUp(waterItem);
+                            PickUp(waterItem);
                         }
                     }
                     if (waterItem != null) {
@@ -740,11 +691,64 @@ namespace Port {
                 }
             }
         }
-        #endregion
 
-        public void SetMoney(int m) {
-            money = m;
-            onMoneyChange();
+        bool IsValidAttackTarget(Actor actor) {
+            if (actor == null)
+                return false;
+            var diff = actor.position - position;
+            if (diff.magnitude > 20) {
+                return false;
+            }
+            return true;
         }
+
+        Actor GetAttackTarget(float yaw) {
+
+            float maxDist = 40;
+            float maxTargetAngle = Mathf.PI;
+
+            Actor bestTarget = null;
+            float bestTargetAngle = maxTargetAngle;
+            var cs = world.critters.GetComponentsInAllChildren<Critter>();
+            foreach (var c in cs) {
+                var diff = c.position - position;
+                float dist = diff.magnitude;
+                if (dist < maxDist) {
+                    float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
+
+                    float yawDiff = Math.Abs(Mathf.Repeat(angleToEnemy - yaw, Mathf.PI * 2));
+
+                    // take the target's radius into account based on how far away they are
+                    yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(c.Data.collisionRadius, dist));
+
+                    float distT = Mathf.Pow(dist / maxDist, 2);
+                    yawDiff *= distT;
+
+                    if (yawDiff < bestTargetAngle) {
+                        bestTarget = c;
+                        bestTargetAngle = yawDiff;
+                    }
+                }
+            }
+            return bestTarget;
+        }
+
+
+        public WorldItem GetInteractTarget() {
+            float closestDist = 2;
+            WorldItem closestItem = null;
+            foreach (var i in world.items.GetComponentsInAllChildren<WorldItem>()) {
+                float dist = (i.position - position).magnitude;
+                if (dist < closestDist) {
+                    closestDist = dist;
+                    closestItem = i;
+                }
+            }
+            return closestItem;
+
+        }
+
+
+        #endregion
     }
 }

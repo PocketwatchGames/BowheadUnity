@@ -17,31 +17,19 @@ namespace Port {
 
         #endregion
 
-        virtual public void init(Item i, World w) {
+        virtual public void Create(Item i, World w) {
             world = w;
             world.allItems.Add(this);
             item = i;
         }
 
 
-        // Use this for initialization
-        void Start() {
-
-        }
-
-
-        // Update is called once per frame
-        void Update() {
-            transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw, Vector3.up));
-        }
-
-
-        public void spawn(Vector3 pos) {
+        public void Spawn(Vector3 pos) {
             position = pos;
             spawned = true;
         }
 
-        public void update(float dt) {
+        public void Tick(float dt) {
 
             if (!inMotion) {
                 if (velocity != Vector3.zero

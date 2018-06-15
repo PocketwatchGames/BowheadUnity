@@ -10,7 +10,7 @@ namespace Port {
     }
 
     abstract public class CritterBehavior {
-        abstract public void update(Critter c, float dt, ref Actor.Input_t input);
+        abstract public void Tick(Critter c, float dt, ref Actor.Input_t input);
 
         public static CritterBehavior Create(CritterBehaviorType t) {
             switch (t) {
@@ -24,9 +24,9 @@ namespace Port {
     }
 
     public class CritterBehaviorFlee : CritterBehavior {
-        override public void update(Critter c, float dt, ref Actor.Input_t input) {
-            input.inputs[(int)InputType.JUMP] = InputState.RELEASED;
-            input.inputs[(int)InputType.ATTACK_RIGHT] = InputState.RELEASED;
+        override public void Tick(Critter c, float dt, ref Actor.Input_t input) {
+            input.inputs[(int)InputType.Jump] = InputState.Released;
+            input.inputs[(int)InputType.AttackRight] = InputState.Released;
             if (c.hasLastKnownPosition) {
                 var diff = c.position - c.lastKnownPosition;
                 diff.z = 0;
@@ -36,23 +36,23 @@ namespace Port {
                 input.movement = diff.normalized;
                 input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
             }
-            if (c.canJump && c.activity == Actor.Activity.ONGROUND) {
-                input.inputs[(int)InputType.JUMP] = InputState.JUST_PRESSED;
+            if (c.canJump && c.activity == Actor.Activity.OnGround) {
+                input.inputs[(int)InputType.Jump] = InputState.JustPressed;
             }
 
         }
     }
     public class CritterBehaviorAttack : CritterBehavior {
-        override public void update(Critter c, float dt, ref Actor.Input_t input) {
+        override public void Tick(Critter c, float dt, ref Actor.Input_t input) {
             input.movement = Vector3.zero;
-            input.inputs[(int)InputType.JUMP] = InputState.RELEASED;
-            input.inputs[(int)InputType.ATTACK_RIGHT] = InputState.RELEASED;
+            input.inputs[(int)InputType.Jump] = InputState.Released;
+            input.inputs[(int)InputType.AttackRight] = InputState.Released;
             if (c.hasLastKnownPosition) {
                 var diff = c.position - c.lastKnownPosition;
 
                 if (diff.z <= -3) {
-                    if (c.canJump && c.activity == Actor.Activity.ONGROUND) {
-                        input.inputs[(int)InputType.JUMP] = InputState.JUST_PRESSED;
+                    if (c.canJump && c.activity == Actor.Activity.OnGround) {
+                        input.inputs[(int)InputType.Jump] = InputState.JustPressed;
                     }
                 }
                 diff.z = 0;
@@ -67,8 +67,8 @@ namespace Port {
                     input.movement = move.normalized;
                 }
                 else {
-                    if (c.canAttack && c.activity == Actor.Activity.ONGROUND) {
-                        input.inputs[(int)InputType.ATTACK_RIGHT] = InputState.JUST_RELEASED;
+                    if (c.canAttack && c.activity == Actor.Activity.OnGround) {
+                        input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
                     }
                 }
                 input.yaw = Mathf.Atan2(-diff.x, -diff.z);
