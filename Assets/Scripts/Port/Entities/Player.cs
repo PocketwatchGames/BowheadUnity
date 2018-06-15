@@ -32,7 +32,7 @@ namespace Port {
             CLOTHING = 0,
             LEFT_HAND = 1,
             RIGHT_HAND = 2,
-            PACK = 3
+            PACK = 3,
         }
         public enum WeightClass {
             LIGHT,
@@ -56,7 +56,8 @@ namespace Port {
 
 
 
-
+        public delegate void onMoneyChangeFn();
+        public event onMoneyChangeFn onMoneyChange;
 
 
 
@@ -388,8 +389,8 @@ namespace Port {
 
         bool pickUp(Item item) {
             Money m;
-            if ((m = item as Money) != null) { 
-                money += m.Data.count;
+            if ((m = item as Money) != null) {
+                SetMoney(money + m.Data.count * m.count);
                 return true;
             }
 
@@ -939,6 +940,9 @@ namespace Port {
         }
         #endregion
 
-
+        public void SetMoney(int m) {
+            money = m;
+            onMoneyChange();
+        }
     }
 }
