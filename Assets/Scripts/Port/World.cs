@@ -14,7 +14,7 @@ namespace Port {
 
 
         // Use this for initialization
-        void Start() {
+        void Awake() {
             init();
         }
 

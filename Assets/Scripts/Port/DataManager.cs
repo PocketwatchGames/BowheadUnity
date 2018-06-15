@@ -45,6 +45,13 @@ namespace Port {
             }
             return null;
         }
+        public static GameObject GetPrefab(string name) {
+            GameObject o;
+            if (_entityPrefabs.TryGetValue(name, out o)) {
+                return o;
+            }
+            return null;
+        }
 
         public static void Add(EntityData d) {
 
