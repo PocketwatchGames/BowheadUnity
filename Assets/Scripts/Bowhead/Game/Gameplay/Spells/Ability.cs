@@ -45,7 +45,7 @@ namespace Bowhead.Actors.Spells {
 
 		readonly ActorRPC rpc_Owner_InstantCooldown;
 		readonly ActorRPC<bool, bool, int> rpc_Owner_ServerResponse;
-		readonly ActorRPC<List<Unit>, Vector3> rpc_Server_Execute;
+		//readonly ActorRPC<List<Unit>, Vector3> rpc_Server_Execute;
 		readonly ActorRPC<float> rpc_Owner_SetCooldown;
 		//readonly ActorRPC<UnitGravestoneActor> rpc_Server_ActivateGravestone;
 		readonly ActorRPC rpc_Owner_AOEDead;
@@ -56,7 +56,7 @@ namespace Bowhead.Actors.Spells {
 
 			rpc_Owner_InstantCooldown = BindRPC(Owner_InstantCooldown);
 			rpc_Owner_ServerResponse = BindRPC<bool, bool, int>(Owner_ServerResponse);
-			rpc_Server_Execute = BindRPC<List<Unit>, Vector3>(Server_Execute);
+			//rpc_Server_Execute = BindRPC<List<Unit>, Vector3>(Server_Execute);
 			rpc_Owner_AOEDead = BindRPC(Owner_AOEDead);
 			rpc_Owner_SetCooldown = BindRPC<float>(Owner_SetCooldown);
 			//rpc_Server_ActivateGravestone = BindRPC<UnitGravestoneActor>(Server_ActivateGravestone);
@@ -291,8 +291,8 @@ namespace Bowhead.Actors.Spells {
 //#endif
 //		}
 
-		[RPC(ERPCDomain.Server, Reliable = true)]
-		void Server_Execute(List<Unit> selection, Vector3 pos) {
+		//[RPC(ERPCDomain.Server, Reliable = true)]
+		//void Server_Execute(List<Unit> selection, Vector3 pos) {
 
 //			// some units may not get replicated as null if they are dead.
 //			selection.RemoveAll(x => x == null);
@@ -374,7 +374,7 @@ namespace Bowhead.Actors.Spells {
 //#if !(BACKEND_SERVER || LOGIN_SERVER)
 //			}
 //#endif
-		}
+		//}
 
 //		void ServerCastSpells(IList<Unit> units) {
 //			for (int i = 0; i < units.Count; ++i) {
@@ -454,18 +454,18 @@ namespace Bowhead.Actors.Spells {
 			_cooldown = Mathf.Min(cd + (ClientPlayerController.localPlayerPingSeconds * 0.5f), _cooldownTime);
 		}
 
-		public bool Validate(IList<Unit> selection) {
-			if (!abilityClass.isResurrect && (abilityClass.aoeClass == null) && ((abilityClass.activeSpells == null) || (abilityClass.activeSpells.Length < 1))) {
-				return false;
-			}
+		//public bool Validate(IList<Unit> selection) {
+		//	if (!abilityClass.isResurrect && (abilityClass.aoeClass == null) && ((abilityClass.activeSpells == null) || (abilityClass.activeSpells.Length < 1))) {
+		//		return false;
+		//	}
 
-			//if (!abilityClass.ValidateSelection(_player, selection)) {
-			//	return false;
-			//}
+		//	//if (!abilityClass.ValidateSelection(_player, selection)) {
+		//	//	return false;
+		//	//}
 
-			//return abilityClass.ValidateAllUnits(_player.unitsControlledByPlayer);
-			return false;
-		}
+		//	//return abilityClass.ValidateAllUnits(_player.unitsControlledByPlayer);
+		//	return false;
+		//}
 
 		/*
 		void ServerActivatePassives() {

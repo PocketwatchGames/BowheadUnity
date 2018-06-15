@@ -225,9 +225,9 @@ namespace Bowhead.Actors {
 			public XPCurve parryMaxDamageReductionScaling;
 			public float GetParryMaxDamageReduction(int toLevel) {
 				var scale = 1f;
-				if (parryMaxDamageReductionScaling != null) {
-					scale = GameManager.instance.staticData.xpTable.Eval(parryMaxDamageReductionScaling, toLevel);
-				}
+				//if (parryMaxDamageReductionScaling != null) {
+				//	scale = GameManager.instance.staticData.xpTable.Eval(parryMaxDamageReductionScaling, toLevel);
+				//}
 				return scale*parryMaxDamageReduction;
 			}
 			public ActorPropertyMetaClass resistChanceBonusMetaClass;
@@ -240,9 +240,9 @@ namespace Bowhead.Actors {
 			public XPCurve resistMaxDamageReductionScaling;
 			public float GetResistMaxDamageReduction(int toLevel) {
 				var scale = 1f;
-				if (resistMaxDamageReductionScaling != null) {
-					scale = GameManager.instance.staticData.xpTable.Eval(resistMaxDamageReductionScaling, toLevel);
-				}
+				//if (resistMaxDamageReductionScaling != null) {
+				//	scale = GameManager.instance.staticData.xpTable.Eval(resistMaxDamageReductionScaling, toLevel);
+				//}
 				return scale*resistMaxDamageReduction;
 			}
 			public ActorPropertyMetaClass blockDamageScaleBonusMetaClass;
@@ -252,9 +252,9 @@ namespace Bowhead.Actors {
 			public XPCurve blockMaxDamageReductionScaling;
 			public float GetBlockMaxDamageReduction(int toLevel) {
 				var scale = 1f;
-				if (blockMaxDamageReductionScaling != null) {
-					scale = GameManager.instance.staticData.xpTable.Eval(blockMaxDamageReductionScaling, toLevel);
-				}
+				//if (blockMaxDamageReductionScaling != null) {
+				//	scale = GameManager.instance.staticData.xpTable.Eval(blockMaxDamageReductionScaling, toLevel);
+				//}
 				return scale*blockMaxDamageReduction;
 			}
 		}

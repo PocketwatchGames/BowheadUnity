@@ -82,7 +82,7 @@ namespace Bowhead {
         }
 
 		public void Spawn() {
-			gameObject.layer = Layers.Gibs;
+			//gameObject.layer = Layers.Gibs;
 
 			Bleed(100f);
 
@@ -171,7 +171,7 @@ namespace Bowhead {
 
 		void Splatter() {
 			if (GameManager.instance.clientWorld != null) {
-				GameManager.instance.clientWorld.RenderBloodSplats(transform.position, blood.radius, blood.size, blood.count);
+				//GameManager.instance.clientWorld.RenderBloodSplats(transform.position, blood.radius, blood.size, blood.count);
 			}
 		}
 
@@ -206,7 +206,7 @@ namespace Bowhead {
 				return;
 			}
 
-			var isGround = (collision.gameObject.layer == Layers.Terrain) || (collision.gameObject.layer == Layers.Block);
+			var isGround = (collision.gameObject.layer == Layers.Terrain);// || (collision.gameObject.layer == Layers.Block);
 			_onGround = _onGround || isGround;
 		}
 

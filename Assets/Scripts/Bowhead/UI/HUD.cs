@@ -338,15 +338,6 @@ namespace Bowhead.Client.UI {
 //#endif
 		}
 
-		DeityClass GetLocalPlayerDeityClassForAbilityButtonSlot(int index) {
-			//if (index < HUDAbilityBar.MAX_PRIMARY_SPELLS) {
-			//	return ClientPlayerController.localPlayer.playerState.primaryDeity;
-			//} else if (index < HUDAbilityBar.RELIC_ABILITY_INDEX) {
-			//	return ClientPlayerController.localPlayer.playerState.secondaryDeity;
-			//}
-			return null;
-		}
-
 		public virtual void InputSettingsChanged(GameplayInputActions actions) {
 			for (int i = 0; i < actions.spells.Length; ++i) {
 				SetLocalPlayerAbilityKey(i, actions.spells[i].GetShortBindingText());

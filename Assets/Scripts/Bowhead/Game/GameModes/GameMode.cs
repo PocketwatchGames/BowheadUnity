@@ -65,12 +65,6 @@ namespace Bowhead.Server {
 		float _nonReplicatedTimer;
 		double _gameTime;
 		int _timerAsInt;
-		int _tierMiniLvl;
-		int _tierMaxiLvl;
-		int _tierMinLevel;
-		int _tierMaxLevel;
-		int _essenceScale;
-		int _mobDifficultyLevel;
 		bool _oldOvertimeEnabled;
 		bool _perfTest;
 		bool _endMatch;
@@ -674,7 +668,6 @@ namespace Bowhead.Server {
 			_teams.Clear();
 			_players.Clear();
 			_readyForConnect = false;
-			_essenceScale = Mathf.FloorToInt(GameManager.instance.staticData.xpTable.GetEssenceScale(GameManager.instance.tier) * SOULSTONE_POINT_SCALE);
 
 #if BACKEND_SERVER
 			_waitTime = 0f;
@@ -719,11 +712,6 @@ namespace Bowhead.Server {
 				}
 			}
 
-			var xpTable = GameManager.instance.staticData.xpTable;
-
-			mobLevel = xpTable.GetMOBLevel(GameManager.instance.ilvl);
-			_mobDifficultyLevel = xpTable.GetDifficulty(GameManager.instance.difficulty).levelBoost;
-
 			_gameState = (GameState)world.Spawn(gameStateType, null, SpawnParameters.defaultParameters);
 			_gameState.ServerSetGameMode(this);
 			_gameState.Server_SetMatchState(_matchState, false, 0);
@@ -749,25 +737,6 @@ namespace Bowhead.Server {
 			//DestroyInvalidUnits();
 		}
 
-		public int GetMOBLevel(bool elite) {
-			var mobLevel = RandomMOBLevel() + _mobDifficultyLevel;
-			if (elite) {
-				mobLevel |= XPTable.ELITE_LEVEL_FLAG;
-			}
-			return mobLevel;
-		}
-
-		int RandomMOBLevel() {
-			//if (_config == null) {
-			//	return 1;
-			//}
-
-			//var gm = GameManager.instance;
-
-			//return Mathf.Max(1, GameManager.instance.RandomRange(mobLevel.mobLevel.x, mobLevel.mobLevel.y+1));
-			return 1;
-		}
-
 		void TickTravelPlayers() {
 			if (_teamStarts != null) {
 				foreach (var player in world.GetActorIterator<ServerPlayerController>()) {
@@ -776,100 +745,6 @@ namespace Bowhead.Server {
 					}
 				}
 			}
-		}
-
-#if BACKEND_SERVER || !SHIP
-		void InitPlayeriLvls() {
-
-			var playerSkills = GameManager.instance.teamSchedule.GetAllPlayerInventorySkills();
-
-			var xpTable = GameManager.instance.staticData.xpTable;
-
-			_tierMaxiLvl = GameManager.instance.ilvl;
-			_tierMiniLvl = Mathf.Max(1, _tierMaxiLvl - xpTable.GetTieriLvl(1));
-
-			_tierMaxiLvl += xpTable.maxiLvlOverTier;
-
-			_tierMaxLevel = Mathf.Clamp(_tierMaxiLvl / xpTable.ilvlPerLevel, 1, xpTable.maxLevel);
-
-#if !SHIP
-			if (playerSkills != null) {
-#endif
-				// server has pre-loaded list of all player skills.
-
-				var maxPlayeriLvl = 0;
-
-				for (int i = 0; i < playerSkills.Length; ++i) {
-					var skills = playerSkills[i];
-					maxPlayeriLvl = Mathf.Max(maxPlayeriLvl, skills.ilvl);
-				}
-
-				if (maxPlayeriLvl < _tierMiniLvl) {
-					_tierMiniLvl = 1; // no one in party is at this ilvl, no lower bound
-				}
-
-				_tierMinLevel = Mathf.Clamp(_tierMiniLvl / xpTable.ilvlPerLevel, 1, xpTable.maxLevel);
-#if !SHIP
-			} else {
-				// use connected players instead.
-				// non-shipping editor/non-server path.
-
-				var maxPlayeriLvl = 0;
-
-				for (int i = 0; i < players.Count; ++i) {
-					var player = players[i];
-					maxPlayeriLvl = Mathf.Max(maxPlayeriLvl, player.inventorySkills.ilvl);
-				}
-
-				if (maxPlayeriLvl < _tierMiniLvl) {
-					_tierMiniLvl = 1; // no one in party is at this ilvl, no lower bound
-				}
-
-				_tierMinLevel = Mathf.Clamp(_tierMiniLvl / xpTable.ilvlPerLevel, 1, xpTable.maxLevel);
-
-				for (int i = 0; i < players.Count; ++i) {
-					var player = players[i];
-					var ps = player.playerState;
-					var ilvl = player.inventorySkills.ilvl;
-
-					ps.xp = player.inventorySkills.xp;
-					ps.drop_ilvl = Mathf.Min(ilvl, _tierMaxiLvl);
-					ps.min_ilvl = _tierMiniLvl;
-					ps.max_ilvl = _tierMaxiLvl;
-					ps.level = player.inventorySkills.level;
-					ps.scaledLevel = Mathf.Clamp(ps.level, _tierMinLevel, _tierMaxLevel);
-
-					if (ilvl < _tierMiniLvl) {
-						var adjustedMOB = xpTable.GetMOBLevel(ilvl);
-						player.mobLevelBasis = Mathf.FloorToInt(Mathf.Lerp(adjustedMOB.mobLevel.x, adjustedMOB.mobLevel.y, 0.5f)+0.5f);
-						player.mobXPBasis = xpTable.GetXPScale(player.mobLevelBasis);
-					} else {
-						player.mobLevelBasis = Mathf.FloorToInt(Mathf.Lerp(mobLevel.mobLevel.x, mobLevel.mobLevel.y, 0.5f)+0.5f);
-						if (ilvl > _tierMaxiLvl) {
-							var adjustedMOB = xpTable.GetMOBLevel(ilvl);
-							player.mobXPBasis = xpTable.GetXPScale(adjustedMOB.mobLevel.x);
-						} else {
-							player.mobXPBasis = xpTable.GetXPScale(mobLevel.mobLevel.x);
-						}
-					}
-
-					// re-init player unit's levels
-					//foreach (var unit in world.GetActorIterator<Unit>()) {
-					//	if (unit.spawnTag.owningPlayer != null) {
-					//		if (ReferenceEquals(unit.spawnTag.owningPlayer.playerController, player)) {
-					//			unit.ServerInitActorLevel(ps.scaledLevel);
-					//		}
-					//	}
-					//}
-				}
-			}
-#endif
-		}
-#endif
-
-		public MOBLevel mobLevel {
-			get;
-			private set;
 		}
 
 		public int numPlayersPerTeam {
@@ -899,23 +774,6 @@ namespace Bowhead.Server {
 		public bool isMPMap {
 			get {
 				return !isCOOPMap;
-			}
-		}
-
-		public int mobSpellLevel {
-			get {
-				return 1;
-				//if (_config == null) {
-				//	return 1;
-				//}
-
-				//return Mathf.Max(1, mobLevel.spellLevel);
-			}
-		}
-
-		public float mobSpellPower {
-			get {
-				return GameManager.instance.staticData.xpTable.GetSpellPower(mobSpellLevel);
 			}
 		}
 
@@ -1616,18 +1474,6 @@ namespace Bowhead.Server {
 		public Actors.ServerTeam npcTeam {
 			get;
 			private set;
-		}
-
-		public int tierMiniLvl {
-			get {
-				return _tierMiniLvl;
-			}
-		}
-		
-		public int tierMaxiLvl {
-			get {
-				return _tierMaxiLvl;
-			}
 		}
 	}
 }

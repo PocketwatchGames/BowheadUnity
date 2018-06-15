@@ -41,7 +41,6 @@ namespace Bowhead.Actors.Spells {
 		public string customDescKey;
 		public float descParam1;
 		public Sprite_WRef icon;
-		public DeityClass optionalDeity;
 		public bool hidden;
 		public bool cannotBeCleansed;
 		public bool cannotBeMutexed;

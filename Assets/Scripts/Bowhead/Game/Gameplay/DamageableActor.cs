@@ -15,6 +15,47 @@ namespace Bowhead.Actors {
 		Freeze
 	}
 
+	[Flags]
+	public enum EUnitActionCueSlot {
+		HighLeft = 0x1,
+		HighRight = 0x2,
+		HighCenter = 0x4,
+		MidLeft = 0x8,
+		MidRight = 0x10,
+		MidCenter = 0x20,
+		LowLeft = 0x40,
+		LowRight = 0x80,
+		LowCenter = 0x100
+	}
+
+	[Flags]
+	public enum EUnitActionCueSlotExplosion {
+		HighLeft = 0x1,
+		HighRight = 0x2,
+		HighCenter = 0x4,
+		MidLeft = 0x8,
+		MidRight = 0x10,
+		MidCenter = 0x20,
+		LowLeft = 0x40,
+		LowRight = 0x80,
+		LowCenter = 0x100,
+		ExplosionFront = 0x200,
+		ExplosionBack = 0x400
+	}
+
+	[Flags]
+	public enum EBlockParryDodge {
+		Block = 0x1,
+		Parry = 0x2,
+		Dodge = 0x4
+	}
+
+	[Flags]
+	public enum EBlockParry {
+		Block = 0x1,
+		Parry = 0x2
+	}
+
 	public struct AttachmentLocations {
 		public Transform head;
 		public Transform chest;
@@ -1314,14 +1355,14 @@ namespace Bowhead.Actors {
 		public virtual void ServerInitActorLevel(int level) {
 			_level = (byte)level;
 			_damageScale = (_damageCurve != null) ? _damageCurve.Eval(level) : 1f;
-			_spellPower = GameManager.instance.staticData.xpTable.GetSpellPower(_level);
+			_spellPower = 1f;//GameManager.instance.staticData.xpTable.GetSpellPower(_level);
 			if (_propertyInstances != null) {
 				for (int i = 0; i <_propertyInstances.Length; ++i) {
 					var p = _propertyInstances[i];
 					p.ServerInitLevel(level);
 				}
 			}
-		}
+	}
 
 		public virtual void ServerInitActorGear(MetaGame.PlayerInventorySkills.ItemStats gear) {
 			if (_propertyInstances != null) {
@@ -1335,7 +1376,7 @@ namespace Bowhead.Actors {
 		public virtual void ServerSetActorLevel(int level) {
 			_level = (byte)level;
 			_damageScale = (_damageCurve != null) ? _damageCurve.Eval(level) : 1f;
-			_spellPower = GameManager.instance.staticData.xpTable.GetSpellPower(_level);
+			_spellPower = 1f;//GameManager.instance.staticData.xpTable.GetSpellPower(_level);
 			rpc_Multicast_ClientSetLevel.Invoke(_level);
 			if (_propertyInstances != null) {
 				for (int i = 0; i <_propertyInstances.Length; ++i) {
@@ -1364,7 +1405,7 @@ namespace Bowhead.Actors {
 		}
 
 		void OnRep_level() {
-			_spellPower = GameManager.instance.staticData.xpTable.GetSpellPower(_level);
+			_spellPower = 1f;// GameManager.instance.staticData.xpTable.GetSpellPower(_level);
 		}
 
 		[RPC(ERPCDomain.Multicast, CheckRelevancy = true, Reliable = true)]
@@ -1818,7 +1859,7 @@ namespace Bowhead.Actors {
 
 		public bool elite {
 			get {
-				return (_level & XPTable.ELITE_LEVEL_FLAG) != 0;
+				return false;// (_level & XPTable.ELITE_LEVEL_FLAG) != 0;
 			}
 		}
 

@@ -16,9 +16,9 @@ namespace Bowhead.MetaGame {
 		}
 
 		public float GetLevelScaling(int toLevel) {
-			if (_lvlScale != null) {
-				return GameManager.instance.staticData.xpTable.Eval(_lvlScale, toLevel);
-			}
+			//if (_lvlScale != null) {
+			//	return GameManager.instance.staticData.xpTable.Eval(_lvlScale, toLevel);
+			//}
 			return 1f;
 		}
 	}

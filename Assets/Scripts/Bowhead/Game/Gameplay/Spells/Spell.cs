@@ -641,10 +641,10 @@ namespace Bowhead.Actors.Spells {
 			private set;
 		}
 
-		public Unit uTarget {
-			get;
-			private set;
-		}
+		//public Unit uTarget {
+		//	get;
+		//	private set;
+		//}
 
 		public Server.ServerWorld world {
 			get;

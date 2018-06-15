@@ -37,7 +37,6 @@ namespace Bowhead.Server.Actors {
 		readonly ActorRPC<ExplosiveForce> rpc_Owner_Explosion;
 		readonly ActorRPC<List<Vector3>, float> rpc_Owner_FormationFeedback;
 		readonly ActorRPC<List<Vector3>, List<float>> rpc_Owner_FormationFeedback2;
-		readonly ActorRPC<PlayerState, StaticAssetRef<DeityClass>, StaticAssetRef<DeityClass>, StaticAssetRef<AbilityClass>, ushort, StaticAssetRef<AbilityClass>, ushort, int, int> rpc_Owner_SetSpells;
 		readonly ActorRPC<int> rpc_Owner_SetNumTeamUnits;
 		readonly ActorRPC<PlayerState, string> rpc_Owner_Say;
 		readonly ActorRPC<PlayerState, string> rpc_Owner_SayTeam;

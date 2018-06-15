@@ -4,5 +4,6 @@ using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
 public class World_ChunkComponent : MonoBehaviour {
-	public MeshFilter meshFilter;	
+	public MeshFilter meshFilter;
+	public MeshCollider meshCollider;
 }

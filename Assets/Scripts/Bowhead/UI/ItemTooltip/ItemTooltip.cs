@@ -33,7 +33,7 @@ namespace Bowhead.Client.UI {
 
 		protected override Graphic CreateTooltip() {
 			var tooltip = Instantiate(_prefab);
-			tooltip.Init(_owner, _itemClass, _ilvl, GameManager.instance.staticData.xpTable.GetSpellPower(_ilvl));
+			//tooltip.Init(_owner, _itemClass, _ilvl, GameManager.instance.staticData.xpTable.GetSpellPower(_ilvl));
 			return tooltip.graphic;
 		}
 	}

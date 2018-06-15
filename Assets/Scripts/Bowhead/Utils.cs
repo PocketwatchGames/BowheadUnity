@@ -6,7 +6,7 @@ using Bowhead;
 public static partial class Utils {
 	public static Vector3 PutPositionOnGround(Vector3 pos) {
 		RaycastHit hitInfo;
-		if (Physics.Raycast(pos + new Vector3(0, 1024, 0), Vector3.down, out hitInfo, Mathf.Infinity, Layers.DefaultMask|Layers.TerrainMask|Layers.BlockMask)) {
+		if (Physics.Raycast(pos + new Vector3(0, 1024, 0), Vector3.down, out hitInfo, Mathf.Infinity, Layers.DefaultMask|Layers.TerrainMask)) {
 			return hitInfo.point;
 		}
 		return pos;
@@ -14,7 +14,7 @@ public static partial class Utils {
 
 	public static Vector3 PutPositionOnGroundOrWater(Vector3 pos) {
 		RaycastHit hitInfo;
-		if (Physics.Raycast(pos + new Vector3(0, 1024, 0), Vector3.down, out hitInfo, Mathf.Infinity, Layers.DefaultMask|Layers.TerrainMask|Layers.BlockMask|Layers.WaterMask, QueryTriggerInteraction.Collide)) {
+		if (Physics.Raycast(pos + new Vector3(0, 1024, 0), Vector3.down, out hitInfo, Mathf.Infinity, Layers.DefaultMask|Layers.TerrainMask|Layers.WaterMask, QueryTriggerInteraction.Collide)) {
 			return hitInfo.point;
 		}
 		return pos;

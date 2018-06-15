@@ -161,7 +161,7 @@ namespace Bowhead.Actors {
 
 		public float spellPower {
 			get {
-				return GameManager.instance.staticData.xpTable.GetSpellPower(_drop_ilvl);
+				return 1f;// GameManager.instance.staticData.xpTable.GetSpellPower(_drop_ilvl);
 			}
 		}
 
@@ -189,16 +189,6 @@ namespace Bowhead.Actors {
 				_onlineUUID = value;
 			}
 		}
-
-		public Spells.DeityClass primaryDeity { get; set; }
-		public Spells.DeityClass secondaryDeity { get; set; }
-		public Spells.AbilityClass relic { get; set; }
-		public Spells.AbilityClass potion { get; set; }
-
-		public int primarySpells { get; set; }
-		public int secondarySpells { get; set; }
-		public int reliciLvl { get; set; }
-		public int potioniLvl { get; set; }
 
 		[RPC(ERPCDomain.Multicast, Reliable = true)]
 		protected void Multicast_SetPermissionLevel(int level) {

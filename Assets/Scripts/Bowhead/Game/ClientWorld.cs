@@ -188,54 +188,54 @@ namespace Bowhead.Client {
 			_decalGroups[(int)EDecalGroup.BloodAndExplosions].maxDecals = GameManager.instance.bloodAndExplosionDecalLimit;
 		}
 
-		public void RenderBloodSplat(Vector3 worldPos, Vector2 size, float orientation) {
-			RaycastHit hitInfo;
-			if (Physics.Raycast(worldPos + new Vector3(0, 1024, 0), Vector3.down, out hitInfo, Mathf.Infinity, Layers.TerrainMask|Layers.BlockMask)) {
-				if ((hitInfo.collider.gameObject.layer == Layers.Block) || hitInfo.collider.gameObject.CompareTag("Decal")) {
-					var m = GameManager.instance.clientData.bloodDecalMaterials[GameManager.instance.RandomRange(0, GameManager.instance.clientData.bloodDecalMaterials.Length)];
-					if (_decalGroups[(int)EDecalGroup.BloodAndExplosions] != null) {
-						_decalGroups[(int)EDecalGroup.BloodAndExplosions].NewDecal(0f, null, worldPos, new Vector3(size.x, 1, size.y), Quaternion.AngleAxis(orientation, Vector3.up), m, true);
-					}
-				} /*else if (_terrainBlood != null) {
-					_terrainBlood.RenderBlood(worldPos, size, orientation);
-				}*/
-			}
-		}
+		//public void RenderBloodSplat(Vector3 worldPos, Vector2 size, float orientation) {
+		//	RaycastHit hitInfo;
+		//	if (Physics.Raycast(worldPos + new Vector3(0, 1024, 0), Vector3.down, out hitInfo, Mathf.Infinity, Layers.TerrainMask|Layers.BlockMask)) {
+		//		if ((hitInfo.collider.gameObject.layer == Layers.Block) || hitInfo.collider.gameObject.CompareTag("Decal")) {
+		//			var m = GameManager.instance.clientData.bloodDecalMaterials[GameManager.instance.RandomRange(0, GameManager.instance.clientData.bloodDecalMaterials.Length)];
+		//			if (_decalGroups[(int)EDecalGroup.BloodAndExplosions] != null) {
+		//				_decalGroups[(int)EDecalGroup.BloodAndExplosions].NewDecal(0f, null, worldPos, new Vector3(size.x, 1, size.y), Quaternion.AngleAxis(orientation, Vector3.up), m, true);
+		//			}
+		//		} /*else if (_terrainBlood != null) {
+		//			_terrainBlood.RenderBlood(worldPos, size, orientation);
+		//		}*/
+		//	}
+		//}
 
-		public void RenderExplosionSplat(Vector3 worldPos, Vector2 size, float orientation, bool drawOnWater) {
-			if (!drawOnWater) {
-				RaycastHit hitInfo;
-				if (Physics.Raycast(new Ray(worldPos + new Vector3(0, 0.5f, 0), Vector3.down), out hitInfo, Mathf.Infinity, Layers.TerrainMask|Layers.BlockMask|Layers.WaterMask, QueryTriggerInteraction.Collide)) {
-					if (hitInfo.transform.gameObject.layer == Layers.Water) {
-						return;
-					}
-				}
-            }
+		//public void RenderExplosionSplat(Vector3 worldPos, Vector2 size, float orientation, bool drawOnWater) {
+		//	if (!drawOnWater) {
+		//		RaycastHit hitInfo;
+		//		if (Physics.Raycast(new Ray(worldPos + new Vector3(0, 0.5f, 0), Vector3.down), out hitInfo, Mathf.Infinity, Layers.TerrainMask|Layers.BlockMask|Layers.WaterMask, QueryTriggerInteraction.Collide)) {
+		//			if (hitInfo.transform.gameObject.layer == Layers.Water) {
+		//				return;
+		//			}
+		//		}
+  //          }
 
-			var m = GameManager.instance.clientData.explosionDecalMaterials[GameManager.instance.RandomRange(0, GameManager.instance.clientData.explosionDecalMaterials.Length)];
-			if (_decalGroups[(int)EDecalGroup.BloodAndExplosions] != null) {
-				_decalGroups[(int)EDecalGroup.BloodAndExplosions].NewDecal(0f, null, worldPos, new Vector3(size.x, 1, size.y), Quaternion.AngleAxis(orientation, Vector3.up), m, true);
-			}
-		}
+		//	var m = GameManager.instance.clientData.explosionDecalMaterials[GameManager.instance.RandomRange(0, GameManager.instance.clientData.explosionDecalMaterials.Length)];
+		//	if (_decalGroups[(int)EDecalGroup.BloodAndExplosions] != null) {
+		//		_decalGroups[(int)EDecalGroup.BloodAndExplosions].NewDecal(0f, null, worldPos, new Vector3(size.x, 1, size.y), Quaternion.AngleAxis(orientation, Vector3.up), m, true);
+		//	}
+		//}
 
-		public void RenderBloodSplats(Vector3 center, Vector2 radius, Vector2 size, IntMath.Vector2i count) {
-			if ((size.y > 0f) && (count.y > 0)) {
-				var c = Mathf.FloorToInt(Mathf.Lerp(count.x, count.y, GameManager.instance.randomNumber));
-				if (c > 0) {
-					var r = Mathf.Lerp(radius.x, radius.y, GameManager.instance.randomNumber);
+		//public void RenderBloodSplats(Vector3 center, Vector2 radius, Vector2 size, IntMath.Vector2i count) {
+		//	if ((size.y > 0f) && (count.y > 0)) {
+		//		var c = Mathf.FloorToInt(Mathf.Lerp(count.x, count.y, GameManager.instance.randomNumber));
+		//		if (c > 0) {
+		//			var r = Mathf.Lerp(radius.x, radius.y, GameManager.instance.randomNumber);
 
-					for (int i = 0; i < c; ++i) {
-						var s = Mathf.Lerp(size.x, size.y, GameManager.instance.randomNumber);
-						if (s > 0f) {
-							var pos = center + new Vector3(r*(GameManager.instance.randomNumber-0.5f)*2, 0, r*(GameManager.instance.randomNumber-0.5f)*2);
-							pos = Utils.PutPositionOnGround(pos);
+		//			for (int i = 0; i < c; ++i) {
+		//				var s = Mathf.Lerp(size.x, size.y, GameManager.instance.randomNumber);
+		//				if (s > 0f) {
+		//					var pos = center + new Vector3(r*(GameManager.instance.randomNumber-0.5f)*2, 0, r*(GameManager.instance.randomNumber-0.5f)*2);
+		//					pos = Utils.PutPositionOnGround(pos);
 
-							RenderBloodSplat(pos, new Vector2(s, s), GameManager.instance.randomNumber*360);
-						}
-					}
-				}
-			}
-		}
+		//					RenderBloodSplat(pos, new Vector2(s, s), GameManager.instance.randomNumber*360);
+		//				}
+		//			}
+		//		}
+		//	}
+		//}
 
 		public void SpawnContactFx(PhysicalMaterialClass a, PhysicalMaterialClass b, Vector3 position, Vector3 normal) {
 			if (_physicalContactMatrix != null) {

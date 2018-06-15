@@ -25,179 +25,6 @@ namespace Bowhead {
 		public float dropBonus;
 	}
 
-	[Serializable]
-	public class XPTable {
-
-		public const int ELITE_LEVEL_FLAG = (1<<7);
-
-		[SerializeField]
-		XPCurve _lvl2XPScale;
-		[SerializeField]
-		XPCurve _xpPerLevel;
-		[SerializeField]
-		XPCurve _essenceDamageScale;
-		[SerializeField]
-		XPCurve _spellPowerScale;
-		[SerializeField]
-		float _mobEliteLevelBoost;
-		[SerializeField]
-		MOBLevel[] _mobTiers;
-		[SerializeField]
-		Difficulty[] _difficulites;
-		[SerializeField]
-		int _xpBasis;
-		[SerializeField]
-		int _ilvlPerTier;
-		[SerializeField]
-		int _maxiLvlOverTier;
-		[SerializeField]
-		int _iLvlPerLevel;
-		[SerializeField]
-		int _numTiers;
-		[SerializeField]
-		int _deityMaxLevel;
-		[SerializeField]
-		int _deityXPPerLevel;
-		[SerializeField]
-		int _maxLevel;
-
-		public void OnAfterDeserialize() {
-			maxXP = GetXPReqForLevel(_maxLevel);
-		}
-
-		public int GetTieriLvl(int tier) {
-			return tier*_ilvlPerTier;
-		}
-
-		public float GetEssenceScale(int tier) {
-			return _essenceDamageScale.Eval(GetTieriLvl(tier)) / 100;
-		}
-
-		public float GetSpellPower(int level) {
-			return Eval(_spellPowerScale, level);
-		}
-		
-		public float Eval(XPCurve curve, int toLevel) {
-			var isElite = (toLevel & ELITE_LEVEL_FLAG) != 0;
-			toLevel &= ~ELITE_LEVEL_FLAG;
-
-			float ftoLevel = toLevel;
-
-			if (isElite) {
-				ftoLevel += _mobEliteLevelBoost;
-			}
-
-			return curve.Eval(ftoLevel);
-		}
-
-		public float GetXPScale(int toLevel) {
-
-			var isElite = (toLevel & ELITE_LEVEL_FLAG) != 0;
-			toLevel &= ~ELITE_LEVEL_FLAG;
-
-			float ftoLevel = toLevel;
-
-			if (isElite) {
-				ftoLevel += _mobEliteLevelBoost;
-			}
-
-			return  Mathf.Min(_lvl2XPScale.Eval(ftoLevel), _xpPerLevel.Eval(ftoLevel));
-		}
-
-		public MOBLevel GetMOBLevel(int ilvl) {
-
-			if (_mobTiers != null) {
-				int bestIdx = -1;
-				int bestLvl = -1;
-
-				for (int i = 0; i < _mobTiers.Length; ++i) {
-					var lvl = _mobTiers[i];
-					if ((lvl.ilvl <= ilvl) && (lvl.ilvl > bestLvl)) {
-						bestLvl = lvl.ilvl;
-						bestIdx = i;
-					}
-				}
-
-				if (bestIdx > -1) {
-					return _mobTiers[bestIdx];
-				}
-			}
-
-			return new MOBLevel();
-		}
-
-		public int GetXPLevel(int xp) {
-			var level = 1f;
-			var reqXP = 0;
-
-			for (;;) {
-				reqXP += (int)Math.Floor((double)_xpPerLevel.Eval(level) * _xpBasis);
-				if (reqXP > xp) {
-					break;
-				}
-				level += 1f;
-			}
-
-			return (int)level;
-		}
-
-		public int GetXPReqForLevel(int level) {
-			var reqXP = 0;
-
-			--level;
-
-			while (level > 0) {
-				reqXP += (int)Math.Floor((double)_xpPerLevel.Eval(level) * _xpBasis);
-				--level;
-			}
-
-			return reqXP;
-		}
-
-		public int GetDeityXPLevel(int deityXP) {
-			return (deityXP / _deityXPPerLevel) + 1;
-		}
-
-		public Difficulty GetDifficulty(int difficulty) {
-			return _difficulites[difficulty];
-		}
-
-		public int deityMaxXP {
-			get {
-				return _deityMaxLevel*_deityXPPerLevel;
-			}
-		}
-
-		public int secondaryDeityMaxXP {
-			get {
-				return Mathf.FloorToInt(deityMaxXP*0.33f);
-			}
-		}
-
-		public int maxiLvlOverTier {
-			get {
-				return _maxiLvlOverTier;
-			}
-		}
-
-		public int maxLevel {
-			get {
-				return _maxLevel;
-			}
-		}
-
-		public int ilvlPerLevel {
-			get {
-				return _iLvlPerLevel;
-			}
-		}
-
-		public int maxXP {
-			get;
-			private set;
-		}
-	}
-
 	public class StaticData : MonoBehaviour, ISerializationCallbackReceiver {
 		public interface Indexed {
 			int staticIndex {
@@ -213,9 +40,7 @@ namespace Bowhead {
 		public RandomNumberTable randomNumberTable;
 		public RandomNumberTable dropNumberTable;
 		public PhysicalContactMatrix physicalContactMatrix;
-		public XPTable xpTable;
 		public MetaGame.InventoryItemLibrary inventoryItemLibrary;
-		public Actors.Spells.SpellLibrary coopSpellLibrary;
 
 		[HideInInspector]
 		public Object[] indexedObjects;
@@ -223,7 +48,6 @@ namespace Bowhead {
 		public void OnBeforeSerialize() { }
 		public void OnAfterDeserialize() {
 			inventoryItemLibrary.OnAfterDeserialize();
-			xpTable.OnAfterDeserialize();
 		}
 
 #if UNITY_EDITOR

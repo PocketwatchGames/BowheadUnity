@@ -23,11 +23,11 @@ namespace Bowhead {
 		}
 
 		void OnTriggerEnter(Collider collider) {
-			var layer = collider.gameObject.layer;
-			if (((layer < Layers.Team1) ||
-				(layer > Layers.Team4Projectiles)) && (layer != Layers.NoSelfContactProjectiles)) {
-				return;
-			}
+			//var layer = collider.gameObject.layer;
+			//if (((layer < Layers.Team1) ||
+			//	(layer > Layers.Team4Projectiles)) && (layer != Layers.NoSelfContactProjectiles)) {
+			//	return;
+			//}
 
 			if (GameManager.instance.serverWorld != null) {
 				var actor = collider.transform.FindServerActorUpwards() as Actors.DamageableActor;
@@ -51,11 +51,11 @@ namespace Bowhead {
 		}
 
 		void OnTriggerExit(Collider collider) {
-			var layer = collider.gameObject.layer;
-			if (((layer < Layers.Team1) ||
-				(layer > Layers.Team4Projectiles)) && (layer != Layers.NoSelfContactProjectiles)) {
-				return;
-			}
+			//var layer = collider.gameObject.layer;
+			//if (((layer < Layers.Team1) ||
+			//	(layer > Layers.Team4Projectiles)) && (layer != Layers.NoSelfContactProjectiles)) {
+			//	return;
+			//}
 
 			if (GameManager.instance.serverWorld != null) {
 				var actor = collider.transform.FindServerActorUpwards() as Actors.DamageableActor;

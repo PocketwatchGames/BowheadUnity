@@ -124,7 +124,7 @@ namespace Bowhead.Actors.Spells {
 		public void ServerPlace(Vector3 pos, float rotation) {
 			RaycastHit hitInfo;
 			Vector3 n = Vector3.up;
-			if (effectClass.orientToGround && Physics.Raycast(new Ray(pos + Vector3.up, Vector3.down), out hitInfo, Mathf.Infinity, Layers.TerrainMask|Layers.BlockMask|Layers.WaterMask, QueryTriggerInteraction.Collide)) {
+			if (effectClass.orientToGround && Physics.Raycast(new Ray(pos + Vector3.up, Vector3.down), out hitInfo, Mathf.Infinity, Layers.TerrainMask|Layers.WaterMask, QueryTriggerInteraction.Collide)) {
 				n = hitInfo.normal;
 			}
 

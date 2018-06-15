@@ -172,9 +172,9 @@ namespace Bowhead.MetaGame {
 			return true;
 		}
 
-		public abstract bool GrantItem(Actors.Unit instigator, Server.Actors.ServerPlayerController player, int id, int ilvl, int count);
+		public abstract bool GrantItem(Actor instigator, Server.Actors.ServerPlayerController player, int id, int ilvl, int count);
 
-		public void ProcOnPickup(Actor item, Actors.Unit instigator, Server.Actors.ServerPlayerController player, int ilvl) {
+		public void ProcOnPickup(Actor item, Actor instigator, Server.Actors.ServerPlayerController player, int ilvl) {
 			//if ((instigator != null) && (_procOnPickup != null)) {
 			//	SpellCastRule rule;
 			//	if (SpellCastRule.GetBestRule(_procOnPickup, instigator.team, instigator, out rule)) {

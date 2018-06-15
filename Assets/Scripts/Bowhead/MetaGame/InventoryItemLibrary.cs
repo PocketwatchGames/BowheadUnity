@@ -600,7 +600,7 @@ namespace Bowhead.MetaGame {
 						builder.Append("\"hidden\": true,");
 						builder.Append("\"store_hidden\": true");
 					} else {
-						var spellPower = gm.staticData.xpTable.GetSpellPower(pair.Key);
+						var spellPower = 1f;// gm.staticData.xpTable.GetSpellPower(pair.Key);
 						translateFunc(builder, item.nameKey, item.descriptionKey, item.name, socket, pair.Key, item.dontScaleDescriptionParam ? item.descParam1 : Mathf.FloorToInt(item.descParam1*spellPower), item.dontScaleDescriptionParam ? item.descParam2 : Mathf.FloorToInt(item.descParam2*spellPower), item.descParam3);
 
 						builder.Append("\"name_color\": \"" + ColorUtility.ToHtmlStringRGB(Color.white) + "\",");

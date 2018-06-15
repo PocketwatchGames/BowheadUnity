@@ -142,9 +142,9 @@ namespace Bowhead.Actors.Spells {
 				ApplyAttackTargetModifier();
 			}
 
-			if (uTarget != null) {
+			//if (uTarget != null) {
 			//	uTarget.serverSpeedScale *= _speedScale;
-			}
+			//}
 		}
 
 		void InitConditions() {
@@ -405,7 +405,7 @@ namespace Bowhead.Actors.Spells {
 		void InitSpeedModifiers() {
 			_speedScale = 1f;
 
-			if ((spellClass.speedModifiers != null) && (uTarget != null)) {
+			if ((spellClass.speedModifiers != null)/* && (uTarget != null)*/) {
 				int bestDepth = int.MinValue;
 				StandardSpellClass.SpeedModifier speedModifier = new StandardSpellClass.SpeedModifier();
 
@@ -426,7 +426,6 @@ namespace Bowhead.Actors.Spells {
 
 		void InitPropertyModifiers() {
 			if (spellClass.propertyModifiers != null) {
-				var xpTable = GameManager.instance.staticData.xpTable;
 				_propModifiers = new List<PropertyModifier>();
 
 				var props = target.mutableProperties;
@@ -475,27 +474,27 @@ namespace Bowhead.Actors.Spells {
 			}
 		}
 
-		void ApplyUnitActionRecoveryTimeModifiers(UnitActionBase action) {
-			int bestDepth = int.MinValue;
-			StandardSpellClass.UnitActionRecoveryTimeModifier mod = new StandardSpellClass.UnitActionRecoveryTimeModifier();
+		//void ApplyUnitActionRecoveryTimeModifiers(UnitActionBase action) {
+		//	int bestDepth = int.MinValue;
+		//	StandardSpellClass.UnitActionRecoveryTimeModifier mod = new StandardSpellClass.UnitActionRecoveryTimeModifier();
 
-			for (int i = 0; i < spellClass.unitActionRecoveryTimeModifiers.Length; ++i) {
-				var m = spellClass.unitActionRecoveryTimeModifiers[i];
-				if ((m.actionMetaClass.depth > bestDepth) && action.actionClass.metaClass.IsA(m.actionMetaClass)) {
-					bestDepth = m.actionMetaClass.depth;
-					mod = m;
-				}
-			}
+		//	for (int i = 0; i < spellClass.unitActionRecoveryTimeModifiers.Length; ++i) {
+		//		var m = spellClass.unitActionRecoveryTimeModifiers[i];
+		//		if ((m.actionMetaClass.depth > bestDepth) && action.actionClass.metaClass.IsA(m.actionMetaClass)) {
+		//			bestDepth = m.actionMetaClass.depth;
+		//			mod = m;
+		//		}
+		//	}
 
-			if (bestDepth > int.MinValue) {
-				action.recoveryTime = Mathf.Max(action.recoveryTime * mod.recoveryTimeMultiplier, 0);
+		//	if (bestDepth > int.MinValue) {
+		//		action.recoveryTime = Mathf.Max(action.recoveryTime * mod.recoveryTimeMultiplier, 0);
 
-				//var counter = action as UnitCounterAction;
-				//if (counter != null) {
-				//	counter.actionRecoveryTime = Mathf.Max(counter.actionRecoveryTime * mod.recoveryTimeMultiplier, 0);
-				//}
-			}
-		}
+		//		//var counter = action as UnitCounterAction;
+		//		//if (counter != null) {
+		//		//	counter.actionRecoveryTime = Mathf.Max(counter.actionRecoveryTime * mod.recoveryTimeMultiplier, 0);
+		//		//}
+		//	}
+		//}
 
 		void ApplyUnitActionRecoveryTimeModifiers() {
 			//if ((uTarget != null) && (spellClass.unitActionRecoveryTimeModifiers != null)) {
@@ -503,22 +502,22 @@ namespace Bowhead.Actors.Spells {
 			//}
 		}
 
-		void ApplyUnitActionEnabledModifiers(UnitActionBase action) {
-			int bestDepth = int.MinValue;
-			StandardSpellClass.UnitActionEnabledModifier mod = new StandardSpellClass.UnitActionEnabledModifier();
+		//void ApplyUnitActionEnabledModifiers(UnitActionBase action) {
+		//	int bestDepth = int.MinValue;
+		//	StandardSpellClass.UnitActionEnabledModifier mod = new StandardSpellClass.UnitActionEnabledModifier();
 
-			for (int i = 0; i < spellClass.unitActionEnabledModifiers.Length; ++i) {
-				var m = spellClass.unitActionEnabledModifiers[i];
-				if ((m.actionMetaClass != null) && (m.actionMetaClass.depth > bestDepth) && action.actionClass.metaClass.IsA(m.actionMetaClass)) {
-					bestDepth = m.actionMetaClass.depth;
-					mod = m;
-				}
-			}
+		//	for (int i = 0; i < spellClass.unitActionEnabledModifiers.Length; ++i) {
+		//		var m = spellClass.unitActionEnabledModifiers[i];
+		//		if ((m.actionMetaClass != null) && (m.actionMetaClass.depth > bestDepth) && action.actionClass.metaClass.IsA(m.actionMetaClass)) {
+		//			bestDepth = m.actionMetaClass.depth;
+		//			mod = m;
+		//		}
+		//	}
 
-			if (bestDepth > int.MinValue) {
-				action.enabled = mod.enabled;
-			}
-		}
+		//	if (bestDepth > int.MinValue) {
+		//		action.enabled = mod.enabled;
+		//	}
+		//}
 
 		void ApplyUnitActionEnabledModifiers() {
 			//if ((uTarget != null) && (spellClass.unitActionEnabledModifiers != null)) {
@@ -599,21 +598,21 @@ namespace Bowhead.Actors.Spells {
 		}
 				
 		void InitDefenseRating() {
-			if (uTarget != null) {
-				int bestDepth = int.MinValue;
-				_defenseRating = new StandardSpellClass.DefenseRatingModifier();
+			//if (uTarget != null) {
+			//	int bestDepth = int.MinValue;
+			//	_defenseRating = new StandardSpellClass.DefenseRatingModifier();
 
-				if (spellClass.defenseRatingModifiers != null) {
-					for (int i = 0; i < spellClass.defenseRatingModifiers.Length; ++i) {
-						var m = spellClass.defenseRatingModifiers[i];
-						int depth;
-						if (m.affectedActors.Check(team, target, out depth) && (depth > bestDepth)) {
-							_defenseRating = m;
-							bestDepth = depth;
-						}
-					}
-				}
-			}
+			//	if (spellClass.defenseRatingModifiers != null) {
+			//		for (int i = 0; i < spellClass.defenseRatingModifiers.Length; ++i) {
+			//			var m = spellClass.defenseRatingModifiers[i];
+			//			int depth;
+			//			if (m.affectedActors.Check(team, target, out depth) && (depth > bestDepth)) {
+			//				_defenseRating = m;
+			//				bestDepth = depth;
+			//			}
+			//		}
+			//	}
+			//}
 		}
 
 		void ApplyDefenseRating() {
@@ -625,27 +624,27 @@ namespace Bowhead.Actors.Spells {
 		}
 
 		void TriggerEmote() {
-			if ((spellClass.emoteTriggers != null) && (uTarget != null)) {
-				int bestDepth = int.MinValue;
-				var best = new StandardSpellClass.EmoteTrigger();
+			//if ((spellClass.emoteTriggers != null) && (uTarget != null)) {
+			//	int bestDepth = int.MinValue;
+			//	var best = new StandardSpellClass.EmoteTrigger();
 
-				for (int i = 0; i < spellClass.emoteTriggers.Length; ++i) {
-					var trigger = spellClass.emoteTriggers[i];
-					int depth;
-					if (trigger.affectedActors.Check(team, target, out depth) && (depth > bestDepth)) {
-						best = trigger;
-						bestDepth = depth;
-					}
-				}
+			//	for (int i = 0; i < spellClass.emoteTriggers.Length; ++i) {
+			//		var trigger = spellClass.emoteTriggers[i];
+			//		int depth;
+			//		if (trigger.affectedActors.Check(team, target, out depth) && (depth > bestDepth)) {
+			//			best = trigger;
+			//			bestDepth = depth;
+			//		}
+			//	}
 
-				if (bestDepth > int.MinValue) {
-					if (!string.IsNullOrEmpty(best.customEmote)) {
-					//	uTarget.Multicast_Emote(best.customEmote);
-					} else {
-					//	uTarget.Multicast_Emote(best.emote);
-					}
-				}
-			}
+			//	if (bestDepth > int.MinValue) {
+			//		if (!string.IsNullOrEmpty(best.customEmote)) {
+			//		//	uTarget.Multicast_Emote(best.customEmote);
+			//		} else {
+			//		//	uTarget.Multicast_Emote(best.emote);
+			//		}
+			//	}
+			//}
 		}
 
 		public override bool ProcCheatDeath(DamageEvent damage) {

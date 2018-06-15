@@ -152,7 +152,7 @@ namespace Bowhead.Actors {
 
 		void SetTeamLayer() {
 			if (team != null) {
-				ServerSetLayer(Layers.GetTeamProjectilesLayer(team.teamNumber));
+//				ServerSetLayer(Layers.GetTeamProjectilesLayer(team.teamNumber));
 			}
 		}
 
@@ -193,7 +193,7 @@ namespace Bowhead.Actors {
 				var dd = go.transform.position - _launchPos;
 				if (dd.sqrMagnitude >= LAYER_SWITCH_DISTANCE_SQ) {
 					_layerSwitched = true;
-					_layer = Layers.NoSelfContactProjectiles;
+//					_layer = Layers.NoSelfContactProjectiles;
 					go.layer = _layer;
 				}
 			}
@@ -570,7 +570,7 @@ namespace Bowhead.Actors {
 					return;
 				}
 
-				var bounce = !projectileClass.embed || contact.hit.CompareTag(Tags.ProjectileBounce);
+				var bounce = !projectileClass.embed;// || contact.hit.CompareTag(Tags.ProjectileBounce);
 				var willTearOff = projectileClass.embed;
 
 				NetFlush();
@@ -603,7 +603,7 @@ namespace Bowhead.Actors {
 					}
 
 					if (!bounce && (projectileClass.groundHitAOE != null) && (projectileClass.canProcGroundAOEInWater || !inWater)) {
-						var instigator = instigatingActor as Unit;
+						//var instigator = instigatingActor as Unit;
 						//if ((instigator != null) && (instigator.dead || instigator.pendingKill)) {
 						//	instigator = null;
 						//}

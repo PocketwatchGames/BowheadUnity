@@ -16,7 +16,7 @@ namespace Bowhead.MetaGame {
 			}
 		}
 
-		public sealed override bool GrantItem(Unit instigator, ServerPlayerController player, int id, int ilvl, int count) {
+		public sealed override bool GrantItem(Actor instigator, ServerPlayerController player, int id, int ilvl, int count) {
 		//	player.AddFractionalSoulStones(_numFragments*count);
 			return true;
 		}

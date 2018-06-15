@@ -38,6 +38,7 @@ namespace Bowhead.Actors {
 #endif
 		
 		public override DamageableActor PredictFriendlyFire(Team team, Vector3 pos) {
+			/*
 			List<DamageableActor> hitActors = new List<DamageableActor>();
 
 			// move the hit pos up slightly so we don't get false line-casts on the ground.
@@ -68,6 +69,7 @@ namespace Bowhead.Actors {
 					}
 				}
 			}
+			*/
 
 			return null;
 		}

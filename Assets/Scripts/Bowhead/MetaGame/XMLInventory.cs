@@ -41,16 +41,6 @@ namespace Bowhead.MetaGame {
 				node.SetAttribute("value", PlayerInventorySkills.SKILLS_VERSION.ToString());
 			}
 
-			for (int i = 0; i < data.deities.Count; ++i) {
-				var deity = data.deities[i];
-
-				var node = xml.CreateElement("deity");
-				outerDeities.AppendChild(node);
-
-				node.SetAttribute("class", deity.deityClass.name);
-				node.SetAttribute("xp", deity.xp.ToString());
-			}
-
 			UserPrefs.SaveXML(xml, filename);
 		}
 
@@ -96,30 +86,6 @@ namespace Bowhead.MetaGame {
 							var item = LoadItem(elem);
 							if (item != null) {
 								mutableInventory.Add(item.iid, item);
-							}
-						}
-					}
-				}
-
-				var deities = xml.SelectNodes("//data/deities");
-				if (deities.Count > 0) {
-					deities = deities[0].ChildNodes;
-					for (int i = 0; i < data.deities.Count; ++i) {
-						var deity = data.deities[i];
-
-						foreach (var node in deities) {
-							var elem = (XmlElement)node;
-							if (elem.Name == "deity") {
-								if (elem.HasAttribute("class")) {
-									var deityClassName = elem.GetAttribute("class");
-									if (deityClassName == deity.deityClass.name) {
-										deity.xp = int.Parse(elem.GetAttribute("xp"));
-									}
-								}
-							} else if (elem.Name == "xp") {
-								if (elem.HasAttribute("value")) {
-									xp = int.Parse(elem.GetAttribute("value"));
-								}
 							}
 						}
 					}

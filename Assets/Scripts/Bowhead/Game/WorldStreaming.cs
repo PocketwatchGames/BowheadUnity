@@ -293,6 +293,7 @@ public partial class World {
 				}
 
 				ChunkMeshGen.CopyToMesh(ref jobData.jobData, chunk.goChunk.meshFilter.mesh);
+				chunk.goChunk.meshCollider.sharedMesh = chunk.goChunk.meshFilter.mesh;
 			}
 		}
 

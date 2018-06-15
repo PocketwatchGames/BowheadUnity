@@ -16,7 +16,7 @@ namespace Bowhead {
 		void Start() {
 			var clworld = GameManager.instance.clientWorld;
 			if (clworld != null) {
-				clworld.RenderExplosionSplat(Utils.PutPositionOnGroundOrWater(transform.position), size, GameManager.instance.randomNumber * 360, drawOnWater);
+				//clworld.RenderExplosionSplat(Utils.PutPositionOnGroundOrWater(transform.position), size, GameManager.instance.randomNumber * 360, drawOnWater);
 			}
 		}
 	}

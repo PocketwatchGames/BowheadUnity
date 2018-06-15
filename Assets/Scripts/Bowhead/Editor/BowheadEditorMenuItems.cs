@@ -108,16 +108,6 @@ namespace Bowhead.Editor {
 			Utils.CreateAsset<AbilityClass>();
 		}
 
-		[MenuItem("Assets/Create/Bowhead/Gameplay/Deity Class", priority = 351)]
-		static void CreateDeityClass() {
-			Utils.CreateAsset<DeityClass>();
-		}
-
-		[MenuItem("Assets/Create/Bowhead/Gameplay/Spell Library", priority = 352)]
-		static void CreateSpellLibrary() {
-			Utils.CreateAsset<SpellLibrary>();
-		}
-
 		[MenuItem("Assets/Create/Bowhead/Gameplay/Spell MetaClass", priority = 353)]
 		static void CreateSpellMetaClass() {
 			Utils.CreateAsset<SpellMetaClass>();
@@ -138,10 +128,10 @@ namespace Bowhead.Editor {
 			Utils.CreateAsset<BleedSpellEffectClass>();
 		}
 
-		[MenuItem("Assets/Create/Bowhead/Gameplay/Unit ActionCue", priority = 400)]
-		static void CreateUnitActionCue() {
-			Utils.CreateAsset<UnitActionCue>();
-		}
+		//[MenuItem("Assets/Create/Bowhead/Gameplay/Unit ActionCue", priority = 400)]
+		//static void CreateUnitActionCue() {
+		//	Utils.CreateAsset<UnitActionCue>();
+		//}
 
 		[MenuItem("Assets/Create/Bowhead/Gameplay/Unit Action MetaClass", priority = 401)]
 		static void CreateUnitActionMetaClass() {

@@ -54,9 +54,9 @@ namespace Bowhead.Actors {
 			base.InitVersion();
 
 			if (version < 1) {
-				explosionTargetLayers = ELayers.Units;
-				explosionBlockingLayers = ELayers.Block|ELayers.Terrain|ELayers.Default;
-				shockwaveLayers = ELayers.Ragdoll;
+				//explosionTargetLayers = ELayers.Units;
+				//explosionBlockingLayers = ELayers.Block|ELayers.Terrain|ELayers.Default;
+				//shockwaveLayers = ELayers.Ragdoll;
 				explosionMinMaxDamageScale.x = 1f;
 				explosionMinMaxDamageScale.y = 0f;
 			}

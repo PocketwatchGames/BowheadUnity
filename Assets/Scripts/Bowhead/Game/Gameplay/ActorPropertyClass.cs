@@ -36,9 +36,9 @@ namespace Bowhead.Actors {
 		Color _color;
 
 		public float GetLevelScaling(int toLevel) {
-			if (_scaling != null) {
-				return GameManager.instance.staticData.xpTable.Eval(_scaling, toLevel);
-			}
+			//if (_scaling != null) {
+			//	return GameManager.instance.staticData.xpTable.Eval(_scaling, toLevel);
+			//}
 			return 1;
 		}
 
@@ -59,9 +59,9 @@ namespace Bowhead.Actors {
 		}
 
 		float GetPPPScaleHelper(int toLevel, float value) {
-			if (_pppScaling != null) {
-				return (value-_pppBase)/(_ppp*GameManager.instance.staticData.xpTable.Eval(_pppScaling, toLevel));
-			}
+			//if (_pppScaling != null) {
+			//	return (value-_pppBase)/(_ppp*GameManager.instance.staticData.xpTable.Eval(_pppScaling, toLevel));
+			//}
 			return (value-_pppBase)/_ppp;
 		}
 

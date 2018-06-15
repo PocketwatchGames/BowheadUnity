@@ -180,19 +180,6 @@ namespace Bowhead.MetaGame {
 			}
 		}
 
-		public sealed class DeityStats {
-
-			public DeityStats(DeityClass deityClass, int statIndex) {
-				this.deityClass = deityClass;
-				this.statIndex = statIndex;
-			}
-
-			public readonly DeityClass deityClass;
-			public readonly int statIndex;
-			public int xp;
-			public bool dirty;
-		}
-
 		const string FILENAME = "debug_inventory.xml";
 		const float FLUSH_RATE = 30f;
 
@@ -207,13 +194,9 @@ namespace Bowhead.MetaGame {
 			public readonly Dictionary<int, InventoryGrantAbilityItemClass> ilvls;
 		}
 
-		public delegate void LevelUpEvent(DeityClass deity, int oldLevel, int newLevel);
-		public event LevelUpEvent OnLevelUp;
-
 		DictionaryList<ulong, InventoryItem> _inventory;
 		Dictionary<int, List<InventoryItem>> _socketed;
 		Dictionary<int, List<InventoryItem>> _unsocketed;
-		DictionaryList<DeityClass, DeityStats> _deityStats;
 		Dictionary<AbilityClass, UnlockedAbility> _unlockedAbilities;
 		RuneSlot[] _runes;
 		ItemStats _stats;
@@ -231,7 +214,6 @@ namespace Bowhead.MetaGame {
 			_uuid = uuid;
 			_api = api;
 			_nextFlush = FLUSH_RATE;
-			_deityStats = new DictionaryList<DeityClass, DeityStats>();
 			_inventory = new DictionaryList<ulong, InventoryItem>();
 			_unlockedAbilities = new Dictionary<AbilityClass, UnlockedAbility>();
 
@@ -409,15 +391,6 @@ namespace Bowhead.MetaGame {
 					}
 				}
 			}
-
-#if UNITY_EDITOR
-			{
-				this.xp = Mathf.Min(GameManager.instance.PIEPlayerXP, GameManager.instance.staticData.xpTable.maxXP);
-				foreach (var dstats in _deityStats.Values) {
-					dstats.xp = Mathf.Min(GameManager.instance.PIEDeityXP, GameManager.instance.staticData.xpTable.deityMaxXP);
-				}
-			}
-#endif
 
 			UpdateLevelXP();
 
@@ -614,17 +587,6 @@ namespace Bowhead.MetaGame {
 				_xpDirty = false;
 				XMLInventory.Save(string.Format("/{0}_{1}", _uuid, FILENAME), this);
 			}
-
-			for (int i = 0; i < _deityStats.Values.Count; ++i) {
-				var stats = _deityStats.Values[i];
-				if (stats.dirty) {
-					if (!didFlush) {
-						didFlush = true;
-						XMLInventory.Save(string.Format("/{0}_{1}", _uuid, FILENAME), this);
-					}
-					stats.dirty = false;
-				}
-			}
 #endif
 		}
 				
@@ -652,58 +614,6 @@ namespace Bowhead.MetaGame {
 #endif
 		}
 
-		public void GrantXP(DeityClass primary, DeityClass secondary, int xp, int deityXP) {
-			if (xp != 0) {
-				var newXP = Mathf.Min(this.xp+xp, GameManager.instance.staticData.xpTable.maxXP);
-				if (this.xp != newXP) {
-					this.xp = newXP;
-					_xpDirty = true;
-					var oldLevel = level;
-					UpdateLevelXP();
-					ConditionalLevelUpEvent(null, oldLevel, level);
-				}
-			}
-
-			int secondaryXP = Mathf.FloorToInt(deityXP * 0.33f);
-			int primaryXP = deityXP - secondaryXP;
-
-			if (primary != null) {
-				DeityStats dstats;
-				if (_deityStats.TryGetValue(primary, out dstats)) {
-					var newXP = Mathf.Min(dstats.xp+primaryXP, GameManager.instance.staticData.xpTable.deityMaxXP);
-					if (newXP != dstats.xp) {
-						var oldLevel = GameManager.instance.staticData.xpTable.GetDeityXPLevel(dstats.xp); 
-						dstats.xp = newXP;
-						dstats.dirty = true;
-						var newLevel = GameManager.instance.staticData.xpTable.GetDeityXPLevel(newXP);
-						ConditionalLevelUpEvent(primary, oldLevel, newLevel);
-					}
-				}
-			}
-
-			if (secondary != null) {
-				DeityStats dstats;
-				if (_deityStats.TryGetValue(secondary, out dstats)) {
-					var newXP = Mathf.Min(dstats.xp+secondaryXP, GameManager.instance.staticData.xpTable.deityMaxXP);
-					if (newXP != dstats.xp) {
-						var oldLevel = GameManager.instance.staticData.xpTable.GetDeityXPLevel(dstats.xp); 
-						dstats.xp = newXP;
-						dstats.dirty = true;
-						var newLevel = GameManager.instance.staticData.xpTable.GetDeityXPLevel(newXP);
-						ConditionalLevelUpEvent(secondary, oldLevel, newLevel);
-					}
-				}
-			}
-		}
-
-		void ConditionalLevelUpEvent(DeityClass deity, int oldLevel, int newLevel) {
-			if (oldLevel < newLevel) {
-				if (OnLevelUp != null) {
-					OnLevelUp.Invoke(deity, oldLevel, newLevel);
-				}
-			}
-		}
-
 		public ItemStats RecalcItemStats(int min_ilvl, int max_ilvl) {
 			_stats = new ItemStats(_runes, min_ilvl, max_ilvl);
 			return _stats;
@@ -711,14 +621,6 @@ namespace Bowhead.MetaGame {
 
 		public ItemStats GetItemStats(int min_ilvl, int max_ilvl) {
 			return _stats ?? RecalcItemStats(min_ilvl, max_ilvl);
-		}
-
-		public DeityStats GetDeityStats(DeityClass deity) {
-			DeityStats dstats;
-			if (_deityStats.TryGetValue(deity, out dstats)) {
-				return dstats;
-			}
-			return null;
 		}
 
 		public void Socket(InventoryItem item, int rune, int gem) {
@@ -930,18 +832,6 @@ namespace Bowhead.MetaGame {
 			return false;
 		}
 
-		public int GetDeityXP(DeityClass deity) {
-			DeityStats dstats;
-			if (_deityStats.TryGetValue(deity, out dstats)) {
-				return dstats.xp;
-			}
-			return 0;
-		}
-
-		public int GetClampedSecondaryDeityXP(DeityClass deity) {
-			return Mathf.Min(GetDeityXP(deity), GameManager.instance.staticData.xpTable.secondaryDeityMaxXP);
-		}
-
 		public InventoryGrantAbilityItemClass GetUnlockedSpellItem(AbilityClass spell, int ilvl) {
 			UnlockedAbility ability;
 			if (_unlockedAbilities.TryGetValue(spell, out ability)) {
@@ -1031,7 +921,7 @@ namespace Bowhead.MetaGame {
 		}
 
 		void UpdateLevelXP() {
-			level = GameManager.instance.staticData.xpTable.GetXPLevel(xp);
+			level = 1;// GameManager.instance.staticData.xpTable.GetXPLevel(xp);
 		}
 
 		public InventoryItem GetInventoryItem(ulong id) {
@@ -1049,7 +939,7 @@ namespace Bowhead.MetaGame {
 		
 		public int ilvl {
 			get {
-				return Mathf.Max(1, level * GameManager.instance.staticData.xpTable.ilvlPerLevel);
+				return 1;// return Mathf.Max(1, level * GameManager.instance.staticData.xpTable.ilvlPerLevel);
 			}
 		}
 
@@ -1078,12 +968,6 @@ namespace Bowhead.MetaGame {
 		public ReadOnlyCollection<InventoryItem> inventory {
 			get {
 				return _inventory.Values;
-			}
-		}
-
-		public ReadOnlyCollection<DeityStats> deities {
-			get {
-				return _deityStats.Values;
 			}
 		}
 	}

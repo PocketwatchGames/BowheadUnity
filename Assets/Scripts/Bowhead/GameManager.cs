@@ -68,23 +68,7 @@ namespace Bowhead {
 		[SerializeField]
 		int PIETradingTime;
 		[SerializeField]
-		uint _PIEPlayerXP;
-		[SerializeField]
-		uint _PIEDeityXP;
-		[SerializeField]
-		int PIETier;
-		[SerializeField]
-		int PIEDifficulty;
-		[SerializeField]
 		bool PIEServerOnly;
-		[SerializeField]
-		int _PIEDropItemiLvl;
-		[SerializeField]
-		int _PIEDropItemCount;
-		[SerializeField]
-		GameObject _PIEDropItemLocation;
-		[SerializeField]
-		bool _PIEClickToDropItem;
 
 		bool _bIsPIE;
 		int _physicsRate;
@@ -260,18 +244,6 @@ namespace Bowhead {
 				if (s != null) {
 					tradingTime = int.Parse(s);
 					Debug.Log("+tradingTime + " + s);
-				}
-
-				s = Utils.GetCommandLineArg("+tier");
-				if (s != null) {
-					Debug.Log("+tier " + s);
-					SetTier(uint.Parse(s));
-				}
-
-				s = Utils.GetCommandLineArg("+difficulty");
-				if (s != null) {
-					Debug.Log("+difficulty " + s);
-					difficulty = int.Parse(s);
 				}
 			}
 
@@ -596,13 +568,13 @@ namespace Bowhead {
 				//	UserPrefs.instance.Save();
 				//	StartCoroutine(LoadCinematic());
 				//} else {
-				//	StartCoroutine(LoadNormal());
+					StartCoroutine(LoadNormal());
 				//	Play(Vector3.zero, clientData.sounds.ui.mainMenu.mainMenuStingers);
 				//}
 			} else {
-				if (clientInventory != null) {
-					clientInventory.RefreshClientInventory();
-				}
+				//if (clientInventory != null) {
+				//	clientInventory.RefreshClientInventory();
+				//}
 				StartCoroutine(LoadNormal());
 			}
 #endif
@@ -644,7 +616,7 @@ namespace Bowhead {
 
 		void MainMenuUnloaded() {
 			inMainMenu = false;
-			//_guiStatus = null;
+			_guiStatus = null;
 			//mainMenu = null;
 
 #if !DEDICATED_SERVER
@@ -687,7 +659,7 @@ namespace Bowhead {
 			transform.position = Vector3.zero;
 			transform.rotation = Quaternion.identity;
 			transform.Find("Console").gameObject.ActivateHierarchy(true);
-			hudOverlays.gameObject.SetActive(true);
+			//hudOverlays.gameObject.SetActive(true);
 			Console.SetExecutor(ConsoleExecutor);
 			Console.SetTabComplete(ConsoleTabCompleter);
 #if UNITY_EDITOR
@@ -1329,9 +1301,6 @@ namespace Bowhead {
 			matchOvertime = PIEOvertime;
 			tradingTime = PIETradingTime;
 			numPlayers = Mathf.Max(1, PIENumPlayers);
-			tier = Mathf.Max(1, PIETier);
-			difficulty = PIEDifficulty;
-			ilvl = staticData.xpTable.GetTieriLvl(tier);
 
 			_pendingCommand = true;
 #if !DEDICATED_SERVER
@@ -1504,37 +1473,37 @@ namespace Bowhead {
 		List<RaycastResult> _guiRaycast;
 
 		void OnGUI() {
-			var ev = Event.current;
-			if (InputManager.guiFocused && (ev.type == EventType.ScrollWheel)) {
-				var lp = Client.Actors.ClientPlayerController.localPlayer;
-				if ((lp != null) && lp.gameState.isUnitTrading) {
-					PointerEventData data = new PointerEventData(EventSystem.current);
-					data.position = Input.mousePosition;
+			//var ev = Event.current;
+			//if (InputManager.guiFocused && (ev.type == EventType.ScrollWheel)) {
+			//	var lp = Client.Actors.ClientPlayerController.localPlayer;
+			//	if ((lp != null) && lp.gameState.isUnitTrading) {
+			//		PointerEventData data = new PointerEventData(EventSystem.current);
+			//		data.position = Input.mousePosition;
 
-					if (_guiRaycast == null) {
-						_guiRaycast = new List<RaycastResult>();
-					}
+			//		if (_guiRaycast == null) {
+			//			_guiRaycast = new List<RaycastResult>();
+			//		}
 
-					EventSystem.current.RaycastAll(data, _guiRaycast);
+			//		EventSystem.current.RaycastAll(data, _guiRaycast);
 
-					var discard = false;
+			//		var discard = false;
 
-					if (_guiRaycast.Count > 0) {
-						for (int i = 0; i < _guiRaycast.Count; ++i) {
-							var item = _guiRaycast[i];
-							if (item.gameObject != null) {
-								discard = !item.gameObject.CompareTag(Tags.Minimap);
-								break;
-							}
-						}
-						_guiRaycast.Clear();
-					}
+			//		if (_guiRaycast.Count > 0) {
+			//			for (int i = 0; i < _guiRaycast.Count; ++i) {
+			//				var item = _guiRaycast[i];
+			//				if (item.gameObject != null) {
+			//					discard = !item.gameObject.CompareTag(Tags.Minimap);
+			//					break;
+			//				}
+			//			}
+			//			_guiRaycast.Clear();
+			//		}
 
-					if (discard) {
-						return;
-					}
-				}
-			}
+			//		if (discard) {
+			//			return;
+			//		}
+			//	}
+			//}
 			InputManager.ProcessEvent(Event.current);
 		}
 
@@ -2041,26 +2010,6 @@ namespace Bowhead {
 			Debug.LogWarning("ShaderLOD is " + Shader.globalMaximumLOD);			
 		}
 
-		[CFunc]
-		static void SetTier(uint tier) {
-			if ((instance.serverWorld != null) || (instance.clientWorld != null)) {
-				Debug.LogError("You can't do that in a game.");
-				return;
-			}
-			if (tier > 0) {
-				instance.tier = (int)tier;
-				instance.ilvl = instance.staticData.xpTable.GetTieriLvl((int)tier);
-				Debug.LogWarning("Difficulty tier is now " + instance.tier.ToString() + " (ilvl " + instance.ilvl + ")");
-			} else {
-				Debug.LogError("Difficulty tiers are > 0");
-			}
-		}
-
-		[CFunc]
-		static void Tier() {
-			Debug.LogWarning("Tier is " + instance.tier.ToString() + " (ilvl " + instance.ilvl + ")");
-		}
-
 #if LEAK_TRACKER
 		[CFunc]
 		static void DumpLeaks() {
@@ -2362,42 +2311,6 @@ namespace Bowhead {
 
 		bool didEverLoadMainMenu;
 
-		public int playerLevel {
-			get;
-			private set;
-		}
-
-		public int ilvl {
-			get;
-			private set;
-		}
-
-		public int tier {
-			get;
-			private set;
-		}
-
-		public int difficulty {
-			get;
-			private set;
-		}
-
-#if UNITY_EDITOR
-
-		public int PIEPlayerXP {
-			get {
-				return (int)_PIEPlayerXP;
-			}
-		}
-
-		public int PIEDeityXP {
-			get {
-				return (int)_PIEDeityXP;
-			}
-		}
-
-#endif
-
 		[NonSerialized]
 		public int activeTransactionCount;
 
@@ -2433,10 +2346,10 @@ namespace Bowhead {
 			private set;
 		}
 
-		public MetaGame.PlayerInventorySkills clientInventory {
-			get;
-			private set;
-		}
+		//public MetaGame.PlayerInventorySkills clientInventory {
+		//	get;
+		//	private set;
+		//}
 #endif
 
 #if BACKEND_SERVER
@@ -2569,7 +2482,7 @@ namespace Bowhead {
 		void OnlinePlayerLoggedIn(Online.OnlineLocalPlayer player, string errorMsg) {
 			if (player != null) {
 				onlineLocalPlayer = player;
-				clientInventory = new MetaGame.PlayerInventorySkills(player.id.uuid, MetaGame.PlayerInventorySkills.API.Client);
+				//clientInventory = new MetaGame.PlayerInventorySkills(player.id.uuid, MetaGame.PlayerInventorySkills.API.Client);
 				Debug.Log("Online user " + player.id.uuid + " logged in.");
 			} else if (errorMsg != null) {
 				onlineLoginError = errorMsg;

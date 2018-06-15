@@ -51,12 +51,6 @@ namespace Bowhead.Actors {
 		byte _team1Size;
 
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		byte _tier;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		byte _difficulty;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
 		bool _isTeamMap;
 
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
@@ -104,8 +98,6 @@ namespace Bowhead.Actors {
 			_isCOOPMap = gameMode.isCOOPMap;
 			_canTradeUnitsAnytime = gameMode.canTradeUnitsAnytime;
 			_matchIsTimed = gameMode.matchIsTimed;
-			_tier = (byte)GameManager.instance.tier;
-			_difficulty = (byte)GameManager.instance.difficulty;
 		}
 
 		public override void Tick() {
@@ -593,18 +585,6 @@ namespace Bowhead.Actors {
 		public bool matchIsTimed {
 			get {
 				return _matchIsTimed;
-			}
-		}
-
-		public int tier {
-			get {
-				return _tier;
-			}
-		}
-
-		public int difficulty {
-			get {
-				return _difficulty;
 			}
 		}
 
