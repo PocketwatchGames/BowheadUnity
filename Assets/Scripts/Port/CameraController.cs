@@ -30,6 +30,7 @@ namespace Port {
 
         // Update is called once per frame
         void Update() {
+            handleInput(0, Time.deltaTime);
             update(Time.deltaTime);
 
             var c = GetComponent<Camera>();
@@ -51,26 +52,25 @@ namespace Port {
         public void setTarget(Player player) {
             target = player;
         }
+
+        Vector3 _oldMousePosition;
         void handleInput(int playerNum, float dt) {
 
 
-            //float mouseTurnSpeed = 360f * Mathf.Deg2Rad;
-            //float gpTurnSpeed = 360f * Mathf.Deg2Rad;
+            float mouseTurnSpeed = 360f * Mathf.Deg2Rad;
+            float gpTurnSpeed = 360f * Mathf.Deg2Rad;
 
             isLooking = false;
-            //if (cgi.getPlayerRawInput(playerNum, &m, &kb, &gp)) {
-            //	cg->camera.yaw += -m->x.fdelta* mouseTurnSpeed;
-            //   cg->camera.pitch += m->y.fdelta* mouseTurnSpeed;
-            //   isLooking |= m->x.delta != 0 || m->y.delta != 0;
 
-            //	if (gp != nullptr) {
-            //		Vec2f_t gamepad = cgi.getDeadZonedGamepad(gp->axis[2].fvalue, gp->axis[3].fvalue);
-            //   cg->camera.yaw += -gamepad.x() * gpTurnSpeed * dt;
-            //		cg->camera.pitch += gamepad.y() * gpTurnSpeed * dt;
+            var m = Input.mousePosition;
+            var mouseDelta = m - _oldMousePosition;
 
-            //		isLooking |= gamepad != Vec2f_t::zero;
-            //	}
-            //}
+            Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+            yaw += gamepad.x * gpTurnSpeed * dt;
+            pitch += gamepad.y * gpTurnSpeed * dt;
+
+            isLooking |= gamepad != Vector2.zero;
+
             float maxAngle = Mathf.PI / 2 * 0.95f;
             float minAngle = -Mathf.PI / 2 * 0.95f;
             if (pitch > maxAngle)
@@ -79,6 +79,8 @@ namespace Port {
 
                 pitch = minAngle;
 
+
+            _oldMousePosition = m;
         }
 
         void update(float dt) {

@@ -86,8 +86,8 @@ InputManager:
     axis: 1
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Horizontal
-    descriptiveName: Horizontal
+    m_Name: LookHorizontal
+    descriptiveName: Look Horizontally
     descriptiveNegativeName: 
     negativeButton: 
     positiveButton: 
@@ -95,7 +95,7 @@ InputManager:
     altPositiveButton: 
     gravity: 0
     dead: 0
-    sensitivity: 1
+    sensitivity: 0.25
     snap: 0
     invert: 0
     type: 1
@@ -103,23 +103,23 @@ InputManager:
     joyNum: 0
   - serializedVersion: 3
     m_Name: MoveHorizontal
-    descriptiveName: Horizontal
-    descriptiveNegativeName: 
-    negativeButton: 
-    positiveButton: 
+    descriptiveName: Move Right
+    descriptiveNegativeName: Move Left
+    negativeButton: a
+    positiveButton: d
     altNegativeButton: 
     altPositiveButton: 
-    gravity: 0
-    dead: 0
-    sensitivity: 1
-    snap: 0
+    gravity: 100
+    dead: 0.1
+    sensitivity: 100
+    snap: 1
     invert: 0
     type: 0
     axis: 0
     joyNum: 0
   - serializedVersion: 3
-    m_Name: Vertical
-    descriptiveName: Vertical
+    m_Name: LookVertical
+    descriptiveName: Look Vertically
     descriptiveNegativeName: 
     negativeButton: 
     positiveButton: 
@@ -127,7 +127,7 @@ InputManager:
     altPositiveButton: 
     gravity: 0
     dead: 0
-    sensitivity: 1
+    sensitivity: 0.25
     snap: 0
     invert: 0
     type: 1
@@ -135,16 +135,16 @@ InputManager:
     joyNum: 0
   - serializedVersion: 3
     m_Name: MoveVertical
-    descriptiveName: Vertical
-    descriptiveNegativeName: 
-    negativeButton: 
-    positiveButton: 
+    descriptiveName: Move Forward
+    descriptiveNegativeName: Move Backward
+    negativeButton: s
+    positiveButton: w
     altNegativeButton: 
     altPositiveButton: 
-    gravity: 0
+    gravity: 100
     dead: 0
-    sensitivity: 1
-    snap: 0
+    sensitivity: 100
+    snap: 1
     invert: 0
     type: 0
     axis: 1
@@ -164,4 +164,196 @@ InputManager:
     invert: 0
     type: 2
     axis: 2
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: MoveHorizontal
+    descriptiveName: MoveHorizontally
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: 
+    altNegativeButton: 
+    altPositiveButton: 
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 2
+    axis: 0
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: LookHorizontal
+    descriptiveName: Look Horizontally
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: 
+    altNegativeButton: 
+    altPositiveButton: 
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 2
+    axis: 3
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: MoveVertical
+    descriptiveName: Move Vertically
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: 
+    altNegativeButton: 
+    altPositiveButton: 
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 1
+    type: 2
+    axis: 1
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: LookVertical
+    descriptiveName: Look Vertically
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: 
+    altNegativeButton: 
+    altPositiveButton: 
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 2
+    axis: 4
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: Jump
+    descriptiveName: Jump
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: space
+    altNegativeButton: 
+    altPositiveButton: joystick button 0
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 0
+    axis: 4
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: AttackLeft
+    descriptiveName: AttackLeft
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: mouse 0
+    altNegativeButton: 
+    altPositiveButton: 
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 0
+    axis: 0
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: AttackRight
+    descriptiveName: AttackRight
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: mouse 2
+    altNegativeButton: 
+    altPositiveButton: 
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 2
+    axis: 4
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: Interact
+    descriptiveName: Interact
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: left shift
+    altNegativeButton: 
+    altPositiveButton: joystick button 1
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 2
+    axis: 4
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: Use
+    descriptiveName: Use
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: left ctrl
+    altNegativeButton: 
+    altPositiveButton: joystick button 2
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 2
+    axis: 4
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: SelectLeft
+    descriptiveName: SelectLeft
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: 
+    altNegativeButton: 
+    altPositiveButton: 
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 2
+    axis: 4
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: SelectRight
+    descriptiveName: SelectRight
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: 
+    altNegativeButton: 
+    altPositiveButton: 
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 2
+    axis: 4
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: Map
+    descriptiveName: Map
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: 
+    altNegativeButton: 
+    altPositiveButton: 
+    gravity: 0
+    dead: 0.1
+    sensitivity: 1
+    snap: 0
+    invert: 0
+    type: 2
+    axis: 4
     joyNum: 0
