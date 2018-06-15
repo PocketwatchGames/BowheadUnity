@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-//[CustomEditor(typeof(MeshFilter))]
+[CustomEditor(typeof(MeshFilter))]
 public class DrawMeshNormals : Editor {
 
 	private Mesh mesh;

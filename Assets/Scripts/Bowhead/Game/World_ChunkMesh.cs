@@ -1172,7 +1172,8 @@ public partial class World {
 
 										var boundMirrorVert = vi ^ signbit;
 
-										for (int axisCheck = 2; axisCheck >= 0; --axisCheck) {
+										for (int checkAxisNum = 0; checkAxisNum < 3; ++checkAxisNum) {
+											var axisCheck = (checkAxisNum == 0) ? 1 : (checkAxisNum == 1) ? 2 : 0;
 											if (axisCheck != spaxis) {
 												var checkAxisBit = 1 << axisCheck;
 												var boundMirrorAxisVert = boundMirrorVert ^ checkAxisBit;
@@ -1637,9 +1638,9 @@ public partial class World {
 
 					_numTouched = 0;
 
-					for (int y = 0; y < VOXEL_CHUNK_SIZE_XZ; ++y) {
+					for (int y = 0; y < VOXEL_CHUNK_SIZE_Y; ++y) {
 						var ymin = (y == 0);
-						var ymax = (y == (VOXEL_CHUNK_SIZE_XZ - 1));
+						var ymax = (y == (VOXEL_CHUNK_SIZE_Y - 1));
 						var yofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*y;
 
 						for (int z = 0; z < VOXEL_CHUNK_SIZE_XZ; ++z) {
