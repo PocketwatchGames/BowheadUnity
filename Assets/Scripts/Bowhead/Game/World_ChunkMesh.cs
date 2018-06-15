@@ -172,7 +172,7 @@ public partial class World {
 
 			public static ConstIntArrayRowEnumerator_t New(ConstIntArrayRow_t row) {
 				return new ConstIntArrayRowEnumerator_t {
-					_i = 0,
+					_i = -1,
 					_row = row
 				};
 			}
@@ -197,7 +197,7 @@ public partial class World {
 			}
 
 			public void Reset() {
-				_i = 0;
+				_i = -1;
 			}
 		};
 
@@ -240,7 +240,7 @@ public partial class World {
 
 			public static ConstIntArray2DEnumerator_t New(ConstIntArray2D_t arr) {
 				return new ConstIntArray2DEnumerator_t {
-					_i = 0,
+					_i = -1,
 					_arr = arr
 				};
 			}
@@ -265,7 +265,7 @@ public partial class World {
 			}
 
 			public void Reset() {
-				_i = 0;
+				_i = -1;
 			}
 		};
 
@@ -381,15 +381,15 @@ public partial class World {
 
 			void Init() {
 				_voxelVerts = new int[8, 3] {
-				{ 0,0,0 },
-				{ 1,0,0 },
-				{ 0,1,0 },
-				{ 1,1,0 },
-				{ 0,0,1 },
-				{ 1,0,1 },
-				{ 0,1,1 },
-				{ 1,1,1 }
-			};
+					{ 0,0,0 },
+					{ 1,0,0 },
+					{ 0,1,0 },
+					{ 1,1,0 },
+					{ 0,0,1 },
+					{ 1,0,1 },
+					{ 0,1,1 },
+					{ 1,1,1 }
+				};
 
 				_pinnedVoxelVerts = GCHandle.Alloc(_voxelVerts, GCHandleType.Pinned);
 
@@ -398,19 +398,19 @@ public partial class World {
 				}
 
 				_voxelFaces = new int[6, 4] {
-				// +x
-				{ 1,3,7,5 },
-				// -x
-				{ 2,0,4,6 },
-				// +y
-				{ 3,2,6,7 },
-				// -y
-				{ 0,1,5,4 },
-				// +z
-				{ 4,5,7,6 },
-				// -z
-				{ 2,3,1,0 }
-			};
+					// +x
+					{ 1,3,7,5 },
+					// -x
+					{ 2,0,4,6 },
+					// +y
+					{ 3,2,6,7 },
+					// -y
+					{ 0,1,5,4 },
+					// +z
+					{ 4,5,7,6 },
+					// -z
+					{ 2,3,1,0 }
+				};
 
 				_pinnedVoxelFaces = GCHandle.Alloc(_voxelFaces, GCHandleType.Pinned);
 
@@ -419,19 +419,19 @@ public partial class World {
 				}
 
 				_voxelFaceNormal = new int[6, 3] {
-				//+x
-				{ 1,0,0 },
-				//-x
-				{ -1,0,0 },
-				//+y
-				{ 0,1,0 },
-				//-y
-				{ 0,-1,0 },
-				//+z
-				{ 0,0,1 },
-				//-z
-				{ 0,0,-1 }
-			};
+					//+x
+					{ 1,0,0 },
+					//-x
+					{ -1,0,0 },
+					//+y
+					{ 0,1,0 },
+					//-y
+					{ 0,-1,0 },
+					//+z
+					{ 0,0,1 },
+					//-z
+					{ 0,0,-1 }
+				};
 
 				_pinnedVoxelFaceNormal = GCHandle.Alloc(_voxelFaceNormal, GCHandleType.Pinned);
 
@@ -440,15 +440,15 @@ public partial class World {
 				}
 
 				_collapseMap = new int[8, 3] {
-				{ 1, 2, 4 },
-				{ 0, 3, 5 },
-				{ 3, 0, 6 },
-				{ 2, 1, 7 },
-				{ 5, 6, 0 },
-				{ 4, 7, 1 },
-				{ 7, 4, 2 },
-				{ 6, 5, 3 }
-			};
+					{ 1, 2, 4 },
+					{ 0, 3, 5 },
+					{ 3, 0, 6 },
+					{ 2, 1, 7 },
+					{ 5, 6, 0 },
+					{ 4, 7, 1 },
+					{ 7, 4, 2 },
+					{ 6, 5, 3 }
+				};
 
 				_pinnedCollapseMap = GCHandle.Alloc(_collapseMap, GCHandleType.Pinned);
 
@@ -457,13 +457,13 @@ public partial class World {
 				}
 
 				_spanningAxis = new int[3, 2] {
-				// x -> y/z
-				{ 1, 2 },
-				// y -> x/z
-				{ 0, 2 },
-				// z -> x/y
-				{ 0, 1 }
-			};
+					// x -> y/z
+					{ 1, 2 },
+					// y -> x/z
+					{ 0, 2 },
+					// z -> x/y
+					{ 0, 1 }
+				};
 
 				_pinnedSpanningAxis = GCHandle.Alloc(_spanningAxis, GCHandleType.Pinned);
 
@@ -472,22 +472,22 @@ public partial class World {
 				}
 
 				_blockColors = new Color32[(int)EVoxelBlockType.NUM_BLOCK_TYPES] {
-				new Color32(0, 0, 0, 255),
-				new Color32(153, 102, 51, 255),
-				new Color32(20, 163, 61, 255),
-				new Color32(0, 50, 255, 255),
-				new Color32(200, 190, 100, 255),
-				new Color32(240, 240, 255, 255),
-				new Color32(80, 100, 120, 255),
-				new Color32(200, 255, 255, 255),
-				new Color32(150, 100, 25, 255),
-				new Color32(60, 200, 20, 255),
-				new Color32(10, 100, 60, 255),
-				new Color32(250, 250, 50, 255),
-				new Color32(200, 10, 0, 255),
-				new Color32(150, 0, 200, 255),
-				new Color32(50, 0, 200, 255)
-			};
+					new Color32(0, 0, 0, 255),
+					new Color32(153, 102, 51, 255),
+					new Color32(20, 163, 61, 255),
+					new Color32(0, 50, 255, 255),
+					new Color32(200, 190, 100, 255),
+					new Color32(240, 240, 255, 255),
+					new Color32(80, 100, 120, 255),
+					new Color32(200, 255, 255, 255),
+					new Color32(150, 100, 25, 255),
+					new Color32(60, 200, 20, 255),
+					new Color32(10, 100, 60, 255),
+					new Color32(250, 250, 50, 255),
+					new Color32(200, 10, 0, 255),
+					new Color32(150, 0, 200, 255),
+					new Color32(50, 0, 200, 255)
+				};
 
 				_pinnedBlockColors = GCHandle.Alloc(_blockColors, GCHandleType.Pinned);
 
@@ -496,22 +496,22 @@ public partial class World {
 				}
 
 				_blockSmoothing = new uint[(int)EVoxelBlockType.NUM_BLOCK_TYPES] {
-				BLOCK_SMG_OTHER|BLOCK_BLEND_COLORS, // BLOCK_TYPE_AIR
-				BLOCK_SMG_GRASS | BLOCK_SMG_DIRT_ROCK | BLOCK_BLEND_COLORS, // BLOCK_TYPE_DIRT -> blends with rock and grass
-				BLOCK_SMG_GRASS | BLOCK_SMG_DIRT_ROCK | BLOCK_BLEND_COLORS, // BLOCK_TYPE_GRASS
-				BLOCK_SMG_WATER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_WATER
-				BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_SAND
-				BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_SNOW
-				0, // BLOCK_TYPE_ROCK
-				0, // BLOCK_TYPE_ICE
-				0, // BLOCK_TYPE_WOOD
-				BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_LEAVES
-				BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_NEEDLES
-				BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS1
-				BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS2
-				BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS3
-				BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS // BLOCK_TYPE_FLOWERS4
-			};
+					BLOCK_SMG_OTHER|BLOCK_BLEND_COLORS, // BLOCK_TYPE_AIR
+					BLOCK_SMG_GRASS | BLOCK_SMG_DIRT_ROCK | BLOCK_BLEND_COLORS, // BLOCK_TYPE_DIRT -> blends with rock and grass
+					BLOCK_SMG_GRASS | BLOCK_SMG_DIRT_ROCK | BLOCK_BLEND_COLORS, // BLOCK_TYPE_GRASS
+					BLOCK_SMG_WATER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_WATER
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_SAND
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_SNOW
+					0, // BLOCK_TYPE_ROCK
+					0, // BLOCK_TYPE_ICE
+					0, // BLOCK_TYPE_WOOD
+					BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_LEAVES
+					BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_NEEDLES
+					BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS1
+					BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS2
+					BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS3
+					BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS // BLOCK_TYPE_FLOWERS4
+				};
 
 				_pinnedBlockSmoothing = GCHandle.Alloc(_blockSmoothing, GCHandleType.Pinned);
 
@@ -973,6 +973,11 @@ public partial class World {
 
 			void AddVoxel(int x, int y, int z, EVoxelBlockType blocktype) {
 				var voxel = _voxels[_numVoxels++];
+
+				ZeroInts(voxel->vertexFlags, 8);
+				ZeroInts(voxel->blendFlags, 8);
+				ZeroInts(voxel->neighbors, 6);
+				
 				voxel->touched = true;
 
 				if ((blocktype & EVoxelBlockType.FULL_VOXEL_FLAG) != 0) {
@@ -1029,7 +1034,7 @@ public partial class World {
 
 			int GetVoxelVert(Voxel_t* voxel, int vi) {
 				for (int i = 0; i < 3; ++i) {
-					var axis = (i == 0) ? 1 : (i == 1) ? 0 : 2;
+					var axis = (i == 0) ? 1 : (i == 1) ? 2 : 0;
 					var signbit = 1 << axis;
 					var flags = (voxel->vertexFlags[vi] | voxel->blendFlags[vi]);
 
@@ -1180,7 +1185,8 @@ public partial class World {
 									}
 
 									if (exposed) {
-										for (int checkAxis = 2; checkAxis >= 0; --checkAxis) {
+										for (int checkAxisNum = 0; checkAxisNum < 3; ++checkAxisNum) {
+											var checkAxis = (checkAxisNum == 0) ? 1 : (checkAxisNum == 1) ? 2 : 0;
 											if (checkAxis != axis) {
 												var checkAxisBit = 1 << checkAxis;
 												var mirrorAxisVert = mirrorVert ^ checkAxisBit;
@@ -1241,7 +1247,7 @@ public partial class World {
 				bool v0vis = true;
 
 				for (int axiscount = 0; axiscount < 3; ++axiscount) {
-					var axis = (axiscount == 0) ? 1 : (axiscount == 1) ? 0 : 2;
+					var axis = (axiscount == 0) ? 1 : (axiscount == 1) ? 2 : 0;
 
 					// a covering face must be reflected about the plane of the face.
 
@@ -1309,7 +1315,7 @@ public partial class World {
 			bool CheckFaceUncovered(int v0, int v1, int v2, Voxel_t* neighbor) {
 
 				for (int axiscount = 0; axiscount < 3; ++axiscount) {
-					var axis = (axiscount == 0) ? 1 : (axiscount == 1) ? 0 : 2;
+					var axis = (axiscount == 0) ? 1 : (axiscount == 1) ? 2 : 0;
 
 					var axisbit = 1 << axis;
 
@@ -1324,7 +1330,7 @@ public partial class World {
 
 					var side = v0side == 0;
 
-					for (int i = 0; i< 6; ++i) {
+					for (int i = 0; i < 6; ++i) {
 						var nv0 = GetVoxelVert(neighbor, _tables.voxelFaces[i][0]);
 						for (int z = 1; z <= 2; ++z) {
 							var nv1 = GetVoxelVert(neighbor, _tables.voxelFaces[i][z]);
@@ -1665,21 +1671,6 @@ public partial class World {
 									_vn[1] = chunk.blocktypes[zofs + yofs + x - 1];
 								}
 
-								if (zmin) {
-									_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
-									if (_area[NEG_Z].valid != 0) {
-										_vn[5] = _area[NEG_Z].blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + x];
-									}
-								} else if (zmax) {
-									if (_area[POS_Z].valid != 0) {
-										_vn[4] = _area[POS_Z].blocktypes[yofs + x];
-									}
-									_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
-								} else {
-									_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
-									_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
-								}
-
 								if (ymin) {
 									_vn[2] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
 									if (_area[NEG_Y].valid != 0) {
@@ -1693,6 +1684,21 @@ public partial class World {
 								} else {
 									_vn[2] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
 									_vn[3] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
+								}
+
+								if (zmin) {
+									_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
+									if (_area[NEG_Z].valid != 0) {
+										_vn[5] = _area[NEG_Z].blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + x];
+									}
+								} else if (zmax) {
+									if (_area[POS_Z].valid != 0) {
+										_vn[4] = _area[POS_Z].blocktypes[yofs + x];
+									}
+									_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
+								} else {
+									_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
+									_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
 								}
 
 								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
@@ -1808,13 +1814,7 @@ public partial class World {
 								_vn[3] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
 								_vn[4] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
 								_vn[5] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[1] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[2] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[3] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[4] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[5] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-
+								
 								var isBorderVoxel = (x < 0) || (x >= VOXEL_CHUNK_SIZE_XZ) || (y < 0) || (y >= VOXEL_CHUNK_SIZE_Y) || (z < 0) || (z >= VOXEL_CHUNK_SIZE_XZ);
 
 								EmitVoxelFaces((x + BORDER_SIZE) + ((z + BORDER_SIZE)*NUM_VOXELS_XZ) + ((y + BORDER_SIZE)*NUM_VOXELS_XZ*NUM_VOXELS_XZ), x + BORDER_SIZE, y + BORDER_SIZE, z + BORDER_SIZE, blocktype, isBorderVoxel);
