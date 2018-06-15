@@ -478,8 +478,7 @@ public partial class World {
 					spanningAxis = ConstIntArray2D_t.New((int*)_pinnedSpanningAxis.AddrOfPinnedObject().ToPointer(), 3, 2);
 				}
 
-				_blockColors = new Color32[(int)EVoxelBlockType.NUM_BLOCK_TYPES] {
-					new Color32(0, 0, 0, 255),
+				_blockColors = new Color32[(int)EVoxelBlockType.NUM_BLOCK_TYPES - 1] {
 					new Color32(153, 102, 51, 255),
 					new Color32(20, 163, 61, 255),
 					new Color32(0, 50, 255, 255),
@@ -499,11 +498,10 @@ public partial class World {
 				_pinnedBlockColors = GCHandle.Alloc(_blockColors, GCHandleType.Pinned);
 
 				unsafe {
-					blockColors = ConstColor32Array1D_t.New((Color32*)_pinnedBlockColors.AddrOfPinnedObject().ToPointer(), (int)EVoxelBlockType.NUM_BLOCK_TYPES);
+					blockColors = ConstColor32Array1D_t.New((Color32*)_pinnedBlockColors.AddrOfPinnedObject().ToPointer(), (int)EVoxelBlockType.NUM_BLOCK_TYPES - 1);
 				}
 
-				_blockSmoothing = new uint[(int)EVoxelBlockType.NUM_BLOCK_TYPES] {
-					BLOCK_SMG_OTHER|BLOCK_BLEND_COLORS, // BLOCK_TYPE_AIR
+				_blockSmoothing = new uint[(int)EVoxelBlockType.NUM_BLOCK_TYPES - 1] {
 					BLOCK_SMG_GRASS | BLOCK_SMG_DIRT_ROCK | BLOCK_BLEND_COLORS, // BLOCK_TYPE_DIRT -> blends with rock and grass
 					BLOCK_SMG_GRASS | BLOCK_SMG_DIRT_ROCK | BLOCK_BLEND_COLORS, // BLOCK_TYPE_GRASS
 					BLOCK_SMG_WATER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_WATER
@@ -523,7 +521,7 @@ public partial class World {
 				_pinnedBlockSmoothing = GCHandle.Alloc(_blockSmoothing, GCHandleType.Pinned);
 
 				unsafe {
-					blockSmoothing = ConstUIntArray1D_t.New((uint*)_pinnedBlockSmoothing.AddrOfPinnedObject().ToPointer(), (int)EVoxelBlockType.NUM_BLOCK_TYPES);
+					blockSmoothing = ConstUIntArray1D_t.New((uint*)_pinnedBlockSmoothing.AddrOfPinnedObject().ToPointer(), (int)EVoxelBlockType.NUM_BLOCK_TYPES - 1);
 				}
 			}
 
@@ -746,7 +744,6 @@ public partial class World {
 
 				var idx = _vtoi[INDEX] - 1;
 				if (idx < 0) {
-
 					Assert(_vertCount < ushort.MaxValue);
 					idx = _vertCount++;
 					vtoiCounts[idx] = 0;
@@ -796,7 +793,7 @@ public partial class World {
 				var u = (b - a).normalized;
 				var v = (c - a).normalized;
 
-				return Vector3.Cross(u, v);
+				return Vector3.Cross(u, v).normalized;
 			}
 		};
 
@@ -859,6 +856,14 @@ public partial class World {
 				outPos = smoothVerts.positions[index];
 				outNormal = n.normalized;
 				outColor = (Color)c;
+
+				if ((outColor.r < 100) && (outColor.g < 100) && (outColor.b < 100)) {
+					int b = 0;
+				}
+
+				if (outNormal.sqrMagnitude < 0.1f) {
+					int b = 0;
+				}
 			}
 		};
 
@@ -1395,8 +1400,8 @@ public partial class World {
 			}
 
 			void GetBlockColorAndSmoothingGroup(EVoxelBlockType blocktype, out Color32 color, out uint smg) {
-				color = _tables.blockColors[(int)blocktype];
-				smg = _tables.blockSmoothing[(int)blocktype];
+				color = _tables.blockColors[(int)blocktype - 1];
+				smg = _tables.blockSmoothing[(int)blocktype - 1];
 			}
 
 			void EmitVoxelFaces(int index, int x, int y, int z, EVoxelBlockType blocktype, bool isBorderVoxel) {

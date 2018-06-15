@@ -339,7 +339,6 @@ namespace Port {
                 return EBlockType.BLOCK_TYPE_SAND;
             }
 
-
             float rock = GetRock(x, y, z);
             if (z < upperGroundHeight) {
                 if (rock > 0.5f) {
