@@ -310,12 +310,28 @@ InputManager:
     axis: 4
     joyNum: 0
   - serializedVersion: 3
-    m_Name: SelectInventory
-    descriptiveName: SelectInventory
+    m_Name: SelectLeft
+    descriptiveName: SelectLeft
     descriptiveNegativeName: 
-    negativeButton: q
+    negativeButton: 
+    positiveButton: q
+    altNegativeButton: 
+    altPositiveButton: joystick button 4
+    gravity: 1000000
+    dead: 0
+    sensitivity: 1000000
+    snap: 0
+    invert: 0
+    type: 0
+    axis: 4
+    joyNum: 0
+  - serializedVersion: 3
+    m_Name: SelectRight
+    descriptiveName: SelectRight
+    descriptiveNegativeName: 
+    negativeButton: 
     positiveButton: e
-    altNegativeButton: joystick button 4
+    altNegativeButton: 
     altPositiveButton: joystick button 5
     gravity: 1000000
     dead: 0

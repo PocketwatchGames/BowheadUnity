@@ -22,6 +22,7 @@ namespace Port {
 
         private InventoryContainer _mainContainer;
         private List<InventoryContainer> _packContainers = new List<InventoryContainer>();
+        private InventorySlot[] _slots = new InventorySlot[Player.MAX_INVENTORY_SIZE];
 
         public void Init(Player player) {
             _player = player;
@@ -40,6 +41,12 @@ namespace Port {
                 GameObject.Destroy(p);
             }
             _packContainers.Clear();
+            foreach (var s in _slots) {
+                if (s != null) {
+                    GameObject.Destroy(s);
+                }
+            }
+            _slots.Initialize();
             Rebuild();
 
             while (_player.GetInventorySlot(inventorySelected) == null) {
@@ -52,20 +59,54 @@ namespace Port {
         }
 
         private void Rebuild() {
+            float x = slotMargin;
             for (int slot = 0; slot <= (int)Player.InventorySlot.RIGHT_HAND; slot++) {
                 var s = Instantiate(_inventorySlotPrefab, _mainContainer.transform, false);
-                s.GetComponent<RectTransform>().anchoredPosition = new Vector2(slot * (slotSize.x + slotMargin) + slotMargin + slotSize.x / 2, 0);
+                s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
                 s.Init((Player.InventorySlot)slot);
                 s.SetItem(_player.GetInventorySlot(slot));
+                _slots[slot] = s;
+                x += slotSize.x + slotMargin;
             }
+            x += slotMargin;
+            _mainContainer.GetComponent<RectTransform>().sizeDelta = new Vector2(x, 54);
+
+            int packSlotsRemaining = 0;
+            InventoryContainer curPackContainer = null;
+            for (int slot = (int)Player.InventorySlot.PACK; slot < Player.MAX_INVENTORY_SIZE; slot++) {
+                var item = _player.GetInventorySlot(slot);
+                if (packSlotsRemaining == 0) {
+                    var p = item as Pack;
+                    if (p == null) {
+                        break;
+                    }
+                    packSlotsRemaining = p.Data.slots + 1;
+                    curPackContainer = Instantiate(_inventoryContainerPrefab, transform, false);
+                    curPackContainer.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, 0);
+                    x = slotMargin;
+                }
+
+                var s = Instantiate(_inventorySlotPrefab, curPackContainer.transform, false);
+                s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
+                s.Init((Player.InventorySlot)slot);
+                s.SetItem(_player.GetInventorySlot(slot));
+                _slots[slot] = s;
+                x += slotSize.x + slotMargin;
+                packSlotsRemaining--;
+
+                if (packSlotsRemaining == 0) {
+                    curPackContainer.GetComponent<RectTransform>().sizeDelta = new Vector2(x, 54);
+                }
+            }
+
+            SelectInventory(inventorySelected);
         }
 
         private void Update() {
-            var selectDir = Input.GetAxisRaw("SelectInventory");
-            if (selectDir < 0) { 
+            if (Input.GetButtonDown("SelectLeft")) { 
                 SelectPreviousInventory();
             }
-            else if (selectDir > 0) {
+            else if (Input.GetButtonDown("SelectRight")) {
                 SelectNextInventory();
             }
             if (Input.GetButton("Use")) {
@@ -93,15 +134,17 @@ namespace Port {
                 RearrangeLeft();
             }
             else {
+                int s = inventorySelected;
                 for (int i = 0; i < Player.MAX_INVENTORY_SIZE; i++) {
-                    inventorySelected--;
-                    if (inventorySelected < 0) {
-                        inventorySelected = Player.MAX_INVENTORY_SIZE - 1;
+                    s--;
+                    if (s < 0) {
+                        s = Player.MAX_INVENTORY_SIZE - 1;
                     }
-                    if (_player.GetInventorySlot(inventorySelected) != null) {
+                    if (_player.GetInventorySlot(s) != null) {
                         break;
                     }
                 }
+                SelectInventory(s);
                 dropTimer = 0;
             }
         }
@@ -111,20 +154,30 @@ namespace Port {
                 RearrangeRight();
             }
             else {
+                int s = inventorySelected;
                 for (int i = 0; i < Player.MAX_INVENTORY_SIZE; i++) {
-                    inventorySelected++;
-                    if (inventorySelected >= Player.MAX_INVENTORY_SIZE) {
-                        inventorySelected = 0;
+                    s++;
+                    if (s >= Player.MAX_INVENTORY_SIZE) {
+                        s = 0;
                     }
-                    if (_player.GetInventorySlot(inventorySelected) != null) {
+                    if (_player.GetInventorySlot(s) != null) {
                         break;
                     }
                 }
+                SelectInventory(s);
                 dropTimer = 0;
             }
         }
 
-
+        void SelectInventory(int i) {
+            if (_slots[i] != null) {
+                _slots[i].Deselect();
+            }
+            inventorySelected = i;
+            if (_slots[i] != null) {
+                _slots[i].Select();
+            }
+        }
 
 
         private void RearrangeLeft() {
