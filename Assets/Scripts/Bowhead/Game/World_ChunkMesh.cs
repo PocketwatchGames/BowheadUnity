@@ -1240,7 +1240,9 @@ public partial class World {
 
 				bool v0vis = true;
 
-				for (int axis = 2; axis >= 0; --axis) {
+				for (int axiscount = 0; axiscount < 3; ++axiscount) {
+					var axis = (axiscount == 0) ? 1 : (axiscount == 1) ? 0 : 2;
+
 					// a covering face must be reflected about the plane of the face.
 
 					var axisbit = 1 << axis;
@@ -1306,8 +1308,8 @@ public partial class World {
 
 			bool CheckFaceUncovered(int v0, int v1, int v2, Voxel_t* neighbor) {
 
-				for (int axis = 2; axis >= 0; --axis) {
-					// a covering face must be reflected about the plane of the face.
+				for (int axiscount = 0; axiscount < 3; ++axiscount) {
+					var axis = (axiscount == 0) ? 1 : (axiscount == 1) ? 0 : 2;
 
 					var axisbit = 1 << axis;
 
@@ -1494,6 +1496,13 @@ public partial class World {
 
 				_numVoxels = 0;
 
+				var chunk = _area[1 + Y_PITCH + Z_PITCH];
+				if ((chunk.flags & EChunkFlags.SOLID) == 0) {
+					// no solid blocks in this chunk it can't have any visible faces.
+					_smoothVerts.Finish();
+					return;
+				}
+
 				for (int y = -BORDER_SIZE; y < VOXEL_CHUNK_SIZE_Y + BORDER_SIZE; ++y) {
 					var ywrap = Wrap(y, VOXEL_CHUNK_SIZE_Y);
 					var ymin = (ywrap == 0);
@@ -1603,105 +1612,102 @@ public partial class World {
 					}
 				}
 
-				{
-					var chunk = _area[1 + Y_PITCH + Z_PITCH];
+				do {
+					const int CENTER = 1 + Y_PITCH + Z_PITCH;
+					const int POS_X = CENTER + 1;
+					const int NEG_X = CENTER - 1;
+					const int POS_Y = CENTER + Y_PITCH;
+					const int NEG_Y = CENTER - Y_PITCH;
+					const int POS_Z = CENTER + Z_PITCH;
+					const int NEG_Z = CENTER - Z_PITCH;
 
-					do {
-						const int CENTER = 1 + Y_PITCH + Z_PITCH;
-						const int POS_X = CENTER + 1;
-						const int NEG_X = CENTER - 1;
-						const int POS_Y = CENTER + Y_PITCH;
-						const int NEG_Y = CENTER - Y_PITCH;
-						const int POS_Z = CENTER + Z_PITCH;
-						const int NEG_Z = CENTER - Z_PITCH;
+					_numTouched = 0;
 
-						_numTouched = 0;
+					for (int y = 0; y < VOXEL_CHUNK_SIZE_XZ; ++y) {
+						var ymin = (y == 0);
+						var ymax = (y == (VOXEL_CHUNK_SIZE_XZ - 1));
+						var yofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*y;
 
-						for (int y = 0; y < VOXEL_CHUNK_SIZE_XZ; ++y) {
-							var ymin = (y == 0);
-							var ymax = (y == (VOXEL_CHUNK_SIZE_XZ - 1));
-							var yofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*y;
+						for (int z = 0; z < VOXEL_CHUNK_SIZE_XZ; ++z) {
+							var zmin = (z == 0);
+							var zmax = (z == (VOXEL_CHUNK_SIZE_XZ - 1));
+							var zofs = VOXEL_CHUNK_SIZE_XZ * z;
 
-							for (int z = 0; z < VOXEL_CHUNK_SIZE_XZ; ++z) {
-								var zmin = (z == 0);
-								var zmax = (z == (VOXEL_CHUNK_SIZE_XZ - 1));
-								var zofs = VOXEL_CHUNK_SIZE_XZ * z;
+							for (int x = 0; x < VOXEL_CHUNK_SIZE_XZ; ++x) {
+								var xmin = (x == 0);
+								var xmax = (x == (VOXEL_CHUNK_SIZE_XZ - 1));
 
-								for (int x = 0; x < VOXEL_CHUNK_SIZE_XZ; ++x) {
-									var xmin = (x == 0);
-									var xmax = (x == (VOXEL_CHUNK_SIZE_XZ - 1));
-
-									var blocktype = chunk.blocktypes[zofs + yofs + x];
-									if ((blocktype&~EVoxelBlockType.FULL_VOXEL_FLAG) == EVoxelBlockType.AIR) {
-										continue;
-									}
-
-									// avoid contents-change with neighbor blocks in unloaded-space
-									_vn[0] = blocktype;
-									_vn[1] = blocktype;
-									_vn[2] = blocktype;
-									_vn[3] = blocktype;
-									_vn[4] = blocktype;
-									_vn[5] = blocktype;
-
-									if (xmin) {
-										_vn[0] = chunk.blocktypes[zofs + yofs + x + 1];
-										if (_area[NEG_X].valid != 0) {
-											_vn[1] = _area[NEG_X].blocktypes[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
-										}
-									} else if (xmax) {
-										if (_area[POS_X].valid != 0) {
-											_vn[0] = _area[POS_X].blocktypes[zofs + yofs];
-										}
-										_vn[1] = chunk.blocktypes[zofs + yofs + x - 1];
-									} else {
-										_vn[0] = chunk.blocktypes[zofs + yofs + x + 1];
-										_vn[1] = chunk.blocktypes[zofs + yofs + x - 1];
-									}
-
-									if (zmin) {
-										_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
-										if (_area[NEG_Z].valid != 0) {
-											_vn[5] = _area[NEG_Z].blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + x];
-										}
-									} else if (zmax) {
-										if (_area[POS_Z].valid != 0) {
-											_vn[4] = _area[POS_Z].blocktypes[yofs + x];
-										}
-										_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
-									} else {
-										_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
-										_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
-									}
-
-									if (ymin) {
-										_vn[2] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
-										if (_area[NEG_Y].valid != 0) {
-											_vn[3] = _area[NEG_Y].blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + x];
-										}
-									} else if (ymax) {
-										if (_area[POS_Y].valid != 0) {
-											_vn[2] = _area[POS_Y].blocktypes[zofs + x];
-										}
-										_vn[3] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
-									} else {
-										_vn[2] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
-										_vn[3] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
-									}
-
-									_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-									_vn[1] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-									_vn[2] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-									_vn[3] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-									_vn[4] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-									_vn[5] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-
-									MatchNeighbors((x + BORDER_SIZE) + ((z + BORDER_SIZE)*NUM_VOXELS_XZ) + ((y + BORDER_SIZE)*NUM_VOXELS_XZ*NUM_VOXELS_XZ), x + BORDER_SIZE, y + BORDER_SIZE, z + BORDER_SIZE, blocktype);
+								var blocktype = chunk.blocktypes[zofs + yofs + x];
+								if ((blocktype&~EVoxelBlockType.FULL_VOXEL_FLAG) == EVoxelBlockType.AIR) {
+									continue;
 								}
+
+								// avoid contents-change with neighbor blocks in unloaded-space
+								_vn[0] = blocktype;
+								_vn[1] = blocktype;
+								_vn[2] = blocktype;
+								_vn[3] = blocktype;
+								_vn[4] = blocktype;
+								_vn[5] = blocktype;
+
+								if (xmin) {
+									_vn[0] = chunk.blocktypes[zofs + yofs + x + 1];
+									if (_area[NEG_X].valid != 0) {
+										_vn[1] = _area[NEG_X].blocktypes[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
+									}
+								} else if (xmax) {
+									if (_area[POS_X].valid != 0) {
+										_vn[0] = _area[POS_X].blocktypes[zofs + yofs];
+									}
+									_vn[1] = chunk.blocktypes[zofs + yofs + x - 1];
+								} else {
+									_vn[0] = chunk.blocktypes[zofs + yofs + x + 1];
+									_vn[1] = chunk.blocktypes[zofs + yofs + x - 1];
+								}
+
+								if (zmin) {
+									_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
+									if (_area[NEG_Z].valid != 0) {
+										_vn[5] = _area[NEG_Z].blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + x];
+									}
+								} else if (zmax) {
+									if (_area[POS_Z].valid != 0) {
+										_vn[4] = _area[POS_Z].blocktypes[yofs + x];
+									}
+									_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
+								} else {
+									_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
+									_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
+								}
+
+								if (ymin) {
+									_vn[2] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
+									if (_area[NEG_Y].valid != 0) {
+										_vn[3] = _area[NEG_Y].blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + x];
+									}
+								} else if (ymax) {
+									if (_area[POS_Y].valid != 0) {
+										_vn[2] = _area[POS_Y].blocktypes[zofs + x];
+									}
+									_vn[3] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
+								} else {
+									_vn[2] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
+									_vn[3] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
+								}
+
+								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
+								_vn[1] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
+								_vn[2] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
+								_vn[3] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
+								_vn[4] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
+								_vn[5] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
+
+								MatchNeighbors((x + BORDER_SIZE) + ((z + BORDER_SIZE)*NUM_VOXELS_XZ) + ((y + BORDER_SIZE)*NUM_VOXELS_XZ*NUM_VOXELS_XZ), x + BORDER_SIZE, y + BORDER_SIZE, z + BORDER_SIZE, blocktype);
 							}
 						}
-					} while (_numTouched > 0);
-				}
+					}
+				} while (_numTouched > 0);
+				
 
 				for (int y = -BORDER_SIZE; y < VOXEL_CHUNK_SIZE_Y + BORDER_SIZE; ++y) {
 					var ywrap = Wrap(y, VOXEL_CHUNK_SIZE_Y);

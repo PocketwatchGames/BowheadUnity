@@ -261,11 +261,13 @@ public partial class World {
 		}
 
 		void CopyToMesh(ChunkJobData jobData, Chunk chunk) {
-			if (chunk.goChunk == null) {
-				chunk.goChunk = GameObject.Instantiate(_chunkPrefab, WorldToVec3(ChunkToWorld(chunk.pos)), Quaternion.identity, null);
-			}
+			if (jobData.jobData.outputVerts.counts[0] > 0) {
+				if (chunk.goChunk == null) {
+					chunk.goChunk = GameObject.Instantiate(_chunkPrefab, WorldToVec3(ChunkToWorld(chunk.pos)), Quaternion.identity, null);
+				}
 
-			ChunkMeshGen.CopyToMesh(ref jobData.jobData, chunk.goChunk.meshFilter.mesh);
+				ChunkMeshGen.CopyToMesh(ref jobData.jobData, chunk.goChunk.meshFilter.mesh);
+			}
 		}
 
 		public void Dispose() {

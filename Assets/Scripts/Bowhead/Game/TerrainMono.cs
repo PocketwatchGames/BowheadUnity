@@ -14,7 +14,7 @@ public class TerrainMono : MonoBehaviour {
 		World.Streaming.StaticInit();
 
 		_streaming = new World.Streaming(_chunkPrefab);
-		_volume = _streaming.NewStreamingVolume(0, 0);
+		_volume = _streaming.NewStreamingVolume(1, 1);
 		_volume.position = new World.WorldChunkPos_t(0, 0, 0);
 	}
 
