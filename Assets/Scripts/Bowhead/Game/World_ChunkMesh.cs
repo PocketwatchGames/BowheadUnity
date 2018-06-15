@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using static UnityEngine.Debug;
 
@@ -89,6 +90,7 @@ public partial class World {
 		};
 
 		public unsafe struct ChunkStorageArray1D_t {
+			[NativeDisableUnsafePtrRestriction]
 			EVoxelBlockType* _arr;
 			int _x;
 
@@ -128,6 +130,7 @@ public partial class World {
 
 		public struct PinnedChunkData_t {
 			public ChunkStorageArray1D_t blocktypes;
+			[NativeDisableUnsafePtrRestriction]
 			public unsafe EChunkFlags* pinnedFlags;
 			public EChunkFlags flags;
 			public int valid;
@@ -202,6 +205,7 @@ public partial class World {
 		};
 
 		public unsafe struct ConstIntArrayRow_t : IEnumerable<int> {
+			[NativeDisableUnsafePtrRestriction]
 			int* _arr;
 			int _size;
 
@@ -270,6 +274,7 @@ public partial class World {
 		};
 
 		public unsafe struct ConstIntArray2D_t : IEnumerable<ConstIntArrayRow_t> {
+			[NativeDisableUnsafePtrRestriction]
 			int* _arr;
 			int _x;
 			int _y;
@@ -305,6 +310,7 @@ public partial class World {
 		};
 
 		public unsafe struct ConstUIntArray1D_t {
+			[NativeDisableUnsafePtrRestriction]
 			uint* _arr;
 			int _x;
 
@@ -330,6 +336,7 @@ public partial class World {
 		};
 
 		public unsafe struct ConstColor32Array1D_t {
+			[NativeDisableUnsafePtrRestriction]
 			Color32* _arr;
 			int _x;
 
@@ -793,7 +800,7 @@ public partial class World {
 			}
 		};
 
-		struct GenerateFinalVertices_t {
+		struct GenerateFinalVertices_t : IJob {
 			SmoothingVertsIn_t smoothVerts;
 			FinalMeshVerts_t finalVerts;
 
@@ -863,6 +870,7 @@ public partial class World {
 		};
 
 		public unsafe struct VoxelArray1D {
+			[NativeDisableUnsafePtrRestriction]
 			Voxel_t* _arr;
 			int _x;
 
@@ -935,7 +943,7 @@ public partial class World {
 			}
 		};
 
-		unsafe struct GenerateChunkVerts_t {
+		unsafe struct GenerateChunkVerts_t : IJob {
 			SmoothingVertsOut_t _smoothVerts;
 			VoxelArray1D _voxels;
 			Tables _tables;
@@ -1827,7 +1835,7 @@ public partial class World {
 			}
 		};
 
-		struct GenerateChunkVoxels_t {
+		struct GenerateChunkVoxels_t : IJob {
 			WorldChunkPos_t pos;
 			PinnedChunkData_t chunk;
 
@@ -1879,17 +1887,13 @@ public partial class World {
 			}
 		};
 
-		public static void ScheduleGenVoxelsJob(WorldChunkPos_t pos, ChunkData_t chunkData) {
-			GenerateChunkVoxels_t genVoxels = GenerateChunkVoxels_t.New(pos, PinnedChunkData_t.New(chunkData));
-			genVoxels.Execute();
+		public static JobHandle ScheduleGenVoxelsJob(WorldChunkPos_t pos, ChunkData_t chunkData) {
+			return GenerateChunkVoxels_t.New(pos, PinnedChunkData_t.New(chunkData)).Schedule();
 		}
 
-		public static void ScheduleGenTrisJob(ref JobInputData jobData) {
-			GenerateChunkVerts_t genVerts = GenerateChunkVerts_t.New(jobData.smoothVerts, jobData.voxelStorage.voxels, jobData.neighbors, tableStorage);
-			genVerts.Execute();
-
-			GenerateFinalVertices_t genFinalVerts = GenerateFinalVertices_t.New(SmoothingVertsIn_t.New(jobData.smoothVerts), jobData.outputVerts);
-			genFinalVerts.Execute();
+		public static JobHandle ScheduleGenTrisJob(ref JobInputData jobData, JobHandle dependsOn = default(JobHandle)) {
+			var genChunkVerts = GenerateChunkVerts_t.New(jobData.smoothVerts, jobData.voxelStorage.voxels, jobData.neighbors, tableStorage).Schedule(dependsOn);
+			return GenerateFinalVertices_t.New(SmoothingVertsIn_t.New(jobData.smoothVerts), jobData.outputVerts).Schedule(genChunkVerts);
 		}
 
 		public static void Run(Mesh outMesh) {

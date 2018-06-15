@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Jobs;
 
 public partial class World {
 	public sealed class Streaming : IDisposable {
@@ -70,6 +71,7 @@ public partial class World {
 			}
 
 			if (anyLoading) {
+				bool didQueue = false;
 				bool anyQueued;
 				do {
 					anyQueued = false;
@@ -77,18 +79,31 @@ public partial class World {
 						if (volume.loading) {
 							if (QueueNextChunk(volume)) {
 								anyQueued = true;
+								didQueue = true;
 							}
 
 							anyLoading = anyLoading || volume.loading;
 						}
 					}
 				} while (anyQueued);
+
+				if (didQueue) {
+					JobHandle.ScheduleBatchedJobs();
+				}
 			}
 
 			_loading = anyLoading;
 		}
 
 		public void Flush() {
+			while (_usedJobData != null) {
+				var job = _usedJobData;
+				job.jobHandle.Complete();
+				CompleteJob(job);
+				_usedJobData = job.next;
+				job.next = _freeJobData;
+				_freeJobData = job;
+			}
 		}
 
 		bool QueueNextChunk(VolumeData volume) {
@@ -165,7 +180,7 @@ public partial class World {
 			chunk.jobData = jobData;
 			chunk.chunkData.Pin();
 
-			ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData);
+			jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData);
 			QueueJobData(jobData);
 			return true;
 		}
@@ -185,7 +200,7 @@ public partial class World {
 				chunk.jobData = jobData;
 				AddRef(chunk);
 				chunk.chunkData.Pin();
-				ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData);
+				jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData);
 			}
 
 			chunk.jobData.jobData.voxelStorage.Pin();
@@ -199,11 +214,11 @@ public partial class World {
 					neighbor.chunkData.Pin();
 					jobData.jobData.neighbors[i] = ChunkMeshGen.PinnedChunkData_t.New(neighbor.chunkData);
 				} else {
-					jobData.jobData.neighbors[i] = new ChunkMeshGen.PinnedChunkData_t();
+					jobData.jobData.neighbors[i] = default(ChunkMeshGen.PinnedChunkData_t);
 				}
 			}
 
-			ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData);
+			jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, jobData.jobHandle);
 
 			if (!appendJob) {
 				QueueJobData(jobData);
@@ -217,46 +232,56 @@ public partial class World {
 			ChunkJobData next;
 
 			for (var job = _usedJobData; job != null; job = next) {
-				var chunk = job.chunk;
-
-				if ((job.flags & EJobFlags.TRIS) != 0) {
-					job.jobData.voxelStorage.Unpin();
-					chunk.hasTrisData = true;
-					for (int i = 0; i < job.neighbors.Length; ++i) {
-						var neighbor = job.neighbors[i];
-						if (neighbor != null) {
-							neighbor.chunkData.Unpin();
-							Release(neighbor);
-						}
-					}
-				}
-
-				chunk.chunkData.Unpin();
-
-				job.chunk = null;
-				chunk.jobData = null;
-				chunk.hasVoxelData = true;
-				
-				Release(chunk);
-
-				if (chunk.refCount > 0) {
-					if (chunk.hasTrisData) {
-						CopyToMesh(job, chunk);
-					}
-				}
-
-				if (prev != null) {
-					prev.next = job.next;
-				} else {
-					_usedJobData = job.next;
-				}
-
 				next = job.next;
 
-				job.next = _freeJobData;
-				_freeJobData = job;
-				
-				//prev = job;
+				if (job.jobHandle.IsCompleted) {
+					job.jobHandle.Complete();
+
+					CompleteJob(job);
+
+					if (prev != null) {
+						prev.next = job.next;
+					} else {
+						_usedJobData = job.next;
+					}
+
+
+					job.next = _freeJobData;
+					_freeJobData = job;
+				} else {
+					prev = job;
+				}
+			}
+		}
+
+		void CompleteJob(ChunkJobData job) {
+			var chunk = job.chunk;
+
+			if ((job.flags & EJobFlags.TRIS) != 0) {
+				job.jobData.voxelStorage.Unpin();
+				chunk.hasTrisData = true;
+				for (int i = 0; i < job.neighbors.Length; ++i) {
+					var neighbor = job.neighbors[i];
+					if (neighbor != null) {
+						neighbor.chunkData.Unpin();
+						Release(neighbor);
+					}
+				}
+			}
+
+			chunk.chunkData.Unpin();
+
+			job.chunk = null;
+			job.jobHandle = default(JobHandle);
+			chunk.jobData = null;
+			chunk.hasVoxelData = true;
+
+			Release(chunk);
+
+			if (chunk.refCount > 0) {
+				if (chunk.hasTrisData) {
+					CopyToMesh(job, chunk);
+				}
 			}
 		}
 
@@ -324,6 +349,7 @@ public partial class World {
 			public Chunk[] neighbors = new Chunk[27];
 			public ChunkMeshGen.JobInputData jobData = ChunkMeshGen.JobInputData.New();
 			public EJobFlags flags;
+			public JobHandle jobHandle;
 
 			public void Dispose() {
 				jobData.Dispose();
