@@ -66,8 +66,8 @@ namespace Port {
 
         const int noiseFloatPregenSize = 512;
         const float waterLevel = 64;
-
-        static FastNoise noise;
+		
+        static FastNoise_t noise = new FastNoise_t();
 
         int worldToChunk(int w, int CHUNK_SIZE) {
             if (w < 0) {

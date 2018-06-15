@@ -22,6 +22,7 @@ public partial class World {
 		bool _loading;
 
 		public static void StaticInit() {
+			FastNoise_t.New(); // construct this to init readonly tables.
 			ChunkMeshGen.tableStorage = ChunkMeshGen.TableStorage.New();
 		}
 

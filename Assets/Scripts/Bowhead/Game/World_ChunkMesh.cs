@@ -103,11 +103,11 @@ public partial class World {
 
 			public EVoxelBlockType this[int i] {
 				get {
-					Assert(i < _x);
+					BoundsCheckAndThrow(i, 0, _x);
 					return _arr[i];
 				}
 				set {
-					Assert(i < _x);
+					BoundsCheckAndThrow(i, 0, _x);
 					_arr[i] = value;
 				}
 			}
