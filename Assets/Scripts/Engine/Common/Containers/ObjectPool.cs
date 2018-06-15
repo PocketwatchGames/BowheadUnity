@@ -1,8 +1,6 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
-using UnityEngine;
 using UnityEngine.Assertions;
-using System.Reflection;
 using System.Collections.Generic;
 
 public class ObjectPool<T> where T : new()  {
