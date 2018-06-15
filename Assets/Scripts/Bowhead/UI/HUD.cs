@@ -24,24 +24,16 @@ namespace Bowhead.Client.UI {
 		CanvasGroup _damageEffect;
 		HUDDescription _hudDescription;
 
-		bool _unitsTraded;
-		bool _did5;
-		bool _did1;
-		bool _did30;
 		float _damage;
 		float _damageAlpha;
 		float _damageTime;
-		float _teamEliminatedDelay;
-		float _playerEliminatedDelay;
-
-		protected abstract void SetTime(string time);
-				
+		
 		public HUD(ClientWorld world, GameState gameState) {
 			_world = world;
 			_gameState = gameState;
 
 			_hudCanvas = GameObject.Instantiate(GameManager.instance.clientData.hudCanvasPrefab);
-			_damageEffect = _hudCanvas.transform.Find("DamageEffectCanvas").GetComponent<CanvasGroup>();
+			//_damageEffect = _hudCanvas.transform.Find("DamageEffectCanvas").GetComponent<CanvasGroup>();
 
 			//if (_hudCanvas != null) {
 			//	var mmap = GameObject.Instantiate(GameManager.instance.clientData.minimapPrefab);
@@ -130,33 +122,12 @@ namespace Bowhead.Client.UI {
 			var targetAlpha = Mathf.Clamp01(((_damage / DAMAGE_OPACITY_SCALE) * 0.5f) + 0.5f) * (_damageTime / DAMAGE_BLEND_TIME);
 			_damageAlpha = Mathf.Lerp(_damageAlpha, targetAlpha, dt*ALPHA_BLEND_SPEED);
 			//_damageEffect.alpha = _damageAlpha;
-
-			if (gameState.matchState < EMatchState.MatchComplete) {
-				if (_teamEliminatedDelay > 0f) {
-					_teamEliminatedDelay -= dt;
-					if (_teamEliminatedDelay <= 0f) {
-						VO_TeamEliminated();
-					}
-				}
-				if (_playerEliminatedDelay > 0f) {
-					_playerEliminatedDelay -= dt;
-					if (_playerEliminatedDelay <= 0f) {
-						VO_PlayerEliminated();
-					}
-				}
-			}
         }
 
 		public virtual void OnMatchStateChanged() {
 			switch (gameState.matchState) {
 				case EMatchState.WaitingForPlayers:
 					OnMatchWaitingForPlayers();
-				break;
-				case EMatchState.Countdown:
-					OnMatchCountdown();
-				break;
-				case EMatchState.UnitTrading:
-					OnStartUnitTrading();
 				break;
 				case EMatchState.MatchInProgress:
 					OnMatchStart();
@@ -176,167 +147,23 @@ namespace Bowhead.Client.UI {
 			}
 		}
 
-		public virtual void OnMatchTimer() {
-			if (gameState.matchIsTimed) {
-				AnnounceTime();
-			}
-
-			int secs = gameState.matchTimer;
-			int hours = secs / (60*60);
-			secs -= hours*60*60;
-			int min = secs / 60;
-			secs -= min*60;
-
-			if (hours > 0) {
-				SetTime(string.Format("{0}:{1:D2}:{2:D2}", hours, min, secs));
-			} else if (min > 0) {
-				SetTime(string.Format("{0}:{1:D2}", min, secs));
-			} else {
-				SetTime(string.Format("{0:D2}", secs));
-			}
-		}
-
-		void AnnounceTime() {
-			if (gameState.matchInProgress) {
-				var secs = gameState.matchTimer;
-
-				if (!_did5 && (gameState.matchPlayTime > (5*60)) && (secs <= (5*60))) {
-					_did5 = true;
-					VO_5Min();
-				}
-				if (!_did1 && (gameState.matchPlayTime > 60) && (secs <= 60)) {
-					_did1 = true;
-					VO_1Min();
-				}
-				if (!_did30 && (gameState.matchPlayTime > 30) && (secs <= 30)) {
-					_did30 = true;
-					VO_30Sec();
-				}
-			}
-		}
+		public virtual void OnMatchTimer() { }
 
 		public virtual void OnOvertimeEnabled() { }
 
 		protected virtual void OnMatchWaitingForPlayers() { }
 		protected virtual void OnMatchCountdown() { }
-
-		protected virtual void OnStartUnitTrading() {}
-
-
+				
 		protected virtual void OnMatchStart() {
 			DragDropWidget.CancelDrag();
-			VO_MatchStart();
 		}
 
-		protected virtual void OnMatchOvertime() {
-			VO_Overtime();
-		}
-
-		protected virtual void OnMatchComplete() {
-			VO_MatchComplete();
-			//var endMatchScreen = GameObject.Instantiate(GameManager.instance.clientData.endMatchScreen);
-			//endMatchScreen.transform.SetParent(_hudCanvas.transform, false);
-
-			//if (ClientPlayerController.localPlayer.playerState.winner) {
-			//	endMatchScreen.Init(Utils.GetLocalizedText("UI.HUD.Victory"));
-			//} else {
-			//	endMatchScreen.Init(Utils.GetLocalizedText("UI.HUD.GameOver"));
-			//}
-		}
-
-		protected void QueuePlayerEliminatedVO() {
-			if (_playerEliminatedDelay <= 0f) {
-				_playerEliminatedDelay = 0.25f;
-			}
-		}
-
-		protected void QueueTeamEliminatedVO() {
-			if (_teamEliminatedDelay <= 0f) {
-				_teamEliminatedDelay = 0.25f;
-			}
-		}
-
+		protected virtual void OnMatchOvertime() {}
+		protected virtual void OnMatchComplete() {}
 		protected virtual void OnMatchFreeze() { }
 		protected virtual void OnMatchExit() { }
-
-		protected virtual void VO_MatchStart() {
-			GameManager.instance.Play(
-				Vector3.zero, 
-				gameState.isCampaignMap ? GameManager.instance.clientData.sounds.game.announcer.gameStartCampaign : 
-				gameState.isHordeMap ? GameManager.instance.clientData.sounds.game.announcer.gameStartHorde : 
-				GameManager.instance.clientData.sounds.game.announcer.gameOn);
-		}
-
-		protected virtual void VO_Overtime() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.overtime);
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.overtimeStinger);
-		}
-
-		protected virtual void VO_MatchComplete() {
-			if (ClientPlayerController.localPlayer.playerState.winner) {
-				GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.victory);
-			} else {
-				GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.gameOver);
-			}
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.gameOverStinger);
-		}
-
-		protected virtual void VO_5Min() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer._5MinRemaining);
-		}
-
-		protected virtual void VO_1Min() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer._1MinRemaining);
-		}
-
-		protected virtual void VO_30Sec() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer._30SecRemaining);
-		}
-
-		public virtual void VO_Casualty() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.casualty);
-		}
-
-		public virtual void VO_Casualties() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.casualties);
-		}
-
-		public virtual void VO_MassiveCasualties() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.massCasualties);
-		}
-
-		protected virtual void VO_TeamEliminated() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.teamEliminated);
-		}
-
-		protected virtual void VO_PlayerEliminated() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.playerEliminated);
-		}
-
-		public virtual void VO_WaveComplete() {
-			GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.announcer.waveComplete);
-		}
-
 		public virtual void OnLocalPlayerItemPickedUp(MetaGame.InventoryItemClass itemClass, int ilvl) {}
 		public virtual void OpenInventory() { }
-
-		public virtual void OnLocalPlayerAbilitySpawned(Ability ability, int index, string key) {
-//#if !DEDICATED_SERVER
-//			MetaGame.InventoryGrantAbilityItemClass itemClass = null;
-
-//			if (gameState.isCOOPMap && (index >= HUDAbilityBar.RELIC_ABILITY_INDEX) && (index <= HUDAbilityBar.POTION_ABILITY_INDEX)) {
-//				itemClass = GameManager.instance.clientInventory.GetUnlockedSpellItem(ability.abilityClass, ability.level);
-//			}
-
-//			_abilityBar.abilityWidgets[index].Attach(
-//				ClientPlayerController.localPlayer.playerState,
-//				itemClass,
-//				GetLocalPlayerDeityClassForAbilityButtonSlot(index),
-//				ability, 
-//				key
-//			);
-//#endif
-		}
 
 		public virtual void InputSettingsChanged(GameplayInputActions actions) {
 			for (int i = 0; i < actions.spells.Length; ++i) {
@@ -474,7 +301,7 @@ namespace Bowhead.Client.UI {
 		}
 
 		public virtual void OnPlayerScoreChanged(PlayerState player) { }
-		public virtual void OnPlayerSoulStonePointsChanged(PlayerState player) { }
+		
 		public virtual void OnTeamScoreChanged(Team team) { }
 		public virtual void OnPlayerHealthChanged(PlayerState player) { }
 		public virtual void OnPlayerJoinGame(PlayerState player) {}
@@ -482,19 +309,6 @@ namespace Bowhead.Client.UI {
 		public virtual void OnPlayerWinningChanged() { }
 		public virtual void OnTeamWinningChanged() { }
 		public virtual void OnPlayerLoaded(PlayerState player) { }
-
-		public virtual void OnEnterResurrectionMode() {
-			//if (_resurrectPrompt != null) {
-			//	_resurrectPrompt.error = false;
-			//	_resurrectPrompt.Show();
-			//}
-		}
-
-		public virtual void OnExitResurrectionMode() {
-			//if (_resurrectPrompt != null) {
-			//	_resurrectPrompt.Hide();
-			//}
-		}
 
 		public virtual void OpenSay() {
 			//_chatPanel.OpenSay();
@@ -520,17 +334,11 @@ namespace Bowhead.Client.UI {
 			//_chatPanel.OnSystemMessage(msg);
 		}
 
-		public virtual void SetResurrectPromptError(bool error) {
-			//if (_resurrectPrompt != null) {
-			//	_resurrectPrompt.error = error;
-			//}
-		}
-
 		public virtual void DamageBlend(float damage) {
 			// we can get "damage" events when we are slotting items
 			// that increase/decrease unit health, don't flash the hud in
 			// those cases.
-			if (gameState.matchState > EMatchState.UnitTrading) {
+			if (gameState.matchState > EMatchState.WaitingForPlayers) {
 				_damage = Mathf.Min(_damage + damage, DAMAGE_OPACITY_SCALE);
 				_damageTime = DAMAGE_BLEND_TIME;
 			}
@@ -540,150 +348,9 @@ namespace Bowhead.Client.UI {
 			DamageBlend(DAMAGE_OPACITY_SCALE);
 		}
 
-		public virtual void OnUnitsTraded() {
-			_unitsTraded = true;
-		}
-
-		public virtual void OnSelectionChanged() {
-
-			//if (_tradingPanel != null) {
-			//	bool canTrade = false;
-			//	bool canUntrade = false;
-
-			//	for (int i = 0; i < localPlayer.selectedUnits.Count; ++i) {
-			//		var u = localPlayer.selectedUnits[i];
-			//		if (u.originalOwner == localPlayer.playerState) {
-			//			if (u.owner != localPlayer.playerState) {
-			//				canUntrade = true;
-			//			} else {
-			//				canTrade = true;
-			//			}
-			//		}
-			//	}
-
-			//	_tradingPanel.canTrade = canTrade && !canUntrade;
-			//	_tradingPanel.canUntrade = canUntrade;
-			//} else if (_inGameTradingPanel != null) {
-			//	bool canTrade = false;
-
-			//	for (int i = 0; i < localPlayer.selectedUnits.Count; ++i) {
-			//		var u = localPlayer.selectedUnits[i];
-			//		if (u.owner == localPlayer.playerState) {
-			//			canTrade = true;
-			//			break;
-			//		}
-			//	}
-
-			//	_inGameTradingPanel.canTrade = canTrade;
-			//}
-
-			//if (_unitFrame != null) {
-			//	if (localPlayer.selectedTarget != null) {
-			//		_unitFrame.UpdateSelection(new[] { localPlayer.selectedTarget });
-			//	} else {
-			//		_unitFrame.UpdateSelection(localPlayer.selectedUnits);
-			//	}
-			//}
-		}
-
-		//public virtual void ConditionalUpdateUnitFrame(Unit unit, bool statsOnly) {
-		//	if (_unitFrame != null) {
-		//		_unitFrame.ConditionalUpdateSelectedUnit(unit, statsOnly);
-		//	}
-		//}
-
-		//public void UpdateSelectedUnit() {
-		//	if (_unitFrame != null) {
-		//		_unitFrame.UpdateSelectedUnit();
-		//	}
-		//}
-
-		public virtual void ShowGameModeDescription(bool show) {}
+		public virtual void OnSelectionChanged() {}
 
 		public virtual void ShowPlayerDescription(bool show, int index) {}
-
-//		protected void FillPlayerInfoPopup(HUDPlayerInfoPopup popup, PlayerState player) {
-//			popup.playerNameAndGuild.text = player.playerName;
-
-//			if (gameState.isCOOPMap) {
-//				var xpTable = GameManager.instance.staticData.xpTable;
-//				var xpBase = xpTable.GetXPReqForLevel(player.level);
-//				var xpNext = xpTable.GetXPReqForLevel(player.level+1);
-//				var xpDelta = xpNext - xpBase;
-//				var xpCur = player.xp - xpBase;
-
-//				popup.playerLevel.text = Utils.GetLocalizedText("UI.PlayerLevel", player.scaledLevel, xpCur, xpDelta);
-
-//				if (player.scaledLevel > player.level) {
-//					popup.playerLevelAdjustTextRoot.SetActive(true);
-//					popup.playerLevelAdjustText.text = Utils.GetLocalizedText("UI.Player.Upleveled", player.level);
-//				} else if (player.scaledLevel < player.level) {
-//					popup.playerLevelAdjustTextRoot.SetActive(true);
-//					popup.playerLevelAdjustText.text = Utils.GetLocalizedText("UI.Player.Downleveled", player.level);
-//				} else {
-//					popup.playerLevelAdjustTextRoot.SetActive(false);
-//				}
-//			} else {
-//				if (popup.playerLevelRoot != null) {
-//					popup.playerLevelRoot.SetActive(false);
-//				}
-//				if (popup.playerLevelAdjustTextRoot != null) {
-//					popup.playerLevelAdjustTextRoot.SetActive(false);
-//				}
-//			}
-
-//			if (popup.playerScore != null) {
-//				popup.playerScore.text = player.score.ToString();
-//			}
-
-//			popup.playerArmyPct.text = Mathf.CeilToInt(player.health*100f) + "%";
-
-//			if ((player.primaryDeity != null) && (player.secondaryDeity != null)) {
-//				popup.deityRoot.SetActive(true);
-//				if (player.primaryDeity != player.secondaryDeity) {
-//					popup.deityName.text = player.primaryDeity.localizedName + " + " + player.secondaryDeity.localizedName;
-//				} else {
-//					popup.deityName.text = player.primaryDeity.localizedName;
-//				}
-//				List<AbilityClass> spells = new List<AbilityClass>();
-//				if (gameState.isMPMap) {
-//					spells.Add(player.primaryDeity.mpAbilities[0]);
-//					spells.Add(player.primaryDeity.mpAbilities[1]);
-//					spells.Add(player.secondaryDeity.mpAbilities[2]);
-//				} else {
-//					player.primaryDeity.GetMaskedSpells(player.primarySpells, spells, 2);
-//					player.secondaryDeity.GetMaskedSpells(player.secondarySpells, spells, 1);
-//				}
-
-//				if (spells.Count > 0) {
-//					FillSpellInfo(popup.spell1, spells[0], player.drop_ilvl);
-//				}
-//				if (spells.Count > 1) {
-//					FillSpellInfo(popup.spell2, spells[1], player.drop_ilvl);
-//				}
-//				if (spells.Count > 2) {
-//					FillSpellInfo(popup.spell3, spells[2], player.drop_ilvl);
-//				}
-//				FillSpellInfo(popup.relic, player.relic, player.reliciLvl);
-//				FillSpellInfo(popup.potion, player.potion, player.potioniLvl);
-//			} else {
-//				popup.deityRoot.SetActive(false);
-//			}
-//		}
-
-//		void FillSpellInfo(HUDPlayerSpellInfo panel, AbilityClass spell, int ilvl) {
-//#if !DEDICATED_SERVER
-//			MetaGame.InventoryGrantAbilityItemClass itemClass = null;
-
-//			if (gameState.isCOOPMap) {
-//				itemClass = GameManager.instance.clientInventory.GetUnlockedSpellItem(spell, ilvl);
-//			}
-
-//			panel.spellImage.sprite = (itemClass != null) ? itemClass.LoadIcon() : spell.icon.Load();
-
-//			panel.spellDescription.text = (itemClass != null) ? itemClass.localizedName : (spell.localizedName + " - " + spell.localizedType);
-//#endif
-//		}
 
 		public virtual void DisplaySubtitle(string text, float stayTime) {
 			//if (text == null) {
@@ -702,49 +369,12 @@ namespace Bowhead.Client.UI {
 			//_overlay.Fade(src, dst, time);
 		}
 
-		//protected static string FormatScoreText(int score, EHUDScoreDisplayFormat format) {
-		//	switch (format) {
-		//		case EHUDScoreDisplayFormat.Percent:
-		//			return score.ToString() + "%";
-		//		case EHUDScoreDisplayFormat.Time: {
-		//			int secs = score;
-		//			int hours = secs / (60*60);
-		//			secs -= hours*60*60;
-		//			int min = secs / 60;
-		//			secs -= min*60;
-
-		//			if (hours > 0) {
-		//				return string.Format("{0}:{1:D2}:{2:D2}", hours, min, secs);
-		//			} else if (min > 0) {
-		//				return string.Format("{0}:{1:D2}", min, secs);
-		//			} else {
-		//				return string.Format("{0:D2}", secs);
-		//			}
-		//		}
-		//	}
-
-		//	return score.ToString();
-		//}
-		
-		GameObject hudPrefab {
+		protected virtual GameObject hudPrefab {
 			get {
-				//if (gameState.isTeamMap) {
-				//	return hudDescription.teamPrefab.gameObject;
-				//}
-				//return (hudDescription.ffaPrefab != null) ? hudDescription.ffaPrefab.gameObject : null;
 				return null;
 			}
 		}
 
-		public virtual HUDDescription hudDescription {
-			get {
-				if (_hudDescription == null) {
-					_hudDescription = Resources.Load<HUDDescription>("HUDs/" + gameState.gameModeType.FullName);
-				}
-				return _hudDescription;
-			}
-		}
-				
 		public GameState gameState {
 			get {
 				return _gameState;
@@ -774,24 +404,6 @@ namespace Bowhead.Client.UI {
 				return _hudCanvas;
 			}
 		}
-
-		//public Minimap minimap {
-		//	get {
-		//		return _minimap;
-		//	}
-		//}
-
-		//public HUDAbilityBar abilityBar {
-		//	get {
-		//		return _abilityBar;
-		//	}
-		//}
-
-		//public HUDMissionTracker missionTracker {
-		//	get {
-		//		return _missionTracker;
-		//	}
-		//}
 
 		public Rect screenBounds {
 			get {

@@ -266,7 +266,7 @@ namespace Bowhead.Actors.Spells {
 			_player.GlobalCooldown(this);
 		}
 
-//		[RPC(ERPCDomain.Server, Reliable = true)]
+//		[RPC(ERPCDomain.Server)]
 //		void Server_ActivateGravestone(UnitGravestoneActor gravestone) {
 //			if ((gravestone == null) || (gravestone.pendingKill || gravestone.activated) || (gravestone.team != _serverTeam) || !valid || !((ServerPlayerController)_player).ConsumeSoulStones(gravestone.unitClass.soulStoneCost)) {
 //				rpc_Owner_ServerResponse.Invoke(false, false, _useCount);
@@ -291,7 +291,7 @@ namespace Bowhead.Actors.Spells {
 //#endif
 //		}
 
-		//[RPC(ERPCDomain.Server, Reliable = true)]
+		//[RPC(ERPCDomain.Server)]
 		//void Server_Execute(List<Unit> selection, Vector3 pos) {
 
 //			// some units may not get replicated as null if they are dead.
@@ -423,17 +423,17 @@ namespace Bowhead.Actors.Spells {
 //			}
 //		}
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		void Owner_InstantCooldown() {
 			_cooldown = _cooldownTime;
 		}
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		void Owner_AOEDead() {
 			_aoeDead = true;
 		}
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		void Owner_ServerResponse(bool success, bool placed, int useCount) {
 			_clientPlaced = placed;
 			if (success) {
@@ -449,7 +449,7 @@ namespace Bowhead.Actors.Spells {
 			_useCount = useCount;
 		}
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		void Owner_SetCooldown(float cd) {
 			_cooldown = Mathf.Min(cd + (ClientPlayerController.localPlayerPingSeconds * 0.5f), _cooldownTime);
 		}

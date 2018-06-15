@@ -164,7 +164,7 @@ namespace Bowhead.Actors.Spells {
 			}
 		}
 
-		[RPC(ERPCDomain.Multicast, CheckRelevancy = true, Reliable = true)]
+		[RPC(ERPCDomain.Multicast, CheckRelevancy = true)]
 		void Multicast_Placed(Vector4 position, Vector3 normal, bool placed) {
 			if (GameManager.instance.serverWorld == null) {
 				go.SetActive(placed);
@@ -564,7 +564,7 @@ namespace Bowhead.Actors.Spells {
 		}
 
 
-		[RPC(ERPCDomain.Multicast, CheckRelevancy = true, Reliable = true)]
+		[RPC(ERPCDomain.Multicast, CheckRelevancy = true)]
 		void Multicast_SpawnCastFx() {
 			SpawnAttachments(effectClass.aoeCastFx);
 

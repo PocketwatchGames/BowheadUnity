@@ -86,7 +86,6 @@ namespace Bowhead {
 
 		Server.ServerWorld _server;
 		Client.ClientWorld _client;
-		Server.TeamSchedule _teamSchedule;
 		NetDriver _netDriver;
 
 		Type _travelGameMode;
@@ -959,9 +958,6 @@ namespace Bowhead {
 			//escapeMenu = null;
 			_uma = null;
 			//_umaGenerator = null;
-#if !BACKEND_SERVER // teamschedule is global to instance of the server (setup on load).
-			_teamSchedule = null;
-#endif
 		}
 
 		void TravelToLevel() {
@@ -1165,39 +1161,6 @@ namespace Bowhead {
 			}
 		}
 
-#if UNITY_EDITOR
-		[CFunc]
-		static void LookupLevelName(string levelName, string gameType, int numPlayers, int numPlayersPerTeam) {
-			var type = Type.GetType(gameType);
-			if (type != null) {
-				var lvl = GetLevelName(levelName, type, numPlayers, numPlayersPerTeam);
-				Debug.Log(lvl);
-			}
-		}
-#endif
-
-		static string GetLevelName(string levelName, Type gameMode, int numPlayers, int numPlayersPerTeam) {
-			var levelToLoad = levelName + "." + gameMode.FullName;
-			string test;
-
-			if (numPlayersPerTeam == 1) {
-				test = levelToLoad + "." + numPlayers + "Players";
-			} else {
-				test = levelToLoad + "." + numPlayersPerTeam + "v" + numPlayersPerTeam;
-			}
-
-			var index = LEVELS.FindIndex((x) => x.name == levelName);
-			if (index != -1) { // check for player count specialized sublevel.
-				var lvl = LEVELS[index];
-				for (int i = 0; i < lvl.sublevels.Length; ++i) {
-					if (lvl.sublevels[i] == test) {
-						return test;
-					}
-				}
-			}
-			return levelToLoad;
-		}
-
 		bool HostGame(string levelName, int teamSize, Type gameModeType, Type netDriverType, int port) {
 			UnloadGame();
 
@@ -1215,7 +1178,6 @@ namespace Bowhead {
 				serverName = "Telemetry prewarm";
 			}
 #else
-			_teamSchedule = new Bowhead.Server.StandardTeamSchedule(teamSize);
 			serverName = onlineLocalPlayer.name + "'s Server";
 #endif
 
@@ -1245,7 +1207,7 @@ namespace Bowhead {
 				_client.Connect("localhost", port);
 			}
 
-			_pendingLevel = GetLevelName(levelName, gameModeType, numPlayers, _teamSchedule.teamSize);
+			_pendingLevel = levelName;
 			_travelGameMode = gameModeType;
 			TravelToLevel();
 			return true;
@@ -1318,8 +1280,6 @@ namespace Bowhead {
 			} else {
 				_netDriver = new LocalGameNetDriver();
 			}
-
-			_teamSchedule = new Server.StandardTeamSchedule(1);
 
 			_server = new Server.ServerWorld(_serverObjectGroup.transform, "PIEServer", null, asms, _netDriver);
 			if (!PIEServerOnly) {
@@ -2151,12 +2111,6 @@ namespace Bowhead {
 
 		public Color RandomColorIndex(uint index) {
 			return new Color(RandomFromIndex(index), RandomFromIndex(index+1), RandomFromIndex(index+2), 1f);
-		}
-
-		public Server.TeamSchedule teamSchedule {
-			get {
-				return _teamSchedule;
-			}
 		}
 
 		public int inMenus {

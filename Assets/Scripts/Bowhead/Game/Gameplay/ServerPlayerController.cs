@@ -13,7 +13,6 @@ namespace Bowhead.Server.Actors {
 		const float MAX_IDLE_TIME = 60*10;
 
 		ServerPlayerState _playerState;
-		PlayerStart _playerStart;
 		bool _clientHasLoaded;
 		bool _didFlushCommandRate;
 		float _lastCFuncTime;
@@ -25,9 +24,6 @@ namespace Bowhead.Server.Actors {
 		ServerWorld _world;
 		float _lastMemCounterTime = -1;
 		float _lastFpsCounterTime = -1;
-		int _maxSoulStonePoints = 0;
-		int _replicatedSoulStonePoints = -1;
-		int _essenceScale = GameMode.SOULSTONE_POINT_SCALE;
 		List<Ability> _abilities = new List<Ability>();
 
 		readonly ActorRPC<PlayerState> rpc_Owner_SetPlayerState;
@@ -41,7 +37,6 @@ namespace Bowhead.Server.Actors {
 		readonly ActorRPC<PlayerState, string> rpc_Owner_Say;
 		readonly ActorRPC<PlayerState, string> rpc_Owner_SayTeam;
 		readonly ActorRPC<string, float> rpc_Owner_HUDDisplaySubtitle;
-		readonly ActorRPC<PlayerState, int> rpc_Owner_SetPlayerSoulStonePoints;
 		readonly ActorRPC rpc_Owner_VO_WaveComplete;
 		readonly ActorRPC rpc_Owner_VO_AssassinsSpawned;
 		readonly ActorRPC<int, int> rpc_Owner_ServerGrantedItem;
@@ -54,19 +49,9 @@ namespace Bowhead.Server.Actors {
 			rpc_Owner_Say = BindRPC<PlayerState, string>(Owner_Say);
 			rpc_Owner_SayTeam = BindRPC<PlayerState, string>(Owner_SayTeam);
 			rpc_Owner_HUDDisplaySubtitle = BindRPC<string, float>(base.Owner_HUDDisplaySubtitle);
-			rpc_Owner_SetPlayerSoulStonePoints = BindRPC<PlayerState, int>(Owner_SetPlayerSoulStonePoints);
 			rpc_Owner_VO_WaveComplete = BindRPC(base.Owner_VO_WaveComplete);
 			rpc_Owner_VO_AssassinsSpawned = BindRPC(base.Owner_VO_AssassinsSpawned);
 			rpc_Owner_ServerGrantedItem = BindRPC<int, int>(base.Owner_ServerGrantedItem);
-		}
-
-		public PlayerStart playerStart {
-			get {
-				return _playerStart;
-			}
-			set {
-				_playerStart = value;
-			}
 		}
 
 		public new ServerTeam team {
@@ -112,7 +97,6 @@ namespace Bowhead.Server.Actors {
 			base.BeginTravel();
 			_playerState = null;
 			_clientHasLoaded = false;
-			_playerStart = null;
 			_gameMode = null;
 			_didFlushCommandRate = false;
 			base.playerState = null;
@@ -205,14 +189,12 @@ namespace Bowhead.Server.Actors {
 		public void ScoreTeamDamage(Actor instigatingActor, ServerPlayerController targetPlayer, DamageableActor targetActor, ImmutableActorPropertyInstance property, float damage) { }
 
 		public void PossessUnits() {
-			_replicatedSoulStonePoints = -1;
 			//playerState.soulStonePoints = gameMode.startingSoulStoneCount * gameMode.GetTeamSoulStonePointScale(team);
 
 			_clientHasLoaded = false;
 			playerState.loaded = false;
-			var isCOOP = svWorld.gameMode.isCOOPMap;
 
-			var gear = inventorySkills.ready ? inventorySkills.GetItemStats(playerState.min_ilvl, playerState.max_ilvl) : null;
+			//var gear = inventorySkills.ready ? inventorySkills.GetItemStats(playerState.min_ilvl, playerState.max_ilvl) : null;
 
 			//foreach (var unit in world.GetActorIterator<Unit>()) {
 			//	if (unit.spawnTag.owningPlayer != null) {
@@ -273,31 +255,6 @@ namespace Bowhead.Server.Actors {
 					player.rpc_Owner_SayTeam.Invoke(playerState, text);
 				}
 			}
-		}
-
-		protected override void Server_SocketItem(int id, byte rune, byte gem) {
-
-			if (gameMode.matchState < GameMode.EMatchState.MatchInProgress) {
-				CheckCommandRate();
-				int igem = (gem != byte.MaxValue) ? gem : -1;
-
-				if (id == 0) {
-					inventorySkills.Unsocket(rune, igem);
-				} else {
-					inventorySkills.Socket(id, rune, igem);
-				}
-			} else {
-				throw new Exception("Invalid operation");
-			}
-		}
-
-		protected override void Server_FlushSocketedItems() {
-			CheckCommandRate();
-			GearChanged();
-		}
-
-		void GearChanged() {
-			var gear = inventorySkills.RecalcItemStats(playerState.min_ilvl, playerState.max_ilvl);
 		}
 
 		public override void GlobalCooldown(Ability instigator) {

@@ -23,13 +23,13 @@ namespace Bowhead.Actors {
 		[Replicated]
 		protected QuantizedVector3Field _serverVelocity = new QuantizedVector3Field(Vector3.zero, new QuantizedFloatField.FixedPoint(6, 4));
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		protected virtual void Multicast_SpawnFX() {}
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		protected virtual void Multicast_PickupFX() {}
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		protected virtual void Multicast_Contact() {}
 
 		protected virtual void OnRep_serverPosition() {}

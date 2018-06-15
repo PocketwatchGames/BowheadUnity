@@ -51,70 +51,67 @@ namespace Bowhead.Actors {
 			base.Dispose(disposing);
 		}
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected void Owner_SetPlayerState(PlayerState playerState) {
 			_playerState = playerState;
 		}
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected virtual void Owner_SetStartingPositionAndRotation(Vector3 pos, float rot) {
 			_startingPosition = pos;
 			_startingRotation = rot;
 		}
 
-		[RPC(ERPCDomain.Server, Reliable = true)]
+		[RPC(ERPCDomain.Server)]
 		protected virtual void Server_ClientHasLoaded() { }
 
-		[RPC(ERPCDomain.Server, Reliable = true)]
+		[RPC(ERPCDomain.Server)]
 		protected virtual void Server_ReadyToPlay(bool ready) { }
 
-		[RPC(ERPCDomain.Server, Reliable = true)]
+		[RPC(ERPCDomain.Server)]
 		protected virtual void Server_ExecuteCFunc(string command) {}
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected virtual void Owner_ConsolePrint(byte logType, string message) {
 			if (world is Client.ClientWorld) {
 				ConsolePrint((LogType)logType, message);
 			}
 		}
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected virtual void Owner_Explosion(ExplosiveForce explosion) { }
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected virtual void Owner_Say(PlayerState player, string text) { }
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected virtual void Owner_SayTeam(PlayerState player, string text) { }
 
-		[RPC(ERPCDomain.Server, Reliable = true)]
+		[RPC(ERPCDomain.Server)]
 		protected virtual void Server_Say(string text) { }
 
-		[RPC(ERPCDomain.Server, Reliable = true)]
+		[RPC(ERPCDomain.Server)]
 		protected virtual void Server_SayTeam(string text) { }
 
-		[RPC(ERPCDomain.Server, Reliable = true)]
+		[RPC(ERPCDomain.Server)]
 		protected virtual void Server_SocketItem(int id, byte rune, byte gem) { }
 
-		[RPC(ERPCDomain.Server, Reliable = true)]
+		[RPC(ERPCDomain.Server)]
 		protected virtual void Server_FlushSocketedItems() { }
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected virtual void Owner_HUDDisplaySubtitle(string key, float stayTime) { }
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
-		protected virtual void Owner_SetPlayerSoulStonePoints(PlayerState player, int numSoulStonePoints) { }
-
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected virtual void Owner_VO_WaveComplete() { }
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected virtual void Owner_VO_AssassinsSpawned() { }
 
-		[RPC(ERPCDomain.Server, Reliable = true)]
+		[RPC(ERPCDomain.Server)]
 		protected virtual void Server_PickupItem(ItemPickupActor target) { }
 
-		[RPC(ERPCDomain.Owner, Reliable = true)]
+		[RPC(ERPCDomain.Owner)]
 		protected virtual void Owner_ServerGrantedItem(int id, int count) { }
 		
 		public virtual void ConsolePrint(LogType logType, string message) {

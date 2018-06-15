@@ -12,8 +12,8 @@ namespace Bowhead.Actors {
 		includes the teams score.
 	**/
 	public class Team : Actor {
-		public const int MONSTER_TEAM_NUMBER = 99;
-		public const int NPC_TEAM_NUMBER = 100;
+		public const int MONSTER_TEAM_NUMBER = -1;
+		public const int NPC_TEAM_NUMBER = -2;
 
 		[Replicated(Condition = EReplicateCondition.InitialOnly, Notify = "OnRep_players")]
 		List<PlayerState> _players;
@@ -124,7 +124,7 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		protected void NetMulticast_AddPlayerToTeam(PlayerState player) {
 			if (_players == null) {
 				_players = new List<PlayerState>();
@@ -134,7 +134,7 @@ namespace Bowhead.Actors {
 			OnRep_players();
 		}
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		protected void NetMulticast_RemovePlayerFromTeam(PlayerState player) {
 			if (_players != null) {
 				_players.Remove(player);

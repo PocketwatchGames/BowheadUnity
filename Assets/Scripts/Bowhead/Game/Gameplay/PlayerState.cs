@@ -25,34 +25,6 @@ namespace Bowhead.Actors {
 #endif
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
 		ulong _onlineUUID;
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		byte _teamSlot;
-		[Replicated]
-		byte _level;
-#if BACKEND_SERVER
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-#else
-		[Replicated]
-#endif
-		byte _scaledLevel;
-#if BACKEND_SERVER
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-#else
-		[Replicated(Notify = "OnRep_level")]
-#endif
-		byte _minilvl;
-#if BACKEND_SERVER
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-#else
-		[Replicated(Notify = "OnRep_level")]
-#endif
-		byte _maxilvl;
-#if BACKEND_SERVER
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-#else
-		[Replicated(Notify = "OnRep_xp")]
-#endif
-		byte _drop_ilvl;
 		[Replicated(Notify = "OnRep_Score")]
 		int _score;
 		[Replicated(Notify = "OnRep_Score")]
@@ -99,60 +71,6 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public int teamSlot {
-			get {
-				return _teamSlot;
-			}
-			protected set {
-				_teamSlot = (byte)value;
-			}
-		}
-
-		public int drop_ilvl {
-			get {
-				return _drop_ilvl;
-			}
-			protected set {
-				_drop_ilvl = (byte)value;
-			}
-		}
-
-		public int min_ilvl {
-			get {
-				return _minilvl;
-			}
-			protected set {
-				_minilvl = (byte)value;
-			}
-		}
-
-		public int max_ilvl {
-			get {
-				return _maxilvl;
-			}
-			protected set {
-				_maxilvl = (byte)value;
-			}
-		}
-
-		public int level {
-			get {
-				return _level;
-			}
-			protected set {
-				_level = (byte)value;
-			}
-		}
-
-		public int scaledLevel {
-			get {
-				return _scaledLevel;
-			}
-			protected set {
-				_scaledLevel = (byte)value;
-			}
-		}
-
 		public int permissionLevel {
 			get {
 				return _permissionLevel;
@@ -190,7 +108,7 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		protected void Multicast_SetPermissionLevel(int level) {
 			_permissionLevel = level;
 		}
@@ -201,7 +119,7 @@ namespace Bowhead.Actors {
 
 		protected virtual void OnRep_Score() {
 			if (!hasAuthority && (hud != null)) {
-				hud.OnPlayerScoreChanged(this);
+				//hud.OnPlayerScoreChanged(this);
 			}
 		}
 
@@ -225,13 +143,13 @@ namespace Bowhead.Actors {
 
 		protected virtual void OnRep_xp() {
 			if (!hasAuthority && (hud != null)) {
-				hud.OnPlayerScoreChanged(this);
+				//hud.OnPlayerScoreChanged(this);
 			}
 		}
 
 		protected virtual void OnRep_level() {
 			if (!hasAuthority && (hud != null)) {
-				hud.OnPlayerScoreChanged(this);
+				//hud.OnPlayerScoreChanged(this);
 			}
 		}
 

@@ -48,18 +48,6 @@ public class NetConnection {
 		_id = id;
 	}
 
-	public void SendUnreliable(NetMsg message) {
-		using (var archive = message.Serialize(this, world.GetNetMessageArchive())) {
-			archive.Flush();
-
-			int numBytes;
-			var bytes = world.GetNetMessageBytes(out numBytes);
-			if (numBytes > 0) {
-				inner.SendUnreliable(bytes, numBytes);
-			}
-		}
-	}
-
 	public void SendReliable(NetMsg message) {
 		using (var archive = message.Serialize(this, world.GetNetMessageArchive())) {
 			archive.Flush();

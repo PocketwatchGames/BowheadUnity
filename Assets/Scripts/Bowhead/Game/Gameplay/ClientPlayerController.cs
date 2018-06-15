@@ -229,6 +229,11 @@ namespace Bowhead.Client.Actors {
 		public override void OnLevelStart() {
 			base.OnLevelStart();
 			_didLevelStart = true;
+			CheckPlayerReady();
+		}
+
+		void CheckPlayerReady() {
+			rpc_Server_ClientHasLoaded.Invoke();
 		}
 
 		void Spectate() {

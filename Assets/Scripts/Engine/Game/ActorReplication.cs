@@ -29,11 +29,6 @@ public class RPC : Attribute {
 		}
 	}
 
-	public bool Reliable {
-		get;
-		set;
-	}
-
 	public bool CheckRelevancy {
 		get;
 		set;
@@ -562,11 +557,7 @@ public class ActorReplicationChannel : SerializableObjectSubobjectSerializer, Se
 			objectRefs.Clear();
 		}
 
-		if (serializer.rpcInfo.Reliable) {
-			_connection.SendReliable(netMsg);
-		} else {
-			_connection.SendUnreliable(netMsg);
-		}
+		_connection.SendReliable(netMsg);
 
 		Perf.End();
 	}

@@ -39,36 +39,6 @@ namespace Bowhead.Actors {
 		byte _matchState;
 		
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		byte _numPlayersPerTeam;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		byte _numPlayers;
-		
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		byte _team0Size;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		byte _team1Size;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		bool _isTeamMap;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		bool _isFFAMap;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		bool _isCOOPMap;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		bool _isCampaignMap;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		bool _isHordeMap;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		bool _canTradeUnitsAnytime;
-
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
 		bool _matchIsTimed;
 
 		bool _overtimeEnabled;
@@ -88,15 +58,7 @@ namespace Bowhead.Actors {
 		public void ServerSetGameMode(Server.GameMode gameMode) {
 			gameModeType = gameMode.GetType();
 			_gameModeClass = gameModeType.FullName;
-			_numPlayersPerTeam = (byte)gameMode.numPlayersPerTeam;
-			_numPlayers = (byte)GameManager.instance.teamSchedule.numPlayers;
 			_matchPlayTime = Mathf.FloorToInt(gameMode.matchPlayTime);
-			_team0Size = (byte)GameManager.instance.teamSchedule.team0Size;
-			_team1Size = (byte)GameManager.instance.teamSchedule.team1Size;
-			_isTeamMap = gameMode.isTeamMap;
-			_isFFAMap = gameMode.isFFAMap;
-			_isCOOPMap = gameMode.isCOOPMap;
-			_canTradeUnitsAnytime = gameMode.canTradeUnitsAnytime;
 			_matchIsTimed = gameMode.matchIsTimed;
 		}
 
@@ -207,7 +169,7 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		protected void Multicast_SetMatchState(byte matchState, bool overtimeEnabled, int matchTimer) {
 			if (_matchState != matchState) {
 				_matchState = matchState;
@@ -239,13 +201,6 @@ namespace Bowhead.Actors {
 			switch (matchState) {
 				case EMatchState.WaitingForPlayers:
 					OnMatchWaitingForPlayers();
-				break;
-				case EMatchState.Countdown:
-					OnMatchCountdown();
-				break;
-				case EMatchState.UnitTrading:
-					OnStartUnitTrading();
-					GC.Collect();
 				break;
 				case EMatchState.MatchInProgress:
 					OnMatchStart();
@@ -461,18 +416,6 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public bool isUnitTrading {
-			get {
-				return (matchState == EMatchState.UnitTrading);
-			}
-		}
-
-		public bool matchHasStarted {
-			get {
-				return (matchState > EMatchState.Countdown);
-			}
-		}
-
 		public bool matchInProgress {
 			get {
 				return (matchState == EMatchState.MatchInProgress) ||
@@ -504,75 +447,9 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public bool canTradeUnitsAnytime {
-			get {
-				return _canTradeUnitsAnytime;
-			}
-		}
-
 		public int matchTimer {
 			get {
 				return _matchTimer;
-			}
-		}
-
-		public int numPlayersPerTeam {
-			get {
-				return _numPlayersPerTeam;
-			}
-		}
-
-		public bool isFFAMap {
-			get {
-				return _isFFAMap;
-			}
-		}
-
-		public bool isTeamMap {
-			get {
-				return _isTeamMap;
-			}
-		}
-
-		public bool isCOOPMap {
-			get {
-				return _isCOOPMap;
-			}
-		}
-
-		public bool isMPMap {
-			get {
-				return !_isCOOPMap;
-			}
-		}
-
-		public bool isCampaignMap {
-			get {
-				return _isCampaignMap;
-			}
-		}
-
-		public bool isHordeMap {
-			get {
-				return _isHordeMap;
-			}
-		}
-
-		public int numPlayers {
-			get {
-				return _numPlayers;
-			}
-		}
-
-		public int team0Size {
-			get {
-				return _team0Size;
-			}
-		}
-
-		public int team1Size {
-			get {
-				return _team1Size;
 			}
 		}
 
@@ -594,23 +471,11 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public Type hudType {
+		public virtual Type hudType {
 			get {
 				return null;
 			}
 		}
-
-		//protected virtual Type teamsHudType {
-		//	get {
-		//		return typeof(Client.UI.TeamsHUD);
-		//	}
-		//}
-
-		//protected virtual Type ffaHudType {
-		//	get {
-		//		return typeof(Client.UI.FFAHUD);
-		//	}
-		//}
 
 		public Type gameModeType {
 			get;

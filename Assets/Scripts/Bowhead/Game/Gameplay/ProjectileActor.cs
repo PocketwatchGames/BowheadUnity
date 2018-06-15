@@ -701,7 +701,7 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		void Multicast_HitActor(DamageableActor actor, Vector3 location, Vector3 velocity) {
 			if (hasAuthority) {
 				rpc_Multicast_HitActor.Invoke(actor, location, velocity);
@@ -736,7 +736,7 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		void Multicast_HitGround(Vector3 location, Vector3 velocity, bool bounce) {
 			if (hasAuthority) {
 				rpc_Multicast_HitGround.Invoke(location, velocity, bounce);

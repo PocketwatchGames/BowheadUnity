@@ -110,9 +110,12 @@ namespace Bowhead.Server {
 		public override void OnConnect(NetDriverConnection connection) {
 			base.OnConnect(connection);
 
-			if ((gameMode == null) || (gameMode.matchState >= GameMode.EMatchState.Countdown)) {
-				DisconnectClient(connection.outer.connection, null, EDisconnectReason.Error, "Error.Networking.MatchStarted");
+			if (gameMode == null) {
+				DisconnectClient(connection.outer.connection, null, EDisconnectReason.Error, "Error.Networking.NotReady");
+				return;
             }
+
+			gameMode.AcceptConnection(connection.outer);
 		}
 
 		protected override EClientConnectResult TickPendingConnection(ActorReplicationChannel channel) {

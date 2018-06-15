@@ -34,15 +34,6 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		public new int teamSlot {
-			get {
-				return base.teamSlot;
-			}
-			set {
-				base.teamSlot = value;
-			}
-		}
-
 		public new Color primaryColor {
 			get {
 				return base.primaryColor;
@@ -58,51 +49,6 @@ namespace Bowhead.Server.Actors {
 			}
 			set {
 				base.secondaryColor = value;
-			}
-		}
-
-		public new int drop_ilvl {
-			get {
-				return base.drop_ilvl;
-			}
-			set {
-				base.drop_ilvl = value;
-			}
-		}
-
-		public new int level {
-			get {
-				return base.level;
-			}
-			set {
-				base.level = value;
-			}
-		}
-
-		public new int scaledLevel {
-			get {
-				return base.scaledLevel;
-			}
-			set {
-				base.scaledLevel = value;
-			}
-		}
-
-		public new int min_ilvl {
-			get {
-				return base.min_ilvl;
-			}
-			set {
-				base.min_ilvl = value;
-			}
-		}
-
-		public new int max_ilvl {
-			get {
-				return base.max_ilvl;
-			}
-			set {
-				base.max_ilvl = value;
 			}
 		}
 

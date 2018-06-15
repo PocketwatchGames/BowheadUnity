@@ -951,7 +951,7 @@ namespace Bowhead.Actors {
 			}
 		}
 		
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
 		protected void Multicast_ClientSimulateKill(SimulatedKillInfo ki) {
 			if (hasAuthority) {
 				rpc_Multicast_ClientSimulateKill.Invoke(ki);
@@ -1408,7 +1408,7 @@ namespace Bowhead.Actors {
 			_spellPower = 1f;// GameManager.instance.staticData.xpTable.GetSpellPower(_level);
 		}
 
-		[RPC(ERPCDomain.Multicast, CheckRelevancy = true, Reliable = true)]
+		[RPC(ERPCDomain.Multicast, CheckRelevancy = true)]
 		protected virtual void Multicast_ClientSetLevel(byte level) {
 			_level = level;
 		}

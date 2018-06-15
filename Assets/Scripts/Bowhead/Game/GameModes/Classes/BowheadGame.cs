@@ -3,6 +3,7 @@
 using UnityEngine;
 using Bowhead.Server.Actors;
 using Bowhead.Actors;
+using System;
 
 namespace Bowhead.Server {
 
@@ -14,5 +15,9 @@ namespace Bowhead.Server {
 		public BowheadGame(ServerWorld world) : base(world) { }
 	}
 
-	public class GSBowheadGame : GameState<GSBowheadGame> {	}
+	public class GSBowheadGame : GameState<GSBowheadGame> {
+
+		public override Type hudType => typeof(Client.UI.BowheadHUD);
+
+	}
 }

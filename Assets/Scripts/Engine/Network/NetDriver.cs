@@ -71,7 +71,6 @@ public interface NetDriverConnection : System.IDisposable {
 		set;
 	}
 
-	void SendUnreliable(byte[] buffer, int numBytes);
 	void SendReliable(byte[] buffer, int numBytes);
 	void GetIOMetrics(ref NetIOMetrics reliableMetrics, ref NetIOMetrics unreliableMetrics, bool clear);
 }

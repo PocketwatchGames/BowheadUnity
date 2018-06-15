@@ -36,17 +36,11 @@ namespace Bowhead.Server {
 	}
 
 	public abstract class GameMode {
-		const float DELAY_UNTIL_UNIT_TRADING = 5;
 		const float DELAY_UNTIL_MATCH_FREEZE = 15;
 		const float DELAY_UNTIL_EXIT = 20;
-		const double MAX_GAME_LENGTH = 60*60*6;
-		public const int SOULSTONE_POINT_SCALE = 100;
-
 		public enum EMatchState {
 			Traveling,
 			WaitingForPlayers,
-			Countdown,
-			UnitTrading,
 			MatchInProgress,
 			MatchOvertime,
 			MatchComplete,
@@ -55,10 +49,8 @@ namespace Bowhead.Server {
 		}
 
 		ServerWorld _world;
-		TeamStart[] _teamStarts;
-		PlayerStart[] _playerStarts;
-		int _numPlayersPerTeam;
 		int _playerNameIndex;
+		int _nextTeamNumber;
 		EMatchState _matchState;
 		GameState _gameState;
 		float _timer;
@@ -80,7 +72,7 @@ namespace Bowhead.Server {
 #if BACKEND_SERVER
 		float _waitTime;
 #elif !SHIP
-		bool _didInitiLvl;
+		bool _didInitInventory;
 #endif
 
 		protected GameMode(ServerWorld world) {
@@ -92,33 +84,15 @@ namespace Bowhead.Server {
 
 		public virtual void Tick(float dt) {
 
-			/*
-			if ((matchState >= EMatchState.UnitTrading) && (matchState < EMatchState.MatchFrozen)) {
-				_gameTime += dt;
-				if (_gameTime > MAX_GAME_LENGTH) {
-					Debug.LogError("Max game time exceeded, terminating match (assuming idle play)");
-					SetMatchState(EMatchState.MatchFrozen);
-					_timer = 0;
-				}
-			}
-
 			switch (matchState) {
 				case EMatchState.Traveling:
 					TickTravelPlayers();
 				break;
 				case EMatchState.WaitingForPlayers:
 					TickTravelPlayers();
-					if (!_readyForConnect && GameManager.instance.teamSchedule.loaded) {
-						_readyForConnect = true;
-#if BACKEND_SERVER
-						InitPlayeriLvls();
-						if (!GameManager.instance.prewarm) {
-							GameManager.instance.telemetry.ServerReady();
-						}
-#endif
-					}
+					_readyForConnect = true;
 #if !(SHIP || BACKEND_SERVER)
-					if (!_didInitiLvl && allPlayersConnected) {
+					if (!_didInitInventory && allPlayersConnected) {
 						bool ready = true;
 						for (int i = 0; i < players.Count; ++i) {
 							var player = players[i];
@@ -129,18 +103,11 @@ namespace Bowhead.Server {
 						}
 
 						if (ready) {
-							_didInitiLvl = true;
-							InitPlayeriLvls();
+							_didInitInventory = true;
 						}
 					}
 #endif
 					if (allPlayersLoaded) {
-						if (unitTradingTime > 0f) {
-							_timer = delayUntilUnitTrading;
-							Debug.Log("Unit trading starting in " + _timer + " seconds.");
-							PrepareForUnitTrading();
-							SetMatchState(EMatchState.Countdown);
-						} else {
 							_timer = matchPlayTime;
 							if (matchIsTimed) {
 								Debug.Log("Match starting -- lasts for " + _timer + " seconds.");
@@ -149,7 +116,6 @@ namespace Bowhead.Server {
 							}
 							PrepareForMatchInProgress();
 							SetMatchState(EMatchState.MatchInProgress);
-						}
 					} else if (_readyForConnect && !allPlayersConnected) {
 #if BACKEND_SERVER
 						if (!GameManager.instance.prewarm) {
@@ -160,35 +126,6 @@ namespace Bowhead.Server {
 						}
 #endif
 				}
-				break;
-				case EMatchState.Countdown:
-					_timer -= dt;
-					if (_timer <= 0f) {
-						_timer = unitTradingTime;
-						if (matchIsTimed) {
-							Debug.Log("Unit trading started -- lasts for " + _timer + " seconds.");
-						} else {
-							_timer = 1f;
-							Debug.Log("Unit trading started -- no time limit.");
-						}
-						SetMatchState(EMatchState.UnitTrading);
-					}
-				break;
-				case EMatchState.UnitTrading:
-					if (matchIsTimed) {
-						_timer -= dt;
-					}
-					if ((_timer <= 0f) || allPlayersReadyToPlay) {
-						_timer = matchPlayTime;
-						if (matchIsTimed) {
-							Debug.Log("Match starting -- lasts for " + _timer + " seconds.");
-						} else {
-							_timer = 1f;
-							Debug.Log("Match starting -- no time limit.");
-						}
-						PrepareForMatchInProgress();
-						SetMatchState(EMatchState.MatchInProgress);
-					}
 				break;
 				case EMatchState.MatchInProgress: goto case EMatchState.MatchOvertime;
 				case EMatchState.MatchOvertime:
@@ -222,7 +159,6 @@ namespace Bowhead.Server {
 					_timer -= dt;
 					if (_nonReplicatedTimer <= 0f) {
 						Debug.Log("Match is frozen and will exit in " + _timer + " seconds.");
-						FreezeUnits();
 						SetMatchState(EMatchState.MatchFrozen);
 					}
 				break;
@@ -240,7 +176,7 @@ namespace Bowhead.Server {
 				}
 				break;
 			}
-			*/
+			
 
 			if ((_oldOvertimeEnabled != overtimeFlag) || (_timerAsInt != matchTimer)) {
 				ReplicateMatchState();
@@ -259,12 +195,6 @@ namespace Bowhead.Server {
 				break;
 				case EMatchState.WaitingForPlayers:
 					OnMatchWaitingForPlayers();
-				break;
-				case EMatchState.Countdown:
-					OnMatchCountdown();
-				break;
-				case EMatchState.UnitTrading:
-					OnStartUnitTrading();
 				break;
 				case EMatchState.MatchInProgress:
 					OnMatchStart();
@@ -301,27 +231,16 @@ namespace Bowhead.Server {
 
 		bool allPlayersConnected {
 			get {
-				return GameManager.instance.teamSchedule.allPlayersConnected;
+				return true;// GameManager.instance.teamSchedule.allPlayersConnected;
             }
 		}
 
 		bool allPlayersLoaded {
 			get {
-				if (GameManager.instance.teamSchedule.allPlayersConnected) {
-					for (int i = 0; i < _players.Count; ++i) {
-						var player = _players[i];
-						if (!player.clientHasLoaded || (player.playerState == null)) {
-							return false;
-						}
-					}
-
-					return (_players.Count == GameManager.instance.teamSchedule.numPlayers);
-				}
-				return false;
+				return true;
 			}
 		}
-
-
+		
 		bool allPlayersReadyToPlay {
 			get {
 				for (int i = 0; i < _players.Count; ++i) {
@@ -353,8 +272,6 @@ namespace Bowhead.Server {
 
 		protected virtual void OnMatchTravel() { }
 		protected virtual void OnMatchWaitingForPlayers() { }
-		protected virtual void OnMatchCountdown() { }
-		protected virtual void OnStartUnitTrading() { }
 		protected virtual void OnMatchStart() { }
 		protected virtual void OnMatchOvertime() { }
 		protected virtual void OnMatchComplete() { }
@@ -662,9 +579,6 @@ namespace Bowhead.Server {
 			}
 
 			monsterTeam = null;
-			_teamStarts = null;
-			_playerStarts = null;
-			_numPlayersPerTeam = 0;
 			_teams.Clear();
 			_players.Clear();
 			_readyForConnect = false;
@@ -672,20 +586,12 @@ namespace Bowhead.Server {
 #if BACKEND_SERVER
 			_waitTime = 0f;
 #elif !SHIP
-			_didInitiLvl = false;
+			_didInitInventory = false;
 #endif
 
-			GameManager.instance.teamSchedule.Reset();
 		}
 
 		public virtual void NotifySceneLoaded() {
-			{
-				var sortedTeamStarts = new List<TeamStart>(GameObject.FindObjectsOfType<TeamStart>());
-				sortedTeamStarts.Sort((a, b) => a.teamNumber.CompareTo(b.teamNumber));
-				_teamStarts = sortedTeamStarts.ToArray();
-			}
-
-			_playerStarts = GameObject.FindObjectsOfType<PlayerStart>();
 			//_mapInfo = GameObject.FindObjectOfType<MapInfo>();
 
 			//if (_mapInfo.description != null) {
@@ -695,22 +601,6 @@ namespace Bowhead.Server {
 			//if (_config == null) {
 			//	Debug.LogError("No game mode config could be found for this map and game mode");
 			//}
-
-			foreach (var playerStart in _playerStarts) {
-				if (playerStart.playerTeam != null) {
-					playerStart.playerTeam.unassignedPlayerStarts.Add(playerStart);
-					playerStart.playerTeam.playerStarts.Add(playerStart);
-				}
-			}
-
-			if (_teamStarts.Length > 0) {
-				_numPlayersPerTeam = _teamStarts[0].unassignedPlayerStarts.Count;
-				foreach (var teamStart in _teamStarts) {
-					if (teamStart.unassignedPlayerStarts.Count != _numPlayersPerTeam) {
-						throw new System.Exception("Unbalanced team starts.");
-					}
-				}
-			}
 
 			_gameState = (GameState)world.Spawn(gameStateType, null, SpawnParameters.defaultParameters);
 			_gameState.ServerSetGameMode(this);
@@ -738,7 +628,7 @@ namespace Bowhead.Server {
 		}
 
 		void TickTravelPlayers() {
-			if (_teamStarts != null) {
+			if (_gameState != null) {
 				foreach (var player in world.GetActorIterator<ServerPlayerController>()) {
 					if (!player.ownerConnection.isTraveling && (player.playerState == null)) {
 						SpawnPlayer(player.ownerConnection);
@@ -749,37 +639,7 @@ namespace Bowhead.Server {
 
 		public int numPlayersPerTeam {
 			get {
-				return _numPlayersPerTeam;
-			}
-		}
-
-		public bool isFFAMap {
-			get {
-				return (_teamStarts.Length > 1) && (numPlayersPerTeam == 1);
-			}
-		}
-
-		public bool isTeamMap {
-			get {
-				return (_teamStarts.Length > 1) && (numPlayersPerTeam > 1);
-			}
-		}
-
-		public virtual bool isCOOPMap {
-			get {
-				return _teamStarts.Length == 1;
-			}
-		}
-
-		public bool isMPMap {
-			get {
-				return !isCOOPMap;
-			}
-		}
-
-		public virtual bool liftFogOfWarAtEndOfMatch {
-			get {
-				return true;
+				return 1;
 			}
 		}
 
@@ -821,35 +681,6 @@ namespace Bowhead.Server {
 
 		protected virtual bool matchIsOver {
 			get {
-				//var numAlive = numTeamsAlive;
-
-				//if (GameManager.instance.teamSchedule.numPlayers < 2) {
-				//	return numAlive < 1;
-				//}
-
-				//if (numAlive < 2) {
-				//	return true;
-				//}
-
-				//if (matchOverIfAllGoalsAreControlledBySameTeam && (_goals.Count > 0)) {
-				//	for (int i = 0; i < _teams.Count; ++i) {
-				//		var team = _teams[i];
-
-				//		int numGoals = 0;
-
-				//		for (int k = 0; k < _goals.Count; ++k) {
-				//			var g = _goals[k];
-				//			if ((g.controllingPlayer != null) && (g.controllingPlayer.team == team)) {
-				//				++numGoals;
-				//			}
-				//		}
-
-				//		if (numGoals == _goals.Count) {
-				//			return true;
-				//		}
-				//	}
-				//}
-
 				return false;
 			}
 		}
@@ -889,12 +720,6 @@ namespace Bowhead.Server {
 			}
 		}
 
-		protected virtual float unitTradingTime {
-			get {
-				return GameManager.instance.tradingTime;
-			}
-		}
-
 		public int overtimeEnabled {
 			get;
 			set;
@@ -913,7 +738,7 @@ namespace Bowhead.Server {
 
 		public virtual bool matchIsTimed {
 			get {
-				return true;
+				return false;
 			}
 		}
 
@@ -938,12 +763,6 @@ namespace Bowhead.Server {
 		protected virtual bool scoreRemainingTime {
 			get {
 				return true;
-			}
-		}
-
-		public virtual float delayUntilUnitTrading {
-			get {
-				return DELAY_UNTIL_UNIT_TRADING;
 			}
 		}
 
@@ -995,12 +814,6 @@ namespace Bowhead.Server {
 			}
 		}
 
-		public bool isUnitTrading {
-			get {
-				return (matchState == EMatchState.UnitTrading);
-			}
-		}
-
 		public bool matchHasStarted {
 			get {
 				return (matchState > EMatchState.WaitingForPlayers);
@@ -1035,18 +848,6 @@ namespace Bowhead.Server {
 		public virtual bool canTradeUnitsAnytime {
 			get {
 				return false;
-			}
-		}
-
-		public PlayerStart[] playerStarts {
-			get {
-				return _playerStarts;
-			}
-		}
-
-		public TeamStart[] teamStarts {
-			get {
-				return _teamStarts;
 			}
 		}
 
@@ -1237,7 +1038,7 @@ namespace Bowhead.Server {
 		//				}
 		//			}
 		//		}
-				
+
 		//		while (count > maxUnits) {
 		//			bool found = false;
 
@@ -1285,101 +1086,52 @@ namespace Bowhead.Server {
 		//	}
 		//}
 
+		public virtual bool AcceptConnection(ActorReplicationChannel channel) {
+			return true;
+		}
+
+		protected virtual Actors.ServerTeam GetTeamForSpawningPlayer(ServerPlayerController playerController) {
+			var teamActor = world.Spawn<Actors.ServerTeam>(null, SpawnParameters.defaultParameters);
+			teamActor.teamNumber = _nextTeamNumber++;
+			teamActor.teamColor = Color.blue;
+			teamActor.score = initialTeamScore;
+			teamActor.score2 = initialTeamScore2;
+			_teams.Add(teamActor);
+			teamActor.NetFlush();
+			return teamActor;
+		}
+
+		protected virtual void SetPlayerSpawnLocation(ServerPlayerController playerController) {
+			playerController.SetStartingPositionAndRotation(Vector3.zero, 0f);
+		}
+
 		bool SpawnPlayer(ActorReplicationChannel channel) {
-
-			if (matchState >= EMatchState.Countdown) {
-				world.DisconnectClient(channel.connection, null, EDisconnectReason.Error, "Error.Networking.MatchStarted");
-				return false;
-			}
-
-			var playerStart = GameManager.instance.teamSchedule.FindPlayerStart(this, channel);
-			if (playerStart == null) {
-#if UNITY_EDITOR
-				Debug.LogWarning("There is no player start in the map for this player -- Did you forget to put in player starts?");
-#endif
-				world.DisconnectClient(channel.connection, null, EDisconnectReason.Kicked, "Error.Networking.PlayerNotInSchedule");
-				return false;
-			}
 
 			var playerController = SpawnPlayerActorForChannel(channel);
 			Assert.IsFalse(_players.Contains(playerController));
 			_players.Add(playerController);
 
-			playerStart.playerController = playerController;
-			playerController.playerStart = playerStart;
-			playerController.inventorySkills = GameManager.instance.teamSchedule.GetPrecachedInventory(channel.uuid);
+			//playerController.inventorySkills = GameManager.instance.teamSchedule.GetPrecachedInventory(channel.uuid);
 
-			Actors.ServerTeam teamActor = playerStart.playerTeam.teamActor;
-
-			if (teamActor == null) {
-				teamActor = world.Spawn<Actors.ServerTeam>(null, SpawnParameters.defaultParameters);
-				teamActor.teamNumber = playerStart.playerTeam.teamNumber;
-				teamActor.teamColor = playerStart.playerTeam.color;
-				teamActor.score = initialTeamScore;
-				teamActor.score2 = initialTeamScore2;
-				playerStart.playerTeam.teamActor = teamActor;
-				_teams.Add(teamActor);
-				teamActor.NetFlush();
-			}
-
+			var teamActor = GetTeamForSpawningPlayer(playerController);
+			
 			var playerState = SpawnPlayerStateActor(playerController);
 			playerState.team = teamActor;
-			playerState.teamSlot = playerStart.teamSlot;
-			playerState.primaryColor = playerStart.primaryColor;
-			playerState.secondaryColor = playerStart.secondaryColor;
+			playerState.primaryColor = Color.red;
+			playerState.secondaryColor = Color.white;
 			playerState.playerController = playerController;
-			//playerState.primaryDeity = _gameState.gameModeConfig.firstDeity;
-			//playerState.secondaryDeity = _gameState.gameModeConfig.firstDeity;
-			//playerState.relic = _gameState.gameModeConfig.spellLibrary.defaultRelic;
-			//playerState.reliciLvl = (playerState.relic != null) ? GameManager.instance.staticData.inventoryItemLibrary.GetAutoGrantSpellBaseiLvl(playerState.relic) : 1;
-			//playerState.potion = _gameState.gameModeConfig.spellLibrary.defaultPotion;
-			//playerState.potioniLvl = (playerState.potion != null) ? GameManager.instance.staticData.inventoryItemLibrary.GetAutoGrantSpellBaseiLvl(playerState.potion) : 1;
-
-#if BACKEND_SERVER
-			{
-				var ilvl = playerController.inventorySkills.ilvl;
-				playerState.xp = playerController.inventorySkills.xp;
-				playerState.drop_ilvl = Mathf.Min(ilvl, _tierMaxiLvl);
-				playerState.min_ilvl = _tierMiniLvl;
-				playerState.max_ilvl = _tierMaxiLvl;
-				playerState.level = playerController.inventorySkills.level;
-				playerState.scaledLevel = Mathf.Clamp(playerState.level, _tierMinLevel, _tierMaxLevel);
-
-				var xpTable = GameManager.instance.staticData.xpTable;
-
-				if (ilvl < _tierMiniLvl) {
-					var adjustedMOB = xpTable.GetMOBLevel(ilvl);
-					playerController.mobLevelBasis = Mathf.FloorToInt(Mathf.Lerp(adjustedMOB.mobLevel.x, adjustedMOB.mobLevel.y, 0.5f)+0.5f);
-					playerController.mobXPBasis = xpTable.GetXPScale(playerController.mobLevelBasis);
-				} else {
-					playerController.mobLevelBasis = Mathf.FloorToInt(Mathf.Lerp(mobLevel.mobLevel.x, mobLevel.mobLevel.y, 0.5f)+0.5f);
-					if (ilvl > _tierMaxiLvl) {
-						var adjustedMOB = xpTable.GetMOBLevel(ilvl);
-						playerController.mobXPBasis = xpTable.GetXPScale(adjustedMOB.mobLevel.x);
-					} else {
-						playerController.mobXPBasis = xpTable.GetXPScale(mobLevel.mobLevel.x);
-					}
-				}
-			}
-#else
-			playerState.xp = 0;
-			playerState.drop_ilvl = 1;
-			playerState.min_ilvl = 1;
-			playerState.max_ilvl = 1;
-			playerState.level = 1;
-			playerState.scaledLevel = 1;
-#endif
 			playerState.onlineUUID = channel.uuid;
 #if !(LOGIN_SERVER || BACKEND_SERVER)
 			playerState.playerName = "Player" + (++_playerNameIndex);
 #endif
+
 			playerState.score = initialPlayerScore;
 			playerState.score2 = initialPlayerScore2;
 			playerState.SetPermissionLevel(0);
 			teamActor.AddPlayerToTeam(playerState);
 			
 			playerController.playerState = playerState;
-			playerController.SetStartingPositionAndRotation(playerStart.startPoint.position, playerStart.startPoint.rotation.eulerAngles.y);
+			SetPlayerSpawnLocation(playerController);
 			playerController.PossessUnits();
 
 			// This needs to call RPCs so the channel has to be flushed.
@@ -1398,11 +1150,7 @@ namespace Bowhead.Server {
 		public void NotifyPlayerDisconnected(ServerPlayerController playerController, Exception e, EDisconnectReason reason, string msg) {
 			_players.Remove(playerController);
 			
-			playerController.NotifyPlayerDisconnected(matchState >= EMatchState.Countdown);
-			if (playerController.playerStart != null) {
-				GameManager.instance.teamSchedule.NotifyPlayerDisconnected(playerController.ownerConnection, playerController.playerStart, e, reason, msg);
-			}
-
+			playerController.NotifyPlayerDisconnected(matchState >= EMatchState.MatchInProgress);
 			playerController.Destroy();
 		}
 

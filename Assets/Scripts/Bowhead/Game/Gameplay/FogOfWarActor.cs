@@ -82,7 +82,7 @@ namespace Bowhead.Actors {
 				return true;
 			}
 
-			if (!enabled || Client.Actors.ClientPlayerController.debugFogOfWar || (team == actor.team) || (actor.fogOfWarTest == EFogOfWarTest.AlwaysVisible) || (_world.gameMode.liftFogOfWarAtEndOfMatch && (_world.gameMode.matchState >= Server.GameMode.EMatchState.MatchComplete))) {
+			if (!enabled || Client.Actors.ClientPlayerController.debugFogOfWar || (team == actor.team) || (actor.fogOfWarTest == EFogOfWarTest.AlwaysVisible) || (/*_world.gameMode.liftFogOfWarAtEndOfMatch && */(_world.gameMode.matchState >= Server.GameMode.EMatchState.MatchComplete))) {
 				Perf.End();
 				return true;
 			}

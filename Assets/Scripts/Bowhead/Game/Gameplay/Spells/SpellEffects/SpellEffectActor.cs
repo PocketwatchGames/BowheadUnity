@@ -207,7 +207,7 @@ namespace Bowhead.Actors.Spells {
 			Destroy();
 		}
 
-		[RPC(ERPCDomain.Multicast, Reliable = true)]
+		[RPC(ERPCDomain.Multicast)]
         void Multicast_ProcEnd(byte reason) {
 			OnProcEnd((EExpiryReason)reason);
 		}
