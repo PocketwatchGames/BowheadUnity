@@ -14,11 +14,13 @@ namespace Port {
 
         // Use this for initialization
         void Start() {
-            _inventory = Instantiate(DataManager.GetPrefab<InventoryPanel>("InventoryPanel"), new Vector3(0,0,0), new Quaternion(0,0,0,0));
-            _inventory.transform.SetParent(transform, true);
+            _inventory = Instantiate(DataManager.GetPrefab<InventoryPanel>("InventoryPanel"));
+            _inventory.transform.SetParent(transform, false);
             _inventory.Init(_world.player);
-            _playerState = Instantiate(DataManager.GetPrefab<PlayerStatePanel>("PlayerStatePanel"), new Vector3(0, Screen.height, 0), new Quaternion(0, 0, 0, 0));
-            _playerState.transform.SetParent(transform, true);
+
+
+            _playerState = Instantiate(DataManager.GetPrefab<PlayerStatePanel>("PlayerStatePanel"));
+            _playerState.transform.SetParent(transform, false);
             _playerState.Init(_world.player);
         }
 
