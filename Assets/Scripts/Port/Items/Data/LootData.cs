@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Port {
 
-    [CreateAssetMenuAttribute]
+    [CreateAssetMenuAttribute(menuName = "ItemData/Loot")]
     public class LootData : ItemData {
         public delegate bool UseFn(Item item, Actor actor);
         public UseFn use;

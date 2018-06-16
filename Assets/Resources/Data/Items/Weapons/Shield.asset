@@ -24,7 +24,7 @@ MonoBehaviour:
     defendPower: 20
     defendDamageAbsorb: 10
     defendStaminaUse: 10
-    staminaUse: 0
+    staminaUse: 5
     stepDistance: 0
     staminaDrain: 0
     stunPower: 2

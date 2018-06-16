@@ -15,12 +15,12 @@ namespace Port {
 
         // Use this for initialization
         void Awake() {
-            init();
+            Init();
         }
 
         // Update is called once per frame
         void Update() {
-            update(Time.deltaTime, camera.yaw);
+            Tick(Time.deltaTime, camera.yaw);
         }
 
 
@@ -77,7 +77,7 @@ namespace Port {
         }
 
         PlayerData playerData;
-        void init() {
+        void Init() {
             //int seed = 185;
             //	seed = 15485;
             //std::srand(seed);
@@ -116,9 +116,10 @@ namespace Port {
             }
 
             for (int i = 0; i < 100; i++) {
-                var item = CreateWorldItem(Item.Create(Money.GetData("Money"), this));
-                item.position = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
-                (item.item as Money).count = 100;
+                var item = Item.Create<Money>(Money.GetData("Money"), this);
+                item.count = 100;
+                var worldItem = CreateWorldItem(item);
+                worldItem.position = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
             }
 
             time = SECONDS_PER_HOUR * 8;
@@ -152,7 +153,7 @@ namespace Port {
         static Color[] sunsetColors = { new Color(0.6f, 0.5f, 0.5f, 1.0f), new Color(0.05f, 0.05f, 0.05f, 1.0f), new Color(0.80f, 0.65f, 0.60f, 1.0f), new Color(0.60f, 0.50f, 0.45f, 1.0f), new Color(0.40f, 0.40f, 0.50f, 1.0f), };
         static Color[] sunriseColors = { new Color(0.6f, 0.6f, 0.4f, 1.0f), new Color(0.05f, 0.05f, 0.05f, 1.0f), new Color(0.75f, 0.75f, 0.65f, 1.0f), new Color(0.60f, 0.55f, 0.50f, 1.0f), new Color(0.35f, 0.40f, 0.50f, 1.0f), };
 
-        Color[] getSkyColor(float timeOfDay) {
+        Color[] GetSkyColor(float timeOfDay) {
 
             var skyColors = new Color[5];
 
@@ -194,25 +195,28 @@ namespace Port {
             return skyColors;
         }
 
-        void spawnNewCritter() {
+        void SpawnNewCritter() {
             if (critterPool.Count > 0) {
                 Vector3 pos = player.position;
                 pos.y = 500;
-                pos.x += UnityEngine.Random.Range(-500f, 500f) + 0.5f;
-                pos.z += UnityEngine.Random.Range(-500f, 500f) + 0.5f;
-                if (getTopmostBlock(500, ref pos)) {
+                pos.x += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
+                pos.z += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
+
+                var bunnyData = Critter.GetData("bunny");
+                var wolfData = Critter.GetData("wolf");
+                if (GetTopmostBlock(500, ref pos)) {
                     Critter c = critterPool.Dequeue();
                     c.transform.parent = critters.transform;
                     c.Init();
                     c.position = pos;
                     c.team = 1;
 
-                    if (c.Data == Critter.GetData("bunny")) {
+                    if (c.Data == bunnyData) {
                         var item = CreateItem("Raw Meat") as Loot;
                         item.count = 1;
                         c.loot[0] = item;
                     }
-                    else if (c.Data == Critter.GetData("wolf")) {
+                    else if (c.Data == wolfData) {
                         var weapon = CreateItem("Teeth");
                         c.SetInventorySlot(0, weapon);
                     }
@@ -223,11 +227,11 @@ namespace Port {
             }
         }
 
-        void update(float dt, float cameraYaw) {
+        void Tick(float dt, float cameraYaw) {
 
             if (!player.spawned) {
                 var spawnPoint = new Vector3(0.5f, 500, 0.5f);
-                if (getTopmostBlock(500, ref spawnPoint)) {
+                if (GetTopmostBlock(500, ref spawnPoint)) {
                     player.Spawn(spawnPoint + new Vector3(0, 1, 0));
                 }
             }
@@ -258,7 +262,7 @@ namespace Port {
 
                 player.Tick(dt, cameraYaw);
 
-                spawnNewCritter();
+                SpawnNewCritter();
                 var cs = critters.GetComponentsInAllChildren<Critter>();
                 foreach (var c in cs) {
                     c.Tick(dt);
@@ -283,7 +287,7 @@ namespace Port {
             foreach (var i in items.GetComponentsInAllChildren<WorldItem>()) {
                 if (!i.spawned) {
                     var pos = i.position;
-                    if (getTopmostBlock(500, ref pos)) {
+                    if (GetTopmostBlock(500, ref pos)) {
                         pos.y++;
                         i.Spawn(pos);
                     }
@@ -296,12 +300,12 @@ namespace Port {
             time += dt;
         }
 
-        float getTimeOfDay() {
+        float GetTimeOfDay() {
             return Mathf.Repeat(time, SECONDS_PER_DAY) / SECONDS_PER_DAY * 24;
         }
 
 
-        void testCollision(float dt, Actor a1, Actor a2) {
+        void TestCollision(float dt, Actor a1, Actor a2) {
             var diff = a2.position - a1.position;
             float dist = diff.magnitude;
             float minDist = a1.Data.collisionRadius + a2.Data.collisionRadius;
@@ -324,7 +328,7 @@ namespace Port {
                 }
             }
         }
-        void updateCollision(float dt) {
+        void UpdateCollision(float dt) {
             var cs = critters.GetComponentsInAllChildren<Critter>();
             for (int i = 0; i < cs.Length; i++) {
                 var c = cs[i];
@@ -337,19 +341,19 @@ namespace Port {
                     if (!c2.spawned) {
                         continue;
                     }
-                    testCollision(dt, c, c2);
+                    TestCollision(dt, c, c2);
                 }
 
-                testCollision(dt, c, player);
+                TestCollision(dt, c, player);
 
             }
         }
 
-        public EBlockType getBlock(Vector3 pos) {
-            return getBlock(pos.x, pos.y, pos.z);
+        public EBlockType GetBlock(Vector3 pos) {
+            return GetBlock(pos.x, pos.y, pos.z);
         }
 
-        public EBlockType getBlock(float x, float y, float z) {
+        public EBlockType GetBlock(float x, float y, float z) {
             if (y < 0) {
                 return EBlockType.BLOCK_TYPE_DIRT;
             }
@@ -363,7 +367,7 @@ namespace Port {
             //return EBlockType.BLOCK_TYPE_AIR;
         }
 
-        public bool getTopmostBlock(int checkDist, ref Vector3 from) {
+        public bool GetTopmostBlock(int checkDist, ref Vector3 from) {
             from.y = -1;
             return true;
             //int origZ = (int)from.y;
@@ -379,13 +383,13 @@ namespace Port {
         }
 
 
-        public static bool isCapBlock(EBlockType type) {
+        public static bool IsCapBlock(EBlockType type) {
             if (type == EBlockType.BLOCK_TYPE_SNOW) return true;
             return false;
         }
 
 
-        public static bool isSolidBlock(EBlockType type) {
+        public static bool IsSolidBlock(EBlockType type) {
             if (type == EBlockType.BLOCK_TYPE_WATER
                 || type == EBlockType.BLOCK_TYPE_AIR
                 || type == EBlockType.BLOCK_TYPE_SNOW
@@ -398,7 +402,7 @@ namespace Port {
             return true;
         }
 
-        public static bool isClimbable(EBlockType type, bool skilledClimber) {
+        public static bool IsClimbable(EBlockType type, bool skilledClimber) {
             if (type == EBlockType.BLOCK_TYPE_LEAVES || type == EBlockType.BLOCK_TYPE_NEEDLES || type == EBlockType.BLOCK_TYPE_WOOD) {
                 return true;
             }
@@ -410,7 +414,7 @@ namespace Port {
             return false;
         }
 
-        public static bool isHangable(EBlockType type, bool skilledClimber) {
+        public static bool IsHangable(EBlockType type, bool skilledClimber) {
             if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_ROCK || type == EBlockType.BLOCK_TYPE_GRASS) {
                 return true;
             }
@@ -418,7 +422,7 @@ namespace Port {
         }
 
 
-        public static float getFallDamage(EBlockType type) {
+        public static float GetFallDamage(EBlockType type) {
             if (type == EBlockType.BLOCK_TYPE_SNOW)
                 return 0.5f;
             else if (type == EBlockType.BLOCK_TYPE_SAND)
@@ -428,7 +432,7 @@ namespace Port {
             return 1.0f;
         }
 
-        public static bool isTransparentBlock(EBlockType type) {
+        public static bool IsTransparentBlock(EBlockType type) {
             if (type == EBlockType.BLOCK_TYPE_AIR
                 || type == EBlockType.BLOCK_TYPE_WATER
                 || type == EBlockType.BLOCK_TYPE_NEEDLES
@@ -443,37 +447,37 @@ namespace Port {
             return false;
         }
 
-        public static bool isDiggable(EBlockType type) {
+        public static bool IsDiggable(EBlockType type) {
             if (type == EBlockType.BLOCK_TYPE_WATER) return false;
             return true;
         }
 
 
-        public Vector3 getGroundNormal(Vector3 position) {
+        public Vector3 GetGroundNormal(Vector3 position) {
             Vector3 normal = Vector3.up;
-            if (getGroundDiff(position, position + Vector3.right) > 0)
+            if (GetGroundDiff(position, position + Vector3.right) > 0)
                 normal.x--;
-            if (getGroundDiff(position, position - Vector3.right) > 0)
+            if (GetGroundDiff(position, position - Vector3.right) > 0)
                 normal.x++;
-            if (getGroundDiff(position, position + Vector3.forward) > 0)
+            if (GetGroundDiff(position, position + Vector3.forward) > 0)
                 normal.z--;
-            if (getGroundDiff(position, position - Vector3.forward) > 0)
+            if (GetGroundDiff(position, position - Vector3.forward) > 0)
                 normal.z++;
             return normal.normalized;
         }
-        public int getGroundDiff(Vector3 position1, Vector3 position2) {
-            if (!isSolidBlock(getBlock(position2))) {
-                if (isSolidBlock(getBlock(position2 - Vector3.up))) {
+        public int GetGroundDiff(Vector3 position1, Vector3 position2) {
+            if (!IsSolidBlock(GetBlock(position2))) {
+                if (IsSolidBlock(GetBlock(position2 - Vector3.up))) {
                     return -1;
                 }
             }
-            else if (isSolidBlock(getBlock(position2 + Vector3.up)) && !isSolidBlock(getBlock(position2 + 2 * Vector3.up))) {
+            else if (IsSolidBlock(GetBlock(position2 + Vector3.up)) && !IsSolidBlock(GetBlock(position2 + 2 * Vector3.up))) {
                 return 1;
             }
             return 0;
         }
 
-        public float getRiver(int blockX, int blockY) {
+        public float GetRiver(int blockX, int blockY) {
             int offsetX = 0;
             int offsetY = 0;
             float powerScaleInverse = 0.001f;
@@ -483,24 +487,24 @@ namespace Port {
                 0.3f * GetPerlinNormal((blockX + offsetX + 2254), (blockY + offsetY + 6563), 0, powerScaleInverse * 0.1f);
             return power;
         }
-        public Vector3 getCurrent(int x, int y, int z) {
+        public Vector3 GetCurrent(int x, int y, int z) {
             float inverseRegionSize = 0.01f;
-            var center = getRiver(x, z);
+            var center = GetRiver(x, z);
             Vector3 diff = Vector3.zero;
-            diff += new Vector3(1, 0, 0) * Math.Abs(getRiver(x - 1, z) - center);
-            diff += new Vector3(1, 0, 0) * Math.Abs(getRiver(x + 1, z) - center);
-            diff += new Vector3(0, 0, 1) * Math.Abs(getRiver(x, z - 1) - center);
-            diff += new Vector3(0, 0, 1) * Math.Abs(getRiver(x, z + 1) - center);
+            diff += new Vector3(1, 0, 0) * Math.Abs(GetRiver(x - 1, z) - center);
+            diff += new Vector3(1, 0, 0) * Math.Abs(GetRiver(x + 1, z) - center);
+            diff += new Vector3(0, 0, 1) * Math.Abs(GetRiver(x, z - 1) - center);
+            diff += new Vector3(0, 0, 1) * Math.Abs(GetRiver(x, z + 1) - center);
             float currentSpeed = diff.magnitude;
             diff /= currentSpeed;
             currentSpeed *= 1000 * GetPerlinValue(x, y, z, inverseRegionSize);
             return diff * Mathf.Clamp(currentSpeed, -8f, 8f);
         }
 
-        public Vector3 getWind(Vector3 p) {
-            return getWind((int)p.x, (int)p.y, (int)p.z);
+        public Vector3 GetWind(Vector3 p) {
+            return GetWind((int)p.x, (int)p.y, (int)p.z);
         }
-        public Vector3 getWind(int x, int y, int z) {
+        public Vector3 GetWind(int x, int y, int z) {
             float inverseRegionSize = 0.001f;
             float windAngle = GetPerlinValue(x + 6543, z + 6543, 0, inverseRegionSize) * Mathf.PI * 2;
             var wind = new Vector3(Mathf.Cos(windAngle), Mathf.Sin(windAngle), 0);
@@ -529,7 +533,7 @@ namespace Port {
             return wind * currentSpeed;
         }
 
-        public float getClimbFriction(EBlockType block) {
+        public float GetClimbFriction(EBlockType block) {
             switch (block) {
                 case EBlockType.BLOCK_TYPE_DIRT:
                     return 0.9f;
@@ -541,7 +545,7 @@ namespace Port {
             return 1.0f;
         }
 
-        public static void getSlideThreshold(EBlockType foot, EBlockType mid, EBlockType head, out float slideFriction, out float slideThreshold) {
+        public static void GetSlideThreshold(EBlockType foot, EBlockType mid, EBlockType head, out float slideFriction, out float slideThreshold) {
             slideThreshold = 100;
             slideFriction = 0.5f;
 
@@ -563,7 +567,7 @@ namespace Port {
             }
         }
 
-        public static float getWorkModifier(EBlockType foot, EBlockType mid, EBlockType head) {
+        public static float GetWorkModifier(EBlockType foot, EBlockType mid, EBlockType head) {
             float workModifier = 0;
 
             if (mid == EBlockType.BLOCK_TYPE_SNOW) {

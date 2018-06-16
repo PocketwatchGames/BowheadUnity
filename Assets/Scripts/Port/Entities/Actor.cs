@@ -126,8 +126,8 @@ namespace Port {
         new public ActorData Data { get { return GetData<ActorData>(); } }
         public static ActorData GetData(string dataName) { return DataManager.GetData<ActorData>(dataName); }
 
-        public delegate void onInventoryChangeFn();
-        public event onInventoryChangeFn onInventoryChange;
+        public delegate void OnInventoryChangeFn();
+        public event OnInventoryChangeFn OnInventoryChange;
 
 
         public void UpdatePlayerCmd(PlayerCmd_t cmd) {
@@ -149,9 +149,9 @@ namespace Port {
                     if (activity == Activity.OnGround) {
                         // Step down
                         Vector3 fp = footPoint + new Vector3(0, 0, -0.5f);
-                        if (!World.isSolidBlock(world.getBlock(fp))) {
-                            if (World.isSolidBlock(world.getBlock(fp + new Vector3(0, 0, -1)))) {
-                                if (world.getBlock(movePosition) != EBlockType.BLOCK_TYPE_WATER) {
+                        if (!World.IsSolidBlock(world.GetBlock(fp))) {
+                            if (World.IsSolidBlock(world.GetBlock(fp + new Vector3(0, 0, -1)))) {
+                                if (world.GetBlock(movePosition) != EBlockType.BLOCK_TYPE_WATER) {
                                     move.y -= 1;
                                     interpolate = true;
                                 }
@@ -174,7 +174,7 @@ namespace Port {
                 Vector3 footPoint = footPosition(position) + move;
                 Vector3 headPoint = headPosition(position) + move + new Vector3(0, 0, 1.0f);
 
-                if (World.isSolidBlock(world.getBlock(footPoint)) && !World.isSolidBlock(world.getBlock(movePosition)) && !World.isSolidBlock(world.getBlock(headPoint))) {
+                if (World.IsSolidBlock(world.GetBlock(footPoint)) && !World.IsSolidBlock(world.GetBlock(movePosition)) && !World.IsSolidBlock(world.GetBlock(headPoint))) {
                     move += new Vector3(0, 0, 1);
 
                     position += move;
@@ -191,11 +191,11 @@ namespace Port {
             var handHoldPos = p + wallDirection.normalized * Data.climbWallRange;
             if (!IsOpen(p))
                 return false;
-            var handblock = world.getBlock(handPosition(handHoldPos));
-            bool isClimbable = World.isClimbable(handblock, canClimbWell);
+            var handblock = world.GetBlock(handPosition(handHoldPos));
+            bool isClimbable = World.IsClimbable(handblock, canClimbWell);
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
-                if (isHangPosition && World.isHangable(handblock, canClimbWell) && !World.isSolidBlock(world.getBlock(p)) && !World.isSolidBlock(world.getBlock(handPosition(p))) && !World.isSolidBlock(world.getBlock(handPosition(handHoldPos) + Vector3.up))) {
+                if (isHangPosition && World.IsHangable(handblock, canClimbWell) && !World.IsSolidBlock(world.GetBlock(p)) && !World.IsSolidBlock(world.GetBlock(handPosition(p))) && !World.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -210,14 +210,14 @@ namespace Port {
             var handHoldPos = p + checkDir.normalized * Data.climbWallRange;
             if (!IsOpen(p))
                 return false;
-            var handblock = world.getBlock(handPosition(handHoldPos));
-            bool isClimbable = World.isClimbable(handblock, canClimbWell);
+            var handblock = world.GetBlock(handPosition(handHoldPos));
+            bool isClimbable = World.IsClimbable(handblock, canClimbWell);
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
                 if (isHangPosition
-                    && World.isHangable(handblock, canClimbWell)
-                    && !World.isSolidBlock(world.getBlock(handPosition(handHoldPos)))
-                    && !World.isSolidBlock(world.getBlock(handHoldPos + Vector3.up))) {
+                    && World.IsHangable(handblock, canClimbWell)
+                    && !World.IsSolidBlock(world.GetBlock(handPosition(handHoldPos)))
+                    && !World.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -253,11 +253,11 @@ namespace Port {
             floorHeight = 0;
             Vector3 floorPosition = footPosition(position) + new Vector3(0, -0.1f, 0);
 
-            if (!World.isSolidBlock(world.getBlock(floorPosition))) {
+            if (!World.IsSolidBlock(world.GetBlock(floorPosition))) {
                 return false;
             }
 
-            while (World.isSolidBlock(world.getBlock(floorPosition))) {
+            while (World.IsSolidBlock(world.GetBlock(floorPosition))) {
                 floorPosition.y = Mathf.Floor(floorPosition.y) + 1;
             }
             floorHeight = floorPosition.y;
@@ -265,9 +265,9 @@ namespace Port {
         }
 
         bool IsOpen(Vector3 position) {
-            return !World.isSolidBlock(world.getBlock(footPosition(position)))
-                && !World.isSolidBlock(world.getBlock(waistPosition(position)))
-                && !World.isSolidBlock(world.getBlock(headPosition(position)));
+            return !World.IsSolidBlock(world.GetBlock(footPosition(position)))
+                && !World.IsSolidBlock(world.GetBlock(waistPosition(position)))
+                && !World.IsSolidBlock(world.GetBlock(headPosition(position)));
         }
 
 
@@ -353,7 +353,7 @@ namespace Port {
                     if (activity != Activity.OnGround) {
                         LandOnGround();
                         if (velocity.y < 0) {
-                            Vector3 groundNormal = world.getGroundNormal(footPosition(position));
+                            Vector3 groundNormal = world.GetGroundNormal(footPosition(position));
                             float slopeAccel = 1f + Vector3.Dot(velocity.normalized, -groundNormal);
                             if (slopeAccel < 1f) {
                                 velocity += velocity * slopeAccel;
@@ -366,7 +366,7 @@ namespace Port {
             }
 
             // Collide head
-            if (World.isSolidBlock(world.getBlock(headPosition(position)))) {
+            if (World.IsSolidBlock(world.GetBlock(headPosition(position)))) {
                 // TODO: this is broken
                 position.y = Math.Min(position.y, (int)headPosition(position).y - Data.height);
                 velocity.y = Math.Min(0, velocity.y);
@@ -393,7 +393,7 @@ namespace Port {
                     activity = Activity.Falling;
                 }
             }
-            else if (world.getBlock(position) == EBlockType.BLOCK_TYPE_WATER) {
+            else if (world.GetBlock(position) == EBlockType.BLOCK_TYPE_WATER) {
                 activity = Activity.Swimming;
             }
             else if (onGround && velocity.y <= 0) {
@@ -446,7 +446,7 @@ namespace Port {
 
             }
 
-            transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw, Vector3.up));
+            transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
         }
 
         public bool Move(Vector3 moveXZ, float dt) {
@@ -522,7 +522,7 @@ namespace Port {
             float airFriction = getFallingAirFriction();
             velocity.y -= velocity.y * dt * airFriction;
 
-            var wind = world.getWind(position);
+            var wind = world.GetWind(position);
             var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
             velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
             velocity += velDiff * dt * getHorizontalAirFriction();
@@ -541,17 +541,17 @@ namespace Port {
             else {
                 fallJumpTimer = Data.fallJumpTime;
             }
-            var block = world.getBlock(footPosition(position));
-            var midblock = world.getBlock(waistPosition(position));
-            var topblock = world.getBlock(headPosition(position));
+            var block = world.GetBlock(footPosition(position));
+            var midblock = world.GetBlock(waistPosition(position));
+            var topblock = world.GetBlock(headPosition(position));
             float slideFriction, slideThreshold;
-            World.getSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
-            float workModifier = World.getWorkModifier(block, midblock, topblock);
+            World.GetSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
+            float workModifier = World.GetWorkModifier(block, midblock, topblock);
             if (IsWading()) {
                 workModifier += Data.swimDragHorizontal;
             }
 
-            Vector3 groundNormal = world.getGroundNormal(footPosition(position));
+            Vector3 groundNormal = world.GetGroundNormal(footPosition(position));
 
 
             float curVel = velocity.magnitude;
@@ -607,7 +607,7 @@ namespace Port {
                 }
                 {
                     // Wind blowing you while running or skidding
-                    var wind = world.getWind(position);
+                    var wind = world.GetWind(position);
                     var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
                     velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
                     velChange += velDiff * dt * getHorizontalAirFriction();
@@ -655,16 +655,16 @@ namespace Port {
                 velocity.y = velocity.y - Data.swimSinkAcceleration * dt;
             }
             velocity.y += Data.gravity * dt;
-            if (world.getBlock(headPosition(position)) == EBlockType.BLOCK_TYPE_WATER) {
+            if (world.GetBlock(headPosition(position)) == EBlockType.BLOCK_TYPE_WATER) {
                 velocity.y += -velocity.y * dt * Data.swimDragVertical;
                 velocity.y += Data.bouyancy * dt;
             }
-            if (world.getBlock(position) == EBlockType.BLOCK_TYPE_WATER) {
+            if (world.GetBlock(position) == EBlockType.BLOCK_TYPE_WATER) {
                 velocity.y += -velocity.y * dt * Data.swimDragVertical;
                 velocity.y += Data.bouyancy * dt;
             }
 
-            var current = world.getCurrent((int)position.x, (int)position.y, (int)position.z);
+            var current = world.GetCurrent((int)position.x, (int)position.y, (int)position.z);
             var velDiff = (current - new Vector3(velocity.x, 0, velocity.z));
             velDiff *= velDiff.magnitude; // drag is exponential, thanks zeno!
             velocity += velDiff * dt * Data.swimDragHorizontal;
@@ -789,7 +789,7 @@ namespace Port {
         }
 
         public bool IsWading() {
-            return activity == Activity.OnGround && world.getBlock(waistPosition(position)) == EBlockType.BLOCK_TYPE_WATER && world.getBlock(position) != EBlockType.BLOCK_TYPE_WATER;
+            return activity == Activity.OnGround && world.GetBlock(waistPosition(position)) == EBlockType.BLOCK_TYPE_WATER && world.GetBlock(position) != EBlockType.BLOCK_TYPE_WATER;
         }
 
         public float getGroundJumpVelocity() {
@@ -961,7 +961,7 @@ namespace Port {
 
         public void SetInventorySlot(int index, Item item) {
             _inventory[index] = item;
-            onInventoryChange();
+            OnInventoryChange?.Invoke();
         }
 
         public Item GetInventorySlot(int index) {

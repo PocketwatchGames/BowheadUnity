@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Port {
 
 
-    [CreateAssetMenuAttribute]
+    [CreateAssetMenuAttribute(menuName = "ItemData/Pack")]
     public class PackData : ItemData {
         public int slots;
 

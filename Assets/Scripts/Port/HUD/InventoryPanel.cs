@@ -29,7 +29,7 @@ namespace Port {
             var r = _inventorySlotPrefab.GetComponent<RectTransform>().rect;
             slotSize = new Vector3(r.width, r.height, 0);
 
-            _player.onInventoryChange += OnInventoryChange;
+            _player.OnInventoryChange += OnInventoryChange;
 
             _mainContainer = Instantiate(_inventoryContainerPrefab, transform, false);
             Rebuild();

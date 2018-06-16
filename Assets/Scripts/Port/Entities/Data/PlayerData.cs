@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Port {
 
-    [CreateAssetMenuAttribute]
+    [CreateAssetMenuAttribute(menuName = "EntityData/Player")]
     public class PlayerData : ActorData {
 
         [Header("Player")]

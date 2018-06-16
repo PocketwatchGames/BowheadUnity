@@ -62,7 +62,7 @@ namespace Port {
 
             for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) != null) {
-                    GetInventorySlot(i).updateCast(dt, this);
+                    GetInventorySlot(i).UpdateCast(dt, this);
                 }
             }
 
@@ -76,11 +76,11 @@ namespace Port {
                     Weapon w = weapon as Weapon;
                     if (w != null) {
                         if (input.IsPressed(InputType.AttackRight)) {
-                            w.charge(dt);
+                            w.Charge(dt);
                         }
                         else {
                             if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
-                                w.attack(this);
+                                w.Attack(this);
                             }
                             w.chargeTime = 0;
                         }
@@ -129,6 +129,7 @@ namespace Port {
             position = pos;
             maxHealth = Data.maxHealth;
             health = maxHealth;
+            transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
         }
 
         #endregion
@@ -206,7 +207,7 @@ namespace Port {
             }
 
             float windCarryTime = 5f;
-            var wind = world.getWind(player.position);
+            var wind = world.GetWind(player.position);
             float maxWindCarryDist = Mathf.Sqrt(wind.magnitude) * windCarryTime;
             float windCarrySmell = 0;
             if (dist < maxWindCarryDist && wind != Vector3.zero) {

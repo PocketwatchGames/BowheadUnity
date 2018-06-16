@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Port {
 
 
-    [CreateAssetMenuAttribute]
+    [CreateAssetMenuAttribute(menuName = "EntityData/Critter")]
     public class CritterData : ActorData {
         [Header("Critter")]
 

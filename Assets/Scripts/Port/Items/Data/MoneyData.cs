@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Port {
 
-    [CreateAssetMenuAttribute]
+    [CreateAssetMenuAttribute(menuName = "ItemData/Money")]
     public class MoneyData : ItemData {
         public int count;
 

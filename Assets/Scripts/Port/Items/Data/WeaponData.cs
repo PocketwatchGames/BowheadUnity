@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Port {
 
-    [CreateAssetMenuAttribute]
+    [CreateAssetMenuAttribute(menuName = "ItemData/Weapon")]
     public class WeaponData : ItemData {
 
         public enum Hand {

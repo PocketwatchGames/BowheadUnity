@@ -19,11 +19,16 @@ namespace Port {
             return _data as D;
         }
 
-        public virtual void init(ItemData d, World w) {
+        public virtual void Init(ItemData d, World w) {
             _data = d;
             world = w;
         }
 
+        public static T Create<T>(ItemData d, World w) where T : Item, new() {
+            T i = new T();
+            i.Init(d, w);
+            return i;
+        }
         public static Item Create(ItemData itemData, World w) {
             Item i = null;
             if (itemData is MoneyData) {
@@ -46,7 +51,7 @@ namespace Port {
                 return null;
             }
 
-            i.init(itemData, w);
+            i.Init(itemData, w);
             return i;
         }
 
@@ -54,10 +59,10 @@ namespace Port {
         public static ItemData GetData(string dataName) { return DataManager.GetItemData(dataName); }
 
 
-        virtual public void updateCast(float dt, Actor actor) {
+        virtual public void UpdateCast(float dt, Actor actor) {
         }
 
-        public virtual void onSlotChange() {
+        public virtual void OnSlotChange() {
 
         }
 

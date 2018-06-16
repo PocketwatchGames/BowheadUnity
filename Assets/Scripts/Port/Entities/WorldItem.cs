@@ -33,7 +33,7 @@ namespace Port {
 
             if (!inMotion) {
                 if (velocity != Vector3.zero
-                    || !World.isSolidBlock(world.getBlock(position))) {
+                    || !World.IsSolidBlock(world.GetBlock(position))) {
                     inMotion = true;
                 }
             }
@@ -41,46 +41,46 @@ namespace Port {
             if (inMotion) {
                 var newVel = velocity;
                 {
-                    bool onGround = World.isSolidBlock(world.getBlock(position)) && velocity.z <= 0;
+                    bool onGround = World.IsSolidBlock(world.GetBlock(position)) && velocity.y <= 0;
                     if (!onGround) {
                         float gravity = -30f;
-                        newVel.z += gravity * dt;
+                        newVel.y += gravity * dt;
                     }
                     velocity = newVel;
                 }
 
                 var newPos = position;
                 {
-                    newPos.z += velocity.z * dt;
-                    bool onGround = World.isSolidBlock(world.getBlock(newPos)) && velocity.z <= 0;
+                    newPos.y += velocity.y * dt;
+                    bool onGround = World.IsSolidBlock(world.GetBlock(newPos)) && velocity.y <= 0;
                     if (onGround) {
                         float bounceVel = -5f;
                         float bounceCoefficient = 0.5f;
                         float friction = 10f;
-                        newPos.z = Mathf.Ceil(newPos.z);
-                        if (velocity.z > bounceVel) {
+                        newPos.y = Mathf.Ceil(newPos.y);
+                        if (velocity.y > bounceVel) {
                             newVel = newVel - Mathf.Max(1f, dt * friction) * velocity;
                         }
                         else {
-                            newVel.z = -newVel.z * bounceCoefficient;
+                            newVel.y = -newVel.y * bounceCoefficient;
                         }
                         if (newVel.magnitude < 0.1f) {
                             newVel = Vector3.zero;
                         }
                     }
                     velocity = newVel;
-                    var moveXZ = new Vector3(velocity.x * dt, 0, velocity.y * dt);
-                    if (!World.isSolidBlock(world.getBlock(newPos + moveXZ)) && velocity.y != 0) {
+                    var moveXZ = new Vector3(velocity.x * dt, 0, velocity.z * dt);
+                    if (!World.IsSolidBlock(world.GetBlock(newPos + moveXZ)) && velocity.y != 0) {
                         position = newPos + moveXZ;
                     }
                     else {
                         var moveX = new Vector3(velocity.x * dt, 0, 0);
-                        if (!World.isSolidBlock(world.getBlock(newPos + moveX)) && velocity.y != 0) {
+                        if (!World.IsSolidBlock(world.GetBlock(newPos + moveX)) && velocity.y != 0) {
                             position = newPos + moveX;
                         }
                         else {
                             var moveZ = new Vector3(0, 0, velocity.z * dt);
-                            if (!World.isSolidBlock(world.getBlock(newPos + moveZ)) && velocity.y != 0) {
+                            if (!World.IsSolidBlock(world.GetBlock(newPos + moveZ)) && velocity.y != 0) {
                                 position = newPos + moveZ;
                             }
                         }
@@ -89,7 +89,7 @@ namespace Port {
             }
 
             float yaw = 0;
-            transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw, Vector3.up));
+            transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
 
         }
 

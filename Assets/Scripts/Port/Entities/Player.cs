@@ -104,7 +104,7 @@ namespace Port {
 
             for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) != null) {
-                    GetInventorySlot(i).updateCast(dt, this);
+                    GetInventorySlot(i).UpdateCast(dt, this);
                 }
             }
 
@@ -124,11 +124,11 @@ namespace Port {
             if (canAttack) {
                 if (itemLeft != null) {
                     if (input.IsPressed(InputType.AttackLeft)) {
-                        itemLeft.charge(dt);
+                        itemLeft.Charge(dt);
                     }
                     else {
                         if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
-                            itemLeft.attack(this);
+                            itemLeft.Attack(this);
                         }
                         itemLeft.chargeTime = 0;
                     }
@@ -138,11 +138,11 @@ namespace Port {
                 }
                 if (itemRight != null) {
                     if (input.IsPressed(InputType.AttackRight)) {
-                        itemRight.charge(dt);
+                        itemRight.Charge(dt);
                     }
                     else {
                         if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
-                            itemRight.attack(this);
+                            itemRight.Attack(this);
                         }
                         itemRight.chargeTime = 0;
                     }
@@ -283,17 +283,18 @@ namespace Port {
 
         override public void LandOnGround() {
             // Land on ground
-            var block = world.getBlock(position);
-            if (!World.isCapBlock(block)) {
-                block = world.getBlock(footPosition(position));
+            var block = world.GetBlock(position);
+            if (!World.IsCapBlock(block)) {
+                block = world.GetBlock(footPosition(position));
             }
-            float d = -velocity.y / Data.fallDamageVelocity * World.getFallDamage(block);
+            float d = -velocity.y / Data.fallDamageVelocity * World.GetFallDamage(block);
             if (d > 0) {
                 damage(d);
                 useStamina((float)d);
                 stun((float)d);
             }
-            OnLand(d);
+
+            OnLand?.Invoke(d);
         }
 
 
@@ -305,7 +306,7 @@ namespace Port {
 
         public void SetMoney(int m) {
             money = m;
-            OnMoneyChange();
+            OnMoneyChange?.Invoke();
         }
 
         bool PickUp(Item item) {
@@ -429,7 +430,7 @@ namespace Port {
 
             SetInventorySlot(newSlot, item);
 
-            item.onSlotChange();
+            item.OnSlotChange();
         }
 
         public bool Equip(Item item) {
@@ -667,7 +668,7 @@ namespace Port {
                 }
             }
             else {
-                var block = world.getBlock(footPosition(position));
+                var block = world.GetBlock(footPosition(position));
                 if (block == EBlockType.BLOCK_TYPE_WATER) {
                     Loot waterItem = null;
                     var waterData = Loot.GetData("Water");

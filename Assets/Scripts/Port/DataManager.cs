@@ -12,9 +12,10 @@ namespace Port {
 
         public static T GetData<T>(string name) where T : EntityData {
             Dictionary<string, EntityData> classLookup;
-            if (_allData.TryGetValue(typeof(T), out classLookup)) {
+            var t = typeof(T);
+            if (_allData.TryGetValue(t, out classLookup)) {
                 EntityData data;
-                if (classLookup.TryGetValue(name, out data)) {
+                if (classLookup.TryGetValue(name.ToLowerInvariant(), out data)) {
                     return data as T;
                 }
             }
@@ -25,7 +26,7 @@ namespace Port {
             var t = typeof(T);
             if (_itemData.TryGetValue(t, out classLookup)) {
                 ItemData data;
-                if (classLookup.TryGetValue(name, out data)) {
+                if (classLookup.TryGetValue(name.ToLowerInvariant(), out data)) {
                     return data as T;
                 }
             }
@@ -33,21 +34,21 @@ namespace Port {
         }
         public static ItemData GetItemData(string name) {
             ItemData data;
-            if (_allItemData.TryGetValue(name, out data)) {
+            if (_allItemData.TryGetValue(name.ToLowerInvariant(), out data)) {
                 return data;
             }
             return null;
         }
         public static T GetPrefab<T>(string name) where T : MonoBehaviour {
             GameObject o;
-            if (_entityPrefabs.TryGetValue(name, out o)) {
+            if (_entityPrefabs.TryGetValue(name.ToLowerInvariant(), out o)) {
                 return o.GetComponent<T>();
             }
             return null;
         }
         public static GameObject GetPrefab(string name) {
             GameObject o;
-            if (_entityPrefabs.TryGetValue(name, out o)) {
+            if (_entityPrefabs.TryGetValue(name.ToLowerInvariant(), out o)) {
                 return o;
             }
             return null;
@@ -60,25 +61,25 @@ namespace Port {
                 classLookup = new Dictionary<string, EntityData>();
                 _allData.Add(d.GetType(), classLookup);
             }
-            classLookup.Add(d.name, d);
+            classLookup.Add(d.name.ToLowerInvariant(), d);
 
         }
 
         public static void Add(ItemData d) {
 
-            _allItemData.Add(d.name, d);
+            _allItemData.Add(d.name.ToLowerInvariant(), d);
             Dictionary<string, ItemData> classLookup;
             if (!_itemData.TryGetValue(d.GetType(), out classLookup)) {
                 classLookup = new Dictionary<string, ItemData>();
                 _itemData.Add(d.GetType(), classLookup);
             }
-            classLookup.Add(d.name, d);
+            classLookup.Add(d.name.ToLowerInvariant(), d);
 
         }
 
         public static void initData() {
-            var entities = Resources.LoadAll("Data/Entities");
-            foreach (var d in entities) {
+            var actors = Resources.LoadAll("Data/Actors");
+            foreach (var d in actors) {
                 Add(d as EntityData);
             }
 
@@ -89,7 +90,7 @@ namespace Port {
 
             var prefabs = Resources.LoadAll<GameObject>("Prefabs");
             foreach (var p in prefabs) {
-                _entityPrefabs.Add(p.name, p);
+                _entityPrefabs.Add(p.name.ToLowerInvariant(), p);
             }
         }
     }

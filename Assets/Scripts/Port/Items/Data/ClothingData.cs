@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Port {
 
-    [CreateAssetMenuAttribute]
+    [CreateAssetMenuAttribute(menuName = "ItemData/Clothing")]
     public class ClothingData : ItemData {
 
     }

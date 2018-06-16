@@ -27,7 +27,7 @@ MonoBehaviour:
   jumpStaminaUse: 0
   groundAcceleration: 2
   crouchSpeed: 0
-  walkSpeed: 0
+  walkSpeed: 1
   walkStartTime: 0
   walkStopTime: 0
   groundMaxSpeed: 12

@@ -266,7 +266,7 @@ InputManager:
     descriptiveName: AttackRight
     descriptiveNegativeName: 
     negativeButton: 
-    positiveButton: mouse 2
+    positiveButton: mouse 1
     altNegativeButton: 
     altPositiveButton: 
     gravity: 0

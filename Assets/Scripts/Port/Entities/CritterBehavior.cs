@@ -50,18 +50,18 @@ namespace Port {
             if (c.hasLastKnownPosition) {
                 var diff = c.position - c.lastKnownPosition;
 
-                if (diff.z <= -3) {
+                if (diff.y <= -3) {
                     if (c.canJump && c.activity == Actor.Activity.OnGround) {
                         input.inputs[(int)InputType.Jump] = InputState.JustPressed;
                     }
                 }
-                diff.z = 0;
+                diff.y = 0;
                 if (diff == Vector3.zero) {
                     diff.x = 1;
                 }
                 var desiredPos = c.lastKnownPosition + diff.normalized * 5;
                 var move = desiredPos - c.position;
-                move.z = 0;
+                move.y = 0;
 
                 if (move.magnitude > 0.5f) {
                     input.movement = move.normalized;

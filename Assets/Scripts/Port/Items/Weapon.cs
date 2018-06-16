@@ -18,18 +18,18 @@ namespace Port {
         public static WeaponData GetData(string dataName) { return DataManager.GetItemData<WeaponData>(dataName); }
 
 
-        public override void onSlotChange() {
+        public override void OnSlotChange() {
             castTime = 0;
             chargeTime = 0;
 
         }
-        public void charge(float dt) {
+        public void Charge(float dt) {
             if (cooldown <= 0) {
                 chargeTime += dt;
             }
         }
 
-        public bool attack(Actor actor) {
+        public bool Attack(Actor actor) {
             if (castTime > 0 || cooldown > 0) {
                 return false;
             }
@@ -38,7 +38,7 @@ namespace Port {
 
             castTime = attackData.castTime;
             chargeTime = 0;
-            Vector3 attackDir = new Vector3(Mathf.Cos(actor.yaw), Mathf.Sin(actor.yaw), 0);
+            Vector3 attackDir = new Vector3(Mathf.Sin(actor.yaw), 0, Mathf.Cos(actor.yaw));
             float stepAmt = attackData.stepDistance;
             if (stepAmt != 0 && actor.activity == Actor.Activity.OnGround) {
                 actor.moveImpulse = attackDir * stepAmt;
@@ -46,12 +46,12 @@ namespace Port {
                 actor.velocity = Vector3.zero;
             }
             if (castTime <= 0) {
-                activate(actor);
+                Activate(actor);
             }
             return true;
         }
 
-        bool checkIfHit(Actor owner, Vector3 attackPos, Vector3 dir, Vector3 attackerPos, WeaponData.AttackData attackData, Actor enemy) {
+        bool CheckIfHit(Actor owner, Vector3 attackPos, Vector3 dir, Vector3 attackerPos, WeaponData.AttackData attackData, Actor enemy) {
 
             float critterRadius = 1.0f;
             var diff = enemy.waistPosition(enemy.position) - attackPos;
@@ -70,7 +70,7 @@ namespace Port {
             }
             return false;
         }
-        void activate(Actor actor) {
+        void Activate(Actor actor) {
             var d = getCurAttackData();
 
             castTime = 0;
@@ -84,12 +84,12 @@ namespace Port {
                 var cs = world.critters.GetComponentsInAllChildren<Critter>();
                 foreach (var c in cs) {
                     if (c.spawned) {
-                        hit |= checkIfHit(actor, attackPos, attackDir, actor.position, d, c);
+                        hit |= CheckIfHit(actor, attackPos, attackDir, actor.position, d, c);
                     }
                 }
             }
             else {
-                hit |= checkIfHit(actor, attackPos, attackDir, actor.position, d, world.player);
+                hit |= CheckIfHit(actor, attackPos, attackDir, actor.position, d, world.player);
             }
             //RendererWorld.createMarker(attackPos, d.attackRadius * 2, 0.1f, hit ? new Color(1, 0, 0, 1f) : new Color(0, 0, 0, 1f));
 
@@ -100,7 +100,7 @@ namespace Port {
 
 
 
-        override public void updateCast(float dt, Actor actor) {
+        override public void UpdateCast(float dt, Actor actor) {
 
             if (cooldown > 0) {
                 cooldown = Mathf.Max(0, cooldown - dt);
@@ -114,7 +114,7 @@ namespace Port {
                 castTime = Mathf.Max(0, castTime - dt);
                 actor.canTurn = false;
                 if (castTime <= 0) {
-                    activate(actor);
+                    Activate(actor);
                 }
             }
 
@@ -161,9 +161,12 @@ namespace Port {
 
                 owner.useStamina(defense.defendStaminaUse);
 
-                var parry = Data.parries[getCurCharge()];
-                if (parry != null) {
-                    attacker.hit(owner, this, parry);
+                int chargeLevel = getCurCharge();
+                if (Data.parries.Length > chargeLevel) {
+                    var parry = Data.parries[chargeLevel];
+                    if (parry != null) {
+                        attacker.hit(owner, this, parry);
+                    }
                 }
             }
 
