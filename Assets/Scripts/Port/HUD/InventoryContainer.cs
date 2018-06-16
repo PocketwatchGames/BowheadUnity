@@ -5,6 +5,9 @@ using UnityEngine;
 namespace Port {
     public class InventoryContainer : MonoBehaviour {
 
+        private void OnDestroy() {
+            gameObject.DestroyAllChildren();
+        }
 
     }
 }

@@ -33,5 +33,9 @@ namespace Port {
         public void Select() {
             _button.Select();
         }
+
+        private void OnDestroy() {
+            gameObject.DestroyAllChildren();
+        }
     }
 }

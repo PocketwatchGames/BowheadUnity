@@ -664,7 +664,7 @@ namespace Port {
             var t = GetInteractTarget();
             if (t != null) {
                 if (PickUp(t.item)) {
-                    Destroy(t);
+                    Destroy(t.gameObject);
                 }
             }
             else {

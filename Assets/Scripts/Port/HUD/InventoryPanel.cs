@@ -36,17 +36,16 @@ namespace Port {
         }
 
         private void OnInventoryChange() {
-            _mainContainer.transform.DestroyAllChildren();
-            foreach (var p in _packContainers) {
-                GameObject.Destroy(p);
-            }
-            _packContainers.Clear();
             foreach (var s in _slots) {
                 if (s != null) {
-                    GameObject.Destroy(s);
+                    GameObject.Destroy(s.gameObject);
                 }
             }
-            _slots.Initialize();
+            foreach (var p in _packContainers) {
+                GameObject.Destroy(p.gameObject);
+            }
+            _packContainers.Clear();
+            System.Array.Clear(_slots, 0, _slots.Length);
             Rebuild();
 
             while (_player.GetInventorySlot(inventorySelected) == null) {
@@ -83,6 +82,7 @@ namespace Port {
                     packSlotsRemaining = p.Data.slots + 1;
                     curPackContainer = Instantiate(_inventoryContainerPrefab, transform, false);
                     curPackContainer.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, 0);
+                    _packContainers.Add(curPackContainer);
                     x = slotMargin;
                 }
 
