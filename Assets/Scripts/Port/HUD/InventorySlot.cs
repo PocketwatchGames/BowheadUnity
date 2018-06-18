@@ -27,5 +27,15 @@ namespace Port {
                 _button.GetComponentInChildren<Text>().text = i.Data.name;
             }
         }
+
+        public void Deselect() {
+        }
+        public void Select() {
+            _button.Select();
+        }
+
+        private void OnDestroy() {
+            gameObject.DestroyAllChildren();
+        }
     }
 }

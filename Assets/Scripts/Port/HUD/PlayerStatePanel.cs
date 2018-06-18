@@ -36,7 +36,7 @@ namespace Port {
 
         public void Init(Player player) {
             _player = player;
-            _player.onMoneyChange += onMoneyChange;
+            _player.OnMoneyChange += onMoneyChange;
         }
 
         private void onMoneyChange() {
