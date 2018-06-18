@@ -6,7 +6,7 @@ using System;
 namespace Port {
 
 
-    public class World : MonoBehaviour {
+    public class GameWorld : MonoBehaviour {
 
         #region State
         public float worldTime;
@@ -353,32 +353,26 @@ namespace Port {
         }
 
         public EBlockType GetBlock(float x, float y, float z) {
-            if (y < 0) {
+
+            if (y < 100)
                 return EBlockType.BLOCK_TYPE_DIRT;
-            }
-            else {
-                return EBlockType.BLOCK_TYPE_AIR;
-            }
-            //EBlockType blockType = EBlockType.BLOCK_TYPE_AIR;
-            //if (getVoxel(cg->vsv, Vector3Int((int)Math.Floor(x), (int)Math.Floor(y), (int)Math.Floor(z)), ref blockType)) {
+
+            EBlockType blockType = EBlockType.BLOCK_TYPE_AIR;
+            //if (Bowhead. getVoxel(cg->vsv, Vector3Int((int)Math.Floor(x), (int)Math.Floor(y), (int)Math.Floor(z)), ref blockType)) {
             //    return (EBlockType)(blockType & BLOCK_TYPE_MASK);
             //}
-            //return EBlockType.BLOCK_TYPE_AIR;
+            return EBlockType.BLOCK_TYPE_AIR;
         }
 
         public bool GetTopmostBlock(int checkDist, ref Vector3 from) {
-            from.y = -1;
+            from.y = 100;
             return true;
-            //int origZ = (int)from.y;
-            //for (int zOffset = 0; zOffset < checkDist; zOffset++) {
-            //    from->z() = (float)(origZ - zOffset);
-            //    EBlockType blockType = EBlockType.BLOCK_TYPE_AIR;
-            //    if (cgi.getVoxel(cg->vsv, WorldVoxelPos_t((int)std::floor(from->x()), (int)std::floor(from->y()), (int)std::floor(from->z())), &blockType)) {
-            //        if (isSolidBlock((EBlockType)blockType))
-            //            return true;
-            //    }
-            //}
-            //return false;
+            RaycastHit hit;
+            if (Physics.Raycast(from, Vector3.down, out hit, checkDist)) {
+                from.y = hit.point.y;
+                return true;
+            }
+            return false;
         }
 
 

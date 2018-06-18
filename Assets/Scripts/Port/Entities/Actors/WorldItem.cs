@@ -23,7 +23,7 @@ namespace Port {
             return DataManager.GetData<WorldItemData>(DataName);
         }
 
-        virtual public void Create(Item i, World w) {
+        virtual public void Create(Item i, GameWorld w) {
             world = w;
             world.allItems.Add(this);
             item = i;
@@ -39,7 +39,7 @@ namespace Port {
 
             if (!inMotion) {
                 if (velocity != Vector3.zero
-                    || !World.IsSolidBlock(world.GetBlock(position))) {
+                    || !GameWorld.IsSolidBlock(world.GetBlock(position))) {
                     inMotion = true;
                 }
             }
@@ -47,7 +47,7 @@ namespace Port {
             if (inMotion) {
                 var newVel = velocity;
                 {
-                    bool onGround = World.IsSolidBlock(world.GetBlock(position)) && velocity.y <= 0;
+                    bool onGround = GameWorld.IsSolidBlock(world.GetBlock(position)) && velocity.y <= 0;
                     if (!onGround) {
                         float gravity = -30f;
                         newVel.y += gravity * dt;
@@ -58,7 +58,7 @@ namespace Port {
                 var newPos = position;
                 {
                     newPos.y += velocity.y * dt;
-                    bool onGround = World.IsSolidBlock(world.GetBlock(newPos)) && velocity.y <= 0;
+                    bool onGround = GameWorld.IsSolidBlock(world.GetBlock(newPos)) && velocity.y <= 0;
                     if (onGround) {
                         float bounceVel = -5f;
                         float bounceCoefficient = 0.5f;
@@ -76,17 +76,17 @@ namespace Port {
                     }
                     velocity = newVel;
                     var moveXZ = new Vector3(velocity.x * dt, 0, velocity.z * dt);
-                    if (!World.IsSolidBlock(world.GetBlock(newPos + moveXZ)) && velocity.y != 0) {
+                    if (!GameWorld.IsSolidBlock(world.GetBlock(newPos + moveXZ)) && velocity.y != 0) {
                         position = newPos + moveXZ;
                     }
                     else {
                         var moveX = new Vector3(velocity.x * dt, 0, 0);
-                        if (!World.IsSolidBlock(world.GetBlock(newPos + moveX)) && velocity.y != 0) {
+                        if (!GameWorld.IsSolidBlock(world.GetBlock(newPos + moveX)) && velocity.y != 0) {
                             position = newPos + moveX;
                         }
                         else {
                             var moveZ = new Vector3(0, 0, velocity.z * dt);
-                            if (!World.IsSolidBlock(world.GetBlock(newPos + moveZ)) && velocity.y != 0) {
+                            if (!GameWorld.IsSolidBlock(world.GetBlock(newPos + moveZ)) && velocity.y != 0) {
                                 position = newPos + moveZ;
                             }
                         }

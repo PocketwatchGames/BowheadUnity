@@ -14,7 +14,7 @@ namespace Port {
         new public PackData Data { get { return GetData<PackData>(); } }
         public static PackData GetData(string dataName) { return DataManager.GetData<PackData>(dataName); }
 
-        public override void Init(ItemData d, World w) {
+        public override void Init(ItemData d, GameWorld w) {
             base.Init(d, w);
 
             contained.Clear();

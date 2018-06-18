@@ -9,7 +9,7 @@ namespace Port {
     abstract public class Entity : MonoBehaviour {
 
         [HideInInspector]
-        public World world;
+        public GameWorld world;
         [SerializeField]
         private EntityData _data;
 
@@ -19,7 +19,7 @@ namespace Port {
             return _data as D;
         }
 
-        public virtual void Create(EntityData d, World w) {
+        public virtual void Create(EntityData d, GameWorld w) {
             _data = d;
             world = w;
         }

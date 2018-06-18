@@ -9,7 +9,7 @@ namespace Port {
 
 
         [HideInInspector]
-        public World world;
+        public GameWorld world;
         [SerializeField]
         private ItemData _data;
 
@@ -19,17 +19,17 @@ namespace Port {
             return _data as D;
         }
 
-        public virtual void Init(ItemData d, World w) {
+        public virtual void Init(ItemData d, GameWorld w) {
             _data = d;
             world = w;
         }
 
-        public static T Create<T>(ItemData d, World w) where T : Item, new() {
+        public static T Create<T>(ItemData d, GameWorld w) where T : Item, new() {
             T i = new T();
             i.Init(d, w);
             return i;
         }
-        public static Item Create(ItemData itemData, World w) {
+        public static Item Create(ItemData itemData, GameWorld w) {
             Item i = null;
             if (itemData is MoneyData) {
                 i = new Money();

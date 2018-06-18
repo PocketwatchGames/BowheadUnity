@@ -53,8 +53,8 @@ MonoBehaviour:
   swimDragVertical: 5
   swimDragHorizontal: 0.25
   prefab:
-    _assetPath: Prefabs/Bunny
-    _editorPath: Assets/Resources/Prefabs/Bunny.prefab
+    _assetPath: Bunny
+    _editorPath: Assets/Gameplay/Resources/Bunny.prefab
   visionWeight: 2
   smellWeight: 1
   hearingWeight: 2

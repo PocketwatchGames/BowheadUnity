@@ -6,7 +6,7 @@ namespace Port {
     public class UIController : MonoBehaviour {
 
         [SerializeField]
-        private World _world;
+        private GameWorld _world;
 
         private InventoryPanel _inventory;
         private PlayerStatePanel _playerState;

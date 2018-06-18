@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Port {
     public class CameraController : MonoBehaviour {
 
-        public World world;
+        public GameWorld world;
         public float yaw;
         public float pitch;
         public Player target;

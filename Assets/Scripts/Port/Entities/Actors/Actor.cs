@@ -149,8 +149,8 @@ namespace Port {
                     if (activity == Activity.OnGround) {
                         // Step down
                         Vector3 fp = footPoint + new Vector3(0, 0, -0.5f);
-                        if (!World.IsSolidBlock(world.GetBlock(fp))) {
-                            if (World.IsSolidBlock(world.GetBlock(fp + new Vector3(0, 0, -1)))) {
+                        if (!GameWorld.IsSolidBlock(world.GetBlock(fp))) {
+                            if (GameWorld.IsSolidBlock(world.GetBlock(fp + new Vector3(0, 0, -1)))) {
                                 if (world.GetBlock(movePosition) != EBlockType.BLOCK_TYPE_WATER) {
                                     move.y -= 1;
                                     interpolate = true;
@@ -174,7 +174,7 @@ namespace Port {
                 Vector3 footPoint = footPosition(position) + move;
                 Vector3 headPoint = headPosition(position) + move + new Vector3(0, 0, 1.0f);
 
-                if (World.IsSolidBlock(world.GetBlock(footPoint)) && !World.IsSolidBlock(world.GetBlock(movePosition)) && !World.IsSolidBlock(world.GetBlock(headPoint))) {
+                if (GameWorld.IsSolidBlock(world.GetBlock(footPoint)) && !GameWorld.IsSolidBlock(world.GetBlock(movePosition)) && !GameWorld.IsSolidBlock(world.GetBlock(headPoint))) {
                     move += new Vector3(0, 0, 1);
 
                     position += move;
@@ -192,10 +192,10 @@ namespace Port {
             if (!IsOpen(p))
                 return false;
             var handblock = world.GetBlock(handPosition(handHoldPos));
-            bool isClimbable = World.IsClimbable(handblock, canClimbWell);
+            bool isClimbable = GameWorld.IsClimbable(handblock, canClimbWell);
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
-                if (isHangPosition && World.IsHangable(handblock, canClimbWell) && !World.IsSolidBlock(world.GetBlock(p)) && !World.IsSolidBlock(world.GetBlock(handPosition(p))) && !World.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
+                if (isHangPosition && GameWorld.IsHangable(handblock, canClimbWell) && !GameWorld.IsSolidBlock(world.GetBlock(p)) && !GameWorld.IsSolidBlock(world.GetBlock(handPosition(p))) && !GameWorld.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -211,13 +211,13 @@ namespace Port {
             if (!IsOpen(p))
                 return false;
             var handblock = world.GetBlock(handPosition(handHoldPos));
-            bool isClimbable = World.IsClimbable(handblock, canClimbWell);
+            bool isClimbable = GameWorld.IsClimbable(handblock, canClimbWell);
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
                 if (isHangPosition
-                    && World.IsHangable(handblock, canClimbWell)
-                    && !World.IsSolidBlock(world.GetBlock(handPosition(handHoldPos)))
-                    && !World.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
+                    && GameWorld.IsHangable(handblock, canClimbWell)
+                    && !GameWorld.IsSolidBlock(world.GetBlock(handPosition(handHoldPos)))
+                    && !GameWorld.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -253,11 +253,11 @@ namespace Port {
             floorHeight = 0;
             Vector3 floorPosition = footPosition(position) + new Vector3(0, -0.1f, 0);
 
-            if (!World.IsSolidBlock(world.GetBlock(floorPosition))) {
+            if (!GameWorld.IsSolidBlock(world.GetBlock(floorPosition))) {
                 return false;
             }
 
-            while (World.IsSolidBlock(world.GetBlock(floorPosition))) {
+            while (GameWorld.IsSolidBlock(world.GetBlock(floorPosition))) {
                 floorPosition.y = Mathf.Floor(floorPosition.y) + 1;
             }
             floorHeight = floorPosition.y;
@@ -265,9 +265,9 @@ namespace Port {
         }
 
         bool IsOpen(Vector3 position) {
-            return !World.IsSolidBlock(world.GetBlock(footPosition(position)))
-                && !World.IsSolidBlock(world.GetBlock(waistPosition(position)))
-                && !World.IsSolidBlock(world.GetBlock(headPosition(position)));
+            return !GameWorld.IsSolidBlock(world.GetBlock(footPosition(position)))
+                && !GameWorld.IsSolidBlock(world.GetBlock(waistPosition(position)))
+                && !GameWorld.IsSolidBlock(world.GetBlock(headPosition(position)));
         }
 
 
@@ -366,7 +366,7 @@ namespace Port {
             }
 
             // Collide head
-            if (World.IsSolidBlock(world.GetBlock(headPosition(position)))) {
+            if (GameWorld.IsSolidBlock(world.GetBlock(headPosition(position)))) {
                 // TODO: this is broken
                 position.y = Math.Min(position.y, (int)headPosition(position).y - Data.height);
                 velocity.y = Math.Min(0, velocity.y);
@@ -545,8 +545,8 @@ namespace Port {
             var midblock = world.GetBlock(waistPosition(position));
             var topblock = world.GetBlock(headPosition(position));
             float slideFriction, slideThreshold;
-            World.GetSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
-            float workModifier = World.GetWorkModifier(block, midblock, topblock);
+            GameWorld.GetSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
+            float workModifier = GameWorld.GetWorkModifier(block, midblock, topblock);
             if (IsWading()) {
                 workModifier += Data.swimDragHorizontal;
             }

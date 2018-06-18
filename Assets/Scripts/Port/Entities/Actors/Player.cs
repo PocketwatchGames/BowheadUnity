@@ -64,7 +64,7 @@ namespace Port {
 
         #region core functions
 
-        public void Init(PlayerData data, World world) {
+        public void Init(PlayerData data, GameWorld world) {
             base.Create(data, world);
             attackTargetPreview = null;
         }
@@ -284,10 +284,10 @@ namespace Port {
         override public void LandOnGround() {
             // Land on ground
             var block = world.GetBlock(position);
-            if (!World.IsCapBlock(block)) {
+            if (!GameWorld.IsCapBlock(block)) {
                 block = world.GetBlock(footPosition(position));
             }
-            float d = -velocity.y / Data.fallDamageVelocity * World.GetFallDamage(block);
+            float d = -velocity.y / Data.fallDamageVelocity * GameWorld.GetFallDamage(block);
             if (d > 0) {
                 damage(d);
                 useStamina((float)d);

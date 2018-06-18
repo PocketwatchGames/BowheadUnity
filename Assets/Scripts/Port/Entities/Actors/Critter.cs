@@ -33,7 +33,7 @@ namespace Port {
         #region core
 
 
-        public void Create(CritterData data, World world) {
+        public void Create(CritterData data, GameWorld world) {
             base.Create(data, world);
 
             behaviorPanic = CritterBehavior.Create(data.panicBehavior);
