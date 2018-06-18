@@ -173,13 +173,13 @@ public abstract class Actor : ActorRPCObject {
 		}
 	}
 
-	public override ActorReplicationChannel ownerConnection {
+	public sealed override ActorReplicationChannel ownerConnection {
 		get {
 			return _ownerConnection;
 		}
 	}
 
-	public override ObjectRPCTable rpcTable {
+	public sealed override ObjectRPCTable rpcTable {
 		get {
 			return _rpcTable;
 		}
@@ -191,7 +191,7 @@ public abstract class Actor : ActorRPCObject {
 		}
 	}
 
-	public override bool netTornOff {
+	public sealed override bool netTornOff {
 		get {
 			return _netTornOff;
 		}
@@ -784,25 +784,25 @@ public abstract class ActorComponent : ActorRPCObject {
 		}
 	}
 
-	public override bool netTornOff {
+	public sealed override bool netTornOff {
 		get {
 			return _owner.netTornOff;
 		}
 	}
 
-	public override ObjectRPCTable rpcTable {
+	public sealed override ObjectRPCTable rpcTable {
 		get {
 			return _rpcTable;
 		}
 	}
 
-	public override World world {
+	public sealed override World world {
 		get {
 			return _owner.world;
 		}
 	}
 
-	public override ActorReplicationChannel ownerConnection {
+	public sealed override ActorReplicationChannel ownerConnection {
 		get {
 			return _owner.ownerConnection;
 		}

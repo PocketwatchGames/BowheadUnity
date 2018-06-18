@@ -12,19 +12,6 @@ using UnityEditor;
 namespace Bowhead {
 	using Object = UnityEngine.Object;
 
-	[Serializable]
-	public struct MOBLevel {
-		public int ilvl;
-		public int spellLevel;
-		public IntMath.Vector2i mobLevel;
-	}
-
-	[Serializable]
-	public struct Difficulty {
-		public int levelBoost;
-		public float dropBonus;
-	}
-
 	public class StaticData : MonoBehaviour, ISerializationCallbackReceiver {
 		public interface Indexed {
 			int staticIndex {
