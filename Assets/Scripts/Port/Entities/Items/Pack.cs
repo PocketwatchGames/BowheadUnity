@@ -12,7 +12,7 @@ namespace Port {
         #endregion
 
         new public PackData Data { get { return GetData<PackData>(); } }
-        public static PackData GetData(string dataName) { return DataManager.GetItemData<PackData>(dataName); }
+        public static PackData GetData(string dataName) { return DataManager.GetData<PackData>(dataName); }
 
         public override void Init(ItemData d, World w) {
             base.Init(d, w);

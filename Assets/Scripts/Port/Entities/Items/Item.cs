@@ -56,7 +56,7 @@ namespace Port {
         }
 
         // Use this for initialization
-        public static ItemData GetData(string dataName) { return DataManager.GetItemData(dataName); }
+        public static ItemData GetData(string dataName) { return DataManager.GetData<ItemData>(dataName); }
 
 
         virtual public void UpdateCast(float dt, Actor actor) {

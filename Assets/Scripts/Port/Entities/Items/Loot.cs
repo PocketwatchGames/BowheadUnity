@@ -13,7 +13,7 @@ namespace Port {
 
 
         new public LootData Data { get { return GetData<LootData>(); } }
-        public static LootData GetData(string dataName) { return DataManager.GetItemData<LootData>(dataName); }
+        public static LootData GetData(string dataName) { return DataManager.GetData<LootData>(dataName); }
 
 
         public bool use(Actor actor) {

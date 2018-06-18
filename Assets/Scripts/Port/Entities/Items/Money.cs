@@ -12,7 +12,7 @@ namespace Port {
         #endregion
 
         new public MoneyData Data { get { return GetData<MoneyData>(); } }
-        public static MoneyData GetData(string dataName) { return DataManager.GetItemData<MoneyData>(dataName); }
+        public static MoneyData GetData(string dataName) { return DataManager.GetData<MoneyData>(dataName); }
 
 
     }

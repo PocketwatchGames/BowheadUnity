@@ -4,8 +4,6 @@ using UnityEngine;
 
 namespace Port {
 
-    public class EntityData : ScriptableObject {
-    }
 
 
     abstract public class Entity : MonoBehaviour {
