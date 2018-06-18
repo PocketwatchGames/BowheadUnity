@@ -14,14 +14,25 @@ namespace Port {
 
         #endregion
 
+        private GameObject _mesh;
+
         new public WeaponData Data { get { return GetData<WeaponData>(); } }
         public static WeaponData GetData(string dataName) { return DataManager.GetData<WeaponData>(dataName); }
 
 
-        public override void OnSlotChange() {
+        public override void OnSlotChange(int newSlot, Actor owner) {
             castTime = 0;
             chargeTime = 0;
 
+            if (_mesh != null) {
+                Destroy(_mesh as GameObject);
+            }
+            if (Data.prefab != null) {
+                if (newSlot == (int)Player.InventorySlot.LEFT_HAND || newSlot == (int)Player.InventorySlot.RIGHT_HAND) {
+                    var prefab = Data.prefab.Load();
+                    _mesh = Instantiate(prefab, owner.transform);
+                }
+            }
         }
         public void Charge(float dt) {
             if (cooldown <= 0) {

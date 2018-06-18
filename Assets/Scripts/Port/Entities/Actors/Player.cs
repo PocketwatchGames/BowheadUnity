@@ -420,19 +420,6 @@ namespace Port {
             return false;
         }
 
-        void SetItemSlot(Item item, int newSlot) {
-            for (int i = 0; i < MaxInventorySize; i++) {
-                if (GetInventorySlot(i) == item) {
-                    SetInventorySlot(i, null);
-                    break;
-                }
-            }
-
-            SetInventorySlot(newSlot, item);
-
-            item.OnSlotChange();
-        }
-
         public bool Equip(Item item) {
             int[] emptyPackSlots = new int[2];
 
@@ -443,7 +430,7 @@ namespace Port {
                     // unequip
                     if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND) {
                         if (FindEmptyPackSlots(1, ref emptyPackSlots)) {
-                            SetItemSlot(GetInventorySlot(i), emptyPackSlots[0]);
+                            SetInventorySlot(emptyPackSlots[0], GetInventorySlot(i));
                             return true;
                         }
                         return false;
@@ -459,15 +446,15 @@ namespace Port {
             Clothing clothing;
             if ((clothing = item as Clothing) != null) {
                 if (GetInventorySlot((int)InventorySlot.CLOTHING) == null) {
-                    SetItemSlot(item, (int)InventorySlot.CLOTHING);
+                    SetInventorySlot((int)InventorySlot.CLOTHING, item);
                     return true;
                 }
                 else {
                     if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
                         if (GetInventorySlot((int)InventorySlot.CLOTHING) != null) {
-                            SetItemSlot(GetInventorySlot((int)InventorySlot.CLOTHING), emptyPackSlots[0]);
+                            SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.CLOTHING));
                         }
-                        SetItemSlot(item, (int)InventorySlot.CLOTHING);
+                        SetInventorySlot((int)InventorySlot.CLOTHING, item);
                         return true;
                     }
                 }
@@ -496,12 +483,12 @@ namespace Port {
                         }
                         int slotIndex = 0;
                         if (GetInventorySlot((int)InventorySlot.LEFT_HAND) != null) {
-                            SetItemSlot(GetInventorySlot((int)InventorySlot.LEFT_HAND), emptyPackSlots[slotIndex++]);
+                            SetInventorySlot(emptyPackSlots[slotIndex++], GetInventorySlot((int)InventorySlot.LEFT_HAND));
                         }
                         if (GetInventorySlot((int)InventorySlot.RIGHT_HAND) != null) {
-                            SetItemSlot(GetInventorySlot((int)InventorySlot.RIGHT_HAND), emptyPackSlots[slotIndex++]);
+                            SetInventorySlot(emptyPackSlots[slotIndex++], GetInventorySlot((int)InventorySlot.RIGHT_HAND));
                         }
-                        SetItemSlot(item, (int)InventorySlot.RIGHT_HAND);
+                        SetInventorySlot((int)InventorySlot.RIGHT_HAND, item);
                         return true;
                     }
                 }
@@ -523,27 +510,27 @@ namespace Port {
                     // if the item in our left hand is two-handed, unequip and equip the desired item in preferred hand
                     if (slotBothWeapon != null && slotBothWeapon.Data.hand == WeaponData.Hand.BOTH) {
                         if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
-                            SetItemSlot(slotBothWeapon, emptyPackSlots[0]);
-                            SetItemSlot(weapon, (int)InventorySlot.RIGHT_HAND);
+                            SetInventorySlot(emptyPackSlots[0], slotBothWeapon);
+                            SetInventorySlot((int)InventorySlot.RIGHT_HAND, weapon);
                             return true;
                         }
                     }
                     else {
                         // if our preferred slot is empty, equip in that slot
                         if (slot1Weapon == null) {
-                            SetItemSlot(weapon, slotPreference1);
+                            SetInventorySlot(slotPreference1, weapon);
                             return true;
                         }
                         // if our preferred slot is full but the secondary slot is empty
                         else if (slot2Weapon == null) {
                             // but the secondary slot has an off-hand item, rearrange (eg. move shield to left hand and equip sword in right)
                             if (slot1Weapon.Data.hand != weapon.Data.hand) {
-                                SetItemSlot(slot1Weapon, slotPreference2);
-                                SetItemSlot(weapon, slotPreference1);
+                                SetInventorySlot(slotPreference2, slot1Weapon);
+                                SetInventorySlot(slotPreference1, weapon);
                             }
                             // item in our primary hand is of same type, equip in off-hand
                             else {
-                                SetItemSlot(weapon, slotPreference2);
+                                SetInventorySlot(slotPreference2, weapon);
                             }
                             return true;
                         }
@@ -551,14 +538,14 @@ namespace Port {
                         if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
                             // if our preferred hand has an offhand item in it, unequip that and equip the item in preferred hand
                             if (slot1Weapon.Data.hand != weapon.Data.hand || slot2Weapon.Data.hand == weapon.Data.hand) {
-                                SetItemSlot(slot1Weapon, emptyPackSlots[0]);
-                                SetItemSlot(weapon, slotPreference1);
+                                SetInventorySlot(emptyPackSlots[0], slot1Weapon);
+                                SetInventorySlot(slotPreference1, weapon);
 
                             }
                             // our preferred hand has an item of the same type, unequip the secondary item and equip in secondary slot
                             else {
-                                SetItemSlot(slot2Weapon, emptyPackSlots[0]);
-                                SetItemSlot(weapon, slotPreference2);
+                                SetInventorySlot(emptyPackSlots[0], slot2Weapon);
+                                SetInventorySlot(slotPreference2, weapon);
                             }
                             return true;
                         }
