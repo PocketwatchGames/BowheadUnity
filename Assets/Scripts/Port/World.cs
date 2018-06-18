@@ -100,8 +100,7 @@ namespace Port {
 
 
             // init the player state
-            var prefab = DataManager.GetPrefab<Player>("Player");
-            player = Instantiate(prefab);
+            player = Instantiate(Player.GetData("player").prefab.Load());
             player.transform.parent = transform;
             player.Init(player.Data, this);
 
@@ -125,11 +124,11 @@ namespace Port {
             time = SECONDS_PER_HOUR * 8;
         }
         public WorldItem CreateWorldItem(Item item) {
-            var p = DataManager.GetPrefab<WorldItem>("Item");
+            var p = WorldItem.GetData("worldItem");
             if (p == null) {
                 return null;
             }
-            var i = Instantiate<WorldItem>(p);
+            var i = Instantiate(p.prefab.Load());
             i.transform.parent = items.transform;
             i.Create(item, this);
             return i;
@@ -139,11 +138,11 @@ namespace Port {
         }
 
         public Critter CreateCritter(string prefabName) {
-            var p = DataManager.GetPrefab<Critter>(prefabName);
+            var p = Critter.GetData(prefabName).prefab.Load();
             if (p == null) {
                 return null;
             }
-            var i = Instantiate<Critter>(p);
+            var i = Instantiate(p);
             i.Create(i.Data, this);
             return i;
         }

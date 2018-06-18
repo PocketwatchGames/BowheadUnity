@@ -11,14 +11,19 @@ namespace Port {
         private InventoryPanel _inventory;
         private PlayerStatePanel _playerState;
 
+        [SerializeField]
+        private InventoryPanel _inventoryPrefab;
+        [SerializeField]
+        private PlayerStatePanel _playerStatePrefab;
+
 
         // Use this for initialization
         void Start() {
-            _inventory = Instantiate(DataManager.GetPrefab<InventoryPanel>("InventoryPanel"), transform, false);
+            _inventory = Instantiate(_inventoryPrefab, transform, false);
             _inventory.Init(_world.player);
 
 
-            _playerState = Instantiate(DataManager.GetPrefab<PlayerStatePanel>("PlayerStatePanel"), transform, false);
+            _playerState = Instantiate(_playerStatePrefab, transform, false);
             _playerState.Init(_world.player);
         }
 

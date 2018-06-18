@@ -8,7 +8,6 @@ namespace Port {
 
         private static Dictionary<System.Type, Dictionary<string, EntityData>> _dataByClass = new Dictionary<System.Type, Dictionary<string, EntityData>>();
         private static Dictionary<string, EntityData> _allData = new Dictionary<string, EntityData>();
-        private static Dictionary<string, GameObject> _entityPrefabs = new Dictionary<string, GameObject>();
 
         public static T GetData<T>(string name) where T : EntityData {
             Dictionary<string, EntityData> classLookup;
@@ -28,21 +27,6 @@ namespace Port {
             }
             return null;
         }
-        public static T GetPrefab<T>(string name) where T : MonoBehaviour {
-            GameObject o;
-            if (_entityPrefabs.TryGetValue(name.ToLowerInvariant(), out o)) {
-                return o.GetComponent<T>();
-            }
-            return null;
-        }
-        public static GameObject GetPrefab(string name) {
-            GameObject o;
-            if (_entityPrefabs.TryGetValue(name.ToLowerInvariant(), out o)) {
-                return o;
-            }
-            return null;
-        }
-
 
         public static void Add(EntityData d, System.Type baseType = null) {
 
@@ -66,10 +50,15 @@ namespace Port {
         }
 
         public static void initData() {
-           
+
             var actors = Resources.LoadAll("Data/Actors");
             foreach (var d in actors) {
                 Add(d as EntityData, typeof(ActorData));
+            }
+
+            var worldItems = Resources.LoadAll("Data/WorldItems");
+            foreach (var d in worldItems) {
+                Add(d as EntityData);
             }
 
             var items = Resources.LoadAll("Data/Items");
@@ -77,10 +66,6 @@ namespace Port {
                 Add(d as EntityData, typeof(ItemData));
             }
 
-            var prefabs = Resources.LoadAll<GameObject>("Prefabs");
-            foreach (var p in prefabs) {
-                _entityPrefabs.Add(p.name.ToLowerInvariant(), p);
-            }
         }
     }
 }

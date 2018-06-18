@@ -17,6 +17,12 @@ namespace Port {
 
         #endregion
 
+
+        new public WorldItemData Data { get { return GetData<WorldItemData>(); } }
+        new public static WorldItemData GetData(string DataName) {
+            return DataManager.GetData<WorldItemData>(DataName);
+        }
+
         virtual public void Create(Item i, World w) {
             world = w;
             world.allItems.Add(this);
