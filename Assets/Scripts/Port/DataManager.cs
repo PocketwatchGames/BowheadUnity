@@ -51,18 +51,15 @@ namespace Port {
 
         public static void initData() {
 
-            var actors = Resources.LoadAll("Data/Actors");
-            foreach (var d in actors) {
+            foreach (var d in StaticData.GetAllStaticAssets<ActorData>()) {
                 Add(d as EntityData, typeof(ActorData));
             }
 
-            var worldItems = Resources.LoadAll("Data/WorldItems");
-            foreach (var d in worldItems) {
+            foreach (var d in StaticData.GetAllStaticAssets<WorldItemData>()) {
                 Add(d as EntityData);
             }
 
-            var items = Resources.LoadAll("Data/Items");
-            foreach (var d in items) {
+            foreach (var d in StaticData.GetAllStaticAssets<ItemData>()) {
                 Add(d as EntityData, typeof(ItemData));
             }
 

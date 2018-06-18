@@ -262,15 +262,7 @@ MonoBehaviour:
   PIEMatchTime: 300
   PIEOvertime: 90
   PIETradingTime: 0
-  _PIEPlayerXP: 0
-  _PIEDeityXP: 0
-  PIETier: 0
-  PIEDifficulty: 0
   PIEServerOnly: 0
-  _PIEDropItemiLvl: 0
-  _PIEDropItemCount: 0
-  _PIEDropItemLocation: {fileID: 0}
-  _PIEClickToDropItem: 0
 --- !u!114 &114421255950143554
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -322,30 +314,28 @@ MonoBehaviour:
   dropNumberTable: {fileID: 11400000, guid: 078ed86c2935a284c949cc58506aef5f, type: 2}
   physicalContactMatrix: {fileID: 11400000, guid: 56113d4fbb41aaa4f8b795916537a853,
     type: 2}
-  xpTable:
-    _lvl2XPScale: {fileID: 11400000, guid: 8d232fcf12ac7c0439001aec499351a6, type: 2}
-    _xpPerLevel: {fileID: 11400000, guid: 8d232fcf12ac7c0439001aec499351a6, type: 2}
-    _essenceDamageScale: {fileID: 11400000, guid: 8d232fcf12ac7c0439001aec499351a6,
-      type: 2}
-    _spellPowerScale: {fileID: 11400000, guid: 8d232fcf12ac7c0439001aec499351a6, type: 2}
-    _mobEliteLevelBoost: 0
-    _mobTiers: []
-    _difficulites: []
-    _xpBasis: 1
-    _ilvlPerTier: 1
-    _maxiLvlOverTier: 1
-    _iLvlPerLevel: 1
-    _numTiers: 5
-    _deityMaxLevel: 100
-    _deityXPPerLevel: 10
-    _maxLevel: 100
   inventoryItemLibrary:
     _baseID: 0
     _items: []
     _id2item: []
     _id2ilvl: 
-  coopSpellLibrary: {fileID: 0}
-  indexedObjects: []
+  indexedObjects:
+  - {fileID: 11400000, guid: b3ffd708449e9d649b38326105498847, type: 2}
+  - {fileID: 11400000, guid: 0e77a8b767627304dbc82fa17ba496c5, type: 2}
+  - {fileID: 11400000, guid: badcad2f1b45840469a7894b0bd48558, type: 2}
+  - {fileID: 11400000, guid: 1d4256ad6b874c441bea840879926b1b, type: 2}
+  - {fileID: 11400000, guid: 3cb8976245727274a9669f3751ec78f2, type: 2}
+  - {fileID: 11400000, guid: 1a0e7db08e84f494bb9da562d4ac8f29, type: 2}
+  - {fileID: 11400000, guid: 5cf47b3d0bb78b04bbf2451a5d0df77b, type: 2}
+  - {fileID: 11400000, guid: 19edf9c508f5f78458a9ca3cd8e9c7d0, type: 2}
+  - {fileID: 11400000, guid: 3471146c30911b549b389996ec6ea3ec, type: 2}
+  - {fileID: 11400000, guid: 7879e1126a8e1da4a8521af4d952f8b6, type: 2}
+  - {fileID: 11400000, guid: 1966101ed621fdc4589312e9eb8da18e, type: 2}
+  - {fileID: 11400000, guid: 0142bce150c456c4f9783a2755bf37c1, type: 2}
+  - {fileID: 11400000, guid: ed53fb9a24de05e4c9c184295e621648, type: 2}
+  - {fileID: 11400000, guid: c4cae3e25ad7b3740acc178ae5dc4ba3, type: 2}
+  - {fileID: 11400000, guid: 387e5ea0a396cc144bcb063f7a682f13, type: 2}
+  - {fileID: 11400000, guid: e09a41f595719ae4b8b698045d87f0bb, type: 2}
 --- !u!114 &114522889110586866
 MonoBehaviour:
   m_ObjectHideFlags: 1

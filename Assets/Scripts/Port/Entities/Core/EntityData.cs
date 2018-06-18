@@ -1,7 +1,7 @@
-﻿
+﻿using Bowhead;
 
 namespace Port {
-    public class EntityData : VersionedObject {
+    public class EntityData : StaticVersionedAsset {
 
     }
 }
