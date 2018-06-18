@@ -62,7 +62,7 @@ namespace Port {
         virtual public void UpdateCast(float dt, Actor actor) {
         }
 
-        public virtual void OnSlotChange() {
+        public virtual void OnSlotChange(int newSlot, Actor owner) {
 
         }
 

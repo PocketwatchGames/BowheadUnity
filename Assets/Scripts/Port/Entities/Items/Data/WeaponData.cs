@@ -33,6 +33,7 @@ namespace Port {
             public float attackDamageBackstab;
         }
 
+        public GameObject_WRef prefab;
         public Hand hand;
         public float chargeTime;
         public Vector3 weaponSize;

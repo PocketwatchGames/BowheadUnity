@@ -362,7 +362,7 @@ namespace Port {
                     }
                     velocity.y = Math.Max(0, velocity.y);
                 }
-                position.y = floorPosition + Data.height / 2;
+                position.y = floorPosition;
             }
 
             // Collide head
@@ -731,7 +731,7 @@ namespace Port {
             if (onGround) {
                 activity = Activity.OnGround;
                 velocity.y = Math.Max(0, velocity.y);
-                position.y = floorPosition + 1;
+                position.y = floorPosition;
             }
             else {
                 bool interpolate = false;
@@ -841,17 +841,17 @@ namespace Port {
         }
 
         public Vector3 footPosition(Vector3 p) {
-            return p + new Vector3(0, -Data.height / 2 + 0.05f, 0);
+            return p + new Vector3(0, 0.05f, 0);
         }
         public Vector3 waistPosition(Vector3 p) {
-            return p + new Vector3(0, -0.05f, 0);
+            return p + new Vector3(0, Data.height / 2, 0);
         }
         public Vector3 headPosition(Vector3 p) {
-            return p + new Vector3(0, Data.height / 2 - 0.05f, 0);
+            return p + new Vector3(0, Data.height - 0.05f, 0);
         }
 
         public Vector3 handPosition(Vector3 p) {
-            return p + new Vector3(0, Data.height / 2 - 0.05f, 0);
+            return p + new Vector3(0, Data.height - 0.05f, 0);
         }
 
         public Vector3 renderPosition() {
@@ -960,7 +960,18 @@ namespace Port {
         }
 
         public void SetInventorySlot(int index, Item item) {
+
+            for (int i = 0; i < MaxInventorySize; i++) {
+                if (GetInventorySlot(i) == item) {
+                    SetInventorySlot(i, null);
+                    break;
+                }
+            }
+
             _inventory[index] = item;
+
+            item.OnSlotChange(index, this);
+
             OnInventoryChange?.Invoke();
         }
 
