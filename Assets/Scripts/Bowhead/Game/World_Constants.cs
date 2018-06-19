@@ -45,6 +45,7 @@ public partial class World {
 		SOLID = 0x2
 	};
 
+	// A world space chunk position.
 	public struct WorldChunkPos_t {
 		public int cx, cy, cz;
 
@@ -74,6 +75,7 @@ public partial class World {
 		}
 	};
 
+	// A world-space voxel position.
 	public struct WorldVoxelPos_t {
 		public int vx, vy, vz;
 
@@ -103,6 +105,7 @@ public partial class World {
 		}
 	};
 
+	// This is the local voxel position inside a chunk, valid range is 0 to VOXEL_CHUNK_SIZE - 1
 	public struct LocalVoxelPos_t {
 		public int vx, vy, vz;
 
