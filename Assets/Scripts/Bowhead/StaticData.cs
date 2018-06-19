@@ -128,6 +128,14 @@ namespace Bowhead {
 				//progress.Step("Indexing Inventory");
 				//var updatedInventory = MetaGame.InventoryItemLibrary.Index(gameManager);
 				progress.Close();
+
+				for (int i = 0; i < indexedObjects.Count; ++i) {
+					var obj = (Indexed)indexedObjects[i];
+					if ((obj != null) && (obj.staticIndex != i)) {
+						indexedObjects[i] = null;
+						changed = true;
+					}
+				}
 								
 				if (changed/* || updatedInventory*/) {
 					if (changed) {
