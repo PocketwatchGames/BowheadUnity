@@ -3,6 +3,108 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// A world space chunk position.
+public struct WorldChunkPos_t {
+	public int cx, cy, cz;
+
+	public WorldChunkPos_t(int x, int y, int z) {
+		cx = x;
+		cy = y;
+		cz = z;
+	}
+
+	public static bool operator ==(WorldChunkPos_t a, WorldChunkPos_t b) {
+		return (a.cx == b.cx) && (a.cy == b.cy) && (a.cz == b.cz);
+	}
+
+	public static bool operator !=(WorldChunkPos_t a, WorldChunkPos_t b) {
+		return !(a == b);
+	}
+
+	public override int GetHashCode() {
+		return cx.GetHashCode() ^ cy.GetHashCode() ^ cz.GetHashCode();
+	}
+
+	public override bool Equals(object obj) {
+		if (obj is WorldChunkPos_t) {
+			return ((WorldChunkPos_t)obj) == this;
+		}
+		return false;
+	}
+
+	public override string ToString() {
+		return "cx = " + cx + ", cy = " + cy + ", cz = " + cz;
+	}
+};
+
+// A world-space voxel position.
+public struct WorldVoxelPos_t {
+	public int vx, vy, vz;
+
+	public WorldVoxelPos_t(int x, int y, int z) {
+		vx = x;
+		vy = y;
+		vz = z;
+	}
+
+	public static bool operator ==(WorldVoxelPos_t a, WorldVoxelPos_t b) {
+		return (a.vx == b.vx) && (a.vy == b.vy) && (a.vz == b.vz);
+	}
+
+	public static bool operator !=(WorldVoxelPos_t a, WorldVoxelPos_t b) {
+		return !(a == b);
+	}
+
+	public override int GetHashCode() {
+		return vx.GetHashCode() ^ vy.GetHashCode() ^ vz.GetHashCode();
+	}
+
+	public override bool Equals(object obj) {
+		if (obj is WorldVoxelPos_t) {
+			return ((WorldVoxelPos_t)obj) == this;
+		}
+		return false;
+	}
+
+	public override string ToString() {
+		return "vx = " + vx + ", vy = " + vy + ", cz = " + vz;
+	}
+};
+
+// This is the local voxel position inside a chunk, valid range is 0 to VOXEL_CHUNK_SIZE - 1
+public struct LocalVoxelPos_t {
+	public int vx, vy, vz;
+
+	public LocalVoxelPos_t(int x, int y, int z) {
+		vx = x;
+		vy = y;
+		vz = z;
+	}
+
+	public static bool operator ==(LocalVoxelPos_t a, LocalVoxelPos_t b) {
+		return (a.vx == b.vx) && (a.vy == b.vy) && (a.vz == b.vz);
+	}
+
+	public static bool operator !=(LocalVoxelPos_t a, LocalVoxelPos_t b) {
+		return !(a == b);
+	}
+
+	public override int GetHashCode() {
+		return vx.GetHashCode() ^ vy.GetHashCode() ^ vz.GetHashCode();
+	}
+
+	public override bool Equals(object obj) {
+		if (obj is LocalVoxelPos_t) {
+			return ((LocalVoxelPos_t)obj) == this;
+		}
+		return false;
+	}
+
+	public override string ToString() {
+		return "vx = " + vx + ", vy = " + vy + ", cz = " + vz;
+	}
+};
+
 public partial class World {
 
 	public const int VOXEL_CHUNK_VIS_MAX_XZ = 16;
@@ -43,108 +145,6 @@ public partial class World {
 		NONE = 0,
 		AIR = 0x1,
 		SOLID = 0x2
-	};
-
-	// A world space chunk position.
-	public struct WorldChunkPos_t {
-		public int cx, cy, cz;
-
-		public WorldChunkPos_t(int x, int y, int z) {
-			cx = x;
-			cy = y;
-			cz = z;
-		}
-
-		public static bool operator == (WorldChunkPos_t a, WorldChunkPos_t b) {
-			return (a.cx == b.cx) && (a.cy == b.cy) && (a.cz == b.cz);
-		}
-
-		public static bool operator != (WorldChunkPos_t a, WorldChunkPos_t b) {
-			return !(a == b);
-		}
-
-		public override int GetHashCode() {
-			return cx.GetHashCode() ^ cy.GetHashCode() ^ cz.GetHashCode();
-		}
-
-		public override bool Equals(object obj) {
-			if (obj is WorldChunkPos_t) {
-				return ((WorldChunkPos_t)obj) == this;
-			}
-			return false;
-		}
-
-		public override string ToString() {
-			return "cx = " + cx + ", cy = " + cy + ", cz = " + cz;
-		}
-	};
-
-	// A world-space voxel position.
-	public struct WorldVoxelPos_t {
-		public int vx, vy, vz;
-
-		public WorldVoxelPos_t(int x, int y, int z) {
-			vx = x;
-			vy = y;
-			vz = z;
-		}
-
-		public static bool operator == (WorldVoxelPos_t a, WorldVoxelPos_t b) {
-			return (a.vx == b.vx) && (a.vy == b.vy) && (a.vz == b.vz);
-		}
-
-		public static bool operator != (WorldVoxelPos_t a, WorldVoxelPos_t b) {
-			return !(a == b);
-		}
-
-		public override int GetHashCode() {
-			return vx.GetHashCode() ^ vy.GetHashCode() ^ vz.GetHashCode();
-		}
-
-		public override bool Equals(object obj) {
-			if (obj is WorldVoxelPos_t) {
-				return ((WorldVoxelPos_t)obj) == this;
-			}
-			return false;
-		}
-
-		public override string ToString() {
-			return "vx = " + vx + ", vy = " + vy + ", cz = " + vz;
-		}
-	};
-
-	// This is the local voxel position inside a chunk, valid range is 0 to VOXEL_CHUNK_SIZE - 1
-	public struct LocalVoxelPos_t {
-		public int vx, vy, vz;
-
-		public LocalVoxelPos_t(int x, int y, int z) {
-			vx = x;
-			vy = y;
-			vz = z;
-		}
-
-		public static bool operator == (LocalVoxelPos_t a, LocalVoxelPos_t b) {
-			return (a.vx == b.vx) && (a.vy == b.vy) && (a.vz == b.vz);
-		}
-
-		public static bool operator != (LocalVoxelPos_t a, LocalVoxelPos_t b) {
-			return !(a == b);
-		}
-
-		public override int GetHashCode() {
-			return vx.GetHashCode() ^ vy.GetHashCode() ^ vz.GetHashCode();
-		}
-
-		public override bool Equals(object obj) {
-			if (obj is LocalVoxelPos_t) {
-				return ((LocalVoxelPos_t)obj) == this;
-			}
-			return false;
-		}
-
-		public override string ToString() {
-			return "vx = " + vx + ", vy = " + vy + ", cz = " + vz;
-		}
 	};
 
 	public static int WorldToChunk(int w, int CHUNK_SIZE) {

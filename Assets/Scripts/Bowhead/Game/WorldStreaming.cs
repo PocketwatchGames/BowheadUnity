@@ -17,6 +17,7 @@ public partial class World {
 		readonly List<VolumeData> _streamingVolumes = new List<VolumeData>();
 		readonly Chunk[] _neighbors = new Chunk[27];
 		readonly World_ChunkComponent _chunkPrefab;
+		readonly GameObject _terrainRoot;
 
 		ChunkJobData _freeJobData;
 		ChunkJobData _usedJobData;
@@ -40,6 +41,8 @@ public partial class World {
 				};
 				_freeJobData = chunkData;
 			}
+
+			_terrainRoot = new GameObject("TerrainChunks");
 		}
 
 		public Volume NewStreamingVolume(int xzSize, int ySize) {
@@ -106,6 +109,12 @@ public partial class World {
 				job.next = _freeJobData;
 				_freeJobData = job;
 			}
+		}
+
+		public void BeginTravel() {
+		}
+
+		public void FinishTravel() {
 		}
 
 		bool QueueNextChunk(VolumeData volume) {
@@ -296,7 +305,7 @@ public partial class World {
 		void CopyToMesh(ChunkJobData jobData, Chunk chunk) {
 			if (jobData.jobData.outputVerts.counts[0] > 0) {
 				if (chunk.goChunk == null) {
-					chunk.goChunk = GameObject.Instantiate(_chunkPrefab, WorldToVec3(ChunkToWorld(chunk.pos)), Quaternion.identity, null);
+					chunk.goChunk = GameObject.Instantiate(_chunkPrefab, WorldToVec3(ChunkToWorld(chunk.pos)), Quaternion.identity, _terrainRoot.transform);
 				}
 
 				ChunkMeshGen.CopyToMesh(ref jobData.jobData, chunk.goChunk.meshFilter.mesh);
@@ -314,6 +323,8 @@ public partial class World {
 			for (var genData = _freeJobData; genData != null; genData = genData.next) {
 				genData.Dispose();
 			}
+
+			Utils.DestroyGameObject(_terrainRoot);
 		}
 
 		void AddRef(Chunk chunk) {

@@ -12,7 +12,10 @@ MonoBehaviour:
   m_Name: Teeth
   m_EditorClassIdentifier: 
   version: 0
-  _index: 14
+  _index: 29
+  prefab:
+    _assetPath: 
+    _editorPath: 
   hand: 1
   chargeTime: 0
   weaponSize: {x: 0, y: 0, z: 0}

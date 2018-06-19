@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: Water
   m_EditorClassIdentifier: 
   version: 0
-  _index: 7
+  _index: 22
   power: 50
   stackSize: 4

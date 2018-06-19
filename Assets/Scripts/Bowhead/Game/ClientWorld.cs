@@ -18,12 +18,14 @@ namespace Bowhead.Client {
 		Queue<RagdollController> _ragdolls = new Queue<RagdollController>();
 		Queue<RagdollController> _gibs = new Queue<RagdollController>();
 		PhysicalContactMatrixState _physicalContactMatrix;
-
+		
 		public ClientWorld(
+			Streaming serverStreaming,
+			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
 			System.Reflection.Assembly[] assemblies,
 			NetDriver driver
-		) : base(sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
+		) : base(serverStreaming, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
 		}
 
 		public Decal NewDecal(float lifetime, Decal.UpdateDecalDelegate update, Vector3 position, Vector3 scale, Quaternion rotation, Material material, bool visible) {

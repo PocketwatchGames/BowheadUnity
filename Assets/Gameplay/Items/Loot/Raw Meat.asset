@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: Raw Meat
   m_EditorClassIdentifier: 
   version: 0
-  _index: 6
+  _index: 21
   power: 50
   stackSize: 4

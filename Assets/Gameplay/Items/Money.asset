@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Name: Money
   m_EditorClassIdentifier: 
   version: 0
-  _index: 8
+  _index: 23
   count: 1

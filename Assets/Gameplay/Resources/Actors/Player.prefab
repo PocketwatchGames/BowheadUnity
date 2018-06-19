@@ -352,7 +352,6 @@ GameObject:
   - component: {fileID: 4186444801136684}
   - component: {fileID: 95128340923247138}
   - component: {fileID: 143915889359242156}
-  - component: {fileID: 114161905418797974}
   m_Layer: 0
   m_Name: knigthprefab
   m_TagString: Untagged
@@ -2689,19 +2688,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &114161905418797974
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1265860368471718}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e0c12a414faf9994fb1cbc65900591d5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speed: 20
-  direction: {x: 0, y: 1, z: 0}
 --- !u!114 &114535121868281914
 MonoBehaviour:
   m_ObjectHideFlags: 1

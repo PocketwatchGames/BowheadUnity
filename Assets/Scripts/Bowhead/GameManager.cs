@@ -21,7 +21,6 @@ namespace Bowhead {
 	public class GameManager : MonoBehaviour {
 		const int DEFAULT_MATCH_TIME = 60*5;
 		const int DEFAULT_OVERTIME = 90;
-		const int DEFAULT_TRADING_TIME = 90;
 		const float NETSTAT_FREQUENCY = 1f;
 		const int SETTINGS_VERSION = 1;
 
@@ -65,8 +64,6 @@ namespace Bowhead {
 		int PIEMatchTime;
 		[SerializeField]
 		int PIEOvertime;
-		[SerializeField]
-		int PIETradingTime;
 		[SerializeField]
 		bool PIEServerOnly;
 
@@ -190,6 +187,8 @@ namespace Bowhead {
 				return;
 			}
 
+			World.Streaming.StaticInit();
+
 			SceneManager.sceneLoaded += LevelWasLoaded;
 
 			_instance = this;
@@ -202,7 +201,6 @@ namespace Bowhead {
 
 			matchTime = DEFAULT_MATCH_TIME;
 			matchOvertime = DEFAULT_OVERTIME;
-			tradingTime = DEFAULT_TRADING_TIME;
 
 #if PIE_DEDICATED_SERVER && UNITY_EDITOR
 			dedicatedServer = true;
@@ -240,12 +238,6 @@ namespace Bowhead {
 				if (s != null) {
 					matchOvertime = int.Parse(s);
 					Debug.Log("+matchOvertime " + s);
-				}
-
-				s = Utils.GetCommandLineArg("+tradingTime");
-				if (s != null) {
-					tradingTime = int.Parse(s);
-					Debug.Log("+tradingTime + " + s);
 				}
 			}
 
@@ -710,7 +702,7 @@ namespace Bowhead {
 			}
 #endif
 			if (_startingMap != null) {
-				HostGame(_startingMap, 1, _startingGameMode, _startingNetDriver, _startingPort);
+				HostGame(_startingMap, _startingGameMode, _startingNetDriver, _startingPort);
 				_startingMap = null;
 			} else if (_startingConnect != null) {
 				Connect(_startingConnect);
@@ -1203,7 +1195,7 @@ namespace Bowhead {
 			return levelToLoad;
 		}
 
-		bool HostGame(string levelName, int teamSize, Type gameModeType, Type netDriverType, int port) {
+		bool HostGame(string levelName, Type gameModeType, Type netDriverType, int port) {
 			UnloadGame();
 
 			Assert.IsNull(_server);
@@ -1226,10 +1218,10 @@ namespace Bowhead {
 			var asms = GetModuleAssemblies();
 			_netDriver = (NetDriver)System.Activator.CreateInstance(netDriverType);
 
-			_server = new Bowhead.Server.ServerWorld(_serverObjectGroup.transform, serverName, null, asms, _netDriver);
+			_server = new Bowhead.Server.ServerWorld(dedicatedServer ? staticData.serverTerrainChunkComponent : clientData.clientTerrainChunkComponent, _serverObjectGroup.transform, serverName, null, asms, _netDriver);
 
 			if (!dedicatedServer) {
-				_client = new Bowhead.Client.ClientWorld(_clientObjectGroup.transform, asms, _netDriver);
+				_client = new Bowhead.Client.ClientWorld(_server != null ? _server.worldStreaming : null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
 			}
 
 			if (!_server.Listen(port, numPlayers)) {
@@ -1279,7 +1271,7 @@ namespace Bowhead {
 			var asms = GetModuleAssemblies();
 			_netDriver = (NetDriver)Activator.CreateInstance(netDriverType);
 
-			_client = new Client.ClientWorld(_clientObjectGroup.transform, asms, _netDriver);
+			_client = new Client.ClientWorld(null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
 			if (!_client.Connect(ip, port)) {
 				Debug.LogError("Failed to connect to: " + ip + ":" + port);
 				_client.Dispose();
@@ -1303,7 +1295,6 @@ namespace Bowhead {
 
 			matchTime = PIEMatchTime;
 			matchOvertime = PIEOvertime;
-			tradingTime = PIETradingTime;
 			numPlayers = Mathf.Max(1, PIENumPlayers);
 
 			_pendingCommand = true;
@@ -1323,9 +1314,9 @@ namespace Bowhead {
 				_netDriver = new LocalGameNetDriver();
 			}
 
-			_server = new Server.ServerWorld(_serverObjectGroup.transform, "PIEServer", null, asms, _netDriver);
+			_server = new Server.ServerWorld(PIEServerOnly ? staticData.serverTerrainChunkComponent : clientData.clientTerrainChunkComponent, _serverObjectGroup.transform, "PIEServer", null, asms, _netDriver);
 			if (!PIEServerOnly) {
-				_client = new Client.ClientWorld(_clientObjectGroup.transform, asms, _netDriver);
+				_client = new Client.ClientWorld(_server != null ? _server.worldStreaming : null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
 			}
 
 			var gameMode = Type.GetType(PIEGameMode);
@@ -1417,7 +1408,12 @@ namespace Bowhead {
 		}
 
 		void OnDestroy() {
+
 			destroying = true;
+
+			if (_instance == this) {
+				World.Streaming.StaticShutdown();
+			}
 
 			SceneManager.sceneLoaded -= LevelWasLoaded;
 
@@ -1740,7 +1736,7 @@ namespace Bowhead {
 		}
 
 		[CFunc]
-		static void Host(string mapName, int port, int numPlayers, int teamSize, string gameMode, int matchTime, int tradingTime) {
+		static void Host(string mapName, int port, int numPlayers) {
 			CheckLogin();
 
 			if ((numPlayers < 1) || (numPlayers > 8)) {
@@ -1751,27 +1747,26 @@ namespace Bowhead {
 				throw new Exception(mapName + " is not a valid map");
 			}
 
-			Type gameModeType = Type.GetType(gameMode);
-			if (gameModeType == null) {
-				var s = "Bowhead.Server." + gameMode;
-				gameModeType = Type.GetType(s);
-				if (gameModeType == null) {
-					throw new Exception("The game mode " + gameMode + " could not be found, tried '" + gameMode + "' and '" + s + "'");
-				}
-			}
+			Type gameModeType = typeof(Bowhead.Server.BowheadGame);
+			//if (gameModeType == null) {
+			//	var s = "Bowhead.Server." + gameMode;
+			//	gameModeType = Type.GetType(s);
+			//	if (gameModeType == null) {
+			//		throw new Exception("The game mode " + gameMode + " could not be found, tried '" + gameMode + "' and '" + s + "'");
+			//	}
+			//}
 
 			if (instance._pendingCommand) {
 				throw new Exception("There is already a command running.");
 			}
 
-			instance.matchTime = matchTime;
-			instance.tradingTime = tradingTime;
+			instance.matchTime = 0;
 
 			instance._pendingCommand = true;
-			instance.StartCoroutine(instance.CoHost(mapName, port, numPlayers, teamSize, gameModeType));
+			instance.StartCoroutine(instance.CoHost(mapName, port, numPlayers, gameModeType));
 		}
 
-		IEnumerator CoHost(string mapName, int port, int numPlayers, int teamSize, Type gameModeType) {
+		IEnumerator CoHost(string mapName, int port, int numPlayers, Type gameModeType) {
 
 			this.numPlayers = numPlayers;
 
@@ -1782,7 +1777,7 @@ namespace Bowhead {
 			}
 
 			Type netDriver = (dedicatedServer || (numPlayers > 1)) ? typeof(SocketNetDriver) : typeof(LocalGameNetDriver);
-			if (HostGame(mapName, teamSize, gameModeType, netDriver, port)) {
+			if (HostGame(mapName, gameModeType, netDriver, port)) {
 				Console.CloseImmediate();
 			} else {
 				_pendingCommand = false;
@@ -1890,7 +1885,7 @@ namespace Bowhead {
 			}
 
 			Type netDriver = (dedicatedServer || (numPlayers > 1)) ? typeof(SocketNetDriver) : typeof(LocalGameNetDriver);
-			if (HostGame(mapName, teamSize, gameModeType, netDriver, port)) {
+			if (HostGame(mapName, gameModeType, netDriver, port)) {
 				Console.CloseImmediate();
 			} else {
 				_pendingCommand = false;
@@ -2274,8 +2269,6 @@ namespace Bowhead {
 		public int matchTime;
 		[NonSerialized]
 		public int matchOvertime;
-		[NonSerialized]
-		public int tradingTime;
 		[NonSerialized]
 		public int numPlayers;
 		[NonSerialized]

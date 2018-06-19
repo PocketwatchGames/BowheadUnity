@@ -23,6 +23,8 @@ namespace Server {
 		string serverMessage;
 
 		public ServerWorld(
+			Streaming sharedStreaming,
+			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
 			GameObject defaultActorPrefab,
 			GetObjectPoolRootDelegate getStaticPoolRoot,
@@ -31,7 +33,7 @@ namespace Server {
 			string serverMessage,
 			System.Reflection.Assembly[] assemblies, 
 			NetDriver driver
-			) : base(sceneGroup, defaultActorPrefab, getStaticPoolRoot, getTransientPoolRoot, new ServerSerializableObjectFactory(assemblies), driver, new ServerNetMsgFactory(assemblies)) {
+			) : base(sharedStreaming, chunkComponent, sceneGroup, defaultActorPrefab, getStaticPoolRoot, getTransientPoolRoot, new ServerSerializableObjectFactory(assemblies), driver, new ServerNetMsgFactory(assemblies)) {
 			this.serverName = serverName;
 			this.serverMessage = serverMessage;
 			_clientConnections = new ReadOnlyCollection<ActorReplicationChannel>(connectionList);
@@ -40,6 +42,7 @@ namespace Server {
 		public void Tick(float dt, MonoBehaviour loadingContext, ref NetIOMetrics reliableMetrics, ref NetIOMetrics unreliableMetrics) {
 			var scaledDt = Mathf.Min(dt*Time.timeScale, 1/3f);
             UpdateTime(scaledDt, dt);
+			TickWorldStreaming();
 
 			netDriver.TickServer(Mathf.Min(dt, 1/3f), netMessageBytes, ref reliableMetrics, ref unreliableMetrics);
 

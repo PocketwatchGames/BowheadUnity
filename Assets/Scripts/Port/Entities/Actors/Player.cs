@@ -5,9 +5,7 @@ using System;
 
 namespace Port {
 
-
-
-    public class Player : Actor {
+	public class Player : Actor {
 
         #region State
         [Header("Player")]
@@ -48,13 +46,10 @@ namespace Port {
             return DataManager.GetData<PlayerData>(DataName);
         }
 
-
+		World.Streaming.Volume _worldStreaming;
 
         Actor attackTargetPreview;
-
-
-
-
+		
         public delegate void OnMoneyChangeFn();
         public event OnMoneyChangeFn OnMoneyChange;
 
@@ -67,6 +62,17 @@ namespace Port {
         public void Init(PlayerData data, GameWorld world) {
             base.Create(data, world);
             attackTargetPreview = null;
+
+			// JOSEPH: this will be better once this is moved into new Actor framework, for now HACK
+			if (Bowhead.GameManager.instance.serverWorld != null) {
+				_worldStreaming = Bowhead.GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y);
+			} else {
+				_worldStreaming = Bowhead.GameManager.instance.clientWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y);
+			}
+
+			_worldStreaming.position = default(WorldChunkPos_t);
+			
+			// JOSEPH: NOTE: worldStreaming is IDisposable but I don't see a good place for it.
         }
 
         // TODO: move cameraYaw into the PlayerCmd struct

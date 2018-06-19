@@ -47,8 +47,12 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 	GetObjectPoolRootDelegate _getStaticPoolRoot;
 	GetObjectPoolRootDelegate _getTransientPoolRoot;
 	GameObject _defaultActorPrefab;
+	Streaming _worldStreaming;
+	bool _sharedWorldStreaming;
 
 	public World(
+		Streaming sharedStreaming,
+		World_ChunkComponent chunkComponent,
 		Transform sceneGroup,
 		GameObject defaultActorPrefab,
 		GetObjectPoolRootDelegate getStaticPoolRoot,
@@ -71,6 +75,9 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		_netArchiveBytes = new byte[MAX_RELIABLE_MESSAGE_SIZE];
 		_netArchive = new NetMsgArchive(_netArchiveBytes);
 		_nextNetID = 0;
+
+		_worldStreaming = sharedStreaming ?? new Streaming(chunkComponent);
+		_sharedWorldStreaming = sharedStreaming != null;
 	}
 
 	public Transform staticObjectPoolRoot {
@@ -88,6 +95,12 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 	public GameObject defaultActorPrefab {
 		get {
 			return _defaultActorPrefab;
+		}
+	}
+
+	public Streaming worldStreaming {
+		get {
+			return _worldStreaming;
 		}
 	}
 
@@ -149,6 +162,11 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		_replicatedObjects.Clear();
 		_travelActors = null;
 		spawnTags = null;
+
+		if (!_sharedWorldStreaming) {
+			_worldStreaming.Dispose();
+			_worldStreaming = null;
+		}
 	}
 
 	protected void UpdateTime(float dt, float unscaledDt) {
@@ -157,6 +175,12 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		if (!isTraveling) {
 			_time += dt;
 			_unscaledTime += unscaledDt;
+		}
+	}
+
+	protected virtual void TickWorldStreaming() {
+		if (!_sharedWorldStreaming) {
+			_worldStreaming.Tick();
 		}
 	}
 
@@ -275,6 +299,11 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 				_actors.RemoveAt(i);
 			}
 		}
+
+		if (!_sharedWorldStreaming) {
+			_worldStreaming.BeginTravel();
+		}
+
 	}
 
 	public void SetAsyncLoadOperation(IAsyncSceneLoad asyncLoad) {
@@ -283,6 +312,9 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 
 	protected virtual void FinishTravel() {
 		// level was loaded, finish actors that traveled.
+		if (!_sharedWorldStreaming) {
+			_worldStreaming.FinishTravel();
+		}
 
 		for (int i = 0; i < _travelActors.Count; ++i) {
 			var actor = _travelActors[i];

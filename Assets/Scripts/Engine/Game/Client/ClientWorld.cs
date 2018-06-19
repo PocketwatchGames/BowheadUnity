@@ -21,13 +21,15 @@ namespace Client {
 		}
 
 		public ClientWorld(
+			Streaming sharedStreaming,
+			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
 			GameObject defaultActorPrefab,
 			GetObjectPoolRootDelegate getStaticPoolRoot,
 			GetObjectPoolRootDelegate getTransientPoolRoot,
 			System.Reflection.Assembly[] assemblies,
 			NetDriver driver
-		) : base(sceneGroup, defaultActorPrefab, getStaticPoolRoot, getTransientPoolRoot, new ClientSerializableObjectFactory(assemblies), driver, new ClientNetMsgFactory(assemblies)) {
+		) : base(sharedStreaming, chunkComponent, sceneGroup, defaultActorPrefab, getStaticPoolRoot, getTransientPoolRoot, new ClientSerializableObjectFactory(assemblies), driver, new ClientNetMsgFactory(assemblies)) {
 			
 		}
 
@@ -41,6 +43,8 @@ namespace Client {
 			if (!isTraveling) {
 				UpdateTime(Mathf.Min(dt*Time.timeScale, 1/3f), dt);
 			}
+
+			TickWorldStreaming();
 
 			netDriver.TickClient(Mathf.Min(dt, 1/3f), netMessageBytes, ref reliableMetrics, ref unreliableMetrics);
 

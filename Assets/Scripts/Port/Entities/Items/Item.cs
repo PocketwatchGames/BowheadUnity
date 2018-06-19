@@ -25,7 +25,7 @@ namespace Port {
         }
 
         public static T Create<T>(ItemData d, GameWorld w) where T : Item, new() {
-            T i = new T();
+            T i = CreateInstance<T>();
             i.Init(d, w);
             return i;
         }

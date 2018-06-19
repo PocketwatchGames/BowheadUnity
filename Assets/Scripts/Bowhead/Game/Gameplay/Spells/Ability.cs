@@ -435,17 +435,17 @@ namespace Bowhead.Actors.Spells {
 
 		[RPC(ERPCDomain.Owner)]
 		void Owner_ServerResponse(bool success, bool placed, int useCount) {
-			_clientPlaced = placed;
-			if (success) {
-				if (abilityClass.aoeClass != null) {
-					GameManager.instance.Play(Vector3.zero, ((abilityClass.aoeClass.sounds != null) ? abilityClass.aoeClass.sounds.placed : null) ?? GameManager.instance.clientData.sounds.game.abilitySounds.placedTotem);
-				}
-			} else {
-				_cooldown = _cooldownTime;
-				if (abilityClass.aoeClass != null) {
-					GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.abilitySounds.invalidTotemPlacement);
-				}
-			}
+			//_clientPlaced = placed;
+			//if (success) {
+			//	if (abilityClass.aoeClass != null) {
+			//		GameManager.instance.Play(Vector3.zero, ((abilityClass.aoeClass.sounds != null) ? abilityClass.aoeClass.sounds.placed : null) ?? GameManager.instance.clientData.sounds.game.abilitySounds.placedTotem);
+			//	}
+			//} else {
+			//	_cooldown = _cooldownTime;
+			//	if (abilityClass.aoeClass != null) {
+			//		GameManager.instance.Play(Vector3.zero, GameManager.instance.clientData.sounds.game.abilitySounds.invalidTotemPlacement);
+			//	}
+			//}
 			_useCount = useCount;
 		}
 

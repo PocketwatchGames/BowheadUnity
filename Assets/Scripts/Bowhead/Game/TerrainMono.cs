@@ -15,7 +15,7 @@ public class TerrainMono : MonoBehaviour {
 
 		_streaming = new World.Streaming(_chunkPrefab);
 		_volume = _streaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y);
-		_volume.position = new World.WorldChunkPos_t(0, 0, 0);
+		_volume.position = default(WorldChunkPos_t);
 	}
 
 	void Update() {

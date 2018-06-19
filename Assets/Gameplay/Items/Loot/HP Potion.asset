@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: HP Potion
   m_EditorClassIdentifier: 
   version: 0
-  _index: 5
+  _index: 20
   power: 200
   stackSize: 4

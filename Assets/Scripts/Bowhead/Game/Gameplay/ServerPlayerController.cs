@@ -556,14 +556,6 @@ namespace Bowhead.Server.Actors {
 		}
 
 		[CFunc(IsServer = true, PermissionLevel = CFunc.Moderator)]
-		void TradingTime(params object[] args) {
-			if (args.Length == 1) {
-				GameManager.instance.tradingTime = int.Parse((string)args[0]);
-			}
-			BroadcastConsolePrint(LogType.Warning, "Trading time is " + GameManager.instance.tradingTime + " second(s).");
-		}
-
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Moderator)]
 		void NumPlayers(params object[] args) {
 			if (args.Length == 1) {
 				var numPlayers = int.Parse((string)args[0]);

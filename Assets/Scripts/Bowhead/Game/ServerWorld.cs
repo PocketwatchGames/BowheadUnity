@@ -15,12 +15,13 @@ namespace Bowhead.Server {
 		Bowhead.Actors.FogOfWarController _fogOfWar;
 		
 		public ServerWorld(
+			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
 			string serverName,
 			string serverMessage,
 			System.Reflection.Assembly[] assemblies,
 			NetDriver driver
-		) : base(sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, serverName, serverMessage, assemblies, driver) {
+		) : base(null, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, serverName, serverMessage, assemblies, driver) {
 			//_unitMovement = new Actors.UnitMovement();
         }
 

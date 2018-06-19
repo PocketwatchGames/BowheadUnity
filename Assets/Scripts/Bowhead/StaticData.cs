@@ -24,12 +24,13 @@ namespace Bowhead {
 			void ClientPrecache();
 		}
 		public GameObject defaultActorPrefab;
+		public World_ChunkComponent serverTerrainChunkComponent;
 		public RandomNumberTable randomNumberTable;
 		public RandomNumberTable dropNumberTable;
 		public PhysicalContactMatrix physicalContactMatrix;
 		public MetaGame.InventoryItemLibrary inventoryItemLibrary;
 
-		[HideInInspector]
+		//[HideInInspector]
 		public Object[] indexedObjects;
 
 		public void OnBeforeSerialize() { }
