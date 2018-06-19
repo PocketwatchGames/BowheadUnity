@@ -51,7 +51,10 @@ namespace Port {
 
         public static void initData() {
 
-            foreach (var d in StaticData.GetAllStaticAssets<ActorData>()) {
+            foreach (var d in StaticData.GetAllStaticAssets<PlayerData>()) {
+                Add(d as EntityData, typeof(ActorData));
+            }
+            foreach (var d in StaticData.GetAllStaticAssets<CritterData>()) {
                 Add(d as EntityData, typeof(ActorData));
             }
 

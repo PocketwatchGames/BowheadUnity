@@ -32,7 +32,7 @@ namespace Port {
         public static Item Create(ItemData itemData, GameWorld w) {
             Item i = null;
             if (itemData is MoneyData) {
-                i = new Money();
+                i = CreateInstance<Money>();
             }
             else if (itemData is WeaponData) {
                 i = CreateInstance<Weapon>();
