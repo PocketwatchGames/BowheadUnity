@@ -12,6 +12,9 @@ namespace Port {
         public float worldTime;
         #endregion
 
+        public delegate void OnSetPlayerFn(Player player);
+        public event OnSetPlayerFn OnSetPlayer;
+
 
         // Use this for initialization
         void Start() {
@@ -26,34 +29,22 @@ namespace Port {
 
 
 
-        const float SECONDS_PER_HOUR = 60;
-        const float SECONDS_PER_DAY = 24 * SECONDS_PER_HOUR;
-        const float DAYS_PER_SECOND = 1.0f / SECONDS_PER_DAY;
-
-
-
-
-        struct Data_t {
-            public float windSpeedStormy;
-            public float windSpeedWindy;
-            public float windSpeedBreezy;
-            public float maxWindSpeedVariance;
-            public float minWindSpeedVariance;
-        }
-
-
-
 
         public DataManager dataManager = new DataManager();
 
         public UnityEngine.Random random = new UnityEngine.Random();
 
         float time;
-        Data_t data;
+        public WorldData data;
+
+        [HideInInspector]
         public Player player;
         public Queue<Critter> critterPool = new Queue<Critter>();
+        [HideInInspector]
         public GameObject critters;
+        [HideInInspector]
         public GameObject items;
+        [HideInInspector]
         public List<WorldItem> allItems = new List<WorldItem>();
         public CameraController camera;
 
@@ -90,31 +81,17 @@ namespace Port {
             critters = new GameObject("critters");
             critters.transform.parent = transform;
 
-            data.minWindSpeedVariance = 10;
-            data.maxWindSpeedVariance = 100;
-            data.windSpeedBreezy = 8;
-            data.windSpeedWindy = 16;
-            data.windSpeedStormy = 24;
-
             DataManager.initData();
 
 
-            // init the player state
-            var playerPrefab = Player.GetData("player").prefab.Load();
-            player = Instantiate(playerPrefab);
-            player.transform.parent = transform;
-            player.Init(player.Data, this);
-            player.SetPosition(new Vector3(0, 500, 35));
+            CreatePlayer();
 
-            camera.SetTarget(player);
-
-
-            for (int i = 0; i < 80; i++) {
-                critterPool.Enqueue(CreateCritter("Bunny"));
-            }
-            for (int i = 0; i < 30; i++) {
-                critterPool.Enqueue(CreateCritter("Wolf"));
-            }
+            //for (int i = 0; i < 80; i++) {
+            //    critterPool.Enqueue(CreateCritter("Bunny"));
+            //}
+            //for (int i = 0; i < 30; i++) {
+            //    critterPool.Enqueue(CreateCritter("Wolf"));
+            //}
 
             for (int i = 0; i < 100; i++) {
                 var item = Item.Create<Money>(Money.GetData("Money"), this);
@@ -123,8 +100,23 @@ namespace Port {
                 worldItem.position = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
             }
 
-            time = SECONDS_PER_HOUR * 8;
+            time = data.secondsPerHour * 8;
         }
+
+        public Player CreatePlayer() {
+            // init the player state
+            var playerPrefab = Player.GetData("player").prefab.Load();
+            player = Instantiate(playerPrefab);
+            player.transform.parent = transform;
+            player.Init(player.Data, this);
+            player.SetPosition(new Vector3(0, 500, 35));
+            camera.SetTarget(player);
+
+            OnSetPlayer(player);
+
+            return player;
+        }
+
         public WorldItem CreateWorldItem(Item item) {
             var p = WorldItem.GetData("worldItem");
             if (p == null) {
@@ -302,7 +294,7 @@ namespace Port {
         }
 
         float GetTimeOfDay() {
-            return Mathf.Repeat(time, SECONDS_PER_DAY) / SECONDS_PER_DAY * 24;
+            return Mathf.Repeat(time, data.SecondsPerDay) / data.SecondsPerDay * 24;
         }
 
 
@@ -458,18 +450,6 @@ namespace Port {
         }
 
 
-        public Vector3 GetGroundNormal(Vector3 position) {
-            Vector3 normal = Vector3.up;
-            if (GetGroundDiff(position, position + Vector3.right) > 0)
-                normal.x--;
-            if (GetGroundDiff(position, position - Vector3.right) > 0)
-                normal.x++;
-            if (GetGroundDiff(position, position + Vector3.forward) > 0)
-                normal.z--;
-            if (GetGroundDiff(position, position - Vector3.forward) > 0)
-                normal.z++;
-            return normal.normalized;
-        }
         public int GetGroundDiff(Vector3 position1, Vector3 position2) {
             if (!IsSolidBlock(GetBlock(position2))) {
                 if (IsSolidBlock(GetBlock(position2 - Vector3.up))) {

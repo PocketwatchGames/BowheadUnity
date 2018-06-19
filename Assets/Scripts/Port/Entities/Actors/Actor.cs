@@ -44,6 +44,7 @@ namespace Port {
         public float yaw;
         public Vector3 moveImpulse;
         public float moveImpulseTimer;
+        public Vector3 groundNormal;
 
         [Header("Stats")]
         public float health;
@@ -135,7 +136,7 @@ namespace Port {
             cur = cmd;
         }
 
-        public bool CanMoveTo(Vector3 moveVector, bool allowFall, float gameTime, ref Vector3 position, ref bool interpolate) {
+        public bool CanMoveTo(Vector3 moveVector, bool allowFall, float gameTime, ref Vector3 position) {
 
             Vector3 move = moveVector;
 
@@ -144,41 +145,17 @@ namespace Port {
                 Vector3 footPoint = footPosition(movePosition);
                 Vector3 headPoint = headPosition(movePosition);
 
+                RaycastHit hit;
+                if (Physics.Raycast(movePosition + new Vector3(0,0.25f,0),Vector3.down,out hit,activity == Activity.OnGround ? 0.5f : 0.25f,Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+                    move.y = hit.point.y - position.y;
+                }
+                else if (!allowFall) {
+                    return false;
+                }
+
                 // Step forward
                 if (IsOpen(movePosition)) {
-                    if (activity == Activity.OnGround) {
-                        // Step down
-                        Vector3 stepDownPoint = movePosition + new Vector3(0, -0.5f, 0);
-                        if (!GameWorld.IsSolidBlock(world.GetBlock(stepDownPoint))) {
-                            if (GameWorld.IsSolidBlock(world.GetBlock(stepDownPoint + new Vector3(0, -1, 0)))) {
-                                if (world.GetBlock(movePosition) != EBlockType.BLOCK_TYPE_WATER) {
-                                    move.y -= 1;
-                                    interpolate = true;
-                                }
-                            }
-                            else if (!allowFall) {
-                                return false;
-                            }
-                        }
-                    }
-
-
                     position += move;
-                    return true;
-                }
-            }
-
-            // Step up
-            {
-                Vector3 movePosition = position + move;
-                Vector3 stepUpPoint = movePosition + new Vector3(0,1,0);
-
-                if (GameWorld.IsSolidBlock(world.GetBlock(movePosition)) && IsOpen(stepUpPoint)) {
-                    move += new Vector3(0, 1, 0);
-
-                    position += move;
-
-                    interpolate = true;
                     return true;
                 }
             }
@@ -248,21 +225,22 @@ namespace Port {
             return climbingVector;
         }
 
-        bool CheckFloor(Vector3 position, out float floorHeight) {
+        bool CheckFloor(Vector3 position, out float floorHeight, out Vector3 groundNormal) {
             floorHeight = 0;
-            Vector3 floorPosition = footPosition(position) + new Vector3(0, -0.1f, 0);
 
-            if (!GameWorld.IsSolidBlock(world.GetBlock(floorPosition))) {
-                return false;
+            RaycastHit hit;
+            if (Physics.Raycast(headPosition(position), Vector3.down, out hit, Data.height+0.5f,Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+                floorHeight = hit.point.y;
+                groundNormal = hit.normal;
+                return true;
             }
 
-            floorHeight = world.GetFirstOpenBlockUp(1000, floorPosition);
-            return true;
+            groundNormal = Vector3.up;
+            return false;
         }
 
         bool IsOpen(Vector3 position) {
-            return !GameWorld.IsSolidBlock(world.GetBlock(footPosition(position)))
-                && !GameWorld.IsSolidBlock(world.GetBlock(waistPosition(position)))
+            return !GameWorld.IsSolidBlock(world.GetBlock(waistPosition(position)))
                 && !GameWorld.IsSolidBlock(world.GetBlock(headPosition(position)));
         }
 
@@ -342,14 +320,14 @@ namespace Port {
 
             // Collide feet
             float floorPosition;
-            bool onGround = CheckFloor(position, out floorPosition);
+            Vector3 groundNormal;
+            bool onGround = CheckFloor(position, out floorPosition, out groundNormal);
             if (onGround) {
                 if (velocity.y <= 0) {
 
                     if (activity != Activity.OnGround) {
                         LandOnGround();
                         if (velocity.y < 0) {
-                            Vector3 groundNormal = world.GetGroundNormal(footPosition(position));
                             float slopeAccel = 1f + Vector3.Dot(velocity.normalized, -groundNormal);
                             if (slopeAccel < 1f) {
                                 velocity += velocity * slopeAccel;
@@ -358,7 +336,7 @@ namespace Port {
                     }
                     velocity.y = Math.Max(0, velocity.y);
                 }
-                position.y = floorPosition;
+                position.y = Mathf.Max(position.y, floorPosition);
             }
             // Collide head
             else if (GameWorld.IsSolidBlock(world.GetBlock(headPosition(position)))) {
@@ -447,7 +425,6 @@ namespace Port {
         public bool Move(Vector3 moveXZ, float dt) {
             float moveXZLength = moveXZ.magnitude;
             if (moveXZLength > 0) {
-                bool interpolate = false;
                 Vector3 newPosition = position;
                 Vector3 firstCheck, secondCheck;
                 if (Math.Abs(moveXZ.x) > Math.Abs(moveXZ.z)) {
@@ -462,16 +439,16 @@ namespace Port {
                 Vector3 firstClimbDownPos = newPosition + firstCheck + new Vector3(0, -1.05f, 0);
                 Vector3 secondClimbDownPos = newPosition + secondCheck + new Vector3(0, -1.05f, 0);
 
-                if (CanMoveTo(moveXZ, true, dt, ref newPosition, ref interpolate)) {
-                    SetPosition(newPosition, interpolate ? 0.1f : 0);
+                if (CanMoveTo(moveXZ, true, dt, ref newPosition)) {
+                    SetPosition(newPosition);
                     return true;
                 }
-                else if (CanMoveTo(firstCheck, true, dt, ref newPosition, ref interpolate)) {
-                    SetPosition(newPosition, interpolate ? 0.1f : 0);
+                else if (CanMoveTo(firstCheck, true, dt, ref newPosition)) {
+                    SetPosition(newPosition);
                     return true;
                 }
-                else if (CanMoveTo(secondCheck, true, dt, ref newPosition, ref interpolate)) {
-                    SetPosition(newPosition, interpolate ? 0.1f : 0);
+                else if (CanMoveTo(secondCheck, true, dt, ref newPosition)) {
+                    SetPosition(newPosition);
                     return true;
                 }
 
@@ -518,10 +495,11 @@ namespace Port {
             velocity.y -= velocity.y * dt * airFriction;
 
             var wind = world.GetWind(position);
-            var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
-            velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
-            velocity += velDiff * dt * getHorizontalAirFriction();
-
+            if (wind.magnitude >= world.data.windSpeedStormy) {
+                var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
+                velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
+                velocity += velDiff * dt * getHorizontalAirFriction();
+            }
         }
 
         private void UpdateGround(float dt, Input_t input) {
@@ -545,8 +523,6 @@ namespace Port {
             if (IsWading()) {
                 workModifier += Data.swimDragHorizontal;
             }
-
-            Vector3 groundNormal = world.GetGroundNormal(footPosition(position));
 
 
             float curVel = velocity.magnitude;
@@ -603,9 +579,11 @@ namespace Port {
                 {
                     // Wind blowing you while running or skidding
                     var wind = world.GetWind(position);
-                    var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
-                    velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
-                    velChange += velDiff * dt * getHorizontalAirFriction();
+                    if (wind.magnitude >= world.data.windSpeedStormy) {
+                        var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
+                        velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
+                        velChange += velDiff * dt * getHorizontalAirFriction();
+                    }
                 }
             }
 
@@ -722,20 +700,20 @@ namespace Port {
 
             // collide feet
             float floorPosition;
-            bool onGround = CheckFloor(vertMovePosition, out floorPosition);
+            Vector3 groundNormal;
+            bool onGround = CheckFloor(vertMovePosition, out floorPosition, out groundNormal);
             if (onGround) {
                 activity = Activity.OnGround;
                 velocity.y = Math.Max(0, velocity.y);
                 position.y = floorPosition;
             }
             else {
-                bool interpolate = false;
                 Vector3 move = velocity * dt;
                 Vector3 newPosition = position + move;
 
                 if (move.magnitude > 0) {
 
-                    bool isOpen = CanMoveTo(move, true, dt, ref newPosition, ref interpolate);
+                    bool isOpen = CanMoveTo(move, true, dt, ref newPosition);
                     if (isOpen) {
                         if (IsClimbPosition(newPosition, -climbingNormal * Data.climbWallRange)) {
                             SetPosition(newPosition);
@@ -753,7 +731,7 @@ namespace Port {
                         else if (move.magnitude > 0 && (move.x != 0 || move.z != 0)) {
                             Vector3 newWallNormal = move.normalized;
                             move += -climbingNormal * Data.climbWallRange;
-                            bool isWrapAroundOpen = CanMoveTo(move, true, dt, ref newPosition, ref interpolate);
+                            bool isWrapAroundOpen = CanMoveTo(move, true, dt, ref newPosition);
                             if (isWrapAroundOpen && IsClimbPosition(newPosition, -newWallNormal * Data.climbWallRange)) {
                                 climbingNormal = newWallNormal;
                                 SetPosition(newPosition, 0.1f);

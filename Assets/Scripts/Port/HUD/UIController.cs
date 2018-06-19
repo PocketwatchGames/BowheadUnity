@@ -19,6 +19,10 @@ namespace Port {
 
         // Use this for initialization
         void Start() {
+            _world.OnSetPlayer += OnSetPlayer;
+        }
+
+        private void OnSetPlayer(Player player) {
             _inventory = Instantiate(_inventoryPrefab, transform, false);
             _inventory.Init(_world.player);
 
