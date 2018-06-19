@@ -104,7 +104,7 @@ namespace Port {
 
                 float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (maxDistance - minDistance) + minDistance;
 
-                Vector3 avgPlayerPosition = _target.renderPosition();
+                Vector3 avgPlayerPosition = _target.headPosition(_target.renderPosition());
                 Vector3 lookAtDiff = avgPlayerPosition - _lookAt;
                 bool isMoving = _playerPosition != avgPlayerPosition;
                 Vector3 playerMovement = avgPlayerPosition - _playerPosition;

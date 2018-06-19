@@ -100,7 +100,8 @@ namespace Port {
 
 
             // init the player state
-            player = Instantiate(Player.GetData("player").prefab.Load());
+            var playerPrefab = Player.GetData("player").prefab.Load();
+            player = Instantiate(playerPrefab);
             player.transform.parent = transform;
             player.Init(player.Data, this);
             player.SetPosition(new Vector3(0, 500, 35));
