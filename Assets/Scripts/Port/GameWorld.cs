@@ -103,6 +103,7 @@ namespace Port {
             player = Instantiate(Player.GetData("player").prefab.Load());
             player.transform.parent = transform;
             player.Init(player.Data, this);
+            player.SetPosition(new Vector3(0, 500, 35));
 
             camera.SetTarget(player);
 
@@ -203,7 +204,7 @@ namespace Port {
 
                 var bunnyData = Critter.GetData("bunny");
                 var wolfData = Critter.GetData("wolf");
-                if (GetTopmostBlock(500, ref pos)) {
+                if (GetFirstSolidBlockDown(1000, ref pos)) {
                     Critter c = critterPool.Dequeue();
                     c.transform.parent = critters.transform;
                     c.Init();
@@ -229,8 +230,8 @@ namespace Port {
         void Tick(float dt, float cameraYaw) {
 
             if (!player.spawned) {
-                var spawnPoint = new Vector3(0.5f, 500, 0.5f);
-                if (GetTopmostBlock(500, ref spawnPoint)) {
+                var spawnPoint = new Vector3(35f, 500, 0.5f);
+                if (GetFirstSolidBlockDown(1000, ref spawnPoint)) {
                     player.Spawn(spawnPoint + new Vector3(0, 1, 0));
                 }
             }
@@ -286,7 +287,7 @@ namespace Port {
             foreach (var i in items.GetComponentsInAllChildren<WorldItem>()) {
                 if (!i.spawned) {
                     var pos = i.position;
-                    if (GetTopmostBlock(500, ref pos)) {
+                    if (GetFirstSolidBlockDown(1000, ref pos)) {
                         pos.y++;
                         i.Spawn(pos);
                     }
@@ -354,8 +355,12 @@ namespace Port {
 
         public EBlockType GetBlock(float x, float y, float z) {
 
-            if (y < 100)
-                return EBlockType.BLOCK_TYPE_DIRT;
+            RaycastHit hit;
+            if (Physics.Raycast(new Vector3(x,500,z), Vector3.down, out hit, 1000, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+                if (hit.point.y > y)
+                    return EBlockType.BLOCK_TYPE_DIRT;
+            }
+
 
             EBlockType blockType = EBlockType.BLOCK_TYPE_AIR;
             //if (Bowhead. getVoxel(cg->vsv, Vector3Int((int)Math.Floor(x), (int)Math.Floor(y), (int)Math.Floor(z)), ref blockType)) {
@@ -364,12 +369,18 @@ namespace Port {
             return EBlockType.BLOCK_TYPE_AIR;
         }
 
-        public bool GetTopmostBlock(int checkDist, ref Vector3 from) {
-            from.y = 100;
-            return true;
+        public float GetFirstOpenBlockUp(int checkDist, Vector3 from) {
             RaycastHit hit;
-            if (Physics.Raycast(from, Vector3.down, out hit, checkDist)) {
-                from.y = hit.point.y;
+            if (Physics.Raycast(new Vector3(from.x,500,from.z), Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+                return hit.point.y;
+            }
+            return from.y;
+        }
+
+        public bool GetFirstSolidBlockDown(int checkDist, ref Vector3 from) {
+            RaycastHit hit;
+            if (Physics.Raycast(from, Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+                from.y = hit.point.y + 1;
                 return true;
             }
             return false;

@@ -140,17 +140,17 @@ namespace Port {
             Vector3 move = moveVector;
 
             {
-                Vector3 movePosition = waistPosition(position) + moveVector;
-                Vector3 footPoint = footPosition(position) + moveVector;
-                Vector3 stepDownPoint = headPosition(position) + moveVector + new Vector3(0, 0, -0.5f);
+                Vector3 movePosition = position + moveVector;
+                Vector3 footPoint = footPosition(movePosition);
+                Vector3 headPoint = headPosition(movePosition);
 
                 // Step forward
-                if (IsOpen(position + moveVector)) {
+                if (IsOpen(movePosition)) {
                     if (activity == Activity.OnGround) {
                         // Step down
-                        Vector3 fp = footPoint + new Vector3(0, 0, -0.5f);
-                        if (!GameWorld.IsSolidBlock(world.GetBlock(fp))) {
-                            if (GameWorld.IsSolidBlock(world.GetBlock(fp + new Vector3(0, 0, -1)))) {
+                        Vector3 stepDownPoint = movePosition + new Vector3(0, -0.5f, 0);
+                        if (!GameWorld.IsSolidBlock(world.GetBlock(stepDownPoint))) {
+                            if (GameWorld.IsSolidBlock(world.GetBlock(stepDownPoint + new Vector3(0, -1, 0)))) {
                                 if (world.GetBlock(movePosition) != EBlockType.BLOCK_TYPE_WATER) {
                                     move.y -= 1;
                                     interpolate = true;
@@ -170,12 +170,11 @@ namespace Port {
 
             // Step up
             {
-                Vector3 movePosition = position + move + new Vector3(0, 0, 1.0f);
-                Vector3 footPoint = footPosition(position) + move;
-                Vector3 headPoint = headPosition(position) + move + new Vector3(0, 0, 1.0f);
+                Vector3 movePosition = position + move;
+                Vector3 stepUpPoint = movePosition + new Vector3(0,1,0);
 
-                if (GameWorld.IsSolidBlock(world.GetBlock(footPoint)) && !GameWorld.IsSolidBlock(world.GetBlock(movePosition)) && !GameWorld.IsSolidBlock(world.GetBlock(headPoint))) {
-                    move += new Vector3(0, 0, 1);
+                if (GameWorld.IsSolidBlock(world.GetBlock(movePosition)) && IsOpen(stepUpPoint)) {
+                    move += new Vector3(0, 1, 0);
 
                     position += move;
 
@@ -257,10 +256,7 @@ namespace Port {
                 return false;
             }
 
-            while (GameWorld.IsSolidBlock(world.GetBlock(floorPosition))) {
-                floorPosition.y = Mathf.Floor(floorPosition.y) + 1;
-            }
-            floorHeight = floorPosition.y;
+            floorHeight = world.GetFirstOpenBlockUp(1000, floorPosition);
             return true;
         }
 
@@ -364,9 +360,8 @@ namespace Port {
                 }
                 position.y = floorPosition;
             }
-
             // Collide head
-            if (GameWorld.IsSolidBlock(world.GetBlock(headPosition(position)))) {
+            else if (GameWorld.IsSolidBlock(world.GetBlock(headPosition(position)))) {
                 // TODO: this is broken
                 position.y = Math.Min(position.y, (int)headPosition(position).y - Data.height);
                 velocity.y = Math.Min(0, velocity.y);
