@@ -413,6 +413,7 @@ public partial class World {
 
 				loading = true;
 				curPos = nextPos;
+				loadNext = 0;
 
 				Array.Copy(chunks, tempChunks, count);
 				var prevCount = count;
