@@ -496,7 +496,7 @@ public partial class World {
 			}
 		};
 
-		ChunkRef_t GetChunkAddRef(WorldChunkPos_t pos) {
+		public ChunkRef_t GetChunkRef(WorldChunkPos_t pos) {
 			var chunk = FindChunk(pos);
 			if (chunk != null) {
 				AddRef(chunk);
