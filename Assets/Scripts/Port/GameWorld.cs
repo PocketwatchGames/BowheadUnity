@@ -20,7 +20,7 @@ namespace Port {
 
         // Update is called once per frame
         void Update() {
-            Tick(Time.deltaTime, camera.yaw);
+            Tick(Time.deltaTime, camera.GetYaw());
         }
 
 
