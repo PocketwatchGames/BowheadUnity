@@ -17,16 +17,6 @@ namespace Port {
         public event OnSetPlayerFn OnSetPlayer;
 
 
-        // Use this for initialization
-        void Start() {
-            Init();
-        }
-
-        // Update is called once per frame
-        void Update() {
-            Tick(Time.deltaTime, camera.GetYaw());
-        }
-
 
 
 
@@ -52,23 +42,19 @@ namespace Port {
         //FastNoiseSIMD* noise;
         //float* noiseFloats;
 
-        float GetPerlinNormal(int x, int y, int z, float scale) {
-            //noise->SetFrequency(scale);
-            //noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
-            //const float v = noiseFloats[0];
-            //return (v + 1) / 2;
-            return 0.5f;
+
+
+        // Use this for initialization
+        void Start() {
+            Init();
         }
 
-        float GetPerlinValue(int x, int y, int z, float scale) {
-            //noise->SetFrequency(scale);
-            //noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
-            //const float v = noiseFloats[0];
-            //return v;
-            return 0;
+        // Update is called once per frame
+        void Update() {
+            Tick(Time.deltaTime, camera.GetYaw());
         }
 
-        PlayerData playerData;
+
         void Init() {
             //int seed = 185;
             //	seed = 15485;
@@ -104,123 +90,6 @@ namespace Port {
             time = data.secondsPerHour * 8;
         }
 
-        public Player CreatePlayer() {
-            // init the player state
-            var playerPrefab = Player.GetData("player").prefab.Load();
-            player = Instantiate(playerPrefab);
-            player.transform.parent = transform;
-            player.Init(player.Data, this);
-            player.SetPosition(new Vector3(0, 500, 35));
-            camera.SetTarget(player);
-
-            OnSetPlayer(player);
-
-            return player;
-        }
-
-        public WorldItem CreateWorldItem(Item item) {
-            var p = WorldItem.GetData("worldItem");
-            if (p == null) {
-                return null;
-            }
-            var i = Instantiate(p.prefab.Load());
-            i.transform.parent = items.transform;
-            i.Create(item, this);
-            return i;
-        }
-        public Item CreateItem(string item) {
-            return Item.Create(Item.GetData(item), this);
-        }
-
-        public Critter CreateCritter(string prefabName) {
-            var p = Critter.GetData(prefabName).prefab.Load();
-            if (p == null) {
-                return null;
-            }
-            var i = Instantiate(p);
-            i.Create(i.Data, this);
-            return i;
-        }
-
-        static Color[] dayColors = { new Color(0.7f, 0.7f, 1.0f, 1.0f), new Color(0.05f, 0.05f, 0.05f, 1.0f), new Color(0.90f, 0.90f, 0.95f, 1.0f), new Color(0.80f, 0.80f, 0.65f, 1.0f), new Color(0.45f, 0.45f, 0.70f, 1.0f), };
-        static Color[] nightColors = { new Color(0.0f, 0.0f, 0.1f, 1.0f), new Color(0.10f, 0.10f, 0.15f, 1.0f), new Color(0.30f, 0.30f, 0.60f, 1.0f), new Color(0.30f, 0.20f, 0.20f, 1.0f), new Color(0.20f, 0.30f, 0.20f, 1.0f), };
-        static Color[] sunsetColors = { new Color(0.6f, 0.5f, 0.5f, 1.0f), new Color(0.05f, 0.05f, 0.05f, 1.0f), new Color(0.80f, 0.65f, 0.60f, 1.0f), new Color(0.60f, 0.50f, 0.45f, 1.0f), new Color(0.40f, 0.40f, 0.50f, 1.0f), };
-        static Color[] sunriseColors = { new Color(0.6f, 0.6f, 0.4f, 1.0f), new Color(0.05f, 0.05f, 0.05f, 1.0f), new Color(0.75f, 0.75f, 0.65f, 1.0f), new Color(0.60f, 0.55f, 0.50f, 1.0f), new Color(0.35f, 0.40f, 0.50f, 1.0f), };
-
-        Color[] GetSkyColor(float timeOfDay) {
-
-            var skyColors = new Color[5];
-
-            float sunriseTime = 5f;
-            float sunriseLength = 3.0f;
-            float sunsetTime = 18f;
-            float sunsetLength = 3.0f;
-            if (timeOfDay < sunriseTime || timeOfDay > sunsetTime + sunsetLength) {
-                skyColors = nightColors;
-            }
-            else if (timeOfDay < sunriseTime + sunriseLength / 2) {
-                float t = (timeOfDay - sunriseTime) / (sunriseLength / 2);
-                for (int i = 0; i < 5; i++) {
-                    skyColors[i] = nightColors[i] * (1f - t) + sunriseColors[i] * t;
-                }
-            }
-            else if (timeOfDay < sunriseTime + sunriseLength) {
-                float t = (timeOfDay - (sunriseTime + sunriseLength / 2)) / (sunriseLength / 2);
-                for (int i = 0; i < 5; i++) {
-                    skyColors[i] = sunriseColors[i] * (1f - t) + dayColors[i] * t;
-                }
-            }
-            else if (timeOfDay < sunsetTime) {
-                skyColors = dayColors;
-            }
-            else if (timeOfDay < sunsetTime + sunsetLength / 2) {
-                float t = (timeOfDay - sunsetTime) / (sunsetLength / 2);
-                for (int i = 0; i < 5; i++) {
-                    skyColors[i] = dayColors[i] * (1f - t) + sunsetColors[i] * t;
-                }
-            }
-            else {
-                float t = (timeOfDay - (sunsetTime + sunsetLength / 2)) / (sunsetLength / 2);
-                for (int i = 0; i < 5; i++) {
-                    skyColors[i] = sunsetColors[i] * (1f - t) + nightColors[i] * t;
-                }
-            }
-
-            return skyColors;
-        }
-
-        void SpawnNewCritter() {
-            if (critterPool.Count > 0) {
-                Vector3 pos = player.position;
-                pos.y = 500;
-                pos.x += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
-                pos.z += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
-
-                var bunnyData = Critter.GetData("bunny");
-                var wolfData = Critter.GetData("wolf");
-                if (GetFirstSolidBlockDown(1000, ref pos)) {
-                    Critter c = critterPool.Dequeue();
-                    c.transform.parent = critters.transform;
-                    c.Init();
-                    c.position = pos;
-                    c.team = 1;
-
-                    if (c.Data == bunnyData) {
-                        var item = CreateItem("Raw Meat") as Loot;
-                        item.count = 1;
-                        c.loot[0] = item;
-                    }
-                    else if (c.Data == wolfData) {
-                        var weapon = CreateItem("Teeth");
-                        c.SetInventorySlot(0, weapon);
-                    }
-
-                    c.Spawn(pos);
-                }
-
-            }
-        }
-
         void Tick(float dt, float cameraYaw) {
 
             if (!player.spawned) {
@@ -232,8 +101,8 @@ namespace Port {
 
                 Actor.PlayerCmd_t cmd = new Actor.PlayerCmd_t();
                 Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal"), Input.GetAxis("MoveVertical"));
-                cmd.fwd = (sbyte)(move.y*127);
-                cmd.right = (sbyte)(move.x*127);
+                cmd.fwd = (sbyte)(move.y * 127);
+                cmd.right = (sbyte)(move.x * 127);
                 if (Input.GetButton("Jump")) {
                     cmd.buttons |= 1 << (int)InputType.Jump;
                 }
@@ -293,55 +162,103 @@ namespace Port {
             time += dt;
         }
 
-        float GetTimeOfDay() {
-            return Mathf.Repeat(time, data.SecondsPerDay) / data.SecondsPerDay * 24;
+
+
+        #region perlin utils
+        float GetPerlinNormal(int x, int y, int z, float scale) {
+            //noise->SetFrequency(scale);
+            //noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
+            //const float v = noiseFloats[0];
+            //return (v + 1) / 2;
+            return 0.5f;
+        }
+
+        float GetPerlinValue(int x, int y, int z, float scale) {
+            //noise->SetFrequency(scale);
+            //noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
+            //const float v = noiseFloats[0];
+            //return v;
+            return 0;
         }
 
 
-        void TestCollision(float dt, Actor a1, Actor a2) {
-            var diff = a2.position - a1.position;
-            float dist = diff.magnitude;
-            float minDist = a1.Data.collisionRadius + a2.Data.collisionRadius;
-            if (dist < minDist) {
-                float a2Speed = a2.velocity.magnitude;
-                float a1Speed = a1.velocity.magnitude;
-                float totalSpeed = a2Speed + a1Speed;
-                if (totalSpeed == 0) {
-                    totalSpeed = 0.1f;
-                }
-                float a2Move = a2Speed / totalSpeed;
-                var dir = diff.normalized;
-                if (a2Move > 0) {
-                    if (!a2.Move(dir * a2Move * dist, dt)) {
-                        a2Move = 0;
+        #endregion
+
+        #region entity creation
+        public Player CreatePlayer() {
+            // init the player state
+            var playerPrefab = Player.GetData("player").prefab.Load();
+            player = Instantiate(playerPrefab);
+            player.transform.parent = transform;
+            player.Init(player.Data, this);
+            player.SetPosition(new Vector3(0, 500, 35));
+            camera.SetTarget(player);
+
+            OnSetPlayer(player);
+
+            return player;
+        }
+
+        public WorldItem CreateWorldItem(Item item) {
+            var p = WorldItem.GetData("worldItem");
+            if (p == null) {
+                return null;
+            }
+            var i = Instantiate(p.prefab.Load());
+            i.transform.parent = items.transform;
+            i.Create(item, this);
+            return i;
+        }
+        public Item CreateItem(string item) {
+            return Item.Create(Item.GetData(item), this);
+        }
+
+        public Critter CreateCritter(string prefabName) {
+            var p = Critter.GetData(prefabName).prefab.Load();
+            if (p == null) {
+                return null;
+            }
+            var i = Instantiate(p);
+            i.Create(i.Data, this);
+            return i;
+        }
+
+
+        void SpawnNewCritter() {
+            if (critterPool.Count > 0) {
+                Vector3 pos = player.position;
+                pos.y = 500;
+                pos.x += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
+                pos.z += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
+
+                var bunnyData = Critter.GetData("bunny");
+                var wolfData = Critter.GetData("wolf");
+                if (GetFirstSolidBlockDown(1000, ref pos)) {
+                    Critter c = critterPool.Dequeue();
+                    c.transform.parent = critters.transform;
+                    c.Init();
+                    c.position = pos;
+                    c.team = 1;
+
+                    if (c.Data == bunnyData) {
+                        var item = CreateItem("Raw Meat") as Loot;
+                        item.count = 1;
+                        c.loot[0] = item;
                     }
+                    else if (c.Data == wolfData) {
+                        var weapon = CreateItem("Teeth");
+                        c.SetInventorySlot(0, weapon);
+                    }
+
+                    c.Spawn(pos);
                 }
-                if (a2Move < 1.0f) {
-                    a1.Move(dir * -(1.0f - a2Move) * dist, dt);
-                }
+
             }
         }
-        void UpdateCollision(float dt) {
-            var cs = critters.GetComponentsInAllChildren<Critter>();
-            for (int i = 0; i < cs.Length; i++) {
-                var c = cs[i];
-                if (!c.spawned) {
-                    continue;
-                }
+        #endregion
 
-                for (int j = i; j < cs.Length; j++) {
-                    var c2 = cs[j];
-                    if (!c2.spawned) {
-                        continue;
-                    }
-                    TestCollision(dt, c, c2);
-                }
 
-                TestCollision(dt, c, player);
-
-            }
-        }
-
+        #region getting blocks
         public EBlockType GetBlock(Vector3 pos) {
             return GetBlock(pos.x, pos.y, pos.z);
         }
@@ -372,88 +289,61 @@ namespace Port {
             }
             return false;
         }
+        #endregion
 
+        #region time, weather and water currents
 
-        public static bool IsCapBlock(EBlockType type) {
-            if (type == EBlockType.BLOCK_TYPE_SNOW) return true;
-            return false;
+        float GetTimeOfDay() {
+            return Mathf.Repeat(time, data.SecondsPerDay) / data.SecondsPerDay * 24;
         }
 
 
-        public static bool IsSolidBlock(EBlockType type) {
-            if (type == EBlockType.BLOCK_TYPE_WATER
-                || type == EBlockType.BLOCK_TYPE_AIR
-                || type == EBlockType.BLOCK_TYPE_SNOW
-                || type == EBlockType.BLOCK_TYPE_FLOWERS1
-                || type == EBlockType.BLOCK_TYPE_FLOWERS2
-                || type == EBlockType.BLOCK_TYPE_FLOWERS3
-                || type == EBlockType.BLOCK_TYPE_FLOWERS4) {
-                return false;
-            }
-            return true;
-        }
 
-        public static bool IsClimbable(EBlockType type, bool skilledClimber) {
-            if (type == EBlockType.BLOCK_TYPE_LEAVES || type == EBlockType.BLOCK_TYPE_NEEDLES || type == EBlockType.BLOCK_TYPE_WOOD) {
-                return true;
+        static Color[] dayColors = { new Color(0.7f, 0.7f, 1.0f, 1.0f), new Color(0.05f, 0.05f, 0.05f, 1.0f), new Color(0.90f, 0.90f, 0.95f, 1.0f), new Color(0.80f, 0.80f, 0.65f, 1.0f), new Color(0.45f, 0.45f, 0.70f, 1.0f), };
+        static Color[] nightColors = { new Color(0.0f, 0.0f, 0.1f, 1.0f), new Color(0.10f, 0.10f, 0.15f, 1.0f), new Color(0.30f, 0.30f, 0.60f, 1.0f), new Color(0.30f, 0.20f, 0.20f, 1.0f), new Color(0.20f, 0.30f, 0.20f, 1.0f), };
+        static Color[] sunsetColors = { new Color(0.6f, 0.5f, 0.5f, 1.0f), new Color(0.05f, 0.05f, 0.05f, 1.0f), new Color(0.80f, 0.65f, 0.60f, 1.0f), new Color(0.60f, 0.50f, 0.45f, 1.0f), new Color(0.40f, 0.40f, 0.50f, 1.0f), };
+        static Color[] sunriseColors = { new Color(0.6f, 0.6f, 0.4f, 1.0f), new Color(0.05f, 0.05f, 0.05f, 1.0f), new Color(0.75f, 0.75f, 0.65f, 1.0f), new Color(0.60f, 0.55f, 0.50f, 1.0f), new Color(0.35f, 0.40f, 0.50f, 1.0f), };
+
+        Color[] GetSkyColor(float timeOfDay) {
+
+            var skyColors = new Color[5];
+
+            float sunriseTime = 5f;
+            float sunriseLength = 3.0f;
+            float sunsetTime = 18f;
+            float sunsetLength = 3.0f;
+            if (timeOfDay < sunriseTime || timeOfDay > sunsetTime + sunsetLength) {
+                skyColors = nightColors;
             }
-            if (skilledClimber) {
-                if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_ROCK || type == EBlockType.BLOCK_TYPE_GRASS) {
-                    return true;
+            else if (timeOfDay < sunriseTime + sunriseLength / 2) {
+                float t = (timeOfDay - sunriseTime) / (sunriseLength / 2);
+                for (int i = 0; i < 5; i++) {
+                    skyColors[i] = nightColors[i] * (1f - t) + sunriseColors[i] * t;
                 }
             }
-            return false;
-        }
-
-        public static bool IsHangable(EBlockType type, bool skilledClimber) {
-            if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_ROCK || type == EBlockType.BLOCK_TYPE_GRASS) {
-                return true;
-            }
-            return false;
-        }
-
-
-        public static float GetFallDamage(EBlockType type) {
-            if (type == EBlockType.BLOCK_TYPE_SNOW)
-                return 0.5f;
-            else if (type == EBlockType.BLOCK_TYPE_SAND)
-                return 0.75f;
-            else if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_GRASS)
-                return 0.9f;
-            return 1.0f;
-        }
-
-        public static bool IsTransparentBlock(EBlockType type) {
-            if (type == EBlockType.BLOCK_TYPE_AIR
-                || type == EBlockType.BLOCK_TYPE_WATER
-                || type == EBlockType.BLOCK_TYPE_NEEDLES
-                || type == EBlockType.BLOCK_TYPE_FLOWERS1
-                || type == EBlockType.BLOCK_TYPE_FLOWERS2
-                || type == EBlockType.BLOCK_TYPE_FLOWERS3
-                || type == EBlockType.BLOCK_TYPE_FLOWERS4
-                || type == EBlockType.BLOCK_TYPE_LEAVES
-                || type == EBlockType.BLOCK_TYPE_SNOW) {
-                return true;
-            }
-            return false;
-        }
-
-        public static bool IsDiggable(EBlockType type) {
-            if (type == EBlockType.BLOCK_TYPE_WATER) return false;
-            return true;
-        }
-
-
-        public int GetGroundDiff(Vector3 position1, Vector3 position2) {
-            if (!IsSolidBlock(GetBlock(position2))) {
-                if (IsSolidBlock(GetBlock(position2 - Vector3.up))) {
-                    return -1;
+            else if (timeOfDay < sunriseTime + sunriseLength) {
+                float t = (timeOfDay - (sunriseTime + sunriseLength / 2)) / (sunriseLength / 2);
+                for (int i = 0; i < 5; i++) {
+                    skyColors[i] = sunriseColors[i] * (1f - t) + dayColors[i] * t;
                 }
             }
-            else if (IsSolidBlock(GetBlock(position2 + Vector3.up)) && !IsSolidBlock(GetBlock(position2 + 2 * Vector3.up))) {
-                return 1;
+            else if (timeOfDay < sunsetTime) {
+                skyColors = dayColors;
             }
-            return 0;
+            else if (timeOfDay < sunsetTime + sunsetLength / 2) {
+                float t = (timeOfDay - sunsetTime) / (sunsetLength / 2);
+                for (int i = 0; i < 5; i++) {
+                    skyColors[i] = dayColors[i] * (1f - t) + sunsetColors[i] * t;
+                }
+            }
+            else {
+                float t = (timeOfDay - (sunsetTime + sunsetLength / 2)) / (sunsetLength / 2);
+                for (int i = 0; i < 5; i++) {
+                    skyColors[i] = sunsetColors[i] * (1f - t) + nightColors[i] * t;
+                }
+            }
+
+            return skyColors;
         }
 
         public float GetRiver(int blockX, int blockY) {
@@ -511,18 +401,49 @@ namespace Port {
 
             return wind * currentSpeed;
         }
+        #endregion
 
-        public float GetClimbFriction(EBlockType block) {
-            switch (block) {
-                case EBlockType.BLOCK_TYPE_DIRT:
-                    return 0.9f;
-                case EBlockType.BLOCK_TYPE_GRASS:
-                    return 0.8f;
-                case EBlockType.BLOCK_TYPE_SAND:
-                    return 0.5f;
-            }
-            return 1.0f;
+        #region static block properties
+
+
+        public static bool IsCapBlock(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_SNOW) return true;
+            return false;
         }
+
+
+        public static bool IsSolidBlock(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_WATER
+                || type == EBlockType.BLOCK_TYPE_AIR
+                || type == EBlockType.BLOCK_TYPE_SNOW
+                || type == EBlockType.BLOCK_TYPE_FLOWERS1
+                || type == EBlockType.BLOCK_TYPE_FLOWERS2
+                || type == EBlockType.BLOCK_TYPE_FLOWERS3
+                || type == EBlockType.BLOCK_TYPE_FLOWERS4) {
+                return false;
+            }
+            return true;
+        }
+
+        public static bool IsClimbable(EBlockType type, bool skilledClimber) {
+            if (type == EBlockType.BLOCK_TYPE_LEAVES || type == EBlockType.BLOCK_TYPE_NEEDLES || type == EBlockType.BLOCK_TYPE_WOOD) {
+                return true;
+            }
+            if (skilledClimber) {
+                if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_ROCK || type == EBlockType.BLOCK_TYPE_GRASS) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static bool IsHangable(EBlockType type, bool skilledClimber) {
+            if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_ROCK || type == EBlockType.BLOCK_TYPE_GRASS) {
+                return true;
+            }
+            return false;
+        }
+
 
         public static void GetSlideThreshold(EBlockType foot, EBlockType mid, EBlockType head, out float slideFriction, out float slideThreshold) {
             slideThreshold = 100;
@@ -566,6 +487,38 @@ namespace Port {
 
         }
 
+        public static float GetFallDamage(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_SNOW)
+                return 0.5f;
+            else if (type == EBlockType.BLOCK_TYPE_SAND)
+                return 0.75f;
+            else if (type == EBlockType.BLOCK_TYPE_DIRT || type == EBlockType.BLOCK_TYPE_GRASS)
+                return 0.9f;
+            return 1.0f;
+        }
+
+        public static bool IsTransparentBlock(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_AIR
+                || type == EBlockType.BLOCK_TYPE_WATER
+                || type == EBlockType.BLOCK_TYPE_NEEDLES
+                || type == EBlockType.BLOCK_TYPE_FLOWERS1
+                || type == EBlockType.BLOCK_TYPE_FLOWERS2
+                || type == EBlockType.BLOCK_TYPE_FLOWERS3
+                || type == EBlockType.BLOCK_TYPE_FLOWERS4
+                || type == EBlockType.BLOCK_TYPE_LEAVES
+                || type == EBlockType.BLOCK_TYPE_SNOW) {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool IsDiggable(EBlockType type) {
+            if (type == EBlockType.BLOCK_TYPE_WATER) return false;
+            return true;
+        }
+
+
+        #endregion
 
     }
 }

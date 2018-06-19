@@ -364,6 +364,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldTime: 0
+  spawnPoint: {x: 16, y: 500, z: 16}
   data: {fileID: 11400000, guid: fa305b599b1247e4992d1765ed5db134, type: 2}
   player: {fileID: 0}
   critters: {fileID: 0}
