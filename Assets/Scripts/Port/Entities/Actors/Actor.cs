@@ -228,8 +228,10 @@ namespace Port {
         bool CheckFloor(Vector3 position, out float floorHeight, out Vector3 groundNormal) {
             floorHeight = 0;
 
+            float checkDist = activity == Activity.OnGround ? Data.height + 0.25f : Data.height;
+
             RaycastHit hit;
-            if (Physics.Raycast(headPosition(position), Vector3.down, out hit, Data.height+0.5f,Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+            if (Physics.Raycast(headPosition(position), Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
                 floorHeight = hit.point.y;
                 groundNormal = hit.normal;
                 return true;

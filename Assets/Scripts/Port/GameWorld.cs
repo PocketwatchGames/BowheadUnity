@@ -10,6 +10,7 @@ namespace Port {
 
         #region State
         public float worldTime;
+        public Vector3 spawnPoint;
         #endregion
 
         public delegate void OnSetPlayerFn(Player player);
@@ -223,7 +224,6 @@ namespace Port {
         void Tick(float dt, float cameraYaw) {
 
             if (!player.spawned) {
-                var spawnPoint = new Vector3(35f, 500, 0.5f);
                 if (GetFirstSolidBlockDown(1000, ref spawnPoint)) {
                     player.Spawn(spawnPoint + new Vector3(0, 1, 0));
                 }
@@ -348,17 +348,11 @@ namespace Port {
 
         public EBlockType GetBlock(float x, float y, float z) {
 
-            RaycastHit hit;
-            if (Physics.Raycast(new Vector3(x,500,z), Vector3.down, out hit, 1000, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
-                if (hit.point.y > y)
-                    return EBlockType.BLOCK_TYPE_DIRT;
+            World.EVoxelBlockType blockType;
+            if (Bowhead.GameManager.instance.serverWorld.worldStreaming.GetVoxelAt(new WorldVoxelPos_t((int)x, (int)y, (int)z), out blockType)) {
+                return (EBlockType)blockType;
             }
 
-
-            EBlockType blockType = EBlockType.BLOCK_TYPE_AIR;
-            //if (Bowhead. getVoxel(cg->vsv, Vector3Int((int)Math.Floor(x), (int)Math.Floor(y), (int)Math.Floor(z)), ref blockType)) {
-            //    return (EBlockType)(blockType & BLOCK_TYPE_MASK);
-            //}
             return EBlockType.BLOCK_TYPE_AIR;
         }
 
