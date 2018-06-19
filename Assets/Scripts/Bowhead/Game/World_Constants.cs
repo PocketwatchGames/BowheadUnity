@@ -140,6 +140,9 @@ public partial class World {
 	}
 
 	public static int WorldToLocalVoxel(int w, int CHUNK_SIZE) {
+		if (w < 0) {
+			return ((w + 1) & (CHUNK_SIZE - 1));
+		}
 		return w & (CHUNK_SIZE - 1);
 	}
 

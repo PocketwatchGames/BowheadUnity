@@ -326,7 +326,7 @@ public partial class World {
 			}
 		}
 
-		class Chunk {
+		class Chunk : HChunk {
 			public Chunk hashNext;
 			public Chunk hashPrev;
 			public WorldChunkPos_t pos;
@@ -337,6 +337,16 @@ public partial class World {
 			public ChunkMeshGen.ChunkData_t chunkData;
 			public ChunkJobData jobData;
 			public World_ChunkComponent goChunk;
+
+			public bool GetVoxelAt(LocalVoxelPos_t pos, out EVoxelBlockType blocktype) {
+				if (hasVoxelData) {
+					var idx = pos.vx + (pos.vz * VOXEL_CHUNK_SIZE_XZ) + (pos.vz * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+					blocktype = chunkData.blocktypes[idx];
+					return true;
+				}
+				blocktype = EVoxelBlockType.AIR;
+				return false;
+			}
 		};
 
 		[Flags]
@@ -471,6 +481,44 @@ public partial class World {
 			int ySize { get; }
 		};
 
+		public interface HChunk {
+			bool GetVoxelAt(LocalVoxelPos_t pos, out EVoxelBlockType blocktype);
+		};
+
+		public struct ChunkRef_t : IDisposable {
+			public HChunk chunk;
+			public Streaming streaming;
+
+			public void Dispose() {
+				streaming.Release((Chunk)chunk);
+				streaming = null;
+				chunk = null;
+			}
+		};
+
+		ChunkRef_t GetChunkAddRef(WorldChunkPos_t pos) {
+			var chunk = FindChunk(pos);
+			if (chunk != null) {
+				AddRef(chunk);
+			}
+			return new ChunkRef_t() {
+				chunk = chunk,
+				streaming = (chunk != null) ? this : null
+			};
+		}
+		
+		public bool GetVoxelAt(WorldVoxelPos_t pos, out EVoxelBlockType blocktype) {
+			var wpos = WorldToChunk(pos);
+
+			var chunk = FindChunk(wpos);
+			if (chunk != null) {
+				return chunk.GetVoxelAt(WorldToLocalVoxel(pos), out blocktype);
+			}
+
+			blocktype = EVoxelBlockType.AIR;
+			return false;
+		}
+		
 		static uint GetChunkPosHash(uint cx, uint cy, uint cz) {
 			var hx = cx & (CHUNK_HASH_SIZE_XZ - 1);
 			var hy = cy & (CHUNK_HASH_SIZE_Y - 1);
