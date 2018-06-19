@@ -1517,6 +1517,8 @@ public partial class World {
 				_numVoxels = 0;
 
 				var chunk = _area[1 + Y_PITCH + Z_PITCH];
+				chunk.flags = chunk.pinnedFlags[0];
+
 				if ((chunk.flags & EChunkFlags.SOLID) == 0) {
 					// no solid blocks in this chunk it can't have any visible faces.
 					_smoothVerts.Finish();
@@ -1900,45 +1902,6 @@ public partial class World {
 		public static JobHandle ScheduleGenTrisJob(ref JobInputData jobData, JobHandle dependsOn = default(JobHandle)) {
 			var genChunkVerts = GenerateChunkVerts_t.New(jobData.smoothVerts, jobData.voxelStorage.voxels, jobData.neighbors, tableStorage).Schedule(dependsOn);
 			return GenerateFinalVertices_t.New(SmoothingVertsIn_t.New(jobData.smoothVerts), jobData.outputVerts).Schedule(genChunkVerts);
-		}
-
-		public static void Run(Mesh outMesh) {
-
-			var chunk = ChunkData_t.New();
-
-			chunk.Pin();
-
-			GenerateChunkVoxels_t genVoxels = GenerateChunkVoxels_t.New(new WorldChunkPos_t(), PinnedChunkData_t.New(chunk));
-			genVoxels.Execute();
-
-			var smoothingVerts = SmoothingVertsOut_t.New();
-			var voxelStorage = VoxelStorage_t.New();
-
-			voxelStorage.Pin();
-
-			var area = new NativeArray<PinnedChunkData_t>(27, Allocator.Temp, NativeArrayOptions.ClearMemory) {
-				[1 + GenerateChunkVerts_t.Y_PITCH + GenerateChunkVerts_t.Z_PITCH] = PinnedChunkData_t.New(chunk)
-			};
-
-			GenerateChunkVerts_t genVerts = GenerateChunkVerts_t.New(smoothingVerts, voxelStorage.voxels, area, tableStorage);
-			genVerts.Execute();
-
-			var finalVerts = FinalMeshVerts_t.New();
-
-			GenerateFinalVertices_t genFinalVerts = GenerateFinalVertices_t.New(SmoothingVertsIn_t.New(smoothingVerts), finalVerts);
-			genFinalVerts.Execute();
-
-			outMesh.vertices = Copy(finalVerts.positions, finalVerts.counts[0]);
-			outMesh.normals = Copy(finalVerts.normals, finalVerts.counts[0]);
-			outMesh.colors32 = Copy(finalVerts.colors, finalVerts.counts[0]);
-			outMesh.triangles = Copy(finalVerts.indices, finalVerts.counts[1]);
-
-			finalVerts.Dispose();
-			voxelStorage.Unpin();
-			chunk.Unpin();
-
-			smoothingVerts.Dispose();
-			area.Dispose();
 		}
 
 		public static void CopyToMesh(ref JobInputData jobData, Mesh dstMesh) {

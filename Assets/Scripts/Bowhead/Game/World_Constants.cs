@@ -73,6 +73,10 @@ public partial class World {
 			}
 			return false;
 		}
+
+		public override string ToString() {
+			return "cx = " + cx + ", cy = " + cy + ", cz = " + cz;
+		}
 	};
 
 	// A world-space voxel position.
@@ -103,6 +107,10 @@ public partial class World {
 			}
 			return false;
 		}
+
+		public override string ToString() {
+			return "vx = " + vx + ", vy = " + vy + ", cz = " + vz;
+		}
 	};
 
 	// This is the local voxel position inside a chunk, valid range is 0 to VOXEL_CHUNK_SIZE - 1
@@ -132,6 +140,10 @@ public partial class World {
 				return ((LocalVoxelPos_t)obj) == this;
 			}
 			return false;
+		}
+
+		public override string ToString() {
+			return "vx = " + vx + ", vy = " + vy + ", cz = " + vz;
 		}
 	};
 

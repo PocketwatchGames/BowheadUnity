@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
+using Unity.Collections;
 
 public partial class World {
 	public sealed class Streaming : IDisposable {
@@ -145,7 +146,7 @@ public partial class World {
 
 						if (canGenerateTris) {
 							return ScheduleGenTrisJob(chunk);
-						} else if (chunk.jobData == null) {
+						} else if (!chunk.hasVoxelData && (chunk.jobData == null)) {
 							return ScheduleGenVoxelsJob(chunk);
 						}
 					}
@@ -187,42 +188,48 @@ public partial class World {
 		}
 
 		bool ScheduleGenTrisJob(Chunk chunk) {
-			var jobData = chunk.jobData ?? GetFreeJobData();
-			if (jobData == null) {
-				return false;
+			bool existingJob = chunk.jobData != null;
+
+			if (!existingJob) {
+				chunk.jobData = GetFreeJobData();
+				if (chunk.jobData == null) {
+					return false;
+				}
+				chunk.jobData.chunk = chunk;
 			}
 
-			jobData.flags = EJobFlags.VOXELS|EJobFlags.TRIS;
-
-			bool appendJob = chunk.jobData != null;
-
-			if (!appendJob) {
-				jobData.chunk = chunk;
-				chunk.jobData = jobData;
+			chunk.jobData.flags = EJobFlags.VOXELS|EJobFlags.TRIS;
+			
+			if (!(existingJob || chunk.hasVoxelData)) {
 				AddRef(chunk);
 				chunk.chunkData.Pin();
-				jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData);
+				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData);
 			}
 
 			chunk.jobData.jobData.voxelStorage.Pin();
 
+			var dependancies = new NativeArray<JobHandle>(_neighbors.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+			
 			for (int i = 0; i < _neighbors.Length; ++i) {
 				var neighbor = _neighbors[i];
-				jobData.neighbors[i] = neighbor;
+				chunk.jobData.neighbors[i] = neighbor;
 
 				if (neighbor != null) {
 					AddRef(neighbor);
 					neighbor.chunkData.Pin();
-					jobData.jobData.neighbors[i] = ChunkMeshGen.PinnedChunkData_t.New(neighbor.chunkData);
+					chunk.jobData.jobData.neighbors[i] = ChunkMeshGen.PinnedChunkData_t.New(neighbor.chunkData);
+					dependancies[i] = neighbor.jobData != null ? neighbor.jobData.jobHandle : default(JobHandle);
 				} else {
-					jobData.jobData.neighbors[i] = default(ChunkMeshGen.PinnedChunkData_t);
+					chunk.jobData.jobData.neighbors[i] = default(ChunkMeshGen.PinnedChunkData_t);
+					dependancies[i] = default(JobHandle);
 				}
 			}
 
-			jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, jobData.jobHandle);
+			chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, JobHandle.CombineDependencies(dependancies));
+			dependancies.Dispose();
 
-			if (!appendJob) {
-				QueueJobData(jobData);
+			if (!existingJob) {
+				QueueJobData(chunk.jobData);
 			}
 
 			return true;
@@ -258,6 +265,9 @@ public partial class World {
 		void CompleteJob(ChunkJobData job) {
 			var chunk = job.chunk;
 
+			chunk.jobData = null;
+			chunk.hasVoxelData = true;
+
 			if ((job.flags & EJobFlags.TRIS) != 0) {
 				job.jobData.voxelStorage.Unpin();
 				chunk.hasTrisData = true;
@@ -268,17 +278,14 @@ public partial class World {
 						Release(neighbor);
 					}
 				}
+			} else {
+				chunk.chunkData.Unpin();
+				Release(chunk);
 			}
-
-			chunk.chunkData.Unpin();
 
 			job.chunk = null;
 			job.jobHandle = default(JobHandle);
-			chunk.jobData = null;
-			chunk.hasVoxelData = true;
-
-			Release(chunk);
-
+			
 			if (chunk.refCount > 0) {
 				if (chunk.hasTrisData) {
 					CopyToMesh(job, chunk);
