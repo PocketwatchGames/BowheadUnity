@@ -17,7 +17,6 @@ using CodeStage.AdvancedFPSCounter;
 
 namespace Bowhead {
 
-	[RequireComponent(typeof(StaticData))]
 	public class GameManager : MonoBehaviour {
 		const int DEFAULT_MATCH_TIME = 60*5;
 		const int DEFAULT_OVERTIME = 90;
@@ -453,7 +452,6 @@ namespace Bowhead {
 			}
 
 			staticData.randomNumberTable.seed = (uint)(DateTime.Now.Ticks & 0xffffffffL);
-			staticData.dropNumberTable.seed = (uint)(DateTime.Now.Ticks & 0xffffffffL);
 			DontDestroyOnLoad(transform.gameObject);
 
 #if DEDICATED_SERVER

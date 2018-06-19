@@ -46,7 +46,7 @@ namespace Bowhead.MetaGame {
 				return;
 			}
 
-			var rand = GameManager.instance.staticData.dropNumberTable;
+			var rand = GameManager.instance.staticData.randomNumberTable;
 			var inventoryItemLibrary = GameManager.instance.staticData.inventoryItemLibrary;
 
 			for (int i = 0; i < _dropTables.Length; ++i) {

@@ -35,16 +35,16 @@ namespace Port {
                 i = new Money();
             }
             else if (itemData is WeaponData) {
-                i = new Weapon();
+                i = CreateInstance<Weapon>();
             }
             else if (itemData is ClothingData) {
-                i = new Clothing();
+                i = CreateInstance<Clothing>();
             }
             else if (itemData is LootData) {
-                i = new Loot();
+                i = CreateInstance<Loot>();
             }
             else if (itemData is PackData) {
-                i = new Pack();
+                i = CreateInstance<Pack>();
             }
 
             if (i == null) {

@@ -12,7 +12,8 @@ using UnityEditor;
 namespace Bowhead {
 	using Object = UnityEngine.Object;
 
-	public class StaticData : MonoBehaviour, ISerializationCallbackReceiver {
+	[CreateAssetMenu(menuName = "Bowhead/Static Data")]
+	public class StaticData : ScriptableObject, ISerializationCallbackReceiver {
 		public interface Indexed {
 			int staticIndex {
 				get;
@@ -26,7 +27,6 @@ namespace Bowhead {
 		public GameObject defaultActorPrefab;
 		public World_ChunkComponent serverTerrainChunkComponent;
 		public RandomNumberTable randomNumberTable;
-		public RandomNumberTable dropNumberTable;
 		public PhysicalContactMatrix physicalContactMatrix;
 		public MetaGame.InventoryItemLibrary inventoryItemLibrary;
 

@@ -71,7 +71,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4892174589124374}
-  - component: {fileID: 114492088109138786}
   - component: {fileID: 114301765905752300}
   - component: {fileID: 114193215919835172}
   - component: {fileID: 114190335753427708}
@@ -253,7 +252,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hudOverlays: {fileID: 0}
-  staticData: {fileID: 114492088109138786}
+  staticData: {fileID: 11400000, guid: b01fed52530dac7489d593f386fcc5ea, type: 2}
   bloodAndExplosionDecalLimit: 4096
   ragdollFadeTime: 0
   _tooltipCanvas: {fileID: 0}
@@ -296,61 +295,6 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
---- !u!114 &114492088109138786
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1618882574779524}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5f60270d3d93f142951f9630675a14f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  defaultActorPrefab: {fileID: 1582386527135860, guid: e1d4f3eb32cb2d046aca332dd2f90515,
-    type: 2}
-  serverTerrainChunkComponent: {fileID: 114941413415869434, guid: ee1df10aa62e13848aca447d015e71d4,
-    type: 2}
-  randomNumberTable: {fileID: 11400000, guid: 078ed86c2935a284c949cc58506aef5f, type: 2}
-  dropNumberTable: {fileID: 11400000, guid: 078ed86c2935a284c949cc58506aef5f, type: 2}
-  physicalContactMatrix: {fileID: 11400000, guid: 56113d4fbb41aaa4f8b795916537a853,
-    type: 2}
-  inventoryItemLibrary:
-    _baseID: 0
-    _items: []
-    _id2item: []
-    _id2ilvl: 
-  indexedObjects:
-  - {fileID: 11400000, guid: b3ffd708449e9d649b38326105498847, type: 2}
-  - {fileID: 11400000, guid: 0e77a8b767627304dbc82fa17ba496c5, type: 2}
-  - {fileID: 11400000, guid: badcad2f1b45840469a7894b0bd48558, type: 2}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 11400000, guid: 1966101ed621fdc4589312e9eb8da18e, type: 2}
-  - {fileID: 11400000, guid: 0142bce150c456c4f9783a2755bf37c1, type: 2}
-  - {fileID: 11400000, guid: ed53fb9a24de05e4c9c184295e621648, type: 2}
-  - {fileID: 11400000, guid: c4cae3e25ad7b3740acc178ae5dc4ba3, type: 2}
-  - {fileID: 0}
-  - {fileID: 11400000, guid: e09a41f595719ae4b8b698045d87f0bb, type: 2}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 11400000, guid: 1d4256ad6b874c441bea840879926b1b, type: 2}
-  - {fileID: 11400000, guid: 3cb8976245727274a9669f3751ec78f2, type: 2}
-  - {fileID: 11400000, guid: 1a0e7db08e84f494bb9da562d4ac8f29, type: 2}
-  - {fileID: 11400000, guid: 5cf47b3d0bb78b04bbf2451a5d0df77b, type: 2}
-  - {fileID: 11400000, guid: 19edf9c508f5f78458a9ca3cd8e9c7d0, type: 2}
-  - {fileID: 11400000, guid: 3471146c30911b549b389996ec6ea3ec, type: 2}
-  - {fileID: 11400000, guid: 7879e1126a8e1da4a8521af4d952f8b6, type: 2}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 11400000, guid: 387e5ea0a396cc144bcb063f7a682f13, type: 2}
 --- !u!114 &114522889110586866
 MonoBehaviour:
   m_ObjectHideFlags: 1
