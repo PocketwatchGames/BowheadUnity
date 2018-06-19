@@ -5,23 +5,29 @@ using UnityEngine;
 namespace Port {
     public class CameraController : MonoBehaviour {
 
-        public GameWorld world;
-        public float yaw;
-        public float pitch;
-        public Player target;
-        public Vector3 position;
-        public bool isLooking;
-        public float shakeTime;
-        public float shakeTimeTotal;
-        public float shakeAngleMag;
-        public float shakePositionMag;
+        [SerializeField]
+        private GameWorld _world;
+        private float _yaw;
+        private float _pitch;
+        private Player _target;
+        private Vector3 _position;
+        private bool _isLooking;
+        private float _shakeTime;
+        private float _shakeTimeTotal;
+        private float _shakeAngleMag;
+        private float _shakePositionMag;
 
-        public Vector3 _playerPosition;
-        public Vector3 _cameraVelocity;
-        public Vector3 _lookAtVelocity;
-        public Vector3 _lookAt;
+        private Vector3 _playerPosition;
+        private Vector3 _cameraVelocity;
+        private Vector3 _lookAtVelocity;
+        private Vector3 _lookAt;
 
-
+        public float lookAtFriction = 10f;
+        public float lookAtAcceleration = 20;
+        public float lookAtLeadDist = 5;
+        public float cameraFriction = 10f;
+        public float minDistance = 20;
+        public float maxDistance = 40;
 
         // Use this for initialization
         void Start() {
@@ -34,24 +40,32 @@ namespace Port {
             HandleInput(0, Time.deltaTime);
             Tick(Time.deltaTime);
 
-            transform.SetPositionAndRotation(position, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
+            Vector3 pos;
+            float yaw, pitch;
+            GetPositionAngles(out pos, out yaw, out pitch);
+
+            transform.SetPositionAndRotation(pos, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
+        }
+
+        public float GetYaw() {
+            return _yaw;
         }
 
         public void SetTarget(Player player) {
-            if (target != null) {
-                target.OnLand -= OnLand;
+            if (_target != null) {
+                _target.OnLand -= OnLand;
             }
 
-            target = player;
+            _target = player;
             player.OnLand += OnLand;
         }
 
         private void OnLand(float damage) {
             if (damage > 0) {
-                world.camera.Shake(0.2f, damage * 0.2f, damage * 0.05f);
+                _world.camera.Shake(0.2f, damage * 0.2f, damage * 0.05f);
             }
             else{
-                world.camera.Shake(0.15f, 0.05f, 0.01f);
+                _world.camera.Shake(0.15f, 0.05f, 0.01f);
             }
         }
 
@@ -62,62 +76,58 @@ namespace Port {
             float mouseTurnSpeed = 360f * Mathf.Deg2Rad;
             float gpTurnSpeed = 360f * Mathf.Deg2Rad;
 
-            isLooking = false;
+            _isLooking = false;
 
             var m = Input.mousePosition;
             var mouseDelta = m - _oldMousePosition;
 
             Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
-            yaw += gamepad.x * gpTurnSpeed * dt;
-            pitch += gamepad.y * gpTurnSpeed * dt;
+            _yaw += gamepad.x * gpTurnSpeed * dt;
+            _pitch += gamepad.y * gpTurnSpeed * dt;
 
-            isLooking |= gamepad != Vector2.zero;
+            _isLooking |= gamepad != Vector2.zero;
 
             float maxAngle = Mathf.PI / 2 * 0.95f;
             float minAngle = -Mathf.PI / 2 * 0.95f;
-            if (pitch > maxAngle)
-                pitch = maxAngle;
-            if (pitch < minAngle)
+            if (_pitch > maxAngle)
+                _pitch = maxAngle;
+            if (_pitch < minAngle)
 
-                pitch = minAngle;
+                _pitch = minAngle;
 
 
             _oldMousePosition = m;
         }
 
         void Tick(float dt) {
-            if (target != null) {
+            if (_target != null) {
 
-                float minDist = Mathf.Sqrt(Mathf.Max(0, pitch) / (Mathf.PI / 2)) * 20 + 20;
+                float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (maxDistance - minDistance) + minDistance;
 
-                Vector3 avgPlayerPosition = target.renderPosition();
+                Vector3 avgPlayerPosition = _target.renderPosition();
                 Vector3 lookAtDiff = avgPlayerPosition - _lookAt;
                 bool isMoving = _playerPosition != avgPlayerPosition;
                 Vector3 playerMovement = avgPlayerPosition - _playerPosition;
-                if (isLooking) {
-                    float lookAtFriction = 10f;
-                    float lookAtAcceleration = 20;
-                    float lookAtLeadDist = 5;
-                    float cameraFriction = 10f;
+                if (_isLooking) {
 
                     _playerPosition = avgPlayerPosition;
                     _lookAtVelocity -= _lookAtVelocity * lookAtFriction * dt;
                     _lookAtVelocity += (lookAtDiff + playerMovement * lookAtLeadDist) * lookAtAcceleration * dt;
                     _lookAt += _lookAtVelocity * dt;
 
-                    Vector3 diff = position - _lookAt;
+                    Vector3 diff = _position - _lookAt;
                     diff.y = 0;
                     if (diff == Vector3.zero)
                         diff.x = 1;
                     diff.Normalize();
                     diff *= minDist;
-                    var desiredCameraMove = (_lookAt + diff) - position;
+                    var desiredCameraMove = (_lookAt + diff) - _position;
 
                     _cameraVelocity -= _cameraVelocity * cameraFriction * dt;
                     _cameraVelocity += desiredCameraMove * dt;
 
-                    position += _cameraVelocity * dt;
-                    position = new Vector3(position.x, Mathf.Max(position.y, avgPlayerPosition.y), position.z);
+                    _position += _cameraVelocity * dt;
+                    _position = new Vector3(_position.x, Mathf.Max(_position.y, avgPlayerPosition.y), _position.z);
 
                 }
                 else {
@@ -127,7 +137,7 @@ namespace Port {
                         _lookAt = avgPlayerPosition;
                         _lookAtVelocity = Vector3.zero;
                         _cameraVelocity = Vector3.zero;
-                        position = _lookAt;
+                        _position = _lookAt;
                     }
                     else {
 
@@ -141,7 +151,7 @@ namespace Port {
                         }
                         else {
                             float leadPlayerMotionSpeed = 0.25f;
-                            position += playerMovement * leadPlayerMotionSpeed;
+                            _position += playerMovement * leadPlayerMotionSpeed;
 
 
                             float lookAtFriction = 10f;
@@ -153,37 +163,37 @@ namespace Port {
                         }
                         _lookAt += _lookAtVelocity * dt;
 
-                        Vector3 diff = position - _lookAt;
+                        Vector3 diff = _position - _lookAt;
                         diff.y = 0;
                         if (diff == Vector3.zero)
                             diff.x = 1;
                         diff.Normalize();
                         diff *= minDist;
 
-                        var desiredCameraMove = (_lookAt + diff) - position;
+                        var desiredCameraMove = (_lookAt + diff) - _position;
 
                         _cameraVelocity -= _cameraVelocity * cameraFriction * dt;
                         _cameraVelocity += desiredCameraMove * dt;
 
-                        position += _cameraVelocity * dt;
-                        position = new Vector3(position.x, Mathf.Max(position.y, avgPlayerPosition.y), position.z);
+                        _position += _cameraVelocity * dt;
+                        _position = new Vector3(_position.x, Mathf.Max(_position.y, avgPlayerPosition.y), _position.z);
 
-                        diff = position - _lookAt;
+                        diff = _position - _lookAt;
                         diff.y = 0;
                         if (diff.magnitude < 0.1f)
                             diff.x = 1;
                         diff.Normalize();
                         diff *= minDist;
 
-                        yaw = Mathf.Atan2(-diff.x, -diff.z);
+                        _yaw = Mathf.Atan2(-diff.x, -diff.z);
 
                     }
                 }
 
-                float horizDist = Mathf.Cos(pitch);
-                Vector3 cameraOffset = new Vector3(-Mathf.Sin(yaw) * horizDist, Mathf.Sin(pitch), -Mathf.Cos(yaw) * horizDist);
+                float horizDist = Mathf.Cos(_pitch);
+                Vector3 cameraOffset = new Vector3(-Mathf.Sin(_yaw) * horizDist, Mathf.Sin(_pitch), -Mathf.Cos(_yaw) * horizDist);
                 cameraOffset *= minDist;
-                position = _lookAt + cameraOffset;
+                _position = _lookAt + cameraOffset;
 
 
                 //Vec2f_t maxPlayerPos = Vec2f_t(-10000, -10000);
@@ -202,41 +212,50 @@ namespace Port {
                 float maxDist = 0f;
                 float cameraDist = Mathf.Clamp(maxDist, minDist, 100f);
 
-                cameraOffset = new Vector3(-Mathf.Sin(yaw) * Mathf.Cos(pitch), Mathf.Sin(pitch), -Mathf.Cos(yaw) * Mathf.Cos(pitch));
+                cameraOffset = new Vector3(-Mathf.Sin(_yaw) * Mathf.Cos(_pitch), Mathf.Sin(_pitch), -Mathf.Cos(_yaw) * Mathf.Cos(_pitch));
                 cameraOffset *= cameraDist;
-                position = _lookAt + cameraOffset;
+                _position = _lookAt + cameraOffset;
+
             }
 
-            shakeTime = Mathf.Max(0, shakeTime - dt);
+            _shakeTime = Mathf.Max(0, _shakeTime - dt);
         }
 
 
         void Init() {
-            position = Vector3.zero;
+            _position = Vector3.zero;
 
-            yaw = 0f;
-            pitch = 45f * Mathf.Deg2Rad;
+            _yaw = 0f;
+            _pitch = 45f * Mathf.Deg2Rad;
         }
 
 
         public void Shake(float time, float pos, float angle) {
-            shakeTime = shakeTimeTotal = time;
-            shakeAngleMag = angle;
-            shakePositionMag = pos;
+            _shakeTime = _shakeTimeTotal = time;
+            _shakeAngleMag = angle;
+            _shakePositionMag = pos;
         }
 
         void GetPositionAngles(out Vector3 _pos, out float _yaw, out float _pitch) {
-            _pos = position;
-            _yaw = yaw;
-            _pitch = pitch;
-            if (shakeTime > 0) {
-                float rampUpTime = Mathf.Min(0.05f, shakeTimeTotal / 2);
+            _pos = _position;
+
+            RaycastHit hit;
+            var dir = _position - _lookAt;
+            if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+                _pos = hit.point;
+            }
+
+
+            _yaw = this._yaw;
+            _pitch = this._pitch;
+            if (_shakeTime > 0) {
+                float rampUpTime = Mathf.Min(0.05f, _shakeTimeTotal / 2);
                 float t;
-                if (shakeTime < rampUpTime) {
-                    t = shakeTime / rampUpTime;
+                if (_shakeTime < rampUpTime) {
+                    t = _shakeTime / rampUpTime;
                 }
                 else {
-                    t = 1f - (shakeTime - rampUpTime) / (shakeTimeTotal - rampUpTime);
+                    t = 1f - (_shakeTime - rampUpTime) / (_shakeTimeTotal - rampUpTime);
                 }
                 //int perlinTime = (int)(world.time * 100);
                 //_pos.x += t * shakePositionMag * GetPerlinValue(perlinTime, perlinTime + 5422, perlinTime + 123, 0.1f);

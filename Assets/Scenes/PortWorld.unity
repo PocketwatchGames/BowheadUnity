@@ -206,20 +206,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51c15bfe64f8ce74888571ee00cc0c16, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  world: {fileID: 807073565}
-  yaw: 0
-  pitch: 0
-  target: {fileID: 0}
-  position: {x: 0, y: 0, z: 0}
-  isLooking: 0
-  shakeTime: 0
-  shakeTimeTotal: 0
-  shakeAngleMag: 0
-  shakePositionMag: 0
-  _playerPosition: {x: 0, y: 0, z: 0}
-  _cameraVelocity: {x: 0, y: 0, z: 0}
-  _lookAtVelocity: {x: 0, y: 0, z: 0}
-  _lookAt: {x: 0, y: 0, z: 0}
+  _world: {fileID: 807073565}
+  lookAtFriction: 10
+  lookAtAcceleration: 20
+  lookAtLeadDist: 5
+  cameraFriction: 10
+  minDistance: 10
+  maxDistance: 25
 --- !u!1 &571105227
 GameObject:
   m_ObjectHideFlags: 0
