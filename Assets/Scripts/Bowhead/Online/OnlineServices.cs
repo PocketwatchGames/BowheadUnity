@@ -37,8 +37,6 @@ namespace Bowhead.Online {
 	public delegate void OnlinePlayerLoggedInDelegate(OnlineLocalPlayer player, string errorMessage);
 	public delegate void OnlinePlayerChangedDelegate(OnlinePlayer player, EOnlinePlayerChangedFlags whatChanged);
 	public delegate void OnlinePlayerDelegate(OnlinePlayer player);
-	public delegate void OnlineLocalPlayerGetInventoryDelegate(MetaGame.ImmutableInventory inventory);
-	public delegate void OnlineLocalPlayerGetSkillsDelegate(MetaGame.PlayerSkills skills);
 	public delegate void OnlineFriendChatDelegate(string playerName, ulong playerID, string text);
 
 	public interface RefCounted : System.IDisposable {
@@ -112,10 +110,6 @@ namespace Bowhead.Online {
 
 	public interface OnlineLocalPlayer : OnlinePlayer {
 		string ticket { get; }
-		void AsyncGetInventory(OnlineLocalPlayerGetInventoryDelegate callback);
-		void AsyncGetSkills(OnlineLocalPlayerGetSkillsDelegate callback);
-		void RemovePendingAsyncGetInventoryCallback(OnlineLocalPlayerGetInventoryDelegate callback);
-		void RemovePendingAsyncGetSkillsCallback(OnlineLocalPlayerGetSkillsDelegate callback);
 	}
 
 	public interface OnlineServices : IDisposable {
@@ -135,8 +129,8 @@ namespace Bowhead.Online {
 		void RemoveFriendChatMessageCallback(OnlineFriendChatDelegate callback);
 		bool IsFriend(OnlinePlayer player);
 		bool IsFriend(ulong uuid);
-		bool IsPlayingDeadhold(OnlinePlayer player);
-		bool IsPlayingDeadhold(ulong uuid);
+		bool IsPlayingThisGame(OnlinePlayer player);
+		bool IsPlayingThisGame(ulong uuid);
 		void SendPrivateMessage(OnlinePlayer player, string text);
 		void SendPrivateMessage(ulong uuid, string text);
 		bool ShowPlayerProfile(OnlinePlayer player);

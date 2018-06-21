@@ -232,7 +232,7 @@ public static partial class Utils {
 
 	public static T GetFirstChildComponent<T>(this Transform t) {
 		var child = t.GetFirstChild();
-		return (t != null) ? t.GetComponent<T>() : default(T);
+		return (child != null) ? child.GetComponent<T>() : default(T);
 	}
 
 	public static Transform GetLastChild(this Transform t) {
@@ -244,7 +244,7 @@ public static partial class Utils {
 
 	public static T GetLastChildComponent<T>(this Transform t) {
 		var child = t.GetLastChild();
-		return (t != null) ? t.GetComponent<T>() : default(T);
+		return (child != null) ? child.GetComponent<T>() : default(T);
 	}
 
 	public static string GetChildPath(this Transform t, Transform child) {

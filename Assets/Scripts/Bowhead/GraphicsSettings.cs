@@ -235,7 +235,6 @@ namespace Bowhead.Client {
 
 			if (activeDisplayIndex != unityDisplay) {
 				PlayerPrefs.SetInt("UnitySelectMonitor", activeDisplayIndex);
-				var display = Display.displays[activeDisplayIndex];
 				Debug.Log("Vidmodechange: " + screenWidth + "x" + screenHeight + ", fullscreen = " + fullscreen);
 				Screen.SetResolution(screenWidth, screenHeight, fullscreen);
 				resChange = true;

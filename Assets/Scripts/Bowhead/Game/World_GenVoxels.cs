@@ -87,8 +87,6 @@ public partial class World {
                     float waterDepth = CalculateRiver(ref noise, xpos, zpos, lowerGroundHeight, 0, 0, ref upperGroundHeight);
                     bool isRoad = CalculateRoad(ref noise, xpos, zpos, lowerGroundHeight, 0, 0, ref upperGroundHeight);
 
-                    var minimapBlock = EVoxelBlockType.AIR;
-
                     for (int y = 0; y < VOXEL_CHUNK_SIZE_Y; ++y) {
                         var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
                         var ypos = v3.y + y;
@@ -143,18 +141,8 @@ public partial class World {
                             solid = true;
                         }
 
-                        //bt |= BLOCK_FULL_VOXEL_FLAG;
-
-                        if ((EVoxelBlockType)((byte)bt & BLOCK_TYPE_MASK) != EVoxelBlockType.AIR) {
-                            minimapBlock = bt;
-                        }
-
                         chunk.blocktypes[ofs] = bt;
                     }
-
-                    //if (minimap) {
-                    //    (*minimap)[x + (y * WORLD_VOXEL_CHUNK_SIZE_XY)] = minimapBlock;
-                    //}
                 }
             }
 

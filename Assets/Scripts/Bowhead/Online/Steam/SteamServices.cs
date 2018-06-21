@@ -9,7 +9,6 @@ using Steamworks;
 using System;
 
 namespace Bowhead.Online.Steam {
-	using InventoryItemClass = Bowhead.MetaGame.InventoryItemClass;
 
 	public sealed class SteamPlayerID : OnlinePlayerID {
 
@@ -255,259 +254,11 @@ namespace Bowhead.Online.Steam {
 		}
 	}
 
-	sealed class SteamInventoryContainer : MetaGame.ImmutableInventory {
-
-		public SteamInventoryContainer(SteamItemDetails_t[] items) {
-			var library = GameManager.instance.staticData.inventoryItemLibrary;
-
-			List<MetaGame.InventoryItem> iitems = new List<MetaGame.InventoryItem>();
-
-			for (int i = 0; i < items.Length; ++i) {
-				var item = items[i];
-				InventoryItemClass itemClass;
-				int ilvl;
-
-				if (library.TryGetItem(item.m_iDefinition.m_SteamItemDef, out itemClass, out ilvl)) {
-					if ((item.m_unQuantity > 0) && (item.m_iDefinition.m_SteamItemDef > 0) && ((((ESteamItemFlags)item.m_unFlags)&ESteamItemFlags.k_ESteamItemRemoved) == 0)) {
-						var iitem = new MetaGame.InventoryItem(item.m_itemId.m_SteamItemInstanceID, item.m_iDefinition.m_SteamItemDef, itemClass, ilvl, item.m_unQuantity);
-						iitems.Add(iitem);
-					}
-				}
-			}
-
-			this.items = new ReadOnlyCollection<MetaGame.InventoryItem>(iitems);
-		}
-
-		public ReadOnlyCollection<MetaGame.InventoryItem> items {
-			get;
-			private set;
-		}
-	}
-
-	sealed class SteamDeitySkillsSheet : MetaGame.DeitySkillSheet {
-		const string DEITY_SLOT = SteamPlayerSkillSheet.SKILL_SHEET + ".d[{1}]";
-		const string DEITY_XP = DEITY_SLOT + ".xp";
-
-		readonly int _skillSheet;
-		readonly int _deityIndex;
-
-		public SteamDeitySkillsSheet(int skillSheet, int deityIndex) {
-			_skillSheet = skillSheet;
-			_deityIndex = deityIndex;
-
-			int value;
-			if (SteamUserStats.GetStat(string.Format(DEITY_XP, skillSheet, deityIndex), out value)) {
-				xp = value;
-			}
-		}
-
-		public int xp {
-			get;
-			private set;
-		}
-
-	}
-
-	sealed class SteamPlayerSkillSheet : MetaGame.PlayerSkillSheet {
-		public const string SKILL_SHEET = "ss[{0}]";
-		public const string SKILL_SHEET_XP = SKILL_SHEET + ".xp";
-
-		public SteamPlayerSkillSheet(int skillSheet) {
-			var deities = new List<MetaGame.DeitySkillSheet>();
-			this.deities = new ReadOnlyCollection<MetaGame.DeitySkillSheet>(deities);
-
-			for (int i = 0; i < MetaGame.Constants.NUM_DEITIES; ++i) {
-				deities.Add(new SteamDeitySkillsSheet(skillSheet, i));
-			}
-
-			int value;
-			if (SteamUserStats.GetStat(string.Format(SKILL_SHEET_XP, skillSheet), out value)) {
-				xp = value;
-			}
-		}
-
-		public ReadOnlyCollection<MetaGame.DeitySkillSheet> deities {
-			get;
-			private set;
-		}
-
-		public int xp {
-			get;
-			private set;
-		}
-	}
-
-	sealed class SteamPlayerSkills : MetaGame.PlayerSkills {
-
-		public static SteamPlayerSkills ReadFromSteam() {
-			return new SteamPlayerSkills();
-		}
-
-		SteamPlayerSkills() {
-			var skills = new List<MetaGame.PlayerSkillSheet>();
-			skillSheets = new ReadOnlyCollection<MetaGame.PlayerSkillSheet>(skills);
-
-			for (int i = 0; i < MetaGame.Constants.NUM_SKILL_SHEETS; ++i) {
-				skills.Add(new SteamPlayerSkillSheet(i));
-			}
-
-			int value = 0;
-			if (!SteamUserStats.GetStat("skver", out value)) {
-				value = 0;
-			}
-			skver = value;
-		}
-
-		public ReadOnlyCollection<MetaGame.PlayerSkillSheet> skillSheets {
-			get;
-			private set;
-		}
-
-		public int skver {
-			get;
-			private set;
-		}
-	}
-
 	public sealed class SteamLocalPlayer : SteamPlayer, OnlineLocalPlayer {
 		readonly string _ticket;
 
-		Callback<SteamInventoryResultReady_t> _cbInventoryReady;
-		Callback<UserStatsReceived_t> _cbUserStatsReceived;
-		List<OnlineLocalPlayerGetInventoryDelegate> _inventoryCallbacks;
-		List<OnlineLocalPlayerGetSkillsDelegate> _skillsCallbacks;
-		bool _didPromoItems;
-
 		public SteamLocalPlayer(SteamServices api, string authTicket) : base(api, SteamUser.GetSteamID(), SteamFriends.GetPersonaName()) {
 			_ticket = authTicket;
-			_cbInventoryReady = Callback<SteamInventoryResultReady_t>.Create(OnInventoryResult);
-			_cbUserStatsReceived = Callback<UserStatsReceived_t>.Create(OnUserStatsReceived);
-			SteamUserStats.RequestCurrentStats();
-		}
-
-		void OnInventoryResult(SteamInventoryResultReady_t param) {
-
-			if (!_didPromoItems) {
-				Debug.Log("Steam_OnInventoryResults: promotional items granted, requesting inventory...");
-				SteamInventory.DestroyResult(param.m_handle);
-				_didPromoItems = true;
-
-				SteamInventoryResult_t result;
-				if (!SteamInventory.GetAllItems(out result)) {
-					Debug.LogError("Steam_OnInventoryResults: inventory request failed.");
-					for (int i = 0; i < _inventoryCallbacks.Count; ++i) {
-						_inventoryCallbacks[i](null);
-					}
-					_inventoryCallbacks.Clear();
-				}
-				return;
-			}
-
-			if ((_inventoryCallbacks != null) && (_inventoryCallbacks.Count > 0)) {
-				if (param.m_result == EResult.k_EResultOK) {
-					uint numItems = 0;
-					if (SteamInventory.GetResultItems(param.m_handle, null, ref numItems)) {
-						var items = new SteamItemDetails_t[numItems];
-						if (SteamInventory.GetResultItems(param.m_handle, items, ref numItems)) {
-							Debug.Log("Steam_OnInventoryResults: inventory successfully retrieved " + numItems + " item(s)." );
-							var inventory = new SteamInventoryContainer(items);
-							for (int i = 0; i < inventory.items.Count; ++i) {
-								var item = inventory.items[i];
-								Debug.Log("Steam_OnInventoryResults: (" + i + ") " + item.itemClass.name + " ilvl " + item.ilvl + " iid + " + item.iid + " id " + item.id);
-							}
-							for (int i = 0; i < _inventoryCallbacks.Count; ++i) {
-								_inventoryCallbacks[i](inventory);
-							}
-							_inventoryCallbacks.Clear();
-						}
-					}
-				} else {
-					Debug.LogError("Steam_OnInventoryResults: inventory request failed with code " + param.m_result);
-					for (int i = 0; i < _inventoryCallbacks.Count; ++i) {
-						_inventoryCallbacks[i](null);
-					}
-					_inventoryCallbacks.Clear();
-				}
-			}
-
-			SteamInventory.DestroyResult(param.m_handle);
-		}
-
-		public void AsyncGetInventory(OnlineLocalPlayerGetInventoryDelegate callback) {
-			if (_inventoryCallbacks == null) {
-				_inventoryCallbacks = new List<OnlineLocalPlayerGetInventoryDelegate>();
-			}
-
-			bool invoke = _inventoryCallbacks.Count == 0;
-
-			if (!_inventoryCallbacks.Contains(callback)) {
-				_inventoryCallbacks.Add(callback);
-			}
-
-			if (invoke) {
-				SteamInventoryResult_t result;
-				if (!_didPromoItems) {
-					Debug.Log("Steam_AsyncGetInventory: Granting promotional items...");
-					if (!SteamInventory.GrantPromoItems(out result)) {
-						_inventoryCallbacks.Clear();
-						callback(null);
-					}
-				} else if (!SteamInventory.GetAllItems(out result)) {
-					Debug.Log("Steam_AsyncGetInventory: Requesting inventory...");
-					for (int i = 0; i < _inventoryCallbacks.Count; ++i) {
-						_inventoryCallbacks[i](null);
-					}
-					_inventoryCallbacks.Clear();
-				}
-			}
-		}
-
-		public void RemovePendingAsyncGetInventoryCallback(OnlineLocalPlayerGetInventoryDelegate callback) {
-			if (_inventoryCallbacks != null) {
-				_inventoryCallbacks.RemoveSwapSlow(callback);
-			}
-		}
-
-		void OnUserStatsReceived(UserStatsReceived_t result) {
-			if (result.m_eResult == EResult.k_EResultOK) {
-				if ((_skillsCallbacks != null) && (_skillsCallbacks.Count > 0)) {
-					var skills = SteamPlayerSkills.ReadFromSteam();
-					for (int i = 0; i <_skillsCallbacks.Count; ++i) {
-						_skillsCallbacks[i](skills);
-					}
-					_skillsCallbacks.Clear();
-				}
-			} else {
-				for (int i = 0; i < _skillsCallbacks.Count; ++i) {
-					_skillsCallbacks[i](null);
-				}
-				_skillsCallbacks.Clear();
-			}
-		}
-
-		public void AsyncGetSkills(OnlineLocalPlayerGetSkillsDelegate callback) {
-			if (_skillsCallbacks == null) {
-				_skillsCallbacks = new List<OnlineLocalPlayerGetSkillsDelegate>();
-			}
-
-			bool invoke = _skillsCallbacks.Count == 0;
-
-			if (!_skillsCallbacks.Contains(callback)) {
-				_skillsCallbacks.Add(callback);
-			}
-
-			if (invoke) {
-				if (!SteamUserStats.RequestCurrentStats()) {
-					_skillsCallbacks.Clear();
-					callback(null);
-				}
-			}
-		}
-
-		public void RemovePendingAsyncGetSkillsCallback(OnlineLocalPlayerGetSkillsDelegate callback) {
-			if (_skillsCallbacks != null) {
-				_skillsCallbacks.RemoveSwapSlow(callback);
-			}
 		}
 
 		public string ticket {
@@ -536,12 +287,13 @@ namespace Bowhead.Online.Steam {
 
 		SteamLocalPlayer _localPlayer;
 
+#pragma warning disable 414
 		Callback<GameRichPresenceJoinRequested_t> _cbGameInviteAccepted;
 		Callback<PersonaStateChange_t> _cbPersonaStateChange;
 		Callback<FriendRichPresenceUpdate_t> _cbRichPresenceUpdate;
 		Callback<AvatarImageLoaded_t> _cbAvatarLoaded;
 		Callback<GameConnectedFriendChatMsg_t> _cbFriendChatMsg;
-
+#pragma warning restore 414
 		HAuthTicket _hticket;
 
 		public SteamServices() {
@@ -848,7 +600,7 @@ namespace Bowhead.Online.Steam {
 			if (player != null) {
 				IntPtr pvData = Marshal.AllocHGlobal(256);
 				EChatEntryType chatEntryType;
-				int getMessage = NativeMethods.ISteamFriends_GetFriendMessage(param.m_steamIDUser, param.m_iMessageID, pvData, 256, out chatEntryType);
+				NativeMethods.ISteamFriends_GetFriendMessage(param.m_steamIDUser, param.m_iMessageID, pvData, 256, out chatEntryType);
 				if (chatEntryType == EChatEntryType.k_EChatEntryTypeTyping) {
 					// TODO: use this for "user is typing" feature (if appropriate)
 				} else if ((chatEntryType == EChatEntryType.k_EChatEntryTypeChatMsg) && (pvData != IntPtr.Zero)) {
@@ -1038,11 +790,11 @@ namespace Bowhead.Online.Steam {
 #endif
         }
 
-		public bool IsPlayingDeadhold(OnlinePlayer player) {
-			return IsPlayingDeadhold(player.id.uuid);
+		public bool IsPlayingThisGame(OnlinePlayer player) {
+			return IsPlayingThisGame(player.id.uuid);
 		}
 
-		public bool IsPlayingDeadhold(ulong id) {
+		public bool IsPlayingThisGame(ulong id) {
 			FriendGameInfo_t gameInfo;
 			if (NativeMethods.ISteamFriends_GetFriendGamePlayed((CSteamID)id, out gameInfo)) {
 				if (gameInfo.m_gameID.m_GameID == APP_ID.m_AppId) {

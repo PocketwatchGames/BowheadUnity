@@ -857,13 +857,6 @@ public partial class World {
 				outNormal = n.normalized;
 				outColor = (Color)c;
 
-				if ((outColor.r < 100) && (outColor.g < 100) && (outColor.b < 100)) {
-					int b = 0;
-				}
-
-				if (outNormal.sqrMagnitude < 0.1f) {
-					int b = 0;
-				}
 			}
 		};
 

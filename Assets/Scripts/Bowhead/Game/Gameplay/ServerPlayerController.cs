@@ -5,7 +5,6 @@ using UnityEngine.Assertions;
 using System.Collections.Generic;
 using System;
 using Bowhead.Actors;
-using Bowhead.Actors.Spells;
 
 namespace Bowhead.Server.Actors {
 	public sealed class ServerPlayerController : PlayerController {
@@ -18,51 +17,32 @@ namespace Bowhead.Server.Actors {
 		float _lastCFuncTime;
 		int _cfuncExecCount;
 		double _lastCmdTime;
-		double _idleTime;
 		int _cmdCount;
 		GameMode _gameMode;
 		ServerWorld _world;
 		float _lastMemCounterTime = -1;
 		float _lastFpsCounterTime = -1;
-		List<Ability> _abilities = new List<Ability>();
 
 		readonly ActorRPC<PlayerState> rpc_Owner_SetPlayerState;
-		readonly ActorRPC<Vector3, float> rpc_Owner_SetStartingPositionAndRotation;
-		readonly ActorRPC<int> rpc_Owner_SetNumPossessedUnits;
+		readonly ActorRPC<Player> rpc_Owner_SetPlayerPawn;
 		readonly ActorRPC<byte, string> rpc_Owner_ConsolePrint;
-		readonly ActorRPC<ExplosiveForce> rpc_Owner_Explosion;
-		readonly ActorRPC<List<Vector3>, float> rpc_Owner_FormationFeedback;
-		readonly ActorRPC<List<Vector3>, List<float>> rpc_Owner_FormationFeedback2;
-		readonly ActorRPC<int> rpc_Owner_SetNumTeamUnits;
 		readonly ActorRPC<PlayerState, string> rpc_Owner_Say;
 		readonly ActorRPC<PlayerState, string> rpc_Owner_SayTeam;
 		readonly ActorRPC<string, float> rpc_Owner_HUDDisplaySubtitle;
-		readonly ActorRPC rpc_Owner_VO_WaveComplete;
-		readonly ActorRPC rpc_Owner_VO_AssassinsSpawned;
-		readonly ActorRPC<int, int> rpc_Owner_ServerGrantedItem;
 
 		public ServerPlayerController() {
 			rpc_Owner_SetPlayerState = BindRPC<PlayerState>(Owner_SetPlayerState);
-			rpc_Owner_SetStartingPositionAndRotation = BindRPC<Vector3, float>(Owner_SetStartingPositionAndRotation);
+			rpc_Owner_SetPlayerPawn = BindRPC<Player>(Owner_SetPlayerPawn);
 			rpc_Owner_ConsolePrint = BindRPC<byte, string>(Owner_ConsolePrint);
-			rpc_Owner_Explosion = BindRPC<ExplosiveForce>(Owner_Explosion);
 			rpc_Owner_Say = BindRPC<PlayerState, string>(Owner_Say);
 			rpc_Owner_SayTeam = BindRPC<PlayerState, string>(Owner_SayTeam);
 			rpc_Owner_HUDDisplaySubtitle = BindRPC<string, float>(base.Owner_HUDDisplaySubtitle);
-			rpc_Owner_VO_WaveComplete = BindRPC(base.Owner_VO_WaveComplete);
-			rpc_Owner_VO_AssassinsSpawned = BindRPC(base.Owner_VO_AssassinsSpawned);
-			rpc_Owner_ServerGrantedItem = BindRPC<int, int>(base.Owner_ServerGrantedItem);
 		}
 
 		public new ServerTeam team {
 			get {
 				return (_playerState != null) ? _playerState.team : null;
 			}
-		}
-
-		public MetaGame.PlayerInventorySkills inventorySkills {
-			get;
-			set;
 		}
 
 		public new ServerPlayerState playerState {
@@ -76,13 +56,11 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		new public void Owner_ServerGrantedItem(int id, int count) {
-			rpc_Owner_ServerGrantedItem.Invoke(id, count);
-		}
-
-		public void SetStartingPositionAndRotation(Vector3 pos, float rot) {
-			Owner_SetStartingPositionAndRotation(pos, rot);
-			rpc_Owner_SetStartingPositionAndRotation.Invoke(pos, rot);
+		public void PossessPlayerPawn(Player playerPawn) {
+			if (playerPawn != this.playerPawn) {
+				Owner_SetPlayerPawn(playerPawn);
+				rpc_Owner_SetPlayerPawn.Invoke(playerPawn);
+			}
 		}
 
 		public override void ConsolePrint(LogType logType, string message) {
@@ -100,8 +78,6 @@ namespace Bowhead.Server.Actors {
 			_gameMode = null;
 			_didFlushCommandRate = false;
 			base.playerState = null;
-			_abilities.Clear();
-			ResetIdleTime();
 		}
 
 		public override void Tick() {
@@ -123,10 +99,6 @@ namespace Bowhead.Server.Actors {
 				}
 			}
 
-			if (inventorySkills != null) {
-				inventorySkills.Tick(world.unscaledDeltaTime);
-			}
-
 #if !UNITY_EDITOR
 			if (gameMode.matchInProgress && (playerState.health > 0)) {
 				_idleTime += world.unscaledDeltaTime;
@@ -139,23 +111,11 @@ namespace Bowhead.Server.Actors {
 #endif
 		}
 
-		void ResetIdleTime() {
-			_idleTime = 0;
-		}
-
 		protected override void Dispose(bool disposing) {
 			base.Dispose(disposing);
-			for (int i = 0; i < _abilities.Count; ++i) {
-				_abilities[i].Destroy();
-			}
-			_abilities.Clear();
 			if (ownerConnection != null) {
 				Assert.IsTrue(ownerConnection.owningPlayer == this);
 				ownerConnection.owningPlayer = null;
-			}
-			if (inventorySkills != null) {
-				inventorySkills.Dispose();
-				inventorySkills = null;
 			}
 		}
 
@@ -163,72 +123,13 @@ namespace Bowhead.Server.Actors {
 			// Be careful not to invoke RPC's on the owning connection since
 			// it's been disconnected.
 			if (playerState != null) {
-				//foreach (var grave in world.GetActorIterator<UnitGravestoneActor>()) {
-				//	if (grave.owner == playerState) {
-				//		grave.Destroy();
-				//	}
-				//}
 				if (playerState.team != null) {
 					playerState.team.RemovePlayerFromTeam(playerState);
 				}
 				playerState.Destroy();
 			}
-
-			/*
-			if (midGame) {
-				KillAllUnits();
-			} else {
-				UnpossesAllUnits();
-			}*/
 		}
 
-		public void NotifyDamageGiven(Actor instigatingActor, ServerPlayerController targetPlayer, DamageableActor targetActor, ImmutableActorPropertyInstance property, float damage) { }
-
-		public void NotifyDamageReceived(ServerPlayerController instigatingPlayer, Actor instigatingActor, DamageableActor targetActor, ImmutableActorPropertyInstance property, float damage) { }
-
-		public void ScoreTeamDamage(Actor instigatingActor, ServerPlayerController targetPlayer, DamageableActor targetActor, ImmutableActorPropertyInstance property, float damage) { }
-
-		public void PossessUnits() {
-			//playerState.soulStonePoints = gameMode.startingSoulStoneCount * gameMode.GetTeamSoulStonePointScale(team);
-
-			_clientHasLoaded = false;
-			playerState.loaded = false;
-
-			//var gear = inventorySkills.ready ? inventorySkills.GetItemStats(playerState.min_ilvl, playerState.max_ilvl) : null;
-
-			//foreach (var unit in world.GetActorIterator<Unit>()) {
-			//	if (unit.spawnTag.owningPlayer != null) {
-			//		if (ReferenceEquals(unit.spawnTag.owningPlayer.playerController, this)) {
-			//			if (isCOOP) {
-			//				unit.ServerInitActorLevel(playerState.scaledLevel);
-			//				if (gear != null) {
-			//					unit.ServerInitActorGear(gear);
-			//				}
-			//			} else {
-			//				unit.ServerInitActorLevel(1);
-			//			}
-			//			unit.ServerClampPropertyValues();
-			//			unit.ServerPossessByPlayer(this);
-			//		}
-			//	}
-			//}
-
-			//Owner_SetNumPossessedUnits(unitsControlledByPlayer.Count);
-			//rpc_Owner_SetNumPossessedUnits.Invoke(unitsControlledByPlayer.Count);
-
-			ownerConnection.ResetTimeoutForTravel();
-		}
-
-		protected override void Server_PickupItem(ItemPickupActor target) {
-			var item = (ItemPickupActorServer)target;
-			if ((item != null) && !item.pendingKill) {
-				if (!item.mousePickup) {
-					throw new Exception("Item is not a mouse pickup item but client is trying to pick it up with an RPC");
-				}
-				item.ServerPickup(this);
-			}
-		}
-		
 		protected override void Server_Say(string text) {
 			CheckCommandRate();
 
@@ -255,38 +156,6 @@ namespace Bowhead.Server.Actors {
 					player.rpc_Owner_SayTeam.Invoke(playerState, text);
 				}
 			}
-		}
-
-		public override void GlobalCooldown(Ability instigator) {
-			for (int i = 0; i < _abilities.Count; ++i) {
-				var ability = _abilities[i];
-				if (ability != instigator) {
-					ability.GlobalCooldown();
-				}
-			}
-		}
-
-		public bool HasInventorySpell(AbilityClass spell, int ilvl) {
-			return inventorySkills.HasInventorySpell(spell, ilvl);
-		}
-
-		public void GlobalAdvanceCooldown(float dt) {
-			for (int i = 0; i < _abilities.Count; ++i) {
-				var ability = _abilities[i];
-				ability.AdvanceCooldown(dt);
-			}
-		}
-
-		public void ReplicateTeamState() {
-			GameState.ReplicateTeamState(world, this);
-		}
-
-		public new void Owner_VO_WaveComplete() {
-			rpc_Owner_VO_WaveComplete.Invoke();
-		}
-
-		public new void Owner_VO_AssassinsSpawned() {
-			rpc_Owner_VO_AssassinsSpawned.Invoke();
 		}
 
 		[CFunc(IsServer = true, PermissionLevel = CFunc.Any)]
@@ -333,10 +202,6 @@ namespace Bowhead.Server.Actors {
 			playerState.loaded = true;
 			ownerConnection.ResetTimeout();
         }
-
-		protected override void Server_ReadyToPlay(bool ready) {
-			playerState.readyToPlay = ready;
-		}
 
 		protected override void Server_ExecuteCFunc(string command) {
 			if (command.Length > 1024) {
@@ -398,15 +263,6 @@ namespace Bowhead.Server.Actors {
 					player.ConsolePrint(type, message);
 				}
 			}
-		}
-
-		public void ClientRunExplosion(ExplosiveForce explosion) {
-			rpc_Owner_Explosion.Invoke(explosion);
-		}
-
-		public int didUseSpell {
-			get;
-			set;
 		}
 
 #if !(BACKEND_SERVER || LOGIN_SERVER)
@@ -609,16 +465,11 @@ namespace Bowhead.Server.Actors {
 		}
 
 		void CheckCommandRate() {
-			ResetIdleTime();
-			if (_gameMode.matchState < GameMode.EMatchState.MatchInProgress) {
-				CheckCommandRate(32); // socket items can flood a bit.
-			} else {
-				if (!_didFlushCommandRate) {
-					_didFlushCommandRate = true;
-					_cmdCount = 0;
-				}
-				CheckCommandRate(MAX_APS);
+			if (!_didFlushCommandRate) {
+				_didFlushCommandRate = true;
+				_cmdCount = 0;
 			}
+			CheckCommandRate(MAX_APS);
 		}
 
 		void CheckCommandRate(int maxAPS) {
@@ -638,24 +489,8 @@ namespace Bowhead.Server.Actors {
 
 		public bool clientHasLoaded {
 			get {
-				return _clientHasLoaded && inventorySkills.ready;
+				return _clientHasLoaded;
 			}
-		}
-
-		public bool readyToPlay {
-			get {
-				return playerState.readyToPlay;
-			}
-		}
-		
-		public int mobLevelBasis {
-			get;
-			set;
-		}
-
-		public float mobXPBasis {
-			get;
-			set;
 		}
 
 		public bool isLocalPlayer {

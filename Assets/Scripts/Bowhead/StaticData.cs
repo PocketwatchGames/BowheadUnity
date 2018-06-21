@@ -28,15 +28,12 @@ namespace Bowhead {
 		public World_ChunkComponent serverTerrainChunkComponent;
 		public RandomNumberTable randomNumberTable;
 		public PhysicalContactMatrix physicalContactMatrix;
-		public MetaGame.InventoryItemLibrary inventoryItemLibrary;
 
 		//[HideInInspector]
 		public Object[] indexedObjects;
 
 		public void OnBeforeSerialize() { }
-		public void OnAfterDeserialize() {
-			inventoryItemLibrary.OnAfterDeserialize();
-		}
+		public void OnAfterDeserialize() { }
 
 #if UNITY_EDITOR
 		void IndexAssets(string[] paths) {
@@ -125,8 +122,6 @@ namespace Bowhead {
 				changed = IndexAssetTypes(typeof(StaticVersionedAsset), indexedObjects) || changed;
 				progress.Step(null);
 				changed = IndexAssetTypes(typeof(StaticVersionedAssetWithSerializationCallback), indexedObjects) || changed;
-				//progress.Step("Indexing Inventory");
-				//var updatedInventory = MetaGame.InventoryItemLibrary.Index(gameManager);
 				progress.Close();
 
 				for (int i = 0; i < indexedObjects.Count; ++i) {
@@ -137,7 +132,7 @@ namespace Bowhead {
 					}
 				}
 								
-				if (changed/* || updatedInventory*/) {
+				if (changed) {
 					if (changed) {
 						gameManager.staticData.indexedObjects = indexedObjects.ToArray();
 					}

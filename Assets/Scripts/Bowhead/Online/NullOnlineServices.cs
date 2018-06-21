@@ -94,42 +94,13 @@ namespace Bowhead.Online.Null {
 		protected override void OnDisposed() { }
 	}
 
-	public sealed class OnlineNullLocalPlayer : OnlineNullPlayer, OnlineLocalPlayer, MetaGame.ImmutableInventory, MetaGame.PlayerSkills {
+	public sealed class OnlineNullLocalPlayer : OnlineNullPlayer, OnlineLocalPlayer {
 
-		ReadOnlyCollection<MetaGame.InventoryItem> _items;
-		ReadOnlyCollection<MetaGame.PlayerSkillSheet> _skills;
-
-		public OnlineNullLocalPlayer() : base(OnlineNullPlayerID.GetLocalPlayerPersistentID(), true) {
-			_items = new ReadOnlyCollection<MetaGame.InventoryItem>(new MetaGame.InventoryItem[] { });
-			_skills = new ReadOnlyCollection<MetaGame.PlayerSkillSheet>(new MetaGame.PlayerSkillSheet[] { });
-		}
+		public OnlineNullLocalPlayer() : base(OnlineNullPlayerID.GetLocalPlayerPersistentID(), true) { }
 
 		public string ticket {
 			get {
 				return "INVALID";
-			}
-		}
-
-		public void AsyncGetInventory(OnlineLocalPlayerGetInventoryDelegate callback) {
-			callback(this);
-		}
-
-		public void AsyncGetSkills(OnlineLocalPlayerGetSkillsDelegate callback) {
-			callback(this);
-		}
-
-		public void RemovePendingAsyncGetInventoryCallback(OnlineLocalPlayerGetInventoryDelegate callback) { }
-		public void RemovePendingAsyncGetSkillsCallback(OnlineLocalPlayerGetSkillsDelegate callback) { }
-
-		public ReadOnlyCollection<MetaGame.InventoryItem> items {
-			get {
-				return _items;
-			}
-		}
-
-		public ReadOnlyCollection<MetaGame.PlayerSkillSheet> skillSheets {
-			get {
-				return _skills;
 			}
 		}
 
@@ -208,8 +179,12 @@ namespace Bowhead.Online.Null {
 			}
 		}
 
-		public bool IsPlayingDeadhold(OnlinePlayer player) {
-			return false;
+		public bool IsPlayingThisGame(OnlinePlayer player) {
+			return IsPlayingThisGame(player.id.uuid);
+		}
+
+		public bool IsPlayingThisGame(ulong id) {
+			return id == _localPlayer.id.uuid;
 		}
 
 		public void SendPrivateMessage(OnlinePlayer player, string text) { }
@@ -218,9 +193,7 @@ namespace Bowhead.Online.Null {
 			return false;
 		}
 
-		public bool IsPlayingDeadhold(ulong id) {
-			return false;
-		}
+		
 
 		public void SendPrivateMessage(ulong id, string text) { }
 

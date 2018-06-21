@@ -105,6 +105,29 @@ public struct LocalVoxelPos_t {
 	}
 };
 
+[Flags]
+public enum EVoxelBlockType : byte {
+	AIR = 0,
+	DIRT,
+	GRASS,
+	WATER,
+	SAND,
+	SNOW,
+	ROCK,
+	ICE,
+	WOOD,
+	LEAVES,
+	NEEDLES,
+	FLOWERS1,
+	FLOWERS2,
+	FLOWERS3,
+	FLOWERS4,
+	NUM_BLOCK_TYPES,
+	MAX = 0x20-1,
+	FULL_VOXEL_FLAG = 0x80,
+	FLAGS_MASK = FULL_VOXEL_FLAG
+};
+
 public partial class World {
 
 	public const int VOXEL_CHUNK_VIS_MAX_XZ = 16;
@@ -117,28 +140,7 @@ public partial class World {
 		return (dim*2) + 1;
 	}
 
-	[Flags]
-	public enum EVoxelBlockType : byte {
-		AIR = 0,
-		DIRT,
-		GRASS,
-		WATER,
-		SAND,
-		SNOW,
-		ROCK,
-		ICE,
-		WOOD,
-		LEAVES,
-		NEEDLES,
-		FLOWERS1,
-		FLOWERS2,
-		FLOWERS3,
-		FLOWERS4,
-		NUM_BLOCK_TYPES,
-		MAX = 0x20-1,
-		FULL_VOXEL_FLAG = 0x80,
-		FLAGS_MASK = FULL_VOXEL_FLAG
-	};
+	
 
 	[Flags]
 	public enum EChunkFlags {

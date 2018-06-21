@@ -489,7 +489,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4562414654723280}
-  - component: {fileID: 114535121868281914}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -2688,96 +2687,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &114535121868281914
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1411323291629904}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57809b20007a4014d81158fafd30179d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  world: {fileID: 0}
-  _data: {fileID: 11400000, guid: 0e77a8b767627304dbc82fa17ba496c5, type: 2}
-  removeFlag: 0
-  spawned: 0
-  team: 0
-  position: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
-  yaw: 0
-  moveImpulse: {x: 0, y: 0, z: 0}
-  moveImpulseTimer: 0
-  health: 0
-  maxHealth: 0
-  stamina: 0
-  maxStamina: 0
-  recovering: 0
-  recoveryTimer: 0
-  dodgeTimer: 0
-  stunned: 0
-  stunTimer: 0
-  stunAmount: 0
-  interpolateFrom: {x: 0, y: 0, z: 0}
-  interpolateTime: 0
-  interpolateTimeTotal: 0
-  activity: 0
-  climbingNormal: {x: 0, y: 0, z: 0}
-  fallJumpTimer: 0
-  maxHorizontalSpeed: 0
-  sliding: 0
-  canMove: 0
-  canRun: 0
-  canJump: 0
-  canClimb: 0
-  canClimbWell: 0
-  canSwim: 0
-  canTurn: 0
-  canAttack: 0
-  attackTarget: {fileID: 0}
-  lockedToTarget: 0
-  _inventory:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  spawnPoint: {x: 0, y: 0, z: 0}
-  mapPos: {x: 0, y: 0}
-  money: 0
-  weight: 0
-  dropTimer: 0
-  thirst: 0
-  maxThirst: 0
-  temperature: 0
 --- !u!137 &137163706001874606
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

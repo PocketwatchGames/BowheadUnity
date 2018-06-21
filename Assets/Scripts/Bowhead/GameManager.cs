@@ -77,7 +77,6 @@ namespace Bowhead {
 		GameObject _serverObjectGroup;
 		GameObject _staticObjectPoolRoot;
 		GameObject _transientObjectPoolRoot;
-		GameObject _uma;
 		Dictionary<Material, Dictionary<int, Material>> _teamColorMaterials = new Dictionary<Material, Dictionary<int, Material>>();
 
 		Server.ServerWorld _server;
@@ -187,6 +186,7 @@ namespace Bowhead {
 			}
 
 			World.Streaming.StaticInit();
+			DataManager.InitData();
 
 			SceneManager.sceneLoaded += LevelWasLoaded;
 
@@ -822,7 +822,7 @@ namespace Bowhead {
 //										ilvl = staticData.inventoryItemLibrary.GetIDiLvl(id);
 //									}
 //									for (int i = 0; i < _PIEDropItemCount; ++i) {
-//										var pickup = _server.Spawn<Actors.ItemPickupActorServer>(null, SpawnParameters.defaultParameters);
+//										var pickup = _server.Spawn<Actors.ItemPickupActorServer>(null, default(SpawnParameters));
 //										pickup.ServerInit(_PIEDropItemLocation.transform.position, _server.gameMode.players[0], _PIETestDropItemClass, ilvl, id, 1);
 //									}
 //								}
@@ -949,7 +949,7 @@ namespace Bowhead {
 			}
 
 			//escapeMenu = null;
-			_uma = null;
+			//_uma = null;
 			//_umaGenerator = null;
 		}
 

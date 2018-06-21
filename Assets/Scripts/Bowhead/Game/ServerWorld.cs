@@ -10,9 +10,6 @@ namespace Bowhead.Server {
 	public class ServerWorld : global::Server.ServerWorld {
 
 		GameMode _gameMode;
-		//Actors.UnitMovement _unitMovement;
-		//BTScripting.UnitClustering _unitClustering;
-		Bowhead.Actors.FogOfWarController _fogOfWar;
 		
 		public ServerWorld(
 			World_ChunkComponent chunkComponent,
@@ -22,23 +19,13 @@ namespace Bowhead.Server {
 			System.Reflection.Assembly[] assemblies,
 			NetDriver driver
 		) : base(null, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, serverName, serverMessage, assemblies, driver) {
-			//_unitMovement = new Actors.UnitMovement();
         }
 
 		protected override void TickActors(MonoBehaviour loadingContext) {
 			if (_gameMode != null) {
 				_gameMode.Tick(deltaTime);
 			}
-			if (_fogOfWar != null) {
-				_fogOfWar.Tick(deltaTime);
-			}
-			//_unitMovement.Tick();
 			base.TickActors(loadingContext);
-			//if (_unitClustering != null) {
-				// update clustering after actors so they are ready for squad coroutines
-			//	_unitClustering.Tick(deltaTime);
-			//}
-			//Scripting.UnitSquad.UpdateAllSquads();
 		}
 
 		public void BeginTravel(string travelLevel, Type gameMode) {
@@ -55,18 +42,6 @@ namespace Bowhead.Server {
 				throw new System.Exception("Invalid game mode class!");
 			}
 
-			//_unitMovement.BeginTravel();
-
-			//if (typeof(COOP).IsAssignableFrom(gameMode) || typeof(Horde).IsAssignableFrom(gameMode) || typeof(Tutorial).IsAssignableFrom(gameMode)) {
-				//if (_unitClustering == null) {
-				//	_unitClustering = new BTScripting.UnitClustering();
-				//} else {
-				//	_unitClustering.BeginTravel();
-				//}
-			//} else {
-				//_unitClustering = null;
-			//}
-
 			_gameMode = (GameMode)constructor.Invoke(new[] { this });
 			_gameMode.PreTravel();
 
@@ -81,12 +56,9 @@ namespace Bowhead.Server {
 
 			_gameMode.BeginTravel();
 
-			//Scripting.UnitSquad.ClearActive();
-			Bowhead.Actors.ExplosionProjectileActor.ClearWaterDuds();
 		}
 
 		public override void NotifySceneLoaded() {
-			_fogOfWar = new Bowhead.Actors.FogOfWarController(this, 1f);
 			_gameMode.NotifySceneLoaded();
 			base.NotifySceneLoaded();
 		}
@@ -105,7 +77,6 @@ namespace Bowhead.Server {
 
 		protected override void Dispose(bool disposing) {
 			base.Dispose(disposing);
-			//Scripting.UnitSquad.ClearActive();
 		}
 
 		public override void OnConnect(NetDriverConnection connection) {
@@ -167,24 +138,6 @@ namespace Bowhead.Server {
 		public GameMode gameMode {
 			get {
 				return _gameMode;
-			}
-		}
-
-		//public Actors.UnitMovement unitMovement {
-		//	get {
-		//		return _unitMovement;
-		//	}
-		//}
-
-		//public BTScripting.UnitClustering unitClustering {
-		//	get {
-		//		return _unitClustering;
-		//	}
-		//}
-
-		public Bowhead.Actors.FogOfWarController fogOfWar {
-			get {
-				return _fogOfWar;
 			}
 		}
 	}

@@ -438,7 +438,6 @@ public partial class World {
 				count = 0;
 
 				var zPitch = MaxVoxelChunkLine(xzSize);
-				var yPitch = zPitch * zPitch;
 				var yDim = MaxVoxelChunkLine(ySize);
 
 				var xorg = curPos.cx - xzSize;

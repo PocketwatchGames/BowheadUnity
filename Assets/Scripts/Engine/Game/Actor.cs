@@ -10,15 +10,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 
 public struct SpawnParameters {
-	public Vector3 pos;
-	public Quaternion q;
 	public Action<Actor> preConstruct;
-	
-	public static SpawnParameters defaultParameters {
-		get {
-			return new SpawnParameters();
-		}
-	}
 }
 
 public enum ERemoteRole {
@@ -254,8 +246,6 @@ public abstract class Actor : ActorRPCObject {
 	public void SetOwnerOnly(bool ownerOnly) {
 		_ownerOnly = ownerOnly;
 	}
-
-	public virtual void Spawn(int forClassID, SpawnParameters spawnArgs) {	}
 
 	public void SetSpawnTagID(ushort spawnID) {
 		_spawnTagID = spawnID;

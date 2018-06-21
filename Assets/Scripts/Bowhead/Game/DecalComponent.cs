@@ -146,7 +146,7 @@ namespace Bowhead {
 				SetupEditorDecalPreview();
 			}
 
-			EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
+			EditorApplication.hierarchyChanged += OnHierarchyChanged;
 		}
 
 		static void OnEditorPlay() {

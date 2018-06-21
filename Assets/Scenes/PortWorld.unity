@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -124,7 +124,6 @@ GameObject:
   - component: {fileID: 319274348}
   - component: {fileID: 319274347}
   - component: {fileID: 319274346}
-  - component: {fileID: 319274350}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -195,24 +194,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &319274350
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 319274345}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 51c15bfe64f8ce74888571ee00cc0c16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _world: {fileID: 807073565}
-  lookAtFriction: 10
-  lookAtAcceleration: 20
-  lookAtLeadDist: 5
-  cameraFriction: 10
-  minDistance: 10
-  maxDistance: 25
 --- !u!1 &571105227
 GameObject:
   m_ObjectHideFlags: 0
@@ -318,7 +299,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0b3810991cb4f748904ca4c930b1287, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _world: {fileID: 807073565}
   _inventoryPrefab: {fileID: 114904058803911864, guid: 9b4b4fb52c164b540a19582b7aedae2e,
     type: 2}
   _playerStatePrefab: {fileID: 114420713084272816, guid: 8226cdbdf3116c74b9cc6071c8f58474,
@@ -365,12 +345,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   worldTime: 0
   spawnPoint: {x: 16, y: 500, z: 16}
+  time: 0
   data: {fileID: 11400000, guid: fa305b599b1247e4992d1765ed5db134, type: 2}
   player: {fileID: 0}
   critters: {fileID: 0}
   items: {fileID: 0}
   allItems: []
-  camera: {fileID: 319274350}
+  camera: {fileID: 0}
 --- !u!1001 &1178023822
 Prefab:
   m_ObjectHideFlags: 0

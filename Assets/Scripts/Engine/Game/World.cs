@@ -544,7 +544,6 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		actor.PreConstruct(outer);
 		actor.Construct();
 		actor.PostConstruct();
-		actor.Spawn(classID, spawnArgs);
 
 		if (_didLevelStart) {
 			actor.OnLevelStart();

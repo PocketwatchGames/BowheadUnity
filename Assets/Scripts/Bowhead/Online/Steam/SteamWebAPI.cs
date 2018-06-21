@@ -136,7 +136,7 @@ namespace Bowhead.Online.SteamWebAPI {
 			args.Add(new KeyValuePair<string, string>("steamid", steamID.ToString()));
 
 			using (var webReq = instance.HTTPGET(args)) {
-				yield return webReq.Send();
+				yield return webReq.SendWebRequest();
 
 				if (webReq.isNetworkError) {
 					throw new Exception(webReq.error);
@@ -199,7 +199,7 @@ namespace Bowhead.Online.SteamWebAPI {
 			}
 
 			using (var webReq = instance.HTTPPOST(args)) {
-				yield return webReq.Send();
+				yield return webReq.SendWebRequest();
 
 				if (webReq.isNetworkError) {
 					throw new Exception(webReq.error);
@@ -274,7 +274,7 @@ namespace Bowhead.Online.SteamWebAPI {
 			args.Add(new KeyValuePair<string, string>("steamid", steamID.ToString()));
 
 			using (var webReq = instance.HTTPGET(args)) {
-				yield return webReq.Send();
+				yield return webReq.SendWebRequest();
 
 				if (webReq.isNetworkError) {
 					throw new Exception(webReq.error);
@@ -343,7 +343,7 @@ namespace Bowhead.Online.SteamWebAPI {
 			}
 
 			using (var webReq = instance.HTTPPOST(args)) {
-				yield return webReq.Send();
+				yield return webReq.SendWebRequest();
 
 				if (webReq.isNetworkError) {
 					throw new Exception(webReq.error);
@@ -409,7 +409,7 @@ namespace Bowhead.Online.SteamWebAPI {
 			args.Add(new KeyValuePair<string, string>("trade_start_time", ((int)Math.Floor((DateTime.UtcNow-Jan1970).TotalSeconds)).ToString()));
 
 			using (var webReq = instance.HTTPPOST(args)) {
-				yield return webReq.Send();
+				yield return webReq.SendWebRequest();
 
 				if (webReq.isNetworkError) {
 					throw new Exception(webReq.error);
@@ -467,7 +467,7 @@ namespace Bowhead.Online.SteamWebAPI {
 			args.Add(new KeyValuePair<string, string>("itemdefs", stringBuilder.ToString()));
 
 			using (var webReq = instance.HTTPPOST(args)) {
-				var req = webReq.Send();
+				var req = webReq.SendWebRequest();
 
 				while (!req.isDone) {
 					yield return null;

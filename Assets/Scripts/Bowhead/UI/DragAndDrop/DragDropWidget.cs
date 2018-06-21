@@ -9,7 +9,6 @@ namespace Bowhead.Client.UI {
 
 		static Vector2 _itemStart;
 		static Vector2 _mouseStart;
-		static Transform _itemParent;
 		static Transform _dragItem;
 		static DragDropTarget _target;
 		static DragDropWidget _active;
@@ -32,7 +31,6 @@ namespace Bowhead.Client.UI {
 			_active = this;
 			_dragItem = CreateDragItem();
 
-			_itemParent = _dragItem.parent;
 			_dragItem.SetParent(GameManager.instance.tooltipCanvas, false);
 
 			_itemStart = transform.position;

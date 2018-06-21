@@ -14,52 +14,19 @@ namespace Bowhead.Actors {
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
 		Team _team;
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		Color _primaryColor;
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		Color _secondaryColor;
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
 		int _permissionLevel;
-#if !(LOGIN_SERVER || BACKEND_SERVER)
+#if !(STEAM_API || DEDICATED_SERVER)
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
 		string _playerName;
 #endif
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
 		ulong _onlineUUID;
-		[Replicated(Notify = "OnRep_Score")]
-		int _score;
-		[Replicated(Notify = "OnRep_Score")]
-		int _score2;
-		[Replicated(Notify = "OnRep_xp")]
-		int _xp;
-		[Replicated(Notify = "OnRep_Health")]
-		float _health;
-		[Replicated(Notify = "OnRep_Winner")]
-		bool _winner;
 		[Replicated(Notify = "OnRep_Loaded")]
 		bool _loaded;
 		
 		public PlayerState() {
 			SetReplicates(true);
 			SetReplicateRate(1/4f);
-			_health = 1f;
-		}
-
-		public Color primaryColor {
-			get {
-				return _primaryColor;
-			}
-			protected set {
-				_primaryColor = value;
-			}
-		}
-
-		public Color secondaryColor {
-			get {
-				return _secondaryColor;
-			}
-			protected set {
-				_secondaryColor = value;
-			}
 		}
 
 		public Team team {
@@ -77,13 +44,7 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public float spellPower {
-			get {
-				return 1f;// GameManager.instance.staticData.xpTable.GetSpellPower(_drop_ilvl);
-			}
-		}
-
-#if !(LOGIN_SERVER || BACKEND_SERVER)
+#if !(STEAM_API || DEDICATED_SERVER)
 		public string playerName {
 			get {
 				return _playerName;
@@ -92,7 +53,7 @@ namespace Bowhead.Actors {
 				_playerName = value;
 			}
 		}
-#else
+#elif !DEDICATED_SERVER
 		public string playerName {
 			get;
 			set;
@@ -113,27 +74,7 @@ namespace Bowhead.Actors {
 			_permissionLevel = level;
 		}
 
-		protected void Multicast_SetiLvl(ushort ilvl, ushort base_ilvl) {
-
-		}
-
-		protected virtual void OnRep_Score() {
-			if (!hasAuthority && (hud != null)) {
-				//hud.OnPlayerScoreChanged(this);
-			}
-		}
-
-		protected virtual void OnRep_Health() {
-			if (!hasAuthority && (hud != null)) {
-				hud.OnPlayerHealthChanged(this);
-			}
-		}
-
-		protected virtual void OnRep_Winner() {
-			if (!hasAuthority && (hud != null)) {
-				hud.OnPlayerWinningChanged();
-			}
-		}
+		protected void Multicast_SetiLvl(ushort ilvl, ushort base_ilvl) {}
 
 		protected virtual void OnRep_Loaded() {
 			if (!hasAuthority && (hud != null)) {
@@ -141,21 +82,9 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		protected virtual void OnRep_xp() {
-			if (!hasAuthority && (hud != null)) {
-				//hud.OnPlayerScoreChanged(this);
-			}
-		}
-
-		protected virtual void OnRep_level() {
-			if (!hasAuthority && (hud != null)) {
-				//hud.OnPlayerScoreChanged(this);
-			}
-		}
-
 		public override void PostNetConstruct() {
 			base.PostNetConstruct();
-#if !DEDICATED_SERVER && LOGIN_SERVER
+#if !(STEAM_API || DEDICATED_SERVER)
 			GetOnlinePlayerInfo();
 #else
 			if (hud != null) {
@@ -164,7 +93,7 @@ namespace Bowhead.Actors {
 #endif
 		}
 
-#if !DEDICATED_SERVER && LOGIN_SERVER
+#if !(STEAM_API || DEDICATED_SERVER)
 		void GetOnlinePlayerInfo() {
 			var onlineServices = GameManager.instance.onlineServices;
 			onlineServices.AsyncGetOnlinePlayer(onlineServices.GetOnlinePlayerID(onlineUUID), AsyncOnlinePlayerCallback);
@@ -183,7 +112,7 @@ namespace Bowhead.Actors {
 #endif
 
 		protected override void Dispose(bool disposing) {
-#if !DEDICATED_SERVER && LOGIN_SERVER
+#if !(STEAM_API || DEDICATED_SERVER)
 			GameManager.instance.onlineServices.RemovePendingAsyncGetOnlinePlayerCallback(AsyncOnlinePlayerCallback);
 #endif
 			if (!world.isTraveling && (hud != null)) {
@@ -203,52 +132,7 @@ namespace Bowhead.Actors {
 				return ((localPlayer != null) && (localPlayer.gameState != null)) ? localPlayer.gameState.hud : null;
 			}
 		}
-
-		public int score {
-			get {
-				return _score;
-			}
-			protected set {
-				_score = value;
-			}
-		}
-
-		public int score2 {
-			get {
-				return _score2;
-			}
-			protected set {
-				_score2 = value;
-			}
-		}
-
-		public int xp {
-			get {
-				return _xp;
-			}
-			protected set {
-				_xp = value;
-			}
-		}
-
-		public float health {
-			get {
-				return _health;
-			}
-			protected set {
-				_health = value;
-			}
-		}
-
-		public bool winner {
-			get {
-				return _winner;
-			}
-			protected set {
-				_winner = value;
-			}
-		}
-
+		
 		public bool loaded {
 			get {
 				return _loaded;
@@ -258,16 +142,7 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public override Type clientType {
-			get {
-				return typeof(PlayerState);
-			}
-		}
-
-		public override Type serverType {
-			get {
-				return typeof(Server.Actors.ServerPlayerState);
-			}
-		}
+		public override Type clientType => typeof(PlayerState);
+		public override Type serverType => typeof(Server.Actors.ServerPlayerState);
 	}
 }

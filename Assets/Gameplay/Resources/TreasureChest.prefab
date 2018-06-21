@@ -22,7 +22,6 @@ GameObject:
   - component: {fileID: 33533748564291328}
   - component: {fileID: 23115279899598594}
   - component: {fileID: 135126170332528004}
-  - component: {fileID: 114714414391910164}
   m_Layer: 0
   m_Name: TreasureChest
   m_TagString: Untagged
@@ -85,25 +84,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1430339218605232}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!114 &114714414391910164
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1430339218605232}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 902abbf63f37952428cb345052d7d720, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  world: {fileID: 0}
-  _data: {fileID: 0}
-  inMotion: 0
-  position: {x: 0, y: 0, z: 0}
-  velocity: {x: 0, y: 0, z: 0}
-  spawned: 0
-  yaw: 0
-  item: {fileID: 0}
 --- !u!135 &135126170332528004
 SphereCollider:
   m_ObjectHideFlags: 1

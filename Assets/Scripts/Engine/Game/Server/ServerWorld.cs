@@ -203,7 +203,7 @@ namespace Server {
 				if (tag.type == null) {
 					Debug.LogError("ActorSpawnTag cannot load type: " + tag.typeName);
 				} else if (tag.staticSpawn) {
-					Spawn(tag, null, SpawnParameters.defaultParameters);
+					Spawn(tag, null, default(SpawnParameters));
 				}
 			}
 		}

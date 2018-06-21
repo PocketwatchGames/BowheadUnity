@@ -21,17 +21,6 @@ namespace Bowhead.Actors {
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
 		int _teamNumber;
 
-		[Replicated(Condition = EReplicateCondition.InitialOnly)]
-		Color _teamColor;
-
-		[Replicated(Notify = "OnRep_Score")]
-		int _score;
-		[Replicated(Notify = "OnRep_Score")]
-		int _score2;
-
-		[Replicated(Notify = "OnRep_Winning")]
-		bool _winning;
-
 		ReadOnlyCollectionEx<PlayerState> _roPlayers = new ReadOnlyCollectionEx<PlayerState>(new List<PlayerState>());
 		
 		public Team() {
@@ -45,42 +34,6 @@ namespace Bowhead.Actors {
 			}
 			protected set {
 				_teamNumber = value;
-			}
-		}
-
-		public Color teamColor {
-			get {
-				return _teamColor;
-			}
-			protected set {
-				_teamColor = value;
-			}
-		}
-
-		public int score {
-			get {
-				return _score;
-			}
-			protected set {
-				_score = value;
-			}
-		}
-
-		public int score2 {
-			get {
-				return _score2;
-			}
-			protected set {
-				_score2 = value;
-			}
-		}
-
-		public bool winning {
-			get {
-				return _winning;
-			}
-			protected set {
-				_winning = value;
 			}
 		}
 
@@ -110,20 +63,6 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		protected virtual void OnRep_Score() {
-			var localPlayer = Client.Actors.ClientPlayerController.localPlayer;
-			if ((localPlayer != null) && (localPlayer.gameState != null) && (localPlayer.gameState.hud != null)) {
-				localPlayer.gameState.hud.OnTeamScoreChanged(this);
-			}
-		}
-
-		protected virtual void OnRep_Winning() {
-			var localPlayer = Client.Actors.ClientPlayerController.localPlayer;
-			if ((localPlayer != null) && (localPlayer.gameState != null) && (localPlayer.gameState.hud != null)) {
-				localPlayer.gameState.hud.OnTeamWinningChanged();
-			}
-		}
-
 		[RPC(ERPCDomain.Multicast)]
 		protected void NetMulticast_AddPlayerToTeam(PlayerState player) {
 			if (_players == null) {
@@ -142,16 +81,7 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public override Type clientType {
-			get {
-				return typeof(Team);
-			}
-		}
-
-		public override Type serverType {
-			get {
-				return typeof(Server.Actors.ServerTeam);
-			}
-		}
+		public override Type clientType => typeof(Team);
+		public override Type serverType => typeof(Server.Actors.ServerTeam);
 	}
 }

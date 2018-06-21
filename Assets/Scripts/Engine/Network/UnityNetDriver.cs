@@ -51,7 +51,7 @@ public class UnityNetDriver : NetDriver {
 		config.MaxSentMessageQueueSize = ushort.MaxValue;
 		config.MaxCombinedReliableMessageCount = ushort.MaxValue;
 		config.MaxCombinedReliableMessageSize = 1024;
-		config.IsAcksLong = true;
+		config.AcksType = ConnectionAcksType.Acks64;
 
 		hostReliableChannelID = config.AddChannel(QosType.ReliableSequenced);
 		hostUnreliableChannelID = config.AddChannel(QosType.Unreliable);
@@ -80,7 +80,7 @@ public class UnityNetDriver : NetDriver {
 		config.MaxSentMessageQueueSize = ushort.MaxValue;
 		config.MaxCombinedReliableMessageCount = ushort.MaxValue;
 		config.MaxCombinedReliableMessageSize = 1024;
-		config.IsAcksLong = true;
+		config.AcksType = ConnectionAcksType.Acks64;
 
 		clientReliableChannelID = config.AddChannel(QosType.ReliableSequenced);
 		clientUnreliableChannelID = config.AddChannel(QosType.Unreliable);

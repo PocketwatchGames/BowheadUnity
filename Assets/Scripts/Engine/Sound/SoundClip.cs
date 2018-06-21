@@ -150,6 +150,12 @@ public class SoundClip : VersionedObjectWithSerializationCallback {
 		}
 
 		version = VERSION;
+
+		ShutTheFuckUpCompilerWarnings();
+	}
+
+	void ShutTheFuckUpCompilerWarnings() {
+		if (_recycleThreshold > 0) { }
 	}
 
 	[MenuItem("Assets/Create/Engine/Sound Clip")]

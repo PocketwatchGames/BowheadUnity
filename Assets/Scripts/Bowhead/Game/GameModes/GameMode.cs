@@ -58,22 +58,13 @@ namespace Bowhead.Server {
 		double _gameTime;
 		int _timerAsInt;
 		bool _oldOvertimeEnabled;
-		bool _perfTest;
 		bool _endMatch;
 		bool _readyForConnect;
 		List<ServerPlayerController> _players = new List<ServerPlayerController>();
-		List<int> _teamScoreIndices;
-		List<int> _teamAliveCount = new List<int>();
 		List<Actors.ServerTeam> _teams = new List<Actors.ServerTeam>();
 
 		ReadOnlyCollection<Actors.ServerTeam> _roTeams;
 		ReadOnlyCollection<ServerPlayerController> _roPlayers;
-
-#if BACKEND_SERVER
-		float _waitTime;
-#elif !SHIP
-		bool _didInitInventory;
-#endif
 
 		protected GameMode(ServerWorld world) {
 			_world = world;
@@ -91,22 +82,6 @@ namespace Bowhead.Server {
 				case EMatchState.WaitingForPlayers:
 					TickTravelPlayers();
 					_readyForConnect = true;
-#if !(SHIP || BACKEND_SERVER)
-					if (!_didInitInventory && allPlayersConnected) {
-						bool ready = true;
-						for (int i = 0; i < players.Count; ++i) {
-							var player = players[i];
-							if (!player.inventorySkills.ready) {
-								ready = false;
-								break;
-							}
-						}
-
-						if (ready) {
-							_didInitInventory = true;
-						}
-					}
-#endif
 					if (allPlayersLoaded) {
 							_timer = matchPlayTime;
 							if (matchIsTimed) {
@@ -133,12 +108,7 @@ namespace Bowhead.Server {
 						_timer -= dt;
 					}
 
-					InternalScoreMatch(dt);
-
 					if (matchIsOverFlag) {
-						if (scoreRemainingTime && matchIsTimed) {
-							ScoreRemainingTime(Mathf.Max(_timer, 0f));
-						}
 						_nonReplicatedTimer = Mathf.Min(delayUntilMatchFreeze, delayUntilExit);
 						_timer = delayUntilExit;
 
@@ -241,18 +211,6 @@ namespace Bowhead.Server {
 			}
 		}
 		
-		bool allPlayersReadyToPlay {
-			get {
-				for (int i = 0; i < _players.Count; ++i) {
-					var player = _players[i];
-					if (!player.readyToPlay) {
-						return false;
-					}
-				}
-				return true;
-			}
-		}
-
 		void ReplicateTimer() {
 			if (_gameState != null) {
 				var curTimer = matchTimer;
@@ -277,259 +235,6 @@ namespace Bowhead.Server {
 		protected virtual void OnMatchComplete() { }
 		protected virtual void OnMatchFreeze() { }
 		protected virtual void OnMatchExit() { }
-
-		public void NotifyDamage(ServerPlayerController instigatingPlayer, Actor instigatingActor, ServerPlayerController targetPlayer, DamageableActor targetActor, ImmutableActorPropertyInstance property, float damage) {
-			if (matchState > EMatchState.MatchOvertime) {
-				return;
-			}
-
-			if (instigatingPlayer != null) {
-				instigatingPlayer.NotifyDamageGiven(instigatingActor, targetPlayer, targetActor, property, damage);
-			}
-
-			if (targetPlayer != null) {
-				targetPlayer.NotifyDamageReceived(instigatingPlayer, instigatingActor, targetActor, property, damage);
-			}
-
-			ScoreDamage(instigatingPlayer, instigatingActor, targetPlayer, targetActor, property, damage);
-		}
-
-		public void NotifyKill(ServerPlayerController instigatingPlayer, Actor instigatingActor, ServerPlayerController targetPlayer, DamageableActor targetActor) {
-			if (matchState > EMatchState.MatchOvertime) {
-				return;
-			}
-
-			/*var uActor = instigatingActor as Unit;
-			if ((uActor != null) && !(uActor.dead || uActor.pendingKill)) {
-				var tActor = targetActor as ActorWithTeam;
-				if (tActor != null) {
-					if (!uActor.IsFriendly(tActor)) {
-						uActor.ServerIncrementKills();
-					}
-				}
-			}*/
-
-			ScoreKill(instigatingPlayer, instigatingActor, targetPlayer, targetActor);
-		}
-
-		//public void GrantTeamXP(Team team, float xp, int actorLevel, MetaGame.MissionObjective objective, UnitClass killed) {
-		//	var xpTable = GameManager.instance.staticData.xpTable;
-
-		//	// everyone on team gets credit
-		//	for (int i = 0; i < players.Count; ++i) {
-		//		var player = players[i];
-		//		if (player.team == team) {
-		//			if (actorLevel >= mobLevel.mobLevel.x) {
-		//				actorLevel = Mathf.Max(1, actorLevel - mobLevel.mobLevel.x + player.mobLevelBasis);
-		//			}
-
-		//			var xpScale = xpTable.GetXPScale(actorLevel);
-		//			var ixp = Mathf.FloorToInt((xpScale*xp)+0.5f);
-		//			if (ixp > 0) {
-		//				var xpBasis = xpScale / player.mobXPBasis;
-		//				var deityXP = Mathf.FloorToInt(xp*xpBasis);
-
-		//				player.inventorySkills.GrantXP(player.playerState.primaryDeity, player.playerState.secondaryDeity, ixp, deityXP);
-		//				player.Owner_XPReward(objective, killed, ixp, deityXP);
-		//				player.playerState.xp = player.inventorySkills.xp;
-		//			}
-		//		}
-		//	}
-		//}
-
-		protected virtual void ScoreDamage(ServerPlayerController instigatingPlayer, Actor instigatingActor, ServerPlayerController targetPlayer, DamageableActor targetActor, ImmutableActorPropertyInstance property, float damage) {}
-		protected virtual void ScoreKill(ServerPlayerController instigatingPlayer, Actor instigatingActor, ServerPlayerController targetPlayer, DamageableActor targetActor) { }
-		//protected virtual void ScorePlayerGoalPoints(ServerPlayerController player, GoalPoints points, float dt) { }
-		//protected virtual void ScoreTeamGoalPoints(Actors.ServerTeam team, GoalPoints points, float dt) { }
-
-		void InternalScoreMatch(float dt) {
-			if (teamDeadWhenAllPlayersDead) {
-				for (int i = 0; i < _players.Count; ++i) {
-					var player = _players[i];
-					if (player.playerState.health <= 0f) {
-						player.playerState.score = 0f;
-						player.playerState.score2 = 0f;
-					}
-				}
-
-				for (int i = 0; i < _teams.Count; ++i) {
-					var team = _teams[i];
-					var canScore = false;
-					for (int k = 0; k < _players.Count; ++k) {
-						var player = _players[k];
-						if ((player.team == team) && (player.playerState.health > 0f)) {
-							canScore = true;
-							break;
-						}
-					}
-					if (!canScore) {
-						team.score = 0f;
-						team.score2 = 0f;
-					}
-				}
-			}
-
-			ScoreGoals(true, dt);
-			ScoreMatch(dt);
-		}
-
-		protected virtual void ScoreGoals(bool shouldTick, float dt) {
-			for (int i = 0; i < _players.Count; ++i) {
-				var player = _players[i];
-				player.playerState.goalPoints = 0f;
-				player.playerState.goalPoints2 = 0f;
-			}
-
-			for (int i = 0; i < _teams.Count; ++i) {
-				var team = _teams[i];
-				team.goalPoints = 0f;
-				team.goalPoints2 = 0f;
-			}
-
-			//for (int i = _goals.Count-1; i >= 0; --i) {
-			//	var g = _goals[i];
-			//	if (g.pendingKill || g.dead) {
-			//		_goals.RemoveAt(i);
-			//	} else {
-			//		if (shouldTick) {
-			//			g.ServerTickGoal();
-			//		}
-
-			//		ScoreGoal(g, dt);
-			//	}
-			//}
-		}
-
-		//protected virtual void ScoreGoal(GoalActor goal, float dt) {
-		//	for (int i = 0; i < _players.Count; ++i) {
-		//		var player = _players[i];
-		//		if (!teamDeadWhenAllPlayersDead || (player.playerState.health > 0f)) {
-		//			var points = goal.ServerGetPlayerGoalPoints(player);
-		//			ScorePlayerGoalPoints(player, points, dt);
-		//		}
-		//	}
-
-		//	for (int i = 0; i < _teams.Count; ++i) {
-		//		var team = _teams[i];
-		//		var canScore = true;
-		//		if (teamDeadWhenAllPlayersDead) {
-		//			canScore = false;
-		//			for (int k = 0; k < _players.Count; ++k) {
-		//				var player = _players[k];
-		//				if ((player.team == team) && (player.playerState.health > 0f)) {
-		//					canScore = true;
-		//					break;
-		//				}
-		//			}
-		//		}
-		//		if (canScore) {
-		//			var points = goal.ServerGetTeamGoalPoints(team);
-		//			ScoreTeamGoalPoints(team, points, dt);
-		//		}
-		//	}
-  //      }
-
-		protected virtual void ScoreMatch(float dt) {
-			DefaultSortScore();
-		}
-
-		void ScoreRemainingTime(float dt) {
-			if (dt > 0f) {
-				ScoreGoals(false, dt);
-				ScoreMatch(dt);
-			}
-		}
-
-		protected void DefaultSortScore() {
-			tied = false;
-
-			if (_teamScoreIndices == null) {
-				_teamScoreIndices = new List<int>();
-			}
-
-			for (int i = 0; i < _players.Count; ++i) {
-				var player = _players[i];
-				player.playerState.winner = false;
-			}
-
-			for (int i = 0; i < _teams.Count; ++i) {
-				var team = _teams[i];
-				team.winning = false;
-
-				if (teamDeadWhenAllPlayersDead) {
-					bool allDead = true;
-
-					for (int k = 0; k < team.players.Count; ++k) {
-						var player = team.players[k];
-						if (player.health > 0f) {
-							allDead = false;
-							break;
-						}
-					}
-
-					if (allDead) {
-						continue;
-					}
-				}
-
-				_teamScoreIndices.Add(i);
-			}
-
-			_teamScoreIndices.Sort((a, b) => _teams[b].intScore.CompareTo(_teams[a].intScore));
-
-			if (_teamScoreIndices.Count > 0) {
-				int bestScore = _teams[_teamScoreIndices[0]].intScore;
-				int numWinningTeams = 0;
-
-				if ((bestScore > 0) || (_teams.Count < 2)) {
-					for (int i = 0; i < _teamScoreIndices.Count; ++i) {
-						if (_teams.Count == 1) {
-							// COOP case
-							// team wins if they are alive
-							var team = _teams[_teamScoreIndices[0]];
-							bool winning = false;
-
-							for (int k = 0; k < team.players.Count; ++k) {
-								var player = team.players[k];
-								if (player.health > 0f) {
-									winning = true;
-									break;
-								}
-							}
-
-							// COOP win if no mission tracker or mission tracker not-fail
-							//if (winning && ((_missionTracker == null) || (_missionTracker.state != MissionTracker.EMissionState.Fail))) {
-
-							//	// all players on team are marked as winning
-							//	for (int k = 0; k < team.players.Count; ++k) {
-							//		var player = (ServerPlayerState)team.players[k];
-							//		player.winner = true;
-							//	}
-
-							//	team.winning = true;
-							//	++numWinningTeams;
-							//}
-						} else {
-							var team = _teams[_teamScoreIndices[i]];
-							if (team.intScore >= bestScore) {
-
-								// all players on team are marked as winning
-								for (int k = 0; k < team.players.Count; ++k) {
-									var player = (ServerPlayerState)team.players[k];
-									player.winner = true;
-								}
-
-								team.winning = true;
-								++numWinningTeams;
-							}
-						}
-					}
-				}
-
-				tied = numWinningTeams > 1;
-				_teamScoreIndices.Clear();
-			}
-		}
 
         public void ReturnToMenu() {
 			GameManager.instance.SetPendingLevel("MainMenu", null);
@@ -583,49 +288,21 @@ namespace Bowhead.Server {
 			_players.Clear();
 			_readyForConnect = false;
 
-#if BACKEND_SERVER
-			_waitTime = 0f;
-#elif !SHIP
-			_didInitInventory = false;
-#endif
-
 		}
 
 		public virtual void NotifySceneLoaded() {
-			//_mapInfo = GameObject.FindObjectOfType<MapInfo>();
-
-			//if (_mapInfo.description != null) {
-			//	_config = _mapInfo.description.FindConfig(GetType());
-			//}
-
-			//if (_config == null) {
-			//	Debug.LogError("No game mode config could be found for this map and game mode");
-			//}
-
-			_gameState = (GameState)world.Spawn(gameStateType, null, SpawnParameters.defaultParameters);
+			_gameState = (GameState)world.Spawn(gameStateType, null, default(SpawnParameters));
 			_gameState.ServerSetGameMode(this);
 			_gameState.Server_SetMatchState(_matchState, false, 0);
 
-			//if (isCOOPMap && (_config.missions != null)) {
-			//	var mission = _config.missions.GetMissionForTier(GameManager.instance.tier);
-			//	if ((mission != null) && (mission.objectives != null) && (mission.objectives.Length > 0)) {
-			//		_missionTracker = world.Spawn<ServerMissionTracker>(null, SpawnParameters.defaultParameters);
-			//		_missionTracker.Init(mission);
-			//	}
-			//}
-
-			monsterTeam = world.Spawn<Actors.ServerTeam>(null, SpawnParameters.defaultParameters);
+			monsterTeam = world.Spawn<Actors.ServerTeam>(null, default(SpawnParameters));
 			monsterTeam.teamNumber = Team.MONSTER_TEAM_NUMBER;
-			monsterTeam.teamColor = monsterTeamColor;
 
-			npcTeam = world.Spawn<Actors.ServerTeam>(null, SpawnParameters.defaultParameters);
+			npcTeam = world.Spawn<Actors.ServerTeam>(null, default(SpawnParameters));
 			npcTeam.teamNumber = Team.NPC_TEAM_NUMBER;
-			npcTeam.teamColor = npcTeamColor;
 		}
 
-		public virtual void FinishTravel() {
-			//DestroyInvalidUnits();
-		}
+		public virtual void FinishTravel() {}
 
 		void TickTravelPlayers() {
 			if (_gameState != null) {
@@ -634,48 +311,6 @@ namespace Bowhead.Server {
 						SpawnPlayer(player.ownerConnection);
 					}
 				}
-			}
-		}
-
-		public int numPlayersPerTeam {
-			get {
-				return 1;
-			}
-		}
-
-		protected virtual int minRequiredTeamScore {
-			get {
-				return int.MinValue;
-			}
-		}
-
-		protected int numTeamsAlive {
-			get {
-				// by default the match is over if only one team is alive
-
-				for (int i = 0; i < _teamAliveCount.Count; ++i) {
-					_teamAliveCount[i] = 0;
-				}
-
-				for (int i = 0; i < _players.Count; ++i) {
-					var player = _players[i].playerState;
-					if (player.health > 0f) {
-						while (player.team.teamNumber >= _teamAliveCount.Count) {
-							_teamAliveCount.Add(0);
-						}
-
-						++_teamAliveCount[player.team.teamNumber];
-					}
-				}
-
-				int numAlive = 0;
-				for (int i = 0; i < _teamAliveCount.Count; ++i) {
-					if ((_teamAliveCount[i] > 0) && (_teams[i].intScore >= minRequiredTeamScore)) {
-						++numAlive;
-					}
-				}
-
-				return numAlive;
 			}
 		}
 
@@ -731,11 +366,6 @@ namespace Bowhead.Server {
 			}
 		}
 
-		public bool tied {
-			get;
-			protected set;
-		}
-
 		public virtual bool matchIsTimed {
 			get {
 				return false;
@@ -744,25 +374,7 @@ namespace Bowhead.Server {
 
 		protected bool overtimeFlag {
 			get {
-				return (overtimeEnabled > 0) || (tied && overtimeIfTied);
-			}
-		}
-
-		protected virtual bool matchOverIfAllGoalsAreControlledBySameTeam {
-			get {
-				return false;
-			}
-		}
-
-		protected virtual bool teamDeadWhenAllPlayersDead {
-			get { // false means that teams can still win with higher scores even if everyone on the team is dead
-				return false;
-			}
-		}
-
-		protected virtual bool scoreRemainingTime {
-			get {
-				return true;
+				return (overtimeEnabled > 0);
 			}
 		}
 
@@ -793,12 +405,6 @@ namespace Bowhead.Server {
 		public bool playerCanIssueCommands {
 			get {
 				return matchInProgress || matchIsComplete;
-			}
-		}
-
-		public virtual bool playerCanWinIfDead {
-			get {
-				return true;
 			}
 		}
 
@@ -845,12 +451,6 @@ namespace Bowhead.Server {
 			}
 		}
 
-		public virtual bool canTradeUnitsAnytime {
-			get {
-				return false;
-			}
-		}
-
 		protected virtual Type playerControllerType {
 			get {
 				return typeof(ServerPlayerController);
@@ -871,23 +471,6 @@ namespace Bowhead.Server {
 
 		protected abstract Type gameStateType { get; }
 
-		ServerPlayerController SpawnPlayerActorForChannel(ActorReplicationChannel channel) {
-			if ((channel.owningPlayer == null) || (channel.owningPlayer.GetType() != playerControllerType)) {
-				if (channel.owningPlayer != null) {
-					channel.owningPlayer.Destroy();
-				}
-				var playerController = (ServerPlayerController)world.Spawn(playerControllerType, null, SpawnParameters.defaultParameters);
-				channel.owningPlayer = playerController;
-				playerController.SetOwningConnection(channel);
-			}
-
-			return (ServerPlayerController)channel.owningPlayer;
-		}
-
-		ServerPlayerState SpawnPlayerStateActor(ServerPlayerController playerController) {
-			return (ServerPlayerState)world.Spawn(playerStateType, null, SpawnParameters.defaultParameters);
-		}
-
 		public Server.ServerWorld.EClientConnectResult TickPendingConnection(ActorReplicationChannel channel) {
 			if (!(_readyForConnect && channel.clientLevelLoaded)) {
 				return Server.ServerWorld.EClientConnectResult.Pending;
@@ -900,210 +483,38 @@ namespace Bowhead.Server {
 			return Server.ServerWorld.EClientConnectResult.Connected;
 		}
 
-		protected virtual void PrepareForMatchInProgress() {
-
-			//for (int i = 0;i < _players.Count; ++i) {
-			//	var player = _players[i];
-			//	if (_config != null) {
-			//		player.SpendRemainingPoints(_config);
-			//	}
-			//	player.playerState.killedUnitValue = 0;
-								
-			//	foreach (var otherPlayer in world.GetActorIterator<ServerPlayerController>()) {
-			//		otherPlayer.Owner_SetSpells(player.playerState, player.playerState.primaryDeity, player.playerState.secondaryDeity, player.playerState.relic, (ushort)player.playerState.reliciLvl, player.playerState.potion, (ushort)player.playerState.potioniLvl, player.playerState.primarySpells, player.playerState.secondarySpells);
-			//	}
-
-			//	player.ServerSpawnAbilities();
-			//}
-
-			//DestroyUnallocatedUnits();
-
-			//if (_missionTracker != null) {
-			//	_missionTracker.StartMission();
-			//}
-		}
-
-		//public bool PlayerSelectedMatchPreset(ServerPlayerController player, MatchPreset preset) {
-		//	if (matchState <= EMatchState.UnitTrading) {
-		//		player.SetPlayerPreset(_config, preset, Bowhead.Actors.EUnitAllocateReplicationMode.Team);
-		//		return true;
-		//	}
-
-		//	return false;
-		//}
-
-		//public string GenerateUnitName(UnitClass unitClass, bool forNPC) {
-
-		//	if ((unitClass.names.numVariants < 1) || (forNPC && !unitClass.names.npcHasName)) {
-		//		return null;
-		//	}
-
-		//	List<int> slots;
-		//	if (!_availableNames.TryGetValue(unitClass, out slots)) {
-		//		slots = new List<int>(unitClass.names.numVariants);
-		//		_availableNames[unitClass] = slots;
-		//	}
-
-		//	if (slots.Count < 1) {
-		//		for (int i = 0; i < unitClass.names.numVariants; ++i) {
-		//			slots.Add(i);
-		//		}
-		//	}
-
-		//	var index = GameManager.instance.RandomRange(0, slots.Count);
-		//	var name = slots[index];
-		//	slots.RemoveAt(index);
-
-		//	return Utils.GetLocalizedText("UI." + unitClass.name + "Name" + name);
-		//}
-
-		//void PrepareForUnitTrading() {
-
-		//	for (int i = _goals.Count-1; i >= 0; --i) {
-		//		var g = _goals[i];
-		//		if (!(g.pendingKill || g.dead)) {
-		//			g.ServerGameStart();
-		//		}
-		//		if (g.pendingKill || g.dead) {
-		//			_goals.RemoveAt(i);
-		//		}
-		//	}
-
-		//	if (GameManager.instance.serverPerfTest) {
-		//		foreach (var u in world.GetActorIterator<Bowhead.Actors.Unit>()) {
-		//			if (u.owner == null) {
-
-		//				if (u.spawnTag.owningPlayer.playerTeam.teamActor == null) {
-		//					var teamActor = (Actors.ServerTeam)world.Spawn(teamType, null, SpawnParameters.defaultParameters);
-		//					teamActor.teamNumber = u.spawnTag.owningPlayer.playerTeam.teamNumber;
-		//					teamActor.teamColor = u.spawnTag.owningPlayer.playerTeam.color;
-		//					u.spawnTag.owningPlayer.playerTeam.teamActor = teamActor;
-		//				}
-
-		//				u.PerfTest_PossesByTeam(u.spawnTag.owningPlayer.playerTeam.teamActor);
-		//				u.allocated = true;
-		//				u.Multicast_SetAllocated();
-		//			}
-		//		}
-		//	}
-
-		//	InternalScoreMatch(0f);
-		//}
-
-		//// Destroys units that aren't valid for this particular game mode.
-		//void DestroyInvalidUnits() {
-		//	if ((_config != null) && (_config.limits != null) && (_teamStarts != null)) {
-
-		//		foreach (var u in world.GetActorIterator<Unit>()) {
-		//			var limits = _config.GetUnitClassLimits(u.spawnTag.unitClass);
-		//			if (limits.y < 1) {
-		//				u.Destroy();
-		//			}
-		//		}
-
-		//		for (int i = 0; i < _config.limits.Length; ++i) {
-		//			var l = _config.limits[i];
-
-		//			if (l.minMax.y > 0) {
-
-		//				for (int k = 0; k < _teamStarts.Length; ++k) {
-		//					var ts = _teamStarts[k];
-
-		//					DestroyInvalidUnits(ts, l.unitClass, l.minMax.y);
-		//				}
-
-		//			}
-		//		}
-		//	}
-		//}
-
-		//void DestroyInvalidUnits(TeamStart teamStart, Bowhead.Actors.UnitClass unitClass, int maxUnits) {
-
-		//	List<Unit> unitsToDestroy = new List<Unit>();
-
-		//	for (int i = 0; i < teamStart.playerStarts.Count; ++i) {
-
-		//		var player = teamStart.playerStarts[i];
-
-		//		int count = 0;
-		//		int order = 0;
-
-		//		foreach (var u in world.GetActorIterator<Unit>()) {
-		//			if (ReferenceEquals(u.spawnTag.unitClass, unitClass)) {
-		//				if (player == u.spawnTag.owningPlayer) {
-		//					if (u.staticSpawnTag != null) {
-		//						order = Mathf.Max(order, u.staticSpawnTag.order);
-		//						++count;
-		//					}
-		//				}
-		//			}
-		//		}
-
-		//		while (count > maxUnits) {
-		//			bool found = false;
-
-		//			foreach (var u in world.GetActorIterator<Unit>()) {
-		//				if (ReferenceEquals(u.spawnTag.unitClass, unitClass)) {
-		//					if (player == u.spawnTag.owningPlayer) {
-		//						if (u.staticSpawnTag != null) {
-		//							if (u.staticSpawnTag.order == order) {
-		//								unitsToDestroy.Add(u);
-		//								--count;
-		//								--order;
-		//								found = true;
-		//								break;
-		//							}
-		//						}
-		//					}
-		//				}
-		//			}
-
-		//			if (!found) {
-		//				break;
-		//			}
-		//		}
-		//	}
-
-		//	for (int i = 0; i < unitsToDestroy.Count; ++i) {
-		//		var u = unitsToDestroy[i];
-		//		u.Destroy();
-		//	}
-		//}
-
-		//void DestroyUnallocatedUnits() {
-		//	foreach (var u in world.GetActorIterator<Unit>()) {
-		//		if (u.allocated) {
-		//			u.Multicast_SetAllocated();
-		//		} else {
-		//			u.Destroy();
-		//		}
-		//	}
-		//}
-
-		//void FreezeUnits() {
-		//	foreach (var u in world.GetActorIterator<Unit>()) {
-		//		u.ServerStopMoving();
-		//	}
-		//}
+		protected virtual void PrepareForMatchInProgress() {}
 
 		public virtual bool AcceptConnection(ActorReplicationChannel channel) {
 			return true;
 		}
 
+		ServerPlayerController SpawnPlayerActorForChannel(ActorReplicationChannel channel) {
+			if ((channel.owningPlayer == null) || (channel.owningPlayer.GetType() != playerControllerType)) {
+				if (channel.owningPlayer != null) {
+					channel.owningPlayer.Destroy();
+				}
+				var playerController = (ServerPlayerController)world.Spawn(playerControllerType, null, default(SpawnParameters));
+				channel.owningPlayer = playerController;
+				playerController.SetOwningConnection(channel);
+			}
+
+			return (ServerPlayerController)channel.owningPlayer;
+		}
+
+		ServerPlayerState SpawnPlayerStateActor(ServerPlayerController playerController) {
+			return (ServerPlayerState)world.Spawn(playerStateType, null, default(SpawnParameters));
+		}
+
 		protected virtual Actors.ServerTeam GetTeamForSpawningPlayer(ServerPlayerController playerController) {
-			var teamActor = world.Spawn<Actors.ServerTeam>(null, SpawnParameters.defaultParameters);
+			var teamActor = world.Spawn<Actors.ServerTeam>(null, default(SpawnParameters));
 			teamActor.teamNumber = _nextTeamNumber++;
-			teamActor.teamColor = Color.blue;
-			teamActor.score = initialTeamScore;
-			teamActor.score2 = initialTeamScore2;
 			_teams.Add(teamActor);
 			teamActor.NetFlush();
 			return teamActor;
 		}
 
-		protected virtual void SetPlayerSpawnLocation(ServerPlayerController playerController) {
-			playerController.SetStartingPositionAndRotation(Vector3.zero, 0f);
-		}
+		protected virtual void InitPlayerSpawn(ServerPlayerController playerController) {}
 
 		bool SpawnPlayer(ActorReplicationChannel channel) {
 
@@ -1117,33 +528,19 @@ namespace Bowhead.Server {
 			
 			var playerState = SpawnPlayerStateActor(playerController);
 			playerState.team = teamActor;
-			playerState.primaryColor = Color.red;
-			playerState.secondaryColor = Color.white;
 			playerState.playerController = playerController;
 			playerState.onlineUUID = channel.uuid;
 #if !(LOGIN_SERVER || BACKEND_SERVER)
 			playerState.playerName = "Player" + (++_playerNameIndex);
 #endif
 
-			playerState.score = initialPlayerScore;
-			playerState.score2 = initialPlayerScore2;
 			playerState.SetPermissionLevel(0);
 			teamActor.AddPlayerToTeam(playerState);
 			
 			playerController.playerState = playerState;
-			SetPlayerSpawnLocation(playerController);
-			playerController.PossessUnits();
-
-			// This needs to call RPCs so the channel has to be flushed.
-			// Additionally we need all the units flushed in order to set the
-			// allocated flags on the client.
-			//
-			// The entire world state would be flushed shortly after this anyway
-			// so we do it explicitly here so we can replicate the team state.
-
-			channel.Flush();
-			playerController.ReplicateTeamState();
-
+			InitPlayerSpawn(playerController);
+			channel.ResetTimeoutForTravel();
+			
 			return true;
 		}
 

@@ -152,7 +152,6 @@ namespace Bowhead {
 	}
 
 	public class PhysicalContactMatrixState {
-		PhysicalContactMatrix _matrix;
 		Dictionary<PhysicalMaterialClass, Dictionary<PhysicalMaterialClass, ContactState>> _contactMap = new Dictionary<PhysicalMaterialClass, Dictionary<PhysicalMaterialClass, ContactState>>();
 		ContactState _defaultContact;
 
@@ -227,7 +226,6 @@ namespace Bowhead {
 		}
 
 		public PhysicalContactMatrixState(PhysicalContactMatrix matrix) {
-			_matrix = matrix;
 			_defaultContact = new ContactState(matrix.defaultContact);
 
 			if (matrix.contacts != null) {

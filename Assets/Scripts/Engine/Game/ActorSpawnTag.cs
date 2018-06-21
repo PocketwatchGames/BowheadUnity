@@ -65,7 +65,7 @@ public class ActorSpawnTag : ActorReference {
 	[InitializeOnLoadMethod]
 	static void EditorStaticRun() {
 //		AssignUniqueIDs();
-		EditorApplication.hierarchyWindowChanged += AssignUniqueIDs;
+		EditorApplication.hierarchyChanged += AssignUniqueIDs;
 	}
 
 	static void AssignUniqueIDs() {
