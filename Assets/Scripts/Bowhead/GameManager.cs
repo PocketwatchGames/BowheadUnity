@@ -185,14 +185,14 @@ namespace Bowhead {
 				return;
 			}
 
-			World.Streaming.StaticInit();
-			DataManager.InitData();
-
 			SceneManager.sceneLoaded += LevelWasLoaded;
 
 			_instance = this;
 			applicationFocused = true;
 			mainCamera = GameObject.FindGameObjectWithTag(Tags.MainCamera).GetComponent<Camera>();
+
+			World.Streaming.StaticInit();
+			DataManager.InitData();
 
 #if LEAK_TRACKER
 			_leakTracker = new LeakTracker(GetModuleAssemblies());

@@ -5,15 +5,18 @@ using Bowhead.Actors;
 
 namespace Bowhead.Client.UI {
 	public class BowheadHUD : HUD {
-		UIController _uiController;
+		InventoryPanel _inventory;
+		PlayerStatePanel _playerState;
 
 		public BowheadHUD(ClientWorld world, GameState gameState) : base(world, gameState) {
-			_uiController = GameObject.Instantiate(GameManager.instance.clientData.hudUIController, hudCanvas.transform, false);
+			_inventory = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPanelPrefab, hudCanvas.transform, false);
+			_playerState = GameObject.Instantiate(GameManager.instance.clientData.hudPlayerStatePanelPrefab, hudCanvas.transform, false);
 		}
 
 		public override void OnPlayerPossessed(Player player) {
 			base.OnPlayerPossessed(player);
-			_uiController.SetPlayer(player);
+			_inventory.Init(player);
+			_playerState.Init(player);
 		}
 	}
 }

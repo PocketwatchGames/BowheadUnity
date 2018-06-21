@@ -156,7 +156,10 @@ public partial class World {
 namespace Bowhead.Server {
 
 	public abstract class BowheadGame<T> : GameMode<T> where T: GameState<T>{
-		public BowheadGame(ServerWorld world) : base(world) { }
+		public BowheadGame(ServerWorld world) : base(world) {
+			data = Resources.Load<WorldData>("DefaultWorld");
+		}
+
 
 		public WorldData data;
 

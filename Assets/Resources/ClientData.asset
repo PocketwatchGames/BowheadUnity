@@ -18,6 +18,10 @@ MonoBehaviour:
   minimapPrefab: {fileID: 0}
   hudCanvasPrefab: {fileID: 223527955372744662, guid: ce7146563d8c545458785b03160612eb,
     type: 2}
+  hudInventoryPanelPrefab: {fileID: 114904058803911864, guid: 9b4b4fb52c164b540a19582b7aedae2e,
+    type: 2}
+  hudPlayerStatePanelPrefab: {fileID: 114420713084272816, guid: 8226cdbdf3116c74b9cc6071c8f58474,
+    type: 2}
   dialogDarkenCanvasPrefab: {fileID: 0}
   dialogNormalCanvasPrefab: {fileID: 0}
   messageBoxPrefab: {fileID: 0}

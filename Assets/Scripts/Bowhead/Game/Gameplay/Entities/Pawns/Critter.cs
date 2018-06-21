@@ -31,6 +31,7 @@ namespace Bowhead.Actors {
 			position = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
+			team = gameMode.monsterTeam;
             Init();
 			gameMode.CritterSpawned();
 		}

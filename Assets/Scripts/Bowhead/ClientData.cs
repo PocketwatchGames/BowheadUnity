@@ -101,7 +101,8 @@ namespace Bowhead {
 		public GameObject loadingCanvasPrefab;
 		public GameObject minimapPrefab;
 		public Canvas hudCanvasPrefab;
-		public Client.UI.UIController hudUIController;
+		public Client.UI.InventoryPanel hudInventoryPanelPrefab;
+		public Client.UI.PlayerStatePanel hudPlayerStatePanelPrefab;
 		public Canvas dialogDarkenCanvasPrefab;
 		public Canvas dialogNormalCanvasPrefab;
 		public Client.UI.MessageBox messageBoxPrefab;

@@ -54,6 +54,10 @@ namespace Bowhead.Actors {
 
 		#region core functions
 
+		public Player() {
+			SetReplicates(true);
+		}
+
 		public override void Tick() {
 			base.Tick();
 			if (!hasAuthority) {
