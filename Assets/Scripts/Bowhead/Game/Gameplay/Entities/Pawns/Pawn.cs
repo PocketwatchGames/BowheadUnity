@@ -961,18 +961,21 @@ namespace Bowhead.Actors {
             return _inventory;
         }
 
-        public void SetInventorySlot(int index, Item item) {
+        virtual public void SetInventorySlot(int index, Item item) {
 
-            for (int i = 0; i < MaxInventorySize; i++) {
-                if (GetInventorySlot(i) == item) {
-                    SetInventorySlot(i, null);
-                    break;
+            if (item != null) {
+                // remove the item from its current slot first
+                for (int i = 0; i < MaxInventorySize; i++) {
+                    if (GetInventorySlot(i) == item) {
+                        SetInventorySlot(i, null);
+                        break;
+                    }
                 }
             }
 
             _inventory[index] = item;
 
-            item.OnSlotChange(index, this);
+            item?.OnSlotChange(index, this);
 
             OnInventoryChange?.Invoke();
         }

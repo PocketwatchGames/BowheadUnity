@@ -28,7 +28,8 @@ namespace Bowhead {
             if (data.prefab != null) {
                 if (newSlot == (int)Player.InventorySlot.LEFT_HAND || newSlot == (int)Player.InventorySlot.RIGHT_HAND) {
                     var prefab = data.prefab.Load();
-                    _mesh = GameObject.Instantiate(prefab, owner.go.transform);
+                    _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
+                    _mesh.transform.localPosition = new Vector3(newSlot == (int)Player.InventorySlot.LEFT_HAND ? -0.35f : -0.35f, 1, 0.25f);
                 }
             }
         }
