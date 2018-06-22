@@ -335,6 +335,32 @@ public partial class World {
 			}
 		};
 
+		public unsafe struct ConstFloatArray1D_t {
+			[NativeDisableUnsafePtrRestriction]
+			float* _arr;
+			int _x;
+
+			public static ConstFloatArray1D_t New(float* array, int x) {
+				return new ConstFloatArray1D_t {
+					_arr = array,
+					_x = x
+				};
+			}
+
+			public float this[int i] {
+				get {
+					BoundsCheckAndThrow(i, 0, _x);
+					return _arr[i];
+				}
+			}
+
+			public int length {
+				get {
+					return _x;
+				}
+			}
+		};
+
 		public unsafe struct ConstColor32Array1D_t {
 			[NativeDisableUnsafePtrRestriction]
 			Color32* _arr;
@@ -361,24 +387,27 @@ public partial class World {
 			public ConstIntArray2D_t voxelFaceNormal;
 			public ConstIntArray2D_t collapseMap;
 			public ConstIntArray2D_t spanningAxis;
-			public ConstUIntArray1D_t blockSmoothing;
+			public ConstUIntArray1D_t blockSmoothingGroups;
 			public ConstColor32Array1D_t blockColors;
+			public ConstFloatArray1D_t blockSmoothingFactors;
 
 			int[,] _voxelVerts;
 			int[,] _voxelFaces;
 			int[,] _voxelFaceNormal;
 			int[,] _collapseMap;
 			int[,] _spanningAxis;
-			uint[] _blockSmoothing;
+			uint[] _blockSmoothingGroups;
 			Color32[] _blockColors;
+			float[] _blockSmoothingFactors;
 
 			GCHandle _pinnedVoxelVerts;
 			GCHandle _pinnedVoxelFaces;
 			GCHandle _pinnedVoxelFaceNormal;
 			GCHandle _pinnedCollapseMap;
 			GCHandle _pinnedSpanningAxis;
-			GCHandle _pinnedBlockSmoothing;
+			GCHandle _pinnedBlockSmoothingGroups;
 			GCHandle _pinnedBlockColors;
+			GCHandle _pinnedBlockSmoothingFactors;
 
 			public static TableStorage New() {
 				var t = new TableStorage();
@@ -478,6 +507,8 @@ public partial class World {
 					spanningAxis = ConstIntArray2D_t.New((int*)_pinnedSpanningAxis.AddrOfPinnedObject().ToPointer(), 3, 2);
 				}
 
+				// Block colors
+
 				_blockColors = new Color32[(int)EVoxelBlockType.NUM_BLOCK_TYPES - 1] {
 					new Color32(153, 102, 51, 255),
 					new Color32(20, 163, 61, 255),
@@ -501,7 +532,9 @@ public partial class World {
 					blockColors = ConstColor32Array1D_t.New((Color32*)_pinnedBlockColors.AddrOfPinnedObject().ToPointer(), (int)EVoxelBlockType.NUM_BLOCK_TYPES - 1);
 				}
 
-				_blockSmoothing = new uint[(int)EVoxelBlockType.NUM_BLOCK_TYPES - 1] {
+				// Defines the blending
+
+				_blockSmoothingGroups = new uint[(int)EVoxelBlockType.NUM_BLOCK_TYPES - 1] {
 					BLOCK_SMG_GRASS | BLOCK_SMG_DIRT_ROCK | BLOCK_BLEND_COLORS, // BLOCK_TYPE_DIRT -> blends with rock and grass
 					BLOCK_SMG_GRASS | BLOCK_SMG_DIRT_ROCK | BLOCK_BLEND_COLORS, // BLOCK_TYPE_GRASS
 					BLOCK_SMG_WATER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_WATER
@@ -518,10 +551,35 @@ public partial class World {
 					BLOCK_SMG_FLOWERS | BLOCK_BLEND_COLORS // BLOCK_TYPE_FLOWERS4
 				};
 
-				_pinnedBlockSmoothing = GCHandle.Alloc(_blockSmoothing, GCHandleType.Pinned);
+				_pinnedBlockSmoothingGroups = GCHandle.Alloc(_blockSmoothingGroups, GCHandleType.Pinned);
 
 				unsafe {
-					blockSmoothing = ConstUIntArray1D_t.New((uint*)_pinnedBlockSmoothing.AddrOfPinnedObject().ToPointer(), (int)EVoxelBlockType.NUM_BLOCK_TYPES - 1);
+					blockSmoothingGroups = ConstUIntArray1D_t.New((uint*)_pinnedBlockSmoothingGroups.AddrOfPinnedObject().ToPointer(), (int)EVoxelBlockType.NUM_BLOCK_TYPES - 1);
+				}
+
+				// 1f = most smooth, 0 = very faceted
+
+				_blockSmoothingFactors = new float[(int)EVoxelBlockType.NUM_BLOCK_TYPES - 1] {
+					0.8f, // BLOCK_TYPE_DIRT
+					0.8f, // BLOCK_TYPE_GRASS
+					0.8f, // BLOCK_TYPE_WATER
+					0.8f, // BLOCK_TYPE_SAND
+					0.8f, // BLOCK_TYPE_SNOW
+					0.35f, // BLOCK_TYPE_ROCK
+					0.35f, // BLOCK_TYPE_ICE
+					0.5f, // BLOCK_TYPE_WOOD
+					0.8f, // BLOCK_TYPE_LEAVES
+					0.8f, // BLOCK_TYPE_NEEDLES
+					0.8f, // BLOCK_TYPE_FLOWERS1
+					0.8f, // BLOCK_TYPE_FLOWERS2
+					0.8f, // BLOCK_TYPE_FLOWERS3
+					0.8f  // BLOCK_TYPE_FLOWERS4
+				};
+
+				_pinnedBlockSmoothingFactors = GCHandle.Alloc(_blockSmoothingFactors, GCHandleType.Pinned);
+
+				unsafe {
+					blockSmoothingFactors = ConstFloatArray1D_t.New((float*)_pinnedBlockSmoothingFactors.AddrOfPinnedObject().ToPointer(), (int)EVoxelBlockType.NUM_BLOCK_TYPES - 1);
 				}
 			}
 
@@ -532,7 +590,8 @@ public partial class World {
 				_pinnedCollapseMap.Free();
 				_pinnedSpanningAxis.Free();
 				_pinnedBlockColors.Free();
-				_pinnedBlockSmoothing.Free();
+				_pinnedBlockSmoothingGroups.Free();
+				_pinnedBlockSmoothingFactors.Free();
 			}
 		};
 
@@ -543,7 +602,8 @@ public partial class World {
 			public ConstIntArray2D_t collapseMap;
 			public ConstIntArray2D_t spanningAxis;
 			public ConstColor32Array1D_t blockColors;
-			public ConstUIntArray1D_t blockSmoothing;
+			public ConstUIntArray1D_t blockSmoothingGroups;
+			public ConstFloatArray1D_t blockSmoothingFactors;
 
 			public static Tables New(TableStorage storage) {
 				return new Tables {
@@ -553,7 +613,8 @@ public partial class World {
 					collapseMap = storage.collapseMap,
 					spanningAxis = storage.spanningAxis,
 					blockColors = storage.blockColors,
-					blockSmoothing = storage.blockSmoothing
+					blockSmoothingGroups = storage.blockSmoothingGroups,
+					blockSmoothingFactors = storage.blockSmoothingFactors
 				};
 			}
 		};
@@ -661,6 +722,8 @@ public partial class World {
 			[ReadOnly]
 			public NativeArray<Color32> colors;
 			[ReadOnly]
+			public NativeArray<float> smoothFactor;
+			[ReadOnly]
 			public NativeArray<uint> smgs;
 			[ReadOnly]
 			public NativeArray<int> indices;
@@ -674,6 +737,7 @@ public partial class World {
 					positions = smv.positions,
 					normals = smv.normals,
 					colors = smv.colors,
+					smoothFactor = smv.smoothFactor,
 					smgs = smv.smgs,
 					indices = smv.indices,
 					numIndices = smv.numIndices,
@@ -689,6 +753,8 @@ public partial class World {
 			public NativeArray<Vector3> normals;
 			[WriteOnly]
 			public NativeArray<Color32> colors;
+			[WriteOnly]
+			public NativeArray<float> smoothFactor;
 			[WriteOnly]
 			public NativeArray<uint> smgs;
 			[WriteOnly]
@@ -707,6 +773,7 @@ public partial class World {
 					positions = AllocatePersistentNoInit<Int3_t>(ushort.MaxValue),
 					normals = AllocatePersistentNoInit<Vector3>(ushort.MaxValue*BANK_SIZE),
 					colors = AllocatePersistentNoInit<Color32>(ushort.MaxValue*BANK_SIZE),
+					smoothFactor = AllocatePersistentNoInit<float>(ushort.MaxValue*BANK_SIZE),
 					smgs = AllocatePersistentNoInit<uint>(ushort.MaxValue*BANK_SIZE),
 					indices = AllocatePersistentNoInit<int>(ushort.MaxValue),
 					numIndices = AllocatePersistentNoInit<int>(1),
@@ -720,6 +787,7 @@ public partial class World {
 				positions.Dispose();
 				normals.Dispose();
 				colors.Dispose();
+				smoothFactor.Dispose();
 				smgs.Dispose();
 				indices.Dispose();
 				numIndices.Dispose();
@@ -739,7 +807,7 @@ public partial class World {
 				numIndices[0] = _indexCount;
 			}
 
-			int EmitVert(int x, int y, int z, uint smg, Color32 color, Vector3 normal) {
+			int EmitVert(int x, int y, int z, uint smg, float smoothingFactor, Color32 color, Vector3 normal) {
 				int INDEX = (y*(VOXEL_CHUNK_SIZE_XZ + 1)*(VOXEL_CHUNK_SIZE_XZ + 1)) + (z*(VOXEL_CHUNK_SIZE_XZ + 1)) + x;
 
 				var idx = _vtoi[INDEX] - 1;
@@ -760,6 +828,7 @@ public partial class World {
 
 				normals[(idx*BANK_SIZE) + count] = normal;
 				colors[(idx*BANK_SIZE) + count] = color;
+				smoothFactor[(idx*BANK_SIZE) + count] = smoothingFactor;
 				smgs[(idx*BANK_SIZE) + count] = smg;
 
 				vtoiCounts[idx] = count + 1;
@@ -767,22 +836,22 @@ public partial class World {
 				return idx | (count << 24);
 			}
 
-			public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, Color32 color, bool isBorderVoxel) {
+			public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, float smoothFactor, Color32 color, bool isBorderVoxel) {
 				var n = GetNormalAndAngles((float)x0, (float)y0, (float)z0, (float)x1, (float)y1, (float)z1, (float)x2, (float)y2, (float)z2);
 				if (isBorderVoxel) {
 					if ((x0 >= 0) && (x0 <= VOXEL_CHUNK_SIZE_XZ) && (y0 >= 0) && (y0 <= VOXEL_CHUNK_SIZE_Y) && (z0 >= 0) && (z0 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x0, y0, z0, smg, color, n);
+						EmitVert(x0, y0, z0, smg, smoothFactor, color, n);
 					}
 					if ((x1 >= 0) && (x1 <= VOXEL_CHUNK_SIZE_XZ) && (y1 >= 0) && (y1 <= VOXEL_CHUNK_SIZE_Y) && (z1 >= 0) && (z1 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x1, y1, z1, smg, color, n);
+						EmitVert(x1, y1, z1, smg, smoothFactor, color, n);
 					}
 					if ((x2 >= 0) && (x2 <= VOXEL_CHUNK_SIZE_XZ) && (y2 >= 0) && (y2 <= VOXEL_CHUNK_SIZE_Y) && (z2 >= 0) && (z2 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x2, y2, z2, smg, color, n);
+						EmitVert(x2, y2, z2, smg, smoothFactor, color, n);
 					}
 				} else {
-					indices[_indexCount++] = EmitVert(x0, y0, z0, smg, color, n);
-					indices[_indexCount++] = EmitVert(x1, y1, z1, smg, color, n);
-					indices[_indexCount++] = EmitVert(x2, y2, z2, smg, color, n);
+					indices[_indexCount++] = EmitVert(x0, y0, z0, smg, smoothFactor, color, n);
+					indices[_indexCount++] = EmitVert(x1, y1, z1, smg, smoothFactor, color, n);
+					indices[_indexCount++] = EmitVert(x2, y2, z2, smg, smoothFactor, color, n);
 				}
 			}
 
@@ -829,9 +898,13 @@ public partial class World {
 				int index = packedIndex & (0x00ffffff);
 				int ofs = packedIndex >> 24;
 
-				var n = smoothVerts.normals[(index*BANK_SIZE) + ofs];
+				var originalNormal = smoothVerts.normals[(index*BANK_SIZE) + ofs];
+				var summedNormal = originalNormal;
+
 				Vector4 c = (Color)smoothVerts.colors[(index*BANK_SIZE) + ofs];
 				var smg = smoothVerts.smgs[(index*BANK_SIZE) + ofs];
+
+				float factor = 1.1f - smoothVerts.smoothFactor[(index*BANK_SIZE)+ofs];
 
 				float w = 1f;
 
@@ -845,7 +918,13 @@ public partial class World {
 									w += 1f;
 								}
 
-								n += smoothVerts.normals[(index*BANK_SIZE) + i];
+								var checkNormal = summedNormal + smoothVerts.normals[(index*BANK_SIZE) + i];
+								var nml = checkNormal.normalized;
+								var dot = Vector3.Dot(nml, originalNormal);
+
+								if (dot >= factor) {
+									summedNormal = checkNormal;
+								}
 							}
 						}
 					}
@@ -854,7 +933,7 @@ public partial class World {
 				}
 
 				outPos = smoothVerts.positions[index];
-				outNormal = n.normalized;
+				outNormal = summedNormal.normalized;
 				outColor = (Color)c;
 
 			}
@@ -1392,16 +1471,15 @@ public partial class World {
 				return i;
 			}
 
-			void GetBlockColorAndSmoothingGroup(EVoxelBlockType blocktype, out Color32 color, out uint smg) {
+			void GetBlockColorAndSmoothing(EVoxelBlockType blocktype, out Color32 color, out uint smg, out float smoothing) {
 				color = _tables.blockColors[(int)blocktype - 1];
-				smg = _tables.blockSmoothing[(int)blocktype - 1];
+				smg = _tables.blockSmoothingGroups[(int)blocktype - 1];
+				smoothing = _tables.blockSmoothingFactors[(int)blocktype - 1];
 			}
 
 			void EmitVoxelFaces(int index, int x, int y, int z, EVoxelBlockType blocktype, bool isBorderVoxel) {
 				var voxel = _voxels[index];
-				Color32 color;
-				uint smg;
-
+				
 				// emit cube tris that are not degenerate from collapse
 				for (int i = 0; i < 6; ++i) {
 					if (voxel->neighbors[i] == 1) {
@@ -1455,20 +1533,28 @@ public partial class World {
 
 							if ((v0 != v1) && (v0 != v2) && (v1 != v2)) {
 								if (CheckFaceUncovered(v0, v1, v2, neighborVoxel)) {
-									GetBlockColorAndSmoothingGroup(_vn[i], out color, out smg);
+									Color32 color;
+									uint smg;
+									float factor;
+
+									GetBlockColorAndSmoothing(_vn[i], out color, out smg, out factor);
 
 									_smoothVerts.EmitTri(
 										x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
 										x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
 										x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
-										smg, color, isBorderVoxel
+										smg, factor, color, isBorderVoxel
 									);
 								}
 							}
 						}
 
 					} else if (_vn[i] == EVoxelBlockType.AIR) {
-						GetBlockColorAndSmoothingGroup(blocktype & (EVoxelBlockType)BLOCK_TYPE_MASK, out color, out smg);
+						Color32 color;
+						uint smg;
+						float factor;
+
+						GetBlockColorAndSmoothing(blocktype & (EVoxelBlockType)BLOCK_TYPE_MASK, out color, out smg, out factor);
 
 						var v0 = GetVoxelVert(voxel, _tables.voxelFaces[i][0]);
 
@@ -1481,7 +1567,7 @@ public partial class World {
 									x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
 									x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
 									x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
-									smg, color, isBorderVoxel
+									smg, factor, color, isBorderVoxel
 								);
 							}
 

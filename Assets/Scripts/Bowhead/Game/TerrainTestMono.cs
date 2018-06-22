@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TerrainMono : MonoBehaviour {
+public class TerrainTestMono : MonoBehaviour {
 	[SerializeField]
 	World_ChunkComponent _chunkPrefab;
 

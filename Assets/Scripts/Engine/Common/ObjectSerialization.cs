@@ -255,7 +255,7 @@ public abstract class SerializableObject {
 			throw new Exception("SerializableObject base class does not have a class id!");
 		}
 
-		var ctor = t.GetConstructor(System.Type.EmptyTypes);
+		var ctor = t.GetConstructor(Type.EmptyTypes);
 		if (ctor == null) {
 			throw new TargetInvocationException(t.FullName + " does not have a constructor!", null);
 		}
