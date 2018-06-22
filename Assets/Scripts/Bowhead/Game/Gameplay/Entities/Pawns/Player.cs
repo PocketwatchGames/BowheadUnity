@@ -234,7 +234,7 @@ namespace Bowhead.Actors {
 
 			position = pos;
 
-			SetSpawnPoint(pos);
+            SetSpawnPoint(pos);
 
 			PickUp(ItemData.Get("Pack").CreateItem());
 			PickUp(ItemData.Get("Hat").CreateItem());
@@ -271,7 +271,6 @@ namespace Bowhead.Actors {
             stamina = maxStamina;
             maxThirst = data.maxThirst;
             thirst = maxThirst;
-			team = gameMode.monsterTeam;
         }
 
         public void SetSpawnPoint(Vector3 sp) {
@@ -333,8 +332,7 @@ namespace Bowhead.Actors {
             }
 
             if (health <= 0) {
-                health = maxHealth;
-                Respawn();
+                Die();
             }
 
         }
@@ -355,7 +353,11 @@ namespace Bowhead.Actors {
             OnLand?.Invoke(d);
         }
 
+        override protected void Die() {
+            health = maxHealth;
+            Respawn();
 
+        }
 
 
         #endregion

@@ -62,6 +62,8 @@ namespace Bowhead {
 
         bool CheckIfHit(Pawn owner, Vector3 attackPos, Vector3 dir, Vector3 attackerPos, WeaponData.AttackData attackData, Pawn enemy) {
 
+            Debug.Assert(owner != enemy);
+
             float critterRadius = 1.0f;
             var diff = enemy.waistPosition(enemy.position) - attackPos;
             float dist = diff.magnitude;

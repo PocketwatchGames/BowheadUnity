@@ -305,9 +305,11 @@ namespace Bowhead.Server {
 			diff += new Vector3(0, 0, 1) * Math.Abs(GetRiver(x, z - 1) - center);
 			diff += new Vector3(0, 0, 1) * Math.Abs(GetRiver(x, z + 1) - center);
 			float currentSpeed = diff.magnitude;
-			diff /= currentSpeed;
-			currentSpeed *= 1000 * GetPerlinValue(x, y, z, inverseRegionSize);
-			return diff * Mathf.Clamp(currentSpeed, -8f, 8f);
+            if (currentSpeed != 0) {
+                diff /= currentSpeed;
+    			currentSpeed *= 1000 * GetPerlinValue(x, y, z, inverseRegionSize);
+            }
+            return diff * Mathf.Clamp(currentSpeed, -8f, 8f);
 		}
 
 		public Vector3 GetWind(Vector3 p) {
