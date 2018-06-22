@@ -255,8 +255,8 @@ namespace Bowhead.Actors {
 			Respawn();
 		}
 
-		protected override void OnDestroy() {
-			base.OnDestroy();
+		protected override void Dispose(bool disposing) {
+			base.Dispose(disposing);
 			if (_worldStreaming != null) {
 				_worldStreaming.Dispose();
 				_worldStreaming = null;

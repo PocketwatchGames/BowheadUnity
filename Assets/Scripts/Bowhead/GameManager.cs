@@ -1409,6 +1409,8 @@ namespace Bowhead {
 
 			destroying = true;
 
+			UnloadGame();
+
 			if (_instance == this) {
 				World.Streaming.StaticShutdown();
 			}

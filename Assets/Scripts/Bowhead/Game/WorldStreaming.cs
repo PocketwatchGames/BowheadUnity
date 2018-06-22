@@ -303,7 +303,7 @@ public partial class World {
 		}
 
 		void CopyToMesh(ChunkJobData jobData, Chunk chunk) {
-			if (jobData.jobData.outputVerts.counts[0] > 0) {
+			if ((_terrainRoot != null) && (jobData.jobData.outputVerts.counts[0] > 0)) {
 				if (chunk.goChunk == null) {
 					chunk.goChunk = GameObject.Instantiate(_chunkPrefab, WorldToVec3(ChunkToWorld(chunk.pos)), Quaternion.identity, _terrainRoot.transform);
 				}
@@ -324,7 +324,9 @@ public partial class World {
 				genData.Dispose();
 			}
 
-			Utils.DestroyGameObject(_terrainRoot);
+			if (_terrainRoot != null) {
+				Utils.DestroyGameObject(_terrainRoot);
+			}
 		}
 
 		void AddRef(Chunk chunk) {
