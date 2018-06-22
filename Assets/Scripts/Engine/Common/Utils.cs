@@ -903,10 +903,18 @@ public static partial class Utils {
 		return ((double)System.Diagnostics.Stopwatch.GetTimestamp() / (double)System.Diagnostics.Stopwatch.Frequency);
 	}
 
+	static readonly long StopWatchFrequencyPerTick = System.Diagnostics.Stopwatch.Frequency;
+	static readonly long StopWatchFrequencyPerMilli = StopWatchFrequencyPerTick / 1000;
+	static readonly long StopWatchFrequencePerMicro = StopWatchFrequencyPerTick / 1000000;
+
 	public static uint ReadMilliseconds() {
 		var ticks = System.Diagnostics.Stopwatch.GetTimestamp();
-		var ticksPerMilli = System.Diagnostics.Stopwatch.Frequency / 1000;
-		return (uint)((ticks / ticksPerMilli) & uint.MaxValue);
+		return (uint)((ticks / StopWatchFrequencyPerMilli) & uint.MaxValue);
+	}
+
+	public static uint ReadMicroseconds() {
+		var ticks = System.Diagnostics.Stopwatch.GetTimestamp();
+		return (uint)((ticks / StopWatchFrequencePerMicro) & uint.MaxValue);
 	}
 
 	public static void FadeOutAndStop(this AudioSource source, float fadeOutTime) {

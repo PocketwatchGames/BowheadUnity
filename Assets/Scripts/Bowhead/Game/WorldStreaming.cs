@@ -66,7 +66,7 @@ public partial class World {
 
 		public void Tick() {
 
-			CompleteJobs(0);
+			CompleteJobs(1000);
 
 			var anyLoading = false;
 
@@ -248,6 +248,8 @@ public partial class World {
 			ChunkJobData prev = null;
 			ChunkJobData next;
 
+			var endTime = Utils.ReadMicroseconds() + maxTimeMicroseconds;
+
 			for (var job = _usedJobData; job != null; job = next) {
 				next = job.next;
 
@@ -261,10 +263,14 @@ public partial class World {
 					} else {
 						_usedJobData = job.next;
 					}
-
-
+					
 					job.next = _freeJobData;
 					_freeJobData = job;
+
+					var timestamp = Utils.ReadMicroseconds();
+					if (timestamp >= endTime) {
+						break;
+					}
 				} else {
 					prev = job;
 				}
