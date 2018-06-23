@@ -138,7 +138,12 @@ namespace Bowhead.Actors {
         void UpdateBrain(float dt, out Input_t input) {
             input = new Input_t();
 
+           
 			foreach (var p in world.GetActorIterator<Player>()) {
+
+                if (p.team == team) {
+                    continue;
+                }
 
                 float awareness = (CanSee(p) * data.visionWeight + CanSmell(p) * data.smellWeight + CanHear(p) * data.hearingWeight) / (data.visionWeight + data.smellWeight + data.hearingWeight);
 

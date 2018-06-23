@@ -444,7 +444,9 @@ namespace Bowhead.Actors {
                 Die();
             }
 
-            go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
+            if (mount == null) {
+                go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
+            }
         }
 
         public bool Move(Vector3 moveXZ, float dt) {
@@ -991,11 +993,25 @@ namespace Bowhead.Actors {
         }
 
         virtual protected bool SetMount(Pawn m) {
-            if (mount.driver != null)
+
+            if (m?.driver != null)
                 return false;
+            if (mount != null) {
+                mount.driver = null;
+            }
 
             mount = m;
             mount.driver = this;
+
+            if (mount != null) {
+                go.transform.parent = mount.go.transform;
+                go.transform.position = mount.headPosition(mount.position);
+            }
+            else {
+                go.transform.parent = null;
+            }
+
+
             return true;
         }
     }

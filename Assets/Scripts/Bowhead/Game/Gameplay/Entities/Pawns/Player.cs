@@ -718,9 +718,19 @@ namespace Bowhead.Actors {
 
         void Interact() {
             var t = GetInteractTarget();
-            if ((t != null) && !t.pendingKill) {
-                if (PickUp(t.item)) {
+            WorldItem worldItem;
+            Critter critter;
+            if ((worldItem = t as WorldItem) != null && !t.pendingKill) {
+                if (PickUp(worldItem.item)) {
 					t.Destroy();
+                }
+            }
+            else if ((critter = t as Critter) != null) {
+                if (mount == critter) {
+                    SetMount(null);
+                }
+                else {
+                    SetMount(critter);
                 }
             }
             else {
@@ -790,14 +800,27 @@ namespace Bowhead.Actors {
         }
 
 
-        public WorldItem GetInteractTarget() {
+        public Entity GetInteractTarget() {
+            if (mount != null) {
+                return mount;
+            }
+
             float closestDist = 2;
-            WorldItem closestItem = null;
+            Entity closestItem = null;
             foreach (var i in world.GetActorIterator<WorldItem>()) {
                 float dist = (i.position - position).magnitude;
                 if (dist < closestDist) {
                     closestDist = dist;
                     closestItem = i;
+                }
+            }
+            foreach (var i in world.GetActorIterator<Critter>()) {
+                if (i.team == team) {
+                    float dist = (i.position - position).magnitude;
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closestItem = i;
+                    }
                 }
             }
             return closestItem;
