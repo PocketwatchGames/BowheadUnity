@@ -106,13 +106,7 @@ namespace Bowhead.Actors {
             }
 
             if (health <= 0) {
-                foreach (var i in loot) {
-                    if (i != null) {
-                        var worldItem = gameMode.SpawnWorldItem(i, position);
-                        worldItem.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
-                    }
-                }
-				Destroy();
+                Die();
             }
         }
 
@@ -124,6 +118,17 @@ namespace Bowhead.Actors {
             canRun = true;
             canTurn = true;
             canAttack = true;
+        }
+
+
+        override protected void Die() {
+            foreach (var i in loot) {
+                if (i != null) {
+                    var worldItem = gameMode.SpawnWorldItem(i, position);
+                    worldItem.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
+                }
+            }
+            Destroy();
         }
 
         #endregion

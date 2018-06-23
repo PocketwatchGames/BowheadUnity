@@ -28,7 +28,8 @@ namespace Bowhead {
             if (data.prefab != null) {
                 if (newSlot == (int)Player.InventorySlot.LEFT_HAND || newSlot == (int)Player.InventorySlot.RIGHT_HAND) {
                     var prefab = data.prefab.Load();
-                    _mesh = GameObject.Instantiate(prefab, owner.go.transform);
+                    _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
+                    _mesh.transform.localPosition = new Vector3(newSlot == (int)Player.InventorySlot.LEFT_HAND ? -0.35f : -0.35f, 1, 0.25f);
                 }
             }
         }
@@ -61,6 +62,8 @@ namespace Bowhead {
         }
 
         bool CheckIfHit(Pawn owner, Vector3 attackPos, Vector3 dir, Vector3 attackerPos, WeaponData.AttackData attackData, Pawn enemy) {
+
+            Debug.Assert(owner != enemy);
 
             float critterRadius = 1.0f;
             var diff = enemy.waistPosition(enemy.position) - attackPos;

@@ -438,6 +438,10 @@ namespace Bowhead.Actors {
 
             }
 
+            if (position.y < -1000) {
+                Die();
+            }
+
             go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
         }
 
@@ -898,7 +902,13 @@ namespace Bowhead.Actors {
             float remainingStun;
             float remainingDamage;
 
-            Vector3 dirToEnemy = (attacker.position - position).normalized;
+            var dirToEnemy = (attacker.position - position);
+            if (dirToEnemy == Vector3.zero) {
+                dirToEnemy.x = 1;
+            }
+            else {
+                dirToEnemy.Normalize();
+            }
             float angleToEnemy = Mathf.Repeat(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) - yaw, Mathf.PI * 2);
             if (attackData.attackDamageBackstab > 0 && Math.Abs(angleToEnemy) < data.backStabAngle) {
                 remainingStun = attackData.stunPowerBackstab;
@@ -951,24 +961,31 @@ namespace Bowhead.Actors {
             return _inventory;
         }
 
-        public void SetInventorySlot(int index, Item item) {
+        virtual public void SetInventorySlot(int index, Item item) {
 
-            for (int i = 0; i < MaxInventorySize; i++) {
-                if (GetInventorySlot(i) == item) {
-                    SetInventorySlot(i, null);
-                    break;
+            if (item != null) {
+                // remove the item from its current slot first
+                for (int i = 0; i < MaxInventorySize; i++) {
+                    if (GetInventorySlot(i) == item) {
+                        SetInventorySlot(i, null);
+                        break;
+                    }
                 }
             }
 
             _inventory[index] = item;
 
-            item.OnSlotChange(index, this);
+            item?.OnSlotChange(index, this);
 
             OnInventoryChange?.Invoke();
         }
 
         public Item GetInventorySlot(int index) {
             return _inventory[index];
+        }
+
+        protected virtual void Die() {
+
         }
     }
 }

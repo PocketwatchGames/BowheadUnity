@@ -45,9 +45,9 @@ namespace Bowhead.Actors {
 
         Pawn attackTargetPreview;
 		bool _hackDidFindGround;
-		
-        public delegate void OnMoneyChangeFn();
-        public event OnMoneyChangeFn OnMoneyChange;
+
+        public event Action OnMoneyChange;
+        public event Action OnWeightClassChange;
 
         public delegate void OnLandFn(float damage);
         public event OnLandFn OnLand;
@@ -234,7 +234,7 @@ namespace Bowhead.Actors {
 
 			position = pos;
 
-			SetSpawnPoint(pos);
+            SetSpawnPoint(pos);
 
 			PickUp(ItemData.Get("Pack").CreateItem());
 			PickUp(ItemData.Get("Hat").CreateItem());
@@ -271,7 +271,6 @@ namespace Bowhead.Actors {
             stamina = maxStamina;
             maxThirst = data.maxThirst;
             thirst = maxThirst;
-			team = gameMode.monsterTeam;
         }
 
         public void SetSpawnPoint(Vector3 sp) {
@@ -319,22 +318,8 @@ namespace Bowhead.Actors {
             //float time = dt / 60 / 24;
             //float sleep = 0;
 
-            int itemCount = 0;
-            for (int i = 0; i < MaxInventorySize; i++) {
-                if (GetInventorySlot(i) != null) {
-                    itemCount++;
-                }
-            }
-            weight = WeightClass.LIGHT;
-            for (int i = 0; i < (int)WeightClass.COUNT; i++) {
-                if (itemCount >= data.weightClassItemCount[i]) {
-                    weight = (WeightClass)i;
-                }
-            }
-
             if (health <= 0) {
-                health = maxHealth;
-                Respawn();
+                Die();
             }
 
         }
@@ -355,7 +340,11 @@ namespace Bowhead.Actors {
             OnLand?.Invoke(d);
         }
 
+        override protected void Die() {
+            health = maxHealth;
+            Respawn();
 
+        }
 
 
         #endregion
@@ -454,6 +443,24 @@ namespace Bowhead.Actors {
                 return true;
             }
             return false;
+        }
+
+        public override void SetInventorySlot(int index, Item item) {
+            base.SetInventorySlot(index, item);
+
+            int itemCount = 0;
+            for (int i = 0; i < MaxInventorySize; i++) {
+                if (GetInventorySlot(i) != null) {
+                    itemCount++;
+                }
+            }
+            weight = WeightClass.LIGHT;
+            for (int i = 0; i < (int)WeightClass.COUNT; i++) {
+                if (itemCount >= data.weightClassItemCount[i]) {
+                    weight = (WeightClass)i;
+                }
+            }
+
         }
 
         public bool Use(Item item) {

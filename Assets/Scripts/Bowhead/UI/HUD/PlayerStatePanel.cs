@@ -16,6 +16,7 @@ namespace Bowhead.Client.UI {
         MoneyPanel _money;
 
 
+
         // Use this for initialization
         void Start() {
             _health = transform.GetAnyChildComponent<Slider>("Health");
@@ -38,10 +39,14 @@ namespace Bowhead.Client.UI {
         public void Init(Player player) {
             _player = player;
             _player.OnMoneyChange += onMoneyChange;
+            _player.OnInventoryChange += OnInventoryChange;
         }
 
         private void onMoneyChange() {
             _money.SetMoney(_player.money.ToString());
+        }
+        private void OnInventoryChange() {
+            _money.SetWeightClass(_player.weight.ToString());
         }
     }
 }

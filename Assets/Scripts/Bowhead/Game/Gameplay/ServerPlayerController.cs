@@ -58,6 +58,7 @@ namespace Bowhead.Server.Actors {
 
 		public void PossessPlayerPawn(Player playerPawn) {
 			if (playerPawn != this.playerPawn) {
+                playerPawn.team = team;
 				Owner_SetPlayerPawn(playerPawn);
 				rpc_Owner_SetPlayerPawn.Invoke(playerPawn);
 			}
