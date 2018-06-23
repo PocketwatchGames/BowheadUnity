@@ -76,9 +76,10 @@ namespace Bowhead.Actors {
             }
 
             Input_t input;
-            UpdateBrain(dt, out input);
-
-            base.Tick(dt, input);
+            UpdateBrain(dt, Vector3.forward, out input);
+            if (driver == null) {
+                base.Tick(dt, input);
+            }
 
             if (canAttack) {
                 foreach (var weapon in getInventory()) {
@@ -135,7 +136,14 @@ namespace Bowhead.Actors {
 
         #region brain
 
-        void UpdateBrain(float dt, out Input_t input) {
+        override public void UpdateBrain(float dt, Vector3 forward, out Input_t input) {
+
+            if (driver != null) {
+                driver.UpdateBrain(dt, forward, out input);
+                return;
+            }
+
+
             input = new Input_t();
 
            

@@ -266,7 +266,9 @@ namespace Bowhead.Actors {
                 && !World.IsSolidBlock(world.GetBlock(headPosition(position)));
         }
 
-        protected void Tick(float dt, Input_t input) {
+        virtual public void UpdateBrain(float dt, Vector3 forward, out Input_t input) { input = new Input_t(); }
+
+        public void Tick(float dt, Input_t input) {
             if (recoveryTimer > 0) {
                 recoveryTimer = Math.Max(0, recoveryTimer - dt);
             }
@@ -446,6 +448,10 @@ namespace Bowhead.Actors {
 
             if (mount == null) {
                 go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
+            }
+            else {
+                position = mount.position;
+                yaw = mount.yaw;
             }
         }
 
