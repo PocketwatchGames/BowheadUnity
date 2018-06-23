@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20b7cacce8e11b348a6038eb11e97760, type: 3}
+  m_Name: Horse
+  m_EditorClassIdentifier: 
+  version: 0
+  _index: 3
+  height: 1
+  collisionRadius: 0.5
+  maxHealth: 100
+  maxStamina: 50
+  recoveryTime: 1
+  staminaRechargeTime: 3
+  dodgeTime: 0
+  stunLimit: 1
+  stunRecoveryTime: 3
+  backStabAngle: 45
+  jumpSpeed: 8
+  dodgeSpeed: 0
+  jumpBoostAcceleration: 0
+  jumpStaminaUse: 0
+  groundAcceleration: 2
+  crouchSpeed: 0
+  walkSpeed: 1
+  walkStartTime: 0
+  walkStopTime: 0
+  groundMaxSpeed: 12
+  groundWindDrag: 0.01
+  slideThresholdSlope: 4
+  slideThresholdFlat: 15
+  gravity: -30
+  fallJumpTime: 0
+  fallAcceleration: 30
+  fallDragHorizontal: 0.05
+  fallMaxHorizontalSpeed: 5
+  climbWallRange: 0
+  climbGrabMinZVel: 0
+  climbSpeed: 0
+  bouyancy: 20
+  swimJumpSpeed: 60
+  swimSinkAcceleration: 0
+  swimJumpBoostAcceleration: 0
+  swimAcceleration: 15
+  swimMaxSpeed: 10
+  swimDragVertical: 5
+  swimDragHorizontal: 0.25
+  prefab:
+    _assetPath: Actors/Wolf
+    _editorPath: Assets/Gameplay/Resources/Actors/Wolf.prefab
+  visionWeight: 2
+  smellWeight: 1
+  hearingWeight: 2
+  waryCooldownTime: 3
+  panicCooldownTime: 8
+  waryIncreaseAtMaxAwareness: 4
+  waryIncreaseAtMaxAwarenessWhilePanicked: 8
+  panicBehavior: 1

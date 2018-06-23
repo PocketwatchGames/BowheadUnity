@@ -207,11 +207,13 @@ namespace Bowhead.Server {
 			base.InitPlayerSpawn(playerController);
 			var player = SpawnPlayer();
 			playerController.PossessPlayerPawn(player);
-		}
 
-		Player SpawnPlayer() {
+
+        }
+
+        Player SpawnPlayer() {
 			var player = world.Spawn<Player>(null, default(SpawnParameters));
-			player.ServerSpawn(new Vector3(0, 500, 35), PlayerData.Get("player"));
+			player.ServerSpawn(new Vector3(16, 500, 16), PlayerData.Get("player"));
 			return player;
 		}
 
@@ -225,17 +227,17 @@ namespace Bowhead.Server {
 			return actor;
 		}
 				
-		public Critter SpawnCritter(string dataName, Vector3 pos) {
+		public Critter SpawnCritter(string dataName, Vector3 pos, Team team) {
 			var data = CritterData.Get(dataName);
 			if (data == null) {
 				return null;
 			}
-			return SpawnCritter(data, pos);
+			return SpawnCritter(data, pos, team);
 		}
 
-		public Critter SpawnCritter(CritterData data, Vector3 pos) {
+		public Critter SpawnCritter(CritterData data, Vector3 pos, Team team) {
 			var critter = world.Spawn<Critter>(null, default(SpawnParameters));
-			critter.ServerSpawn(pos, data);
+			critter.ServerSpawn(pos, data, (ServerTeam)team);
 			return critter;
 		}
 
@@ -259,7 +261,7 @@ namespace Bowhead.Server {
 					var wolfData = CritterData.Get("wolf");
 
 					if (world.GetFirstSolidBlockDown(1000, ref pos)) {
-						var c = SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos);
+						var c = SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos, monsterTeam);
 						
 						if (c.data == bunnyData) {
 							var item = LootData.Get("Raw Meat").CreateItem();

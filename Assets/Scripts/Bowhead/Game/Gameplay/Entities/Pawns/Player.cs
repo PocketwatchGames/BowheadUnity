@@ -70,7 +70,14 @@ namespace Bowhead.Actors {
 					position = spawnPoint;
 					Respawn();
 					_hackDidFindGround = true;
-				} else {
+
+                    var horseData = CritterData.Get("horse");
+                    var c = gameMode.SpawnCritter(horseData, position, team);
+                    var weapon = WeaponData.Get("Pack").CreateItem();
+                    c.SetInventorySlot(0, weapon);
+
+                }
+                else {
 					return;
 				}
 			}

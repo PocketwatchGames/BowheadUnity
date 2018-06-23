@@ -18,16 +18,11 @@ MonoBehaviour:
   randomNumberTable: {fileID: 11400000, guid: 078ed86c2935a284c949cc58506aef5f, type: 2}
   physicalContactMatrix: {fileID: 11400000, guid: 56113d4fbb41aaa4f8b795916537a853,
     type: 2}
-  inventoryItemLibrary:
-    _baseID: 0
-    _items: []
-    _id2item: []
-    _id2ilvl: 
   indexedObjects:
   - {fileID: 11400000, guid: b3ffd708449e9d649b38326105498847, type: 2}
   - {fileID: 11400000, guid: 0e77a8b767627304dbc82fa17ba496c5, type: 2}
   - {fileID: 11400000, guid: badcad2f1b45840469a7894b0bd48558, type: 2}
-  - {fileID: 0}
+  - {fileID: 11400000, guid: 3b209cccffd56bc4fb65d727e00b54e7, type: 2}
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}

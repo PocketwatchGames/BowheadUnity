@@ -24,14 +24,14 @@ namespace Bowhead.Actors {
 
 		#region core
 
-		public override void ServerSpawn(Vector3 pos, EntityData baseData) {
+		virtual public void ServerSpawn(Vector3 pos, EntityData baseData, Server.Actors.ServerTeam t) {
 			base.ServerSpawn(pos, baseData);
 			AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), position, Quaternion.identity));
 		    behaviorPanic = CritterBehavior.Create(data.panicBehavior);
 			position = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
-			team = gameMode.monsterTeam;
+            team = t;
             Init();
 			gameMode.CritterSpawned();
 		}

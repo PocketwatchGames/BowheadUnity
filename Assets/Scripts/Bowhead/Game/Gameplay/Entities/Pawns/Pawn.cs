@@ -87,6 +87,8 @@ namespace Bowhead.Actors {
         public bool canSwim;
         public bool canTurn;
         public bool canAttack;
+        public Pawn mount;
+        public Pawn driver;
 
         [Header("Combat")]
         public Pawn attackTarget;
@@ -137,7 +139,7 @@ namespace Bowhead.Actors {
 		}
 
 		#region getdata
-		public override void ServerSpawn(Vector3 pos, EntityData data) {
+		virtual public void ServerSpawn(Vector3 pos, EntityData data) {
 			base.ServerSpawn(pos, data);
 			this.data = (PawnData)data;
 			gameMode = (Server.BowheadGame)((Server.ServerWorld)world).gameMode;
@@ -984,8 +986,17 @@ namespace Bowhead.Actors {
             return _inventory[index];
         }
 
-        protected virtual void Die() {
+        virtual protected void Die() {
 
+        }
+
+        virtual protected bool SetMount(Pawn m) {
+            if (mount.driver != null)
+                return false;
+
+            mount = m;
+            mount.driver = this;
+            return true;
         }
     }
 }
