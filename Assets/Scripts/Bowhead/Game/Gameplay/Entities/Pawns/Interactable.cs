@@ -13,11 +13,11 @@ namespace Bowhead.Actors {
 		#region getdata
 		public override void ServerSpawn(Vector3 pos, EntityData data) {
 			base.ServerSpawn(pos, data);
-			this.data = (PawnData)data;
+			this.data = (InteractableData)data;
 			gameMode = (Server.BowheadGame)((Server.ServerWorld)world).gameMode;
 		}
 
-		new public PawnData data {
+		new public InteractableData data {
 			get;
 			private set;
 		}

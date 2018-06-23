@@ -221,7 +221,7 @@ namespace Bowhead.Server {
 				return null;
 			}
 			var actor = world.Spawn<WorldItem>(null, default(SpawnParameters));
-			actor.ServerSpawn(pos, data);
+			actor.ServerSpawn(item, pos, data);
 			return actor;
 		}
 				
