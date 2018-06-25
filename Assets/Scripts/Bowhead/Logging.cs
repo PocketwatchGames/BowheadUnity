@@ -6,7 +6,7 @@
 #if LOGGING
 public static class Debug {
 
-	public static bool Assert(bool x) {
+	public static void Assert(bool x) {
 		UnityEngine.Debug.Assert(x);
 	}
 

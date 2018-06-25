@@ -6,7 +6,11 @@ using Unity.Collections;
 
 public partial class World {
 	public sealed class Streaming : IDisposable {
+#if UNITY_EDITOR
+		const int MAX_STREAMING_CHUNKS = 4;
+#else
 		const int MAX_STREAMING_CHUNKS = 8;
+#endif
 		const uint CHUNK_HASH_SIZE_XZ = VOXEL_CHUNK_SIZE_XZ;
 		const uint CHUNK_HASH_SIZE_Y = VOXEL_CHUNK_SIZE_Y;
 		const uint CHUNK_HASH_SIZE = CHUNK_HASH_SIZE_XZ * CHUNK_HASH_SIZE_XZ * CHUNK_HASH_SIZE_Y;
@@ -17,7 +21,7 @@ public partial class World {
 		readonly List<VolumeData> _streamingVolumes = new List<VolumeData>();
 		readonly Chunk[] _neighbors = new Chunk[27];
 		readonly World_ChunkComponent _chunkPrefab;
-		readonly GameObject _terrainRoot;
+		GameObject _terrainRoot;
 
 		ChunkJobData _freeJobData;
 		ChunkJobData _usedJobData;
@@ -41,8 +45,6 @@ public partial class World {
 				};
 				_freeJobData = chunkData;
 			}
-
-			_terrainRoot = new GameObject("TerrainChunks");
 		}
 
 		public Volume NewStreamingVolume(int xzSize, int ySize) {
@@ -66,7 +68,7 @@ public partial class World {
 
 		public void Tick() {
 
-			CompleteJobs(1000);
+			CompleteJobs(4000);
 
 			var anyLoading = false;
 
@@ -115,6 +117,7 @@ public partial class World {
 		}
 
 		public void FinishTravel() {
+			_terrainRoot = new GameObject("TerrainRoot");
 		}
 
 		bool QueueNextChunk(VolumeData volume) {
