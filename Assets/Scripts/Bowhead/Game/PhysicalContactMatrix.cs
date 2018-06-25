@@ -23,7 +23,7 @@ namespace Bowhead {
 		public IntMath.Vector2i bloodSplatterCount;
 
 		public void ClientPrecache() {
-			Utils.PrecacheWithSounds(fxPrefab);
+			SoundUtils.PrecacheWithSounds(fxPrefab);
 			SoundCue.Precache(soundCue);
 		}
 

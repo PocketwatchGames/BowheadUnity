@@ -23,6 +23,7 @@ namespace Server {
 		string serverMessage;
 
 		public ServerWorld(
+			GameInstance gameInstance,
 			Streaming sharedStreaming,
 			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
@@ -33,7 +34,7 @@ namespace Server {
 			string serverMessage,
 			System.Reflection.Assembly[] assemblies, 
 			NetDriver driver
-			) : base(sharedStreaming, chunkComponent, sceneGroup, defaultActorPrefab, getStaticPoolRoot, getTransientPoolRoot, new ServerSerializableObjectFactory(assemblies), driver, new ServerNetMsgFactory(assemblies)) {
+			) : base(gameInstance, sharedStreaming, chunkComponent, sceneGroup, defaultActorPrefab, getStaticPoolRoot, getTransientPoolRoot, new ServerSerializableObjectFactory(assemblies), driver, new ServerNetMsgFactory(assemblies)) {
 			this.serverName = serverName;
 			this.serverMessage = serverMessage;
 			_clientConnections = new ReadOnlyCollection<ActorReplicationChannel>(connectionList);

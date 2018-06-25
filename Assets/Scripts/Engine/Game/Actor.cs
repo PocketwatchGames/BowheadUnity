@@ -270,7 +270,7 @@ public abstract class Actor : ActorRPCObject {
 	}
 
 	public virtual void Tick() {
-		if (Bowhead.GameManager.instance.fixedUpdateDidRun) {
+		if (world.gameInstance.fixedUpdateDidRun) {
 			++_physicsFrames;
 		}
 	}
@@ -512,14 +512,14 @@ public abstract class Actor : ActorRPCObject {
 			if (tag != null) {
 				
 				// clone the tag
-				if (!tag.replicates || (Bowhead.GameManager.instance.serverWorld == null) || (world is Server.ServerWorld)) {
+				if (!tag.replicates || !world.gameInstance.isServer || (world is Server.ServerWorld)) {
 					var newTag = tag.clone ? GameObject.Instantiate(tag) : tag;
 					newTag.isInstance = true;
 					newTag.transform.SetParent(tag.transform.parent, false);
 					newTag.original = tag;
 					tag = newTag;
 				} else {
-					var serverActor = (Actor)Bowhead.GameManager.instance.serverWorld.GetObjectByNetID(netID);
+					var serverActor = (Actor)world.gameInstance.serverWorld.GetObjectByNetID(netID);
 					if (serverActor != null) {
 						tag = serverActor.spawnTag;
 					} else { // server instance was destroyed on the same frame it was spawn'ed so make a new one.

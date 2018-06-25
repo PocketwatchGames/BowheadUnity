@@ -20,12 +20,13 @@ namespace Bowhead.Client {
 		PhysicalContactMatrixState _physicalContactMatrix;
 		
 		public ClientWorld(
+			GameInstance gameInstance,
 			Streaming serverStreaming,
 			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
 			System.Reflection.Assembly[] assemblies,
 			NetDriver driver
-		) : base(serverStreaming, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
+		) : base(gameInstance, serverStreaming, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
 		}
 
 		public Decal NewDecal(float lifetime, Decal.UpdateDecalDelegate update, Vector3 position, Vector3 scale, Quaternion rotation, Material material, bool visible) {

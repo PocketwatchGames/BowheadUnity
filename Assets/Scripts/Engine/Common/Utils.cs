@@ -14,7 +14,15 @@ using System.Reflection;
 using System.Collections;
 #endif
 
-public static partial class Utils {
+public static class Utils {
+
+	public static string GetLocalizedText(string key) {
+		return "???" + key + "???";
+	}
+
+	public static string GetLocalizedText(string key, params object[] args) {
+		return string.Format(GetLocalizedText(key), args);
+	}
 
 	public static string activeSceneName {
 		get {

@@ -55,4 +55,42 @@ namespace Bowhead {
 #endif
 
 	}
+
+	public static class SoundUtils {
+		public static void PrecacheSounds(this GameObject go) {
+			var sounds = go.GetComponentsInAllChildren<SoundEntity>();
+			for (int i = 0; i < sounds.Length; ++i) {
+				SoundCue.Precache(sounds[i].soundCue);
+			}
+		}
+		public static void PrecacheWithSounds<T>(WeakAssetRef<T> asset) where T : Component {
+			var t = asset.Load();
+			if (t != null) {
+				t.gameObject.PrecacheSounds();
+			}
+		}
+
+		public static void PrecacheWithSounds<T>(this WeakAssetRef<T> asset, System.Action<T> f) where T : Component {
+			var t = asset.Load();
+			if (t != null) {
+				t.gameObject.PrecacheSounds();
+				f(t);
+			}
+		}
+
+		public static void PrecacheWithSounds(GameObject_WRef asset) {
+			var go = asset.Load();
+			if (go != null) {
+				go.PrecacheSounds();
+			}
+		}
+
+		public static void PrecacheWithSounds(GameObject_WRef asset, System.Action<GameObject> f) {
+			var go = asset.Load();
+			if (go != null) {
+				go.PrecacheSounds();
+				f(go);
+			}
+		}
+	}
 }

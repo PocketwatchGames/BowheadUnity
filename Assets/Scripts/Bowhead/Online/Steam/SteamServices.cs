@@ -598,20 +598,18 @@ namespace Bowhead.Online.Steam {
 
 			var player = GetSteamPlayer(param.m_steamIDUser);
 			if (player != null) {
-				IntPtr pvData = Marshal.AllocHGlobal(256);
+				string data;
 				EChatEntryType chatEntryType;
-				NativeMethods.ISteamFriends_GetFriendMessage(param.m_steamIDUser, param.m_iMessageID, pvData, 256, out chatEntryType);
+				SteamFriends.GetFriendMessage(param.m_steamIDUser, param.m_iMessageID, out data, 256, out chatEntryType);
 				if (chatEntryType == EChatEntryType.k_EChatEntryTypeTyping) {
 					// TODO: use this for "user is typing" feature (if appropriate)
-				} else if ((chatEntryType == EChatEntryType.k_EChatEntryTypeChatMsg) && (pvData != IntPtr.Zero)) {
-					string message = Marshal.PtrToStringAnsi(pvData);
-					if (message.Length > 0) {
+				} else if (chatEntryType == EChatEntryType.k_EChatEntryTypeChatMsg) {
+					if (data.Length > 0) {
 						for (int i = _friendChatCallbacks.Count - 1; i >= 0; --i) {
-							_friendChatCallbacks[i](player.name, (ulong)param.m_steamIDUser, message);
+							_friendChatCallbacks[i](player.name, (ulong)param.m_steamIDUser, data);
 						}
 					}
 				}
-				Marshal.FreeHGlobal(pvData);
 				player.Dispose();
 			}
 		}
@@ -796,7 +794,7 @@ namespace Bowhead.Online.Steam {
 
 		public bool IsPlayingThisGame(ulong id) {
 			FriendGameInfo_t gameInfo;
-			if (NativeMethods.ISteamFriends_GetFriendGamePlayed((CSteamID)id, out gameInfo)) {
+			if (SteamFriends.GetFriendGamePlayed((CSteamID)id, out gameInfo)) {
 				if (gameInfo.m_gameID.m_GameID == APP_ID.m_AppId) {
 					return true;
 				}
@@ -809,9 +807,7 @@ namespace Bowhead.Online.Steam {
 		}
 
 		public void SendPrivateMessage(ulong id, string text) {
-			InteropHelp.UTF8StringHandle convertedMessage = new InteropHelp.UTF8StringHandle(text);
-			NativeMethods.ISteamFriends_ReplyToFriendMessage((CSteamID)id, convertedMessage);
-			convertedMessage.Dispose();
+			SteamFriends.ReplyToFriendMessage((CSteamID)id, text);
 		}
 
 		public bool ShowPlayerProfile(OnlinePlayer player) {
@@ -819,12 +815,10 @@ namespace Bowhead.Online.Steam {
 		}
 
 		public bool ShowPlayerProfile(ulong id) {
-			if (!NativeMethods.ISteamUtils_IsOverlayEnabled()) {
+			if (!SteamUtils.IsOverlayEnabled()) {
 				return false;
 			}
-			InteropHelp.UTF8StringHandle dialog = new InteropHelp.UTF8StringHandle("steamid");
-			NativeMethods.ISteamFriends_ActivateGameOverlayToUser(dialog, (CSteamID)id);
-			dialog.Dispose();
+			SteamFriends.ActivateGameOverlayToUser("steamid", (CSteamID)id);
 			return true;
 		}
 	}

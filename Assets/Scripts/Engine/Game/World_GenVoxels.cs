@@ -13,7 +13,11 @@ public partial class World {
 			return GenerateVoxels_V1(cpos, chunk);
 		}
 
-	static PinnedChunkData_t GenerateVoxelsSinWave(WorldChunkPos_t cpos, PinnedChunkData_t chunk) {
+		static int positive_modulo(int i, int n) {
+			return (i % n + n) % n;
+		}
+
+		static PinnedChunkData_t GenerateVoxelsSinWave(WorldChunkPos_t cpos, PinnedChunkData_t chunk) {
 			var Y_OFS = (VOXEL_CHUNK_SIZE_Y * MaxVoxelChunkLine(VOXEL_CHUNK_VIS_MAX_Y)) / 8;
 
 			bool solid = false;
@@ -401,14 +405,14 @@ public partial class World {
 			return v;
 		}
 		static float GetPerlinNormal(ref FastNoise_t noise, int x, int y, float scale) {
-			if (Port.Utils.positive_modulo(Mathf.FloorToInt((float)x / noiseFloatPregenSize), 2) == 0)
-				x = Port.Utils.positive_modulo(x, noiseFloatPregenSize);
+			if (positive_modulo(Mathf.FloorToInt((float)x / noiseFloatPregenSize), 2) == 0)
+				x = positive_modulo(x, noiseFloatPregenSize);
 			else
-				x = noiseFloatPregenSize - Port.Utils.positive_modulo(x, noiseFloatPregenSize) - 1;
-			if (Port.Utils.positive_modulo(Mathf.FloorToInt((float)y / noiseFloatPregenSize), 2) == 0)
-				y = Port.Utils.positive_modulo(y, noiseFloatPregenSize);
+				x = noiseFloatPregenSize - positive_modulo(x, noiseFloatPregenSize) - 1;
+			if (positive_modulo(Mathf.FloorToInt((float)y / noiseFloatPregenSize), 2) == 0)
+				y = positive_modulo(y, noiseFloatPregenSize);
 			else
-				y = noiseFloatPregenSize - Port.Utils.positive_modulo(y, noiseFloatPregenSize) - 1;
+				y = noiseFloatPregenSize - positive_modulo(y, noiseFloatPregenSize) - 1;
 			noise.SetFrequency(scale);
 			float v = noise.GetPerlin(x, y);
 			return (v + 1) / 2;

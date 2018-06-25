@@ -17,7 +17,7 @@ using CodeStage.AdvancedFPSCounter;
 
 namespace Bowhead {
 
-	public class GameManager : MonoBehaviour {
+	public class GameManager : MonoBehaviour, GameInstance {
 		const int DEFAULT_MATCH_TIME = 60*5;
 		const int DEFAULT_OVERTIME = 90;
 		const float NETSTAT_FREQUENCY = 1f;
@@ -172,7 +172,7 @@ namespace Bowhead {
 				//#if RELEASE
 				//				_moduleAssemblies = System.AppDomain.CurrentDomain.GetAssemblies();
 				//#else
-				_moduleAssemblies = new[] { Assembly.GetExecutingAssembly() };
+				_moduleAssemblies = new[] { Assembly.GetExecutingAssembly(), Assembly.Load("Engine") };
 				//#endif
 			}
 			return _moduleAssemblies;
@@ -1216,10 +1216,10 @@ namespace Bowhead {
 			var asms = GetModuleAssemblies();
 			_netDriver = (NetDriver)System.Activator.CreateInstance(netDriverType);
 
-			_server = new Bowhead.Server.ServerWorld(dedicatedServer ? staticData.serverTerrainChunkComponent : clientData.clientTerrainChunkComponent, _serverObjectGroup.transform, serverName, null, asms, _netDriver);
+			_server = new Bowhead.Server.ServerWorld(this, dedicatedServer ? staticData.serverTerrainChunkComponent : clientData.clientTerrainChunkComponent, _serverObjectGroup.transform, serverName, null, asms, _netDriver);
 
 			if (!dedicatedServer) {
-				_client = new Bowhead.Client.ClientWorld(_server != null ? _server.worldStreaming : null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
+				_client = new Bowhead.Client.ClientWorld(this, _server != null ? _server.worldStreaming : null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
 			}
 
 			if (!_server.Listen(port, numPlayers)) {
@@ -1269,7 +1269,7 @@ namespace Bowhead {
 			var asms = GetModuleAssemblies();
 			_netDriver = (NetDriver)Activator.CreateInstance(netDriverType);
 
-			_client = new Client.ClientWorld(null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
+			_client = new Client.ClientWorld(this, null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
 			if (!_client.Connect(ip, port)) {
 				Debug.LogError("Failed to connect to: " + ip + ":" + port);
 				_client.Dispose();
@@ -1312,9 +1312,9 @@ namespace Bowhead {
 				_netDriver = new LocalGameNetDriver();
 			}
 
-			_server = new Server.ServerWorld(PIEServerOnly ? staticData.serverTerrainChunkComponent : clientData.clientTerrainChunkComponent, _serverObjectGroup.transform, "PIEServer", null, asms, _netDriver);
+			_server = new Server.ServerWorld(this, PIEServerOnly ? staticData.serverTerrainChunkComponent : clientData.clientTerrainChunkComponent, _serverObjectGroup.transform, "PIEServer", null, asms, _netDriver);
 			if (!PIEServerOnly) {
-				_client = new Client.ClientWorld(_server != null ? _server.worldStreaming : null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
+				_client = new Client.ClientWorld(this, _server != null ? _server.worldStreaming : null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
 			}
 
 			var gameMode = Type.GetType(PIEGameMode);
@@ -1896,50 +1896,6 @@ namespace Bowhead {
 		}
 
 		[CFunc]
-		static void Color0(params object[] args) {
-			if (args.Length < 1) {
-				Debug.LogWarning("Color0 is #" + ColorUtility.ToHtmlStringRGB(Utils.GetUserPrefsPrimaryColor()));
-				return;
-			}
-
-			Color c;
-			if (ColorUtility.TryParseHtmlString((string)args[0], out c)) {
-				Utils.SetUserPrefsPrimaryColor(c);
-				UserPrefs.instance.Save();
-				Debug.LogWarning("Color0 set to " + (string)args[0]);
-#if LOGIN_SERVER
-				if ((instance.loginServer != null) && (instance.loginServer.state == LoginServer.EConnectionState.Connected)) {
-					instance.loginServer.Send(LoginServer.NetMsgs.PlayerSetColorMsg.New(Utils.ToUIntRGB(Utils.GetUserPrefsPrimaryColor()), Utils.ToUIntRGB(Utils.GetUserPrefsSecondaryColor())));
-				}
-#endif
-			} else {
-				Debug.LogError("That's not a valid HTML color string.");
-			}
-		}
-
-		[CFunc]
-		static void Color1(params object[] args) {
-			if (args.Length < 1) {
-				Debug.LogWarning("Color1 is #" + ColorUtility.ToHtmlStringRGB(Utils.GetUserPrefsSecondaryColor()));
-				return;
-			}
-
-			Color c;
-			if (ColorUtility.TryParseHtmlString((string)args[0], out c)) {
-				Utils.SetUserPrefsSecondaryColor(c);
-				UserPrefs.instance.Save();
-				Debug.LogWarning("Color1 set to " + (string)args[0]);
-#if LOGIN_SERVER
-				if ((instance.loginServer != null) && (instance.loginServer.state == LoginServer.EConnectionState.Connected)) {
-					instance.loginServer.Send(LoginServer.NetMsgs.PlayerSetColorMsg.New(Utils.ToUIntRGB(Utils.GetUserPrefsPrimaryColor()), Utils.ToUIntRGB(Utils.GetUserPrefsSecondaryColor())));
-				}
-#endif
-			} else {
-				Debug.LogError("That's not a valid HTML color string.");
-			}
-		}
-
-		[CFunc]
 		static void FPS() {
 			if (instance._fpsCounter.OperationMode == OperationMode.Background) {
 				instance._fpsCounter.OperationMode = OperationMode.Normal;
@@ -2300,6 +2256,11 @@ namespace Bowhead {
 		public void ServerQuit() {
 			_serverQuitFlag = true;
 		}
+
+		public bool isServer => _server != null;
+		public bool isClient => _client != null;
+		public bool isDedicatedServer => isServer && !isClient;
+		global::Server.ServerWorld GameInstance.serverWorld => _server;
 		
 #if UNITY_EDITOR
 		public bool debugDrawAI {

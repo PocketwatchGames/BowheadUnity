@@ -5,24 +5,24 @@ using Bowhead.Server.Actors;
 using Bowhead.Actors;
 using System;
 
-public partial class World {
+public static partial class WorldUtils {
 	#region get block
 
-	public EVoxelBlockType GetBlock(Vector3 pos) {
-		return GetBlock(pos.x, pos.y, pos.z);
+	public static EVoxelBlockType GetBlock(this World world, Vector3 pos) {
+		return world.GetBlock(pos.x, pos.y, pos.z);
 	}
 
-	public EVoxelBlockType GetBlock(float x, float y, float z) {
+	public static EVoxelBlockType GetBlock(this World world, float x, float y, float z) {
 
 		EVoxelBlockType blockType;
-		if (worldStreaming.GetVoxelAt(new WorldVoxelPos_t((int)x, (int)y, (int)z), out blockType)) {
+		if (world.worldStreaming.GetVoxelAt(new WorldVoxelPos_t((int)x, (int)y, (int)z), out blockType)) {
 			return blockType;
 		}
 
 		return EVoxelBlockType.AIR;
 	}
 
-	public float GetFirstOpenBlockUp(int checkDist, Vector3 from) {
+	public static float GetFirstOpenBlockUp(int checkDist, Vector3 from) {
 		RaycastHit hit;
 		if (Physics.Raycast(new Vector3(from.x, 500, from.z), Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
 			return hit.point.y;
@@ -30,7 +30,7 @@ public partial class World {
 		return from.y;
 	}
 
-	public bool GetFirstSolidBlockDown(int checkDist, ref Vector3 from) {
+	public static bool GetFirstSolidBlockDown(int checkDist, ref Vector3 from) {
 		RaycastHit hit;
 		if (Physics.Raycast(from, Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
 			from.y = hit.point.y + 1;
@@ -258,7 +258,7 @@ namespace Bowhead.Server {
 					var bunnyData = CritterData.Get("bunny");
 					var wolfData = CritterData.Get("wolf");
 
-					if (world.GetFirstSolidBlockDown(1000, ref pos)) {
+					if (WorldUtils.GetFirstSolidBlockDown(1000, ref pos)) {
 						var c = SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos);
 						
 						if (c.data == bunnyData) {

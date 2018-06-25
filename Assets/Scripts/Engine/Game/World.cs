@@ -5,6 +5,14 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 
+public interface GameInstance {
+	bool isDedicatedServer { get; }
+	bool isServer { get; }
+	bool isClient { get; }
+	Server.ServerWorld serverWorld { get; }
+	bool fixedUpdateDidRun { get; }
+}
+
 public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 	public const int MAX_RELIABLE_MESSAGE_SIZE = 32*1024;
 	public const int MAX_UNRELIABLE_MESSAGE_SIZE = 4*1024;
@@ -51,6 +59,7 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 	bool _sharedWorldStreaming;
 
 	public World(
+		GameInstance gameInstance,
 		Streaming sharedStreaming,
 		World_ChunkComponent chunkComponent,
 		Transform sceneGroup,
@@ -61,6 +70,7 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		NetDriver netDriver, 
 		NetMsgFactory netMsgFactory
 	) {
+		this.gameInstance = gameInstance;
 		_sceneGroup = sceneGroup;
 		_netDriver = netDriver;
 		_rpcReferenceCollector = new RPCObjectReferenceCollector(this);
@@ -78,6 +88,11 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 
 		_worldStreaming = sharedStreaming ?? new Streaming(chunkComponent);
 		_sharedWorldStreaming = sharedStreaming != null;
+	}
+
+	public GameInstance gameInstance {
+		get;
+		private set;
 	}
 
 	public Transform staticObjectPoolRoot {
@@ -366,7 +381,7 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		spawnTags = new Dictionary<int, ActorSpawnTag>();
 		ActorSpawnTag[] tags = GameObject.FindObjectsOfType<ActorSpawnTag>();
 
-		bool canDisable = (Bowhead.GameManager.instance.clientWorld == null) || (this is Client.ClientWorld);
+		bool canDisable = gameInstance.isDedicatedServer || (this is Client.ClientWorld);
 
 		foreach (var tag in tags) {
 			if (!tag.clone || !tag.isInstance) {

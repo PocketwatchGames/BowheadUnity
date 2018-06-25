@@ -21,6 +21,7 @@ namespace Client {
 		}
 
 		public ClientWorld(
+			GameInstance gameInstance,
 			Streaming sharedStreaming,
 			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
@@ -29,7 +30,7 @@ namespace Client {
 			GetObjectPoolRootDelegate getTransientPoolRoot,
 			System.Reflection.Assembly[] assemblies,
 			NetDriver driver
-		) : base(sharedStreaming, chunkComponent, sceneGroup, defaultActorPrefab, getStaticPoolRoot, getTransientPoolRoot, new ClientSerializableObjectFactory(assemblies), driver, new ClientNetMsgFactory(assemblies)) {
+		) : base(gameInstance, sharedStreaming, chunkComponent, sceneGroup, defaultActorPrefab, getStaticPoolRoot, getTransientPoolRoot, new ClientSerializableObjectFactory(assemblies), driver, new ClientNetMsgFactory(assemblies)) {
 			
 		}
 

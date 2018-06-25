@@ -65,7 +65,7 @@ namespace Bowhead.Actors {
 			}
 
 			if (!_hackDidFindGround) {
-				if (world.GetFirstSolidBlockDown(1000, ref spawnPoint)) {
+				if (WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPoint)) {
 					spawnPoint += Vector3.up;
 					position = spawnPoint;
 					Respawn();
@@ -327,10 +327,10 @@ namespace Bowhead.Actors {
         override public void LandOnGround() {
             // Land on ground
             var block = world.GetBlock(position);
-            if (!World.IsCapBlock(block)) {
+            if (!WorldUtils.IsCapBlock(block)) {
                 block = world.GetBlock(footPosition(position));
             }
-            float d = -velocity.y / data.fallDamageVelocity * World.GetFallDamage(block);
+            float d = -velocity.y / data.fallDamageVelocity * WorldUtils.GetFallDamage(block);
             if (d > 0) {
                 damage(d);
                 useStamina((float)d);

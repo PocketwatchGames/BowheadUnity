@@ -186,10 +186,10 @@ namespace Bowhead.Actors {
             if (!IsOpen(p))
                 return false;
             var handblock = world.GetBlock(handPosition(handHoldPos));
-            bool isClimbable = World.IsClimbable(handblock, canClimbWell);
+            bool isClimbable = WorldUtils.IsClimbable(handblock, canClimbWell);
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
-                if (isHangPosition && World.IsHangable(handblock, canClimbWell) && !World.IsSolidBlock(world.GetBlock(p)) && !World.IsSolidBlock(world.GetBlock(handPosition(p))) && !World.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
+                if (isHangPosition && WorldUtils.IsHangable(handblock, canClimbWell) && !WorldUtils.IsSolidBlock(world.GetBlock(p)) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(p))) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -205,13 +205,13 @@ namespace Bowhead.Actors {
             if (!IsOpen(p))
                 return false;
             var handblock = world.GetBlock(handPosition(handHoldPos));
-            bool isClimbable = World.IsClimbable(handblock, canClimbWell);
+            bool isClimbable = WorldUtils.IsClimbable(handblock, canClimbWell);
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
                 if (isHangPosition
-                    && World.IsHangable(handblock, canClimbWell)
-                    && !World.IsSolidBlock(world.GetBlock(handPosition(handHoldPos)))
-                    && !World.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
+                    && WorldUtils.IsHangable(handblock, canClimbWell)
+                    && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(handHoldPos)))
+                    && !WorldUtils.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -260,8 +260,8 @@ namespace Bowhead.Actors {
         }
 
         bool IsOpen(Vector3 position) {
-            return !World.IsSolidBlock(world.GetBlock(waistPosition(position)))
-                && !World.IsSolidBlock(world.GetBlock(headPosition(position)));
+            return !WorldUtils.IsSolidBlock(world.GetBlock(waistPosition(position)))
+                && !WorldUtils.IsSolidBlock(world.GetBlock(headPosition(position)));
         }
 
         protected void Tick(float dt, Input_t input) {
@@ -358,7 +358,7 @@ namespace Bowhead.Actors {
                 position.y = Mathf.Max(position.y, floorPosition);
             }
             // Collide head
-            else if (World.IsSolidBlock(world.GetBlock(headPosition(position)))) {
+            else if (WorldUtils.IsSolidBlock(world.GetBlock(headPosition(position)))) {
                 // TODO: this is broken
                 position.y = Math.Min(position.y, (int)headPosition(position).y - data.height);
                 velocity.y = Math.Min(0, velocity.y);
@@ -541,8 +541,8 @@ namespace Bowhead.Actors {
             var midblock = world.GetBlock(waistPosition(position));
             var topblock = world.GetBlock(headPosition(position));
             float slideFriction, slideThreshold;
-            World.GetSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
-            float workModifier = World.GetWorkModifier(block, midblock, topblock);
+			WorldUtils.GetSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
+            float workModifier = WorldUtils.GetWorkModifier(block, midblock, topblock);
             if (IsWading()) {
                 workModifier += data.swimDragHorizontal;
             }
