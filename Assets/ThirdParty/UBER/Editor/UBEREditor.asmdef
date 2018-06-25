@@ -1,0 +1,12 @@
+{
+    "name": "UBEREditor",
+    "references": [
+        "ThirdParty"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}

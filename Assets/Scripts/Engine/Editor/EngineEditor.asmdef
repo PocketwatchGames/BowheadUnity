@@ -1,0 +1,12 @@
+{
+    "name": "EngineEditor",
+    "references": [
+        "Engine"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
