@@ -14,7 +14,7 @@ public partial class World {
 		const uint CHUNK_HASH_SIZE_XZ = VOXEL_CHUNK_SIZE_XZ;
 		const uint CHUNK_HASH_SIZE_Y = VOXEL_CHUNK_SIZE_Y;
 		const uint CHUNK_HASH_SIZE = CHUNK_HASH_SIZE_XZ * CHUNK_HASH_SIZE_XZ * CHUNK_HASH_SIZE_Y;
-		const int MAX_FRAME_TIMEus = 1000;
+		const int MAX_FRAME_TIMEus = 4000;
 
 		readonly ObjectPool<Chunk> _chunkPool = new ObjectPool<Chunk>(VOXEL_CHUNK_VIS_MAX_XZ*VOXEL_CHUNK_VIS_MAX_XZ*VOXEL_CHUNK_VIS_MAX_Y, 0);
 		readonly Chunk[] _chunkHash = new Chunk[CHUNK_HASH_SIZE];
@@ -68,7 +68,7 @@ public partial class World {
 
 		public void Tick() {
 
-			CompleteJobs(4000);
+			CompleteJobs(MAX_FRAME_TIMEus);
 
 			var anyLoading = false;
 
