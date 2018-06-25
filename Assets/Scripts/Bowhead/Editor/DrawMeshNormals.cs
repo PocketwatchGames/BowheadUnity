@@ -5,7 +5,31 @@ using UnityEngine;
 public class DrawMeshNormals : Editor {
 
 	MeshFilter filter;
-	static bool show;
+
+	static bool _show;
+	static bool _loadedPrefs;
+
+	[MenuItem("Bowhead/Options/Show Selected Mesh Normals")]
+	static void MenuToggle() {
+		show = !show;
+	}
+
+	static bool show {
+		get {
+			if (!_loadedPrefs) {
+				_loadedPrefs = true;
+				_show = EditorPrefs.GetBool("Bowhead_ShowSelectedMeshNormals", false);
+				Menu.SetChecked("Bowhead/Options/Show Selected Mesh Normals", _show);
+			}
+			return _show;
+		}
+		set {
+			_show = value;
+			_loadedPrefs = true;
+			EditorPrefs.SetBool("Bowhead_ShowSelectedMeshNormals", value);
+			Menu.SetChecked("Bowhead/Options/Show Selected Mesh Normals", value);
+		}
+	}
 
 	void OnEnable() {
 		filter = target as MeshFilter;
@@ -35,11 +59,5 @@ public class DrawMeshNormals : Editor {
 				vertices[i],
 				vertices[i] + normals[i] * 0.5f);
 		}
-	}
-
-	[MenuItem("Bowhead/Options/Show Selected Mesh Normals")]
-	static void ShowSelectedMeshNormalsMenu() {
-		show = !show;
-		Menu.SetChecked("Bowhead/Options/Show Selected Mesh Normals", show);
 	}
 }

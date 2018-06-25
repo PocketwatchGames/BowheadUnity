@@ -13,12 +13,29 @@ public partial class World {
 	public sealed class Streaming : IDisposable {
 #if UNITY_EDITOR
 		const int MAX_STREAMING_CHUNKS = 4;
-		static bool debugDraw;
+		static bool _debugDraw;
+		static bool _loadedPrefs;
 
 		[MenuItem("Bowhead/Options/Debug Chunk Display")]
-		static void DebugDrawMenuToggle() {
+		static void MenuToggle() {
 			debugDraw = !debugDraw;
-			Menu.SetChecked("Bowhead/Options/Debug Chunk Display", debugDraw);
+		}
+
+		static bool debugDraw {
+			get {
+				if (!_loadedPrefs) {
+					_loadedPrefs = true;
+					_debugDraw = EditorPrefs.GetBool("Bowhead_DebugChunkDisplay", false);
+					Menu.SetChecked("Bowhead/Options/Debug Chunk Display", _debugDraw);
+				}
+				return _debugDraw;
+			}
+			set {
+				_debugDraw = value;
+				_loadedPrefs = true;
+				EditorPrefs.SetBool("Bowhead_DebugChunkDisplay", value);
+				Menu.SetChecked("Bowhead/Options/Debug Chunk Display", value);
+			}
 		}
 #else
 		const int MAX_STREAMING_CHUNKS = 8;
