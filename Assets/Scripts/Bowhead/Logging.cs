@@ -6,6 +6,10 @@
 #if LOGGING
 public static class Debug {
 
+	public static bool Assert(bool x) {
+		UnityEngine.Debug.Assert(x);
+	}
+
 	public static void Log(object message) {
 		Write(ELogLevel.Log, message.ToString());
 	}

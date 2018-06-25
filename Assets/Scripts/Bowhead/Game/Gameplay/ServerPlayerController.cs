@@ -99,17 +99,6 @@ namespace Bowhead.Server.Actors {
 					ConsolePrint(LogType.Log, GameManager.instance.memStat);
 				}
 			}
-
-#if !UNITY_EDITOR
-			if (gameMode.matchInProgress && (playerState.health > 0)) {
-				_idleTime += world.unscaledDeltaTime;
-				if (_idleTime >= MAX_IDLE_TIME) {
-					svWorld.DisconnectClient(ownerConnection.connection, null, EDisconnectReason.AFK, null);
-				}
-			} else {
-				_idleTime = 0;
-			}
-#endif
 		}
 
 		protected override void Dispose(bool disposing) {

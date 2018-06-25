@@ -1,5 +1,6 @@
 // Uncomment this out to disable copying
 //#define DISABLEREDISTCOPY
+#if false
 
 using UnityEngine;
 using UnityEditor;
@@ -19,10 +20,10 @@ public class RedistCopy {
 		string strProjectName = Path.GetFileNameWithoutExtension(pathToBuiltProject);
 
 		if (target == BuildTarget.StandaloneWindows64) {
-			CopyFile("steam_api64.dll", "steam_api64.dll", "Assets/Plugins/x86_64", pathToBuiltProject);
+			CopyFile("steam_api64.dll", "steam_api64.dll", "Assets/ThirdParty/Steamworks.NET/Plugins/x86_64", pathToBuiltProject);
 		}
 		else if (target == BuildTarget.StandaloneWindows) {
-			CopyFile("steam_api.dll", "steam_api.dll", "Assets/Plugins/x86", pathToBuiltProject);
+			CopyFile("steam_api.dll", "steam_api.dll", "Assets/ThirdParty/Steamworks.NET/Plugins/x86", pathToBuiltProject);
 		}
 				
 		string controllerCfg = Path.Combine(Application.dataPath, "controller.vdf");
@@ -72,3 +73,4 @@ public class RedistCopy {
 		}
 	}
 }
+#endif
