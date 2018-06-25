@@ -89,14 +89,14 @@ public class WeakAssetRefProcessor : AssetPostprocessor {
 
 	static WeakAssetRefProcessor() {
 		EditorApplication.delayCall += () => {
-			Menu.SetChecked("Bowhead/Auto Update Weak Refs", true);
+			Menu.SetChecked("Bowhead/Options/Auto Update Weak Refs", true);
 		};
 	}
 
-	[MenuItem("Bowhead/Auto Update Weak Refs")]
+	[MenuItem("Bowhead/Options/Auto Update Weak Refs")]
 	static void AutoUpdateWeakRefsMenu() {
 		autoUpdateWeakRefs = !autoUpdateWeakRefs;
-		Menu.SetChecked("Bowhead/Auto Update Weak Refs", autoUpdateWeakRefs);
+		Menu.SetChecked("Bowhead/Options/Auto Update Weak Refs", autoUpdateWeakRefs);
 	}
 
 	static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths) {

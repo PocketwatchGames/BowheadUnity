@@ -37,9 +37,9 @@ public class DrawMeshNormals : Editor {
 		}
 	}
 
-	[MenuItem("Bowhead/Show Selected Mesh Normals")]
+	[MenuItem("Bowhead/Options/Show Selected Mesh Normals")]
 	static void ShowSelectedMeshNormalsMenu() {
 		show = !show;
-		Menu.SetChecked("Bowhead/Show Selected Mesh Normals", show);
+		Menu.SetChecked("Bowhead/Options/Show Selected Mesh Normals", show);
 	}
 }
