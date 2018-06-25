@@ -1743,9 +1743,9 @@ namespace Bowhead {
 				throw new Exception("Player count must be between 1 and 8");
 			}
 
-			if (LEVELS.FindIndex((x) => x.name == mapName) == -1) {
-				throw new Exception(mapName + " is not a valid map");
-			}
+			//if (LEVELS.FindIndex((x) => x.name == mapName) == -1) {
+			//	throw new Exception(mapName + " is not a valid map");
+			//}
 
 			Type gameModeType = typeof(Bowhead.Server.BowheadGame);
 			//if (gameModeType == null) {
