@@ -1,4 +1,9 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+#define DEBUG_DRAW
+using UnityEditor;
+#endif
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
@@ -8,6 +13,13 @@ public partial class World {
 	public sealed class Streaming : IDisposable {
 #if UNITY_EDITOR
 		const int MAX_STREAMING_CHUNKS = 4;
+		static bool debugDraw;
+
+		[MenuItem("Bowhead/Options/Debug Chunk Display")]
+		static void DebugDrawMenuToggle() {
+			debugDraw = !debugDraw;
+			Menu.SetChecked("Bowhead/Options/Debug Chunk Display", debugDraw);
+		}
 #else
 		const int MAX_STREAMING_CHUNKS = 8;
 #endif
@@ -100,6 +112,23 @@ public partial class World {
 			}
 
 			_loading = anyLoading;
+
+#if DEBUG_DRAW
+			if (debugDraw) {
+				foreach (var volume in _streamingVolumes) {
+					for (int i = volume.loadNext; i < volume.count; ++i) {
+						var chunk = volume.chunks[i].chunk;
+						if ((chunk.jobData == null) && !chunk.hasTrisData) {
+							chunk.DebugDrawState();
+						}
+					}
+				}
+
+				for (var job = _usedJobData; job != null; job = job.next) {
+					job.chunk.DebugDrawState();
+				}
+			}
+#endif
 		}
 
 		public void Flush() {
@@ -124,7 +153,7 @@ public partial class World {
 			for (int i = volume.loadNext; i < volume.count; ++i) {
 				var chunk = volume.chunks[i].chunk;
 
-				if ((chunk == null) || chunk.hasTrisData) {
+				if (chunk.hasTrisData) {
 					if (i == volume.loadNext) {
 						++volume.loadNext;
 						volume.loading = volume.loadNext < volume.count;
@@ -194,6 +223,10 @@ public partial class World {
 			chunk.jobData = jobData;
 			chunk.chunkData.Pin();
 
+#if DEBUG_DRAW
+			chunk.dbgDraw.state = EDebugDrawState.GENERATING_VOXELS;
+#endif
+
 			jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData);
 			QueueJobData(jobData);
 			return true;
@@ -240,6 +273,10 @@ public partial class World {
 			chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, JobHandle.CombineDependencies(dependancies));
 			dependancies.Dispose();
 
+#if DEBUG_DRAW
+			chunk.dbgDraw.state = EDebugDrawState.GENERATING_TRIS;
+#endif
+
 			if (!existingJob) {
 				QueueJobData(chunk.jobData);
 			}
@@ -285,6 +322,10 @@ public partial class World {
 
 			chunk.jobData = null;
 			chunk.hasVoxelData = true;
+
+#if DEBUG_DRAW
+			chunk.dbgDraw.state = EDebugDrawState.HAS_VOXELS;
+#endif
 
 			if ((job.flags & EJobFlags.TRIS) != 0) {
 				job.jobData.voxelStorage.Unpin();
@@ -355,7 +396,20 @@ public partial class World {
 			}
 		}
 
-		class Chunk : HChunk {
+#if DEBUG_DRAW
+		enum EDebugDrawState {
+			QUEUED,
+			GENERATING_VOXELS,
+			HAS_VOXELS,
+			GENERATING_TRIS
+		};
+		
+		struct DebugDrawState_t {
+			public EDebugDrawState state;
+		};
+#endif
+
+		class Chunk : ChunkHandle {
 			public Chunk hashNext;
 			public Chunk hashPrev;
 			public WorldChunkPos_t pos;
@@ -366,6 +420,33 @@ public partial class World {
 			public ChunkMeshGen.ChunkData_t chunkData;
 			public ChunkJobData jobData;
 			public World_ChunkComponent goChunk;
+
+#if DEBUG_DRAW
+			public DebugDrawState_t dbgDraw;
+
+			public void DebugDrawState() {
+				var lpos = WorldToVec3(ChunkToWorld(pos));
+
+				Color c;
+				switch (dbgDraw.state) {
+					default: return;
+					case EDebugDrawState.QUEUED:
+						c = Color.grey;
+					break;
+					case EDebugDrawState.GENERATING_VOXELS:
+						c = Color.red;
+					break;
+					case EDebugDrawState.HAS_VOXELS:
+						c = Color.cyan;
+					break;
+					case EDebugDrawState.GENERATING_TRIS:
+						c = Color.yellow;
+					break;
+				}
+
+				Utils.DebugDrawBox(lpos, lpos + new Vector3(VOXEL_CHUNK_SIZE_XZ, VOXEL_CHUNK_SIZE_Y, VOXEL_CHUNK_SIZE_XZ), c, 0, true);
+			}
+#endif
 
 			public bool GetVoxelAt(LocalVoxelPos_t pos, out EVoxelBlockType blocktype) {
 				if (hasVoxelData) {
@@ -397,7 +478,7 @@ public partial class World {
 			}
 		};
 
-		class VolumeData : Volume {
+		class VolumeData : Volume, IComparer<VolumeData.ChunkRef_t> {
 			public struct ChunkRef_t {
 				public Chunk chunk;
 				public uint sort;
@@ -458,7 +539,7 @@ public partial class World {
 				for (int y = 0; y < yDim; ++y) {
 
 					var yc = yorg + y;
-					uint dy = (uint)Mathf.Abs(yc - curPos.cy);
+					uint dy = (uint)Mathf.Abs(yc - curPos.cy) * VOXEL_CHUNK_SIZE_Y/VOXEL_CHUNK_SIZE_XZ;
 					
 					for (int z = 0; z < zPitch; ++z) {
 
@@ -470,7 +551,7 @@ public partial class World {
 							var xc = xorg + x;
 							uint dx = (uint)Mathf.Abs(xc - curPos.cx);
 							
-							var sort = dx * dx + dy * dy + dz + dz;
+							var sort = dx * dx + dy * dy + dz * dz;
 
 							WorldChunkPos_t chunkPos = new WorldChunkPos_t(xc, yc, zc);
 
@@ -486,7 +567,7 @@ public partial class World {
 					}
 				}
 
-				Array.Sort(chunks, (x, y) => x.sort.CompareTo(y.sort));
+				Array.Sort(chunks, 0, count, this);
 
 				for (int i = 0; i < prevCount; ++i) {
 					streaming.Release(tempChunks[i].chunk);
@@ -502,6 +583,10 @@ public partial class World {
 				}
 				streaming._streamingVolumes.Remove(this);
 			}
+
+			public int Compare(ChunkRef_t x, ChunkRef_t y) {
+				return x.sort.CompareTo(y.sort);
+			}
 		};
 
 		public interface Volume : IDisposable {
@@ -510,12 +595,12 @@ public partial class World {
 			int ySize { get; }
 		};
 
-		public interface HChunk {
+		public interface ChunkHandle {
 			bool GetVoxelAt(LocalVoxelPos_t pos, out EVoxelBlockType blocktype);
 		};
 
 		public struct ChunkRef_t : IDisposable {
-			public HChunk chunk;
+			public ChunkHandle chunk;
 			public Streaming streaming;
 
 			public void Dispose() {
@@ -618,6 +703,10 @@ public partial class World {
 			chunk.hash = GetChunkPosHash(pos);
 			chunk.hasTrisData = false;
 			chunk.hasVoxelData = false;
+
+#if DEBUG_DRAW
+			chunk.dbgDraw.state = EDebugDrawState.QUEUED;
+#endif
 
 			if (chunk.chunkData.blocktypes == null) {
 				chunk.chunkData = ChunkMeshGen.ChunkData_t.New();

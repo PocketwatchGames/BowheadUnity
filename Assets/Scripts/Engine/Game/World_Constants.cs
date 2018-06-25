@@ -139,14 +139,13 @@ public partial class World {
 	public static int MaxVoxelChunkLine(int dim) {
 		return (dim*2) + 1;
 	}
-
 	
-
 	[Flags]
 	public enum EChunkFlags {
 		NONE = 0,
 		AIR = 0x1,
-		SOLID = 0x2
+		SOLID = 0x2,
+		TRANSPARENT = 0x4
 	};
 
 	public static int WorldToChunk(int w, int CHUNK_SIZE) {

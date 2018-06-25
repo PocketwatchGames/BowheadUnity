@@ -907,6 +907,81 @@ public static class Utils {
 		Debug.DrawLine(prev, start, color, duration, depthTest);
 	}
 
+	[System.Diagnostics.Conditional("UNITY_EDITOR")]
+	public static void DebugDrawLineLoop(Vector3[] pos, Color color, int start, int count, float duration, bool depthTest) {
+		var end = start+count;
+
+		for (int i = start; i < end; ++i) {
+			Debug.DrawLine(pos[i], pos[((i+1)%count) + start], color, duration, depthTest);
+		}
+	}
+
+	[System.Diagnostics.Conditional("UNITY_EDITOR")]
+	public static void DebugDrawQuadLineLoop(Vector3 a, Vector3 b, Vector3 c, Vector3 d, Color color, float duration, bool depthTest) {
+		Debug.DrawLine(a, b, color, duration, depthTest);
+		Debug.DrawLine(b, c, color, duration, depthTest);
+		Debug.DrawLine(c, d, color, duration, depthTest);
+		Debug.DrawLine(d, a, color, duration, depthTest);
+	}
+
+	[System.Diagnostics.Conditional("UNITY_EDITOR")]
+	public static void DebugDrawBox(Vector3 mins, Vector3 maxs, Color color, float duration, bool depthTest) {
+		// -x
+		DebugDrawQuadLineLoop(
+			new Vector3(mins.x, mins.y, mins.z),
+			new Vector3(mins.x, maxs.y, mins.z),
+			new Vector3(mins.x, maxs.y, maxs.z),
+			new Vector3(mins.x, mins.y, maxs.z),
+			color,
+			duration,
+			depthTest
+		);
+		// +x
+		DebugDrawQuadLineLoop(
+			new Vector3(maxs.x, mins.y, mins.z),
+			new Vector3(maxs.x, maxs.y, mins.z),
+			new Vector3(maxs.x, maxs.y, maxs.z),
+			new Vector3(maxs.x, mins.y, maxs.z),
+			color,
+			duration,
+			depthTest
+		);
+
+		// connecting lines
+
+		Debug.DrawLine(
+			new Vector3(mins.x, mins.y, mins.z),
+			new Vector3(maxs.x, mins.y, mins.z),
+			color,
+			duration,
+			depthTest
+		);
+
+		Debug.DrawLine(
+			new Vector3(mins.x, maxs.y, mins.z),
+			new Vector3(maxs.x, maxs.y, mins.z),
+			color,
+			duration,
+			depthTest
+		);
+
+		Debug.DrawLine(
+			new Vector3(mins.x, mins.y, maxs.z),
+			new Vector3(maxs.x, mins.y, maxs.z),
+			color,
+			duration,
+			depthTest
+		);
+
+		Debug.DrawLine(
+			new Vector3(mins.x, maxs.y, maxs.z),
+			new Vector3(maxs.x, maxs.y, maxs.z),
+			color,
+			duration,
+			depthTest
+		);
+	}
+
 	public static double ReadSeconds() {
 		return ((double)System.Diagnostics.Stopwatch.GetTimestamp() / (double)System.Diagnostics.Stopwatch.Frequency);
 	}
