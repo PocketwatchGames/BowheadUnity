@@ -70,7 +70,14 @@ namespace Bowhead.Actors {
 					position = spawnPoint;
 					Respawn();
 					_hackDidFindGround = true;
-				} else {
+
+                    var horseData = CritterData.Get("horse");
+                    var c = gameMode.SpawnCritter(horseData, position, team);
+                    var weapon = PackData.Get("Pack").CreateItem();
+                    c.SetInventorySlot(0, weapon);
+
+                }
+                else {
 					return;
 				}
 			}
@@ -113,8 +120,9 @@ namespace Bowhead.Actors {
 			gameMode.SpawnRandomCritter();
 		}
 
-		// TODO: move cameraYaw into the PlayerCmd struct
-		void Tick(float dt, float cameraYaw) {
+
+        // TODO: move cameraYaw into the PlayerCmd struct
+        public void Tick(float dt, float cameraYaw) {
 
             canMove = weight < WeightClass.IMMOBILE && !stunned;
             canAttack = weight < WeightClass.IMMOBILE;
@@ -153,7 +161,11 @@ namespace Bowhead.Actors {
             }
 
             Input_t input;
-            HandleInput(dt, cameraYaw, out input);
+            var forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Cos(cameraYaw));
+            UpdateBrain(dt, forward, out input);
+            if (mount != null) {
+                mount.Tick(dt, input);
+            }
 
             if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
                 Interact();
@@ -285,7 +297,7 @@ namespace Bowhead.Actors {
 
         #region Tick
 
-        void HandleInput(float dt, float cameraYaw, out Input_t input) {
+        override public void UpdateBrain(float dt, Vector3 forward, out Input_t input) {
             input = new Input_t();
             for (int i = 0; i < (int)InputType.Count; i++) {
                 if ((cur.buttons & (0x1 << i)) != 0) {
@@ -305,7 +317,6 @@ namespace Bowhead.Actors {
                     }
                 }
             }
-            var forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Cos(cameraYaw));
             var right = Vector3.Cross(Vector3.up, forward);
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
@@ -711,9 +722,19 @@ namespace Bowhead.Actors {
 
         void Interact() {
             var t = GetInteractTarget();
-            if ((t != null) && !t.pendingKill) {
-                if (PickUp(t.item)) {
+            WorldItem worldItem;
+            Critter critter;
+            if ((worldItem = t as WorldItem) != null && !t.pendingKill) {
+                if (PickUp(worldItem.item)) {
 					t.Destroy();
+                }
+            }
+            else if ((critter = t as Critter) != null) {
+                if (mount == critter) {
+                    SetMount(null);
+                }
+                else {
+                    SetMount(critter);
                 }
             }
             else {
@@ -783,14 +804,27 @@ namespace Bowhead.Actors {
         }
 
 
-        public WorldItem GetInteractTarget() {
+        public Entity GetInteractTarget() {
+            if (mount != null) {
+                return mount;
+            }
+
             float closestDist = 2;
-            WorldItem closestItem = null;
+            Entity closestItem = null;
             foreach (var i in world.GetActorIterator<WorldItem>()) {
                 float dist = (i.position - position).magnitude;
                 if (dist < closestDist) {
                     closestDist = dist;
                     closestItem = i;
+                }
+            }
+            foreach (var i in world.GetActorIterator<Critter>()) {
+                if (i.team == team) {
+                    float dist = (i.position - position).magnitude;
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closestItem = i;
+                    }
                 }
             }
             return closestItem;

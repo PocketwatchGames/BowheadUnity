@@ -24,14 +24,14 @@ namespace Bowhead.Actors {
 
 		#region core
 
-		public override void ServerSpawn(Vector3 pos, EntityData baseData) {
+		virtual public void ServerSpawn(Vector3 pos, EntityData baseData, Server.Actors.ServerTeam t) {
 			base.ServerSpawn(pos, baseData);
 			AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), position, Quaternion.identity));
 		    behaviorPanic = CritterBehavior.Create(data.panicBehavior);
 			position = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
-			team = gameMode.monsterTeam;
+            team = t;
             Init();
 			gameMode.CritterSpawned();
 		}
@@ -76,9 +76,10 @@ namespace Bowhead.Actors {
             }
 
             Input_t input;
-            UpdateBrain(dt, out input);
-
-            base.Tick(dt, input);
+            UpdateBrain(dt, Vector3.forward, out input);
+            if (driver == null) {
+                base.Tick(dt, input);
+            }
 
             if (canAttack) {
                 foreach (var weapon in getInventory()) {
@@ -135,10 +136,22 @@ namespace Bowhead.Actors {
 
         #region brain
 
-        void UpdateBrain(float dt, out Input_t input) {
+        override public void UpdateBrain(float dt, Vector3 forward, out Input_t input) {
+
+            if (driver != null) {
+                driver.UpdateBrain(dt, forward, out input);
+                return;
+            }
+
+
             input = new Input_t();
 
+           
 			foreach (var p in world.GetActorIterator<Player>()) {
+
+                if (p.team == team) {
+                    continue;
+                }
 
                 float awareness = (CanSee(p) * data.visionWeight + CanSmell(p) * data.smellWeight + CanHear(p) * data.hearingWeight) / (data.visionWeight + data.smellWeight + data.hearingWeight);
 

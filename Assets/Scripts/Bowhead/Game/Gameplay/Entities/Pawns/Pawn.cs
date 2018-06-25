@@ -87,6 +87,8 @@ namespace Bowhead.Actors {
         public bool canSwim;
         public bool canTurn;
         public bool canAttack;
+        public Pawn mount;
+        public Pawn driver;
 
         [Header("Combat")]
         public Pawn attackTarget;
@@ -137,7 +139,7 @@ namespace Bowhead.Actors {
 		}
 
 		#region getdata
-		public override void ServerSpawn(Vector3 pos, EntityData data) {
+		virtual public void ServerSpawn(Vector3 pos, EntityData data) {
 			base.ServerSpawn(pos, data);
 			this.data = (PawnData)data;
 			gameMode = (Server.BowheadGame)((Server.ServerWorld)world).gameMode;
@@ -264,7 +266,9 @@ namespace Bowhead.Actors {
                 && !WorldUtils.IsSolidBlock(world.GetBlock(headPosition(position)));
         }
 
-        protected void Tick(float dt, Input_t input) {
+        virtual public void UpdateBrain(float dt, Vector3 forward, out Input_t input) { input = new Input_t(); }
+
+        public void Tick(float dt, Input_t input) {
             if (recoveryTimer > 0) {
                 recoveryTimer = Math.Max(0, recoveryTimer - dt);
             }
@@ -442,7 +446,13 @@ namespace Bowhead.Actors {
                 Die();
             }
 
-            go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
+            if (mount == null) {
+                go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
+            }
+            else {
+                position = mount.position;
+                yaw = mount.yaw;
+            }
         }
 
         public bool Move(Vector3 moveXZ, float dt) {
@@ -984,8 +994,31 @@ namespace Bowhead.Actors {
             return _inventory[index];
         }
 
-        protected virtual void Die() {
+        virtual protected void Die() {
 
+        }
+
+        virtual protected bool SetMount(Pawn m) {
+
+            if (m?.driver != null)
+                return false;
+            if (mount != null) {
+                mount.driver = null;
+            }
+
+            mount = m;
+            mount.driver = this;
+
+            if (mount != null) {
+                go.transform.parent = mount.go.transform;
+                go.transform.position = mount.headPosition(mount.position);
+            }
+            else {
+                go.transform.parent = null;
+            }
+
+
+            return true;
         }
     }
 }
