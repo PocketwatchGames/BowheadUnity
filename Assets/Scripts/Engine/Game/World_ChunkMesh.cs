@@ -14,7 +14,7 @@ using static UnityEngine.Debug;
 
 public partial class World {
 	public struct PinnedChunkData_t {
-		public ChunkStorageArray1D_t blocktypes;
+		public ChunkStorageArray1D_t voxeldata;
 		[NativeDisableUnsafePtrRestriction]
 		public unsafe EChunkFlags* pinnedFlags;
 		public EChunkFlags flags;
@@ -65,7 +65,7 @@ public partial class World {
 		public struct ChunkData_t {
 			public ChunkStorageArray1D_t pinnedBlockData;
 			public unsafe EChunkFlags* pinnedFlags;
-			public EVoxelBlockType[] blocktypes;
+			public EVoxelBlockType[] voxeldata;
 			public EChunkFlags[] flags;
 
 			GCHandle _pinnedArray;
@@ -74,7 +74,7 @@ public partial class World {
 
 			public static ChunkData_t New() {
 				return new ChunkData_t {
-					blocktypes = new EVoxelBlockType[VOXELS_PER_CHUNK],
+					voxeldata = new EVoxelBlockType[VOXELS_PER_CHUNK],
 					flags = new EChunkFlags[1]
 				};
 			}
@@ -84,10 +84,10 @@ public partial class World {
 
 				if (_pinCount == 1) {
 					Assert(!_pinnedArray.IsAllocated);
-					_pinnedArray = GCHandle.Alloc(blocktypes, GCHandleType.Pinned);
+					_pinnedArray = GCHandle.Alloc(voxeldata, GCHandleType.Pinned);
 					_pinnedFlags = GCHandle.Alloc(flags, GCHandleType.Pinned);
 					unsafe {
-						pinnedBlockData = ChunkStorageArray1D_t.New((EVoxelBlockType*)_pinnedArray.AddrOfPinnedObject().ToPointer(), blocktypes.Length);
+						pinnedBlockData = ChunkStorageArray1D_t.New((EVoxelBlockType*)_pinnedArray.AddrOfPinnedObject().ToPointer(), voxeldata.Length);
 						pinnedFlags = (EChunkFlags*)_pinnedFlags.AddrOfPinnedObject().ToPointer();
 					}
 				}
@@ -130,7 +130,7 @@ public partial class World {
 			unsafe {
 				Assert(chunk.pinnedFlags != null);
 				return new PinnedChunkData_t {
-					blocktypes = chunk.pinnedBlockData,
+					voxeldata = chunk.pinnedBlockData,
 					pinnedFlags = chunk.pinnedFlags,
 					flags = chunk.flags[0],
 					valid = 1
@@ -1629,7 +1629,7 @@ public partial class World {
 							var voxelData = _area[chunkIndex];
 
 							if (voxelData.valid != 0) {
-								var blocktype = voxelData.blocktypes[zofs + yofs + xofs];
+								var blocktype = voxelData.voxeldata[zofs + yofs + xofs];
 								if ((blocktype&~EVoxelBlockType.FULL_VOXEL_FLAG) == EVoxelBlockType.AIR) {
 									++_numVoxels;
 									continue;
@@ -1644,48 +1644,48 @@ public partial class World {
 								_vn[5] = blocktype;
 
 								if (xmin) {
-									_vn[0] = voxelData.blocktypes[zofs + yofs + xofs + 1];
+									_vn[0] = voxelData.voxeldata[zofs + yofs + xofs + 1];
 									if (_area[NEG_X].valid != 0) {
-										_vn[1] = _area[NEG_X].blocktypes[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
+										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
 									}
 								} else if (xmax) {
 									if (_area[POS_X].valid != 0) {
-										_vn[0] = _area[POS_X].blocktypes[zofs + yofs];
+										_vn[0] = _area[POS_X].voxeldata[zofs + yofs];
 									}
-									_vn[1] = voxelData.blocktypes[zofs + yofs + xofs - 1];
+									_vn[1] = voxelData.voxeldata[zofs + yofs + xofs - 1];
 								} else {
-									_vn[0] = voxelData.blocktypes[zofs + yofs + xofs + 1];
-									_vn[1] = voxelData.blocktypes[zofs + yofs + xofs - 1];
+									_vn[0] = voxelData.voxeldata[zofs + yofs + xofs + 1];
+									_vn[1] = voxelData.voxeldata[zofs + yofs + xofs - 1];
 								}
 
 								if (ymin) {
-									_vn[2] = voxelData.blocktypes[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = voxelData.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 									if (_area[NEG_Y].valid != 0) {
-										_vn[3] = _area[NEG_Y].blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs];
+										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs];
 									}
 								} else if (ymax) {
 									if (_area[POS_Y].valid != 0) {
-										_vn[2] = _area[POS_Y].blocktypes[zofs + xofs];
+										_vn[2] = _area[POS_Y].voxeldata[zofs + xofs];
 									}
-									_vn[3] = voxelData.blocktypes[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = voxelData.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 								} else {
-									_vn[2] = voxelData.blocktypes[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
-									_vn[3] = voxelData.blocktypes[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = voxelData.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = voxelData.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 								}
 
 								if (zmin) {
-									_vn[4] = voxelData.blocktypes[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = voxelData.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
 									if (_area[NEG_Z].valid != 0) {
-										_vn[5] = _area[NEG_Z].blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs];
+										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs];
 									}
 								} else if (zmax) {
 									if (_area[POS_Z].valid != 0) {
-										_vn[4] = _area[POS_Z].blocktypes[yofs + xofs];
+										_vn[4] = _area[POS_Z].voxeldata[yofs + xofs];
 									}
-									_vn[5] = voxelData.blocktypes[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = voxelData.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
 								} else {
-									_vn[4] = voxelData.blocktypes[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
-									_vn[5] = voxelData.blocktypes[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = voxelData.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = voxelData.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
 								}
 
 								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
@@ -1728,7 +1728,7 @@ public partial class World {
 								var xmin = (x == 0);
 								var xmax = (x == (VOXEL_CHUNK_SIZE_XZ - 1));
 
-								var blocktype = chunk.blocktypes[zofs + yofs + x];
+								var blocktype = chunk.voxeldata[zofs + yofs + x];
 								if ((blocktype&~EVoxelBlockType.FULL_VOXEL_FLAG) == EVoxelBlockType.AIR) {
 									continue;
 								}
@@ -1742,48 +1742,48 @@ public partial class World {
 								_vn[5] = blocktype;
 
 								if (xmin) {
-									_vn[0] = chunk.blocktypes[zofs + yofs + x + 1];
+									_vn[0] = chunk.voxeldata[zofs + yofs + x + 1];
 									if (_area[NEG_X].valid != 0) {
-										_vn[1] = _area[NEG_X].blocktypes[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
+										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
 									}
 								} else if (xmax) {
 									if (_area[POS_X].valid != 0) {
-										_vn[0] = _area[POS_X].blocktypes[zofs + yofs];
+										_vn[0] = _area[POS_X].voxeldata[zofs + yofs];
 									}
-									_vn[1] = chunk.blocktypes[zofs + yofs + x - 1];
+									_vn[1] = chunk.voxeldata[zofs + yofs + x - 1];
 								} else {
-									_vn[0] = chunk.blocktypes[zofs + yofs + x + 1];
-									_vn[1] = chunk.blocktypes[zofs + yofs + x - 1];
+									_vn[0] = chunk.voxeldata[zofs + yofs + x + 1];
+									_vn[1] = chunk.voxeldata[zofs + yofs + x - 1];
 								}
 
 								if (ymin) {
-									_vn[2] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
+									_vn[2] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
 									if (_area[NEG_Y].valid != 0) {
-										_vn[3] = _area[NEG_Y].blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + x];
+										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + x];
 									}
 								} else if (ymax) {
 									if (_area[POS_Y].valid != 0) {
-										_vn[2] = _area[POS_Y].blocktypes[zofs + x];
+										_vn[2] = _area[POS_Y].voxeldata[zofs + x];
 									}
-									_vn[3] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
+									_vn[3] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
 								} else {
-									_vn[2] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
-									_vn[3] = chunk.blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
+									_vn[2] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
+									_vn[3] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
 								}
 
 								if (zmin) {
-									_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
+									_vn[4] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
 									if (_area[NEG_Z].valid != 0) {
-										_vn[5] = _area[NEG_Z].blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + x];
+										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + x];
 									}
 								} else if (zmax) {
 									if (_area[POS_Z].valid != 0) {
-										_vn[4] = _area[POS_Z].blocktypes[yofs + x];
+										_vn[4] = _area[POS_Z].voxeldata[yofs + x];
 									}
-									_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
+									_vn[5] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
 								} else {
-									_vn[4] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
-									_vn[5] = chunk.blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
+									_vn[4] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
+									_vn[5] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
 								}
 
 								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
@@ -1835,7 +1835,7 @@ public partial class World {
 							var voxelData = _area[chunkIndex];
 
 							if (voxelData.valid != 0) {
-								var blocktype = voxelData.blocktypes[zofs + yofs + xofs];
+								var blocktype = voxelData.voxeldata[zofs + yofs + xofs];
 								if ((blocktype&~EVoxelBlockType.FULL_VOXEL_FLAG) == EVoxelBlockType.AIR) {
 									continue;
 								}
@@ -1849,48 +1849,48 @@ public partial class World {
 								_vn[5] = blocktype;
 
 								if (xmin) {
-									_vn[0] = voxelData.blocktypes[zofs + yofs + xofs + 1];
+									_vn[0] = voxelData.voxeldata[zofs + yofs + xofs + 1];
 									if (_area[NEG_X].valid != 0) {
-										_vn[1] = _area[NEG_X].blocktypes[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
+										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
 									}
 								} else if (xmax) {
 									if (_area[POS_X].valid != 0) {
-										_vn[0] = _area[POS_X].blocktypes[zofs + yofs];
+										_vn[0] = _area[POS_X].voxeldata[zofs + yofs];
 									}
-									_vn[1] = voxelData.blocktypes[zofs + yofs + xofs - 1];
+									_vn[1] = voxelData.voxeldata[zofs + yofs + xofs - 1];
 								} else {
-									_vn[0] = voxelData.blocktypes[zofs + yofs + xofs + 1];
-									_vn[1] = voxelData.blocktypes[zofs + yofs + xofs - 1];
+									_vn[0] = voxelData.voxeldata[zofs + yofs + xofs + 1];
+									_vn[1] = voxelData.voxeldata[zofs + yofs + xofs - 1];
 								}
 
 								if (ymin) {
-									_vn[2] = voxelData.blocktypes[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = voxelData.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 									if (_area[NEG_Y].valid != 0) {
-										_vn[3] = _area[NEG_Y].blocktypes[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs];
+										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs];
 									}
 								} else if (ymax) {
 									if (_area[POS_Y].valid != 0) {
-										_vn[2] = _area[POS_Y].blocktypes[zofs + xofs];
+										_vn[2] = _area[POS_Y].voxeldata[zofs + xofs];
 									}
-									_vn[3] = voxelData.blocktypes[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = voxelData.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 								} else {
-									_vn[2] = voxelData.blocktypes[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
-									_vn[3] = voxelData.blocktypes[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = voxelData.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = voxelData.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 								}
 
 								if (zmin) {
-									_vn[4] = voxelData.blocktypes[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = voxelData.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
 									if (_area[NEG_Z].valid != 0) {
-										_vn[5] = _area[NEG_Z].blocktypes[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs];
+										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs];
 									}
 								} else if (zmax) {
 									if (_area[POS_Z].valid != 0) {
-										_vn[4] = _area[POS_Z].blocktypes[yofs + xofs];
+										_vn[4] = _area[POS_Z].voxeldata[yofs + xofs];
 									}
-									_vn[5] = voxelData.blocktypes[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = voxelData.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
 								} else {
-									_vn[4] = voxelData.blocktypes[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
-									_vn[5] = voxelData.blocktypes[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = voxelData.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = voxelData.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
 								}
 
 								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;

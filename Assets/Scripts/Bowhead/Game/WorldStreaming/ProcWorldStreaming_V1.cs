@@ -122,7 +122,7 @@ namespace Bowhead {
 								solid = true;
 							}
 
-							chunk.blocktypes[ofs] = bt;
+							chunk.voxeldata[ofs] = bt;
 						}
 					}
 				}
@@ -142,7 +142,7 @@ namespace Bowhead {
 							for (int y = VOXEL_CHUNK_SIZE_Y - 1; y >= 0; --y) {
 								var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 								var ypos = (int)v3.y + y;
-								var bt = (EVoxelBlockType)((byte)chunk.blocktypes[ofs] & BLOCK_TYPE_MASK);
+								var bt = (EVoxelBlockType)((byte)chunk.voxeldata[ofs] & BLOCK_TYPE_MASK);
 								if (bt != EVoxelBlockType.AIR) {
 									if (bt == EVoxelBlockType.WATER || bt == EVoxelBlockType.LEAVES || bt == EVoxelBlockType.NEEDLES || bt == EVoxelBlockType.WOOD)
 										break;
@@ -218,7 +218,7 @@ namespace Bowhead {
 											}
 											if (flowerPower > cutoff) {
 												var ofs2 = x + (z * VOXEL_CHUNK_SIZE_XZ) + ((y + 1) * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-												chunk.blocktypes[ofs2] = (EVoxelBlockType)((int)EVoxelBlockType.FLOWERS1 + flowerType);
+												chunk.voxeldata[ofs2] = (EVoxelBlockType)((int)EVoxelBlockType.FLOWERS1 + flowerType);
 											}
 										}
 									}
@@ -448,7 +448,7 @@ namespace Bowhead {
 							if (i >= 0 && i < VOXEL_CHUNK_SIZE_XZ && j >= 0 && j < VOXEL_CHUNK_SIZE_Y && k >= 0 && k < VOXEL_CHUNK_SIZE_XZ) {
 								var ofs = i + (k * VOXEL_CHUNK_SIZE_XZ) + (j * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 								chunk.flags |= EChunkFlags.SOLID;
-								chunk.blocktypes[ofs] = EVoxelBlockType.ROCK;
+								chunk.voxeldata[ofs] = EVoxelBlockType.ROCK;
 							}
 						}
 					}
@@ -465,7 +465,7 @@ namespace Bowhead {
 					for (int i = y; i < y + height && i < VOXEL_CHUNK_SIZE_Y; i++) {
 						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (i * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 						chunk.flags |= EChunkFlags.SOLID;
-						chunk.blocktypes[ofs] = EVoxelBlockType.WOOD;
+						chunk.voxeldata[ofs] = EVoxelBlockType.WOOD;
 					}
 				} else if (treeType == 1) {
 					// Trunk
@@ -473,7 +473,7 @@ namespace Bowhead {
 					for (int i = y; i < y + height && i < VOXEL_CHUNK_SIZE_Y; i++) {
 						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (i * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 						chunk.flags |= EChunkFlags.SOLID;
-						chunk.blocktypes[ofs] = EVoxelBlockType.WOOD;
+						chunk.voxeldata[ofs] = EVoxelBlockType.WOOD;
 					}
 					int radius = x % 2 + y % 2 + z % 2;
 					if (radius > 0) {
@@ -486,7 +486,7 @@ namespace Bowhead {
 									if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 										var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 										chunk.flags |= EChunkFlags.SOLID;
-										chunk.blocktypes[ofs] = EVoxelBlockType.LEAVES;
+										chunk.voxeldata[ofs] = EVoxelBlockType.LEAVES;
 									}
 								}
 							}
@@ -497,7 +497,7 @@ namespace Bowhead {
 					for (int i = y; i < y + height && i < VOXEL_CHUNK_SIZE_Y; i++) {
 						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (i * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 						chunk.flags |= EChunkFlags.SOLID;
-						chunk.blocktypes[ofs] = EVoxelBlockType.WOOD;
+						chunk.voxeldata[ofs] = EVoxelBlockType.WOOD;
 					}
 					int radius = 1 + x % 2 + y % 2 + z % 2;
 					if (radius > 0) {
@@ -511,7 +511,7 @@ namespace Bowhead {
 									if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 										var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 										chunk.flags |= EChunkFlags.SOLID;
-										chunk.blocktypes[ofs] = EVoxelBlockType.NEEDLES;
+										chunk.voxeldata[ofs] = EVoxelBlockType.NEEDLES;
 									}
 
 								}
@@ -523,7 +523,7 @@ namespace Bowhead {
 					for (int i = y; i < y + height && i < VOXEL_CHUNK_SIZE_Y; i++) {
 						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (i * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 						chunk.flags |= EChunkFlags.SOLID;
-						chunk.blocktypes[ofs] = EVoxelBlockType.WOOD;
+						chunk.voxeldata[ofs] = EVoxelBlockType.WOOD;
 					}
 					for (int i = 3; i <= height; i++) {
 						int radius = (int)((1.0f - (float)(i - 3) / (height - 3)) * height / 3 + 1) + (x + y + z * z + i * i) % 2;
@@ -547,7 +547,7 @@ namespace Bowhead {
 										if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 											var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 											chunk.flags |= EChunkFlags.SOLID;
-											chunk.blocktypes[ofs] = k == 1 ? EVoxelBlockType.WOOD : EVoxelBlockType.NEEDLES;
+											chunk.voxeldata[ofs] = k == 1 ? EVoxelBlockType.WOOD : EVoxelBlockType.NEEDLES;
 										}
 										if (k < radius) {
 											lx = x + branchDir.x * k + branchDir.y;
@@ -555,14 +555,14 @@ namespace Bowhead {
 											if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 												var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 												chunk.flags |= EChunkFlags.SOLID;
-												chunk.blocktypes[ofs] = EVoxelBlockType.NEEDLES;
+												chunk.voxeldata[ofs] = EVoxelBlockType.NEEDLES;
 											}
 											lx = x + branchDir.x * k - branchDir.y;
 											lz = z + branchDir.y * k - branchDir.x;
 											if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 												var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 												chunk.flags |= EChunkFlags.SOLID;
-												chunk.blocktypes[ofs] = EVoxelBlockType.NEEDLES;
+												chunk.voxeldata[ofs] = EVoxelBlockType.NEEDLES;
 											}
 										}
 									}

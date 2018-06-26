@@ -43,6 +43,11 @@ public partial class World {
 		const int MAX_STREAMING_CHUNKS = 8;
 #endif
 		public delegate JobHandle CreateGenVoxelsJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
+		public delegate void ChunkGeneratedDelegate(IChunk chunk);
+
+		public event ChunkGeneratedDelegate onChunkVoxelsLoaded;
+		public event ChunkGeneratedDelegate onChunkTrisGenerated;
+		public event ChunkGeneratedDelegate onChunkUnloaded;
 
 		const uint CHUNK_HASH_SIZE_XZ = VOXEL_CHUNK_SIZE_XZ;
 		const uint CHUNK_HASH_SIZE_Y = VOXEL_CHUNK_SIZE_Y;
@@ -267,10 +272,11 @@ public partial class World {
 				chunk.jobData.chunk = chunk;
 			}
 
-			chunk.jobData.flags = EJobFlags.VOXELS|EJobFlags.TRIS;
+			chunk.jobData.flags = EJobFlags.TRIS;
 			
 			if (!(existingJob || chunk.hasVoxelData)) {
 				AddRef(chunk);
+				chunk.jobData.flags |= EJobFlags.VOXELS;
 				chunk.chunkData.Pin();
 				chunk.jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
 			}
@@ -371,7 +377,7 @@ public partial class World {
 
 		void CompleteJob(ChunkJobData job, bool flush) {
 			var chunk = job.chunk;
-			
+
 			chunk.jobData = null;
 			chunk.hasVoxelData = true;
 
@@ -477,6 +483,8 @@ public partial class World {
 			bool IChunk.hasVoxelData => hasVoxelData;
 			bool IChunk.hasTrisData => hasTrisData;
 			bool IChunk.isGenerating => (jobData != null) || ((genCount > 0) && !hasTrisData);
+			WorldChunkPos_t IChunk.chunkPos => pos;
+			EVoxelBlockType[] IChunk.voxeldata => chunkData.voxeldata;
 
 #if DEBUG_DRAW
 			public DebugDrawState_t dbgDraw;
@@ -508,7 +516,7 @@ public partial class World {
 			public bool GetVoxelAt(LocalVoxelPos_t pos, out EVoxelBlockType blocktype) {
 				if (hasVoxelData) {
 					var idx = pos.vx + (pos.vz * VOXEL_CHUNK_SIZE_XZ) + (pos.vy * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-					blocktype = chunkData.blocktypes[idx];
+					blocktype = chunkData.voxeldata[idx];
 					return true;
 				}
 				blocktype = EVoxelBlockType.AIR;
@@ -661,6 +669,8 @@ public partial class World {
 			bool hasVoxelData { get; }
 			bool hasTrisData { get; }
 			bool isGenerating { get; }
+			WorldChunkPos_t chunkPos { get; }
+			EVoxelBlockType[] voxeldata { get; }
 		};
 
 		public struct ChunkRef_t : IDisposable {
@@ -682,6 +692,14 @@ public partial class World {
 			return new ChunkRef_t() {
 				chunk = chunk,
 				streaming = (chunk != null) ? this : null
+			};
+		}
+
+		public ChunkRef_t GetChunkRef(IChunk chunk) {
+			AddRef((Chunk)chunk);
+			return new ChunkRef_t() {
+				chunk = chunk,
+				streaming = this
 			};
 		}
 		
@@ -773,7 +791,7 @@ public partial class World {
 			chunk.dbgDraw.state = EDebugDrawState.QUEUED;
 #endif
 
-			if (chunk.chunkData.blocktypes == null) {
+			if (chunk.chunkData.voxeldata == null) {
 				chunk.chunkData = ChunkMeshGen.ChunkData_t.New();
 			}
 
