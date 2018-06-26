@@ -265,17 +265,15 @@ namespace Bowhead.Server {
 					var bunnyData = CritterData.Get("bunny");
 					var wolfData = CritterData.Get("wolf");
 
-					if (WorldUtils.GetFirstSolidBlockDown(1000, ref pos)) {
-						var c = SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos, monsterTeam);
+					var c = SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos, monsterTeam);
 						
-						if (c.data == bunnyData) {
-							var item = LootData.Get("Raw Meat").CreateItem();
-							item.count = 1;
-							c.loot[0] = item;
-						} else if (c.data == wolfData) {
-							var weapon = WeaponData.Get("Teeth").CreateItem();
-							c.SetInventorySlot(0, weapon);
-						}
+					if (c.data == bunnyData) {
+						var item = LootData.Get("Raw Meat").CreateItem();
+						item.count = 1;
+						c.loot[0] = item;
+					} else if (c.data == wolfData) {
+						var weapon = WeaponData.Get("Teeth").CreateItem();
+						c.SetInventorySlot(0, weapon);
 					}
 					break;
 				}

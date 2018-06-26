@@ -10,7 +10,7 @@ namespace Bowhead {
 		[System.NonSerialized]
 		public Quaternion widgetRotation;
 
-		void Update() {
+		void LateUpdate() {
 			widgetRotation = Quaternion.AngleAxis(transform.rotation.eulerAngles.y, Vector3.up) * Quaternion.AngleAxis(transform.rotation.eulerAngles.x, -Vector3.left);
 		}
 	}

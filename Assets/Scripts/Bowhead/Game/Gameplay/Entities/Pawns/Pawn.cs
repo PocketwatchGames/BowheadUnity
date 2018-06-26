@@ -1000,14 +1000,18 @@ namespace Bowhead.Actors {
 
         virtual protected bool SetMount(Pawn m) {
 
-            if (m?.driver != null)
+            if (m?.driver != null) {
                 return false;
+            }
             if (mount != null) {
                 mount.driver = null;
             }
 
             mount = m;
-            mount.driver = this;
+
+            if (mount != null) {
+                mount.driver = this;
+            }
 
             if (mount != null) {
                 go.transform.parent = mount.go.transform;
