@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) 2018 Pocketwatch Games LLC.
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -136,6 +138,15 @@ public partial class World {
 	public const int VOXEL_CHUNK_SIZE_Y = 128;
 	public const int VOXELS_PER_CHUNK = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_Y;
 	public const int VOXELS_PER_CHUNK_XZ = VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ;
+
+	public const byte BLOCK_TYPE_MASK = (byte)~EVoxelBlockType.FLAGS_MASK;
+	public const byte BLOCK_TYPE_MAX = 0x20-1;
+	public const uint BLOCK_SMG_WATER = 0x1;
+	public const uint BLOCK_SMG_DIRT_ROCK = 0x2;
+	public const uint BLOCK_SMG_GRASS = 0x4;
+	public const uint BLOCK_SMG_FLOWERS = 0x8;
+	public const uint BLOCK_SMG_OTHER = 0x10;
+	public const uint BLOCK_BLEND_COLORS = 0x80000000;
 
 	public static int MaxVoxelChunkLine(int dim) {
 		return (dim*2) + 1;

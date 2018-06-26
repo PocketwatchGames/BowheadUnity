@@ -290,6 +290,8 @@ namespace Bowhead.Server {
 
 		}
 
+		protected abstract WorldStreaming.IWorldStreaming CreateWorldStreaming();
+
 		public virtual void NotifySceneLoaded() {
 			_gameState = (GameState)world.Spawn(gameStateType, null, default(SpawnParameters));
 			_gameState.ServerSetGameMode(this);
@@ -300,6 +302,8 @@ namespace Bowhead.Server {
 
 			npcTeam = world.Spawn<Actors.ServerTeam>(null, default(SpawnParameters));
 			npcTeam.teamNumber = Team.NPC_TEAM_NUMBER;
+
+			worldStreaming = CreateWorldStreaming();
 		}
 
 		public virtual void FinishTravel() {}
@@ -467,6 +471,11 @@ namespace Bowhead.Server {
 			get {
 				return typeof(Actors.ServerTeam);
 			}
+		}
+
+		public WorldStreaming.IWorldStreaming worldStreaming {
+			get;
+			private set;
 		}
 
 		protected abstract Type gameStateType { get; }

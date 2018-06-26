@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿// Copyright (c) 2018 Pocketwatch Games LLC.
+
+#if UNITY_EDITOR
 #define DEBUG_DRAW
 using UnityEditor;
 #endif
@@ -40,6 +42,8 @@ public partial class World {
 #else
 		const int MAX_STREAMING_CHUNKS = 8;
 #endif
+		public delegate JobHandle CreateGenVoxelsJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
+
 		const uint CHUNK_HASH_SIZE_XZ = VOXEL_CHUNK_SIZE_XZ;
 		const uint CHUNK_HASH_SIZE_Y = VOXEL_CHUNK_SIZE_Y;
 		const uint CHUNK_HASH_SIZE = CHUNK_HASH_SIZE_XZ * CHUNK_HASH_SIZE_XZ * CHUNK_HASH_SIZE_Y;
@@ -53,7 +57,7 @@ public partial class World {
 
 		ChunkJobData _freeJobData;
 		ChunkJobData _usedJobData;
-		IGameInstance _gameInstance;
+		CreateGenVoxelsJob _createGenVoxelsJob;
 		bool _loading;
 
 		public static void StaticInit() {
@@ -67,9 +71,9 @@ public partial class World {
 			ChunkMeshGen.tableStorage.Dispose();
 		}
 		
-		public Streaming(IGameInstance gameInstance, World_ChunkComponent chunkPrefab) {
-			_gameInstance = gameInstance;
+		public Streaming(World_ChunkComponent chunkPrefab, CreateGenVoxelsJob createGenVoxelsJob) {
 			_chunkPrefab = chunkPrefab;
+			_createGenVoxelsJob = createGenVoxelsJob;
 
 			for (int i = 0; i < MAX_STREAMING_CHUNKS; ++i) {
 				var chunkData = new ChunkJobData {
@@ -247,7 +251,7 @@ public partial class World {
 			chunk.dbgDraw.state = EDebugDrawState.GENERATING_VOXELS;
 #endif
 
-			jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData, _gameInstance.isClient);
+			jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
 			QueueJobData(jobData);
 			return true;
 		}
@@ -268,7 +272,7 @@ public partial class World {
 			if (!(existingJob || chunk.hasVoxelData)) {
 				AddRef(chunk);
 				chunk.chunkData.Pin();
-				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData, _gameInstance.isClient);
+				chunk.jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
 			}
 
 			chunk.jobData.jobData.voxelStorage.Pin();
@@ -282,10 +286,10 @@ public partial class World {
 				if (neighbor != null) {
 					AddRef(neighbor);
 					neighbor.chunkData.Pin();
-					chunk.jobData.jobData.neighbors[i] = ChunkMeshGen.PinnedChunkData_t.New(neighbor.chunkData);
+					chunk.jobData.jobData.neighbors[i] = ChunkMeshGen.NewPinnedChunkData_t(neighbor.chunkData);
 					dependancies[i] = neighbor.jobData != null ? neighbor.jobData.jobHandle : default(JobHandle);
 				} else {
-					chunk.jobData.jobData.neighbors[i] = default(ChunkMeshGen.PinnedChunkData_t);
+					chunk.jobData.jobData.neighbors[i] = default(PinnedChunkData_t);
 					dependancies[i] = default(JobHandle);
 				}
 			}

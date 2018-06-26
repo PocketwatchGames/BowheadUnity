@@ -3,6 +3,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using Unity.Jobs;
 
 namespace Bowhead.Client {
 	public partial class ClientWorld : global::Client.ClientWorld {
@@ -18,6 +19,7 @@ namespace Bowhead.Client {
 		Queue<IRagdollController> _ragdolls = new Queue<IRagdollController>();
 		Queue<IRagdollController> _gibs = new Queue<IRagdollController>();
 		PhysicalContactMatrixState _physicalContactMatrix;
+		ActorSingleton<Bowhead.Actors.GameState> _gameState;
 		
 		public ClientWorld(
 			IGameInstance gameInstance,
@@ -48,6 +50,7 @@ namespace Bowhead.Client {
 
 		protected override void BeginTravel(string travelLevel, HashSetList<int> travelActorNetIDs) {
 			base.BeginTravel(travelLevel, travelActorNetIDs);
+			_gameState = null;
 			_ragdolls.Clear();
 			_gibs.Clear();
 		}
@@ -165,6 +168,7 @@ namespace Bowhead.Client {
 
 		protected override void OnLevelStart() {
 			base.OnLevelStart();
+			_gameState = new ActorSingleton<Bowhead.Actors.GameState>(this);
 			Debug.Log("Client -- level start.");
 			GameManager.instance.LogMemStat();
 		}
@@ -189,6 +193,12 @@ namespace Bowhead.Client {
 
 		public void UpdateBloodAndExplosionDecalLimit() {
 			_decalGroups[(int)EDecalGroup.BloodAndExplosions].maxDecals = 100;// GameManager.instance.bloodAndExplosionDecalLimit;
+		}
+
+		public Bowhead.Actors.GameState gameState {
+			get {
+				return _gameState;
+			}
 		}
 
 		//public void RenderBloodSplat(Vector3 worldPos, Vector2 size, float orientation) {
@@ -244,6 +254,10 @@ namespace Bowhead.Client {
 			if (_physicalContactMatrix != null) {
 				_physicalContactMatrix.SpawnContactFx(time, a, b, position, normal);
 			}
+		}
+
+		protected override JobHandle CreateGenVoxelsJob(WorldChunkPos_t pos, PinnedChunkData_t chunk) {
+			return gameState.worldStreaming.ScheduleChunkGenerationJob(pos, chunk, true);
 		}
 	}
 }

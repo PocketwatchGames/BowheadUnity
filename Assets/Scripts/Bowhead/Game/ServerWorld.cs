@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using NetMsgs;
 using System;
 using Server;
+using Unity.Jobs;
 
 namespace Bowhead.Server {
 	public class ServerWorld : global::Server.ServerWorld {
@@ -121,6 +122,10 @@ namespace Bowhead.Server {
 			} else {
 				DisconnectClient(connection.outer.connection, null, EDisconnectReason.Error, null);
             }
+		}
+
+		protected override JobHandle CreateGenVoxelsJob(WorldChunkPos_t pos, PinnedChunkData_t chunk) {
+			return _gameMode.worldStreaming.ScheduleChunkGenerationJob(pos, chunk, GameManager.instance.isClient);
 		}
 
 #if BACKEND_SERVER

@@ -156,11 +156,12 @@ public static partial class WorldUtils {
 namespace Bowhead.Server {
 
 	public abstract class BowheadGame<T> : GameMode<T> where T: GameState<T>{
+		public const WorldStreaming.EGenerator WORLD_GENERATOR_TYPE = WorldStreaming.EGenerator.PROC_V1;
+
 		public BowheadGame(ServerWorld world) : base(world) {
 			data = Resources.Load<WorldData>("DefaultWorld");
 		}
-
-
+		
 		public WorldData data;
 
 		int numCritters;
@@ -175,6 +176,10 @@ namespace Bowhead.Server {
 				//worldItem.position = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
 			}
 
+		}
+
+		protected override WorldStreaming.IWorldStreaming CreateWorldStreaming() {
+			return WorldStreaming.NewProceduralWorldStreaming(0, WORLD_GENERATOR_TYPE);
 		}
 
 		#region perlin utils
@@ -353,5 +358,8 @@ namespace Bowhead.Server {
 
 		public override Type hudType => typeof(Client.UI.BowheadHUD);
 
+		protected override WorldStreaming.IWorldStreaming CreateWorldStreaming() {
+			return WorldStreaming.NewProceduralWorldStreaming(0, BowheadGame.WORLD_GENERATOR_TYPE);
+		}
 	}
 }

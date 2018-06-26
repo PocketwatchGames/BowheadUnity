@@ -1,4 +1,6 @@
-﻿#define BOUNDS_CHECK
+﻿// Copyright (c) 2018 Pocketwatch Games LLC.
+
+#define BOUNDS_CHECK
 
 using System;
 using System.Runtime.InteropServices;
@@ -11,19 +13,47 @@ using UnityEngine;
 using static UnityEngine.Debug;
 
 public partial class World {
+	public struct PinnedChunkData_t {
+		public ChunkStorageArray1D_t blocktypes;
+		[NativeDisableUnsafePtrRestriction]
+		public unsafe EChunkFlags* pinnedFlags;
+		public EChunkFlags flags;
+		public int valid;
+	};
 
-	abstract partial class ChunkMeshGen {
-		const byte BLOCK_TYPE_MASK = (byte)~EVoxelBlockType.FLAGS_MASK;
-		const byte BLOCK_TYPE_MAX = 0x20-1;
+	public unsafe struct ChunkStorageArray1D_t {
+		[NativeDisableUnsafePtrRestriction]
+		EVoxelBlockType* _arr;
+		int _x;
 
-		const uint BLOCK_SMG_WATER = 0x1;
-		const uint BLOCK_SMG_DIRT_ROCK = 0x2;
-		const uint BLOCK_SMG_GRASS = 0x4;
-		const uint BLOCK_SMG_FLOWERS = 0x8;
-		const uint BLOCK_SMG_OTHER = 0x10;
-		const uint BLOCK_BLEND_COLORS = 0x80000000;
+		public static ChunkStorageArray1D_t New(EVoxelBlockType* array, int x) {
+			return new ChunkStorageArray1D_t {
+				_arr = array,
+				_x = x
+			};
+		}
 
-		
+		public EVoxelBlockType this[int i] {
+			get {
+				BoundsCheckAndThrow(i, 0, _x);
+				return _arr[i];
+			}
+			set {
+				BoundsCheckAndThrow(i, 0, _x);
+				_arr[i] = value;
+			}
+		}
+	};
+
+	static void BoundsCheckAndThrow(int i, int min, int max) {
+#if BOUNDS_CHECK
+		if ((i < min) || (i >= max)) {
+			throw new IndexOutOfRangeException();
+		}
+#endif
+	}
+
+	static partial class ChunkMeshGen {
 		const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
 		const int BANK_SIZE = 16;
 
@@ -31,14 +61,6 @@ public partial class World {
 		const int NUM_VOXELS_XZ = VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE*2;
 		const int NUM_VOXELS_Y = VOXEL_CHUNK_SIZE_Y + BORDER_SIZE*2;
 		const int MAX_VIS_VOXELS = NUM_VOXELS_XZ * NUM_VOXELS_XZ * NUM_VOXELS_Y;
-
-		static void BoundsCheckAndThrow(int i, int min, int max) {
-#if BOUNDS_CHECK
-			if ((i < min) || (i >= max)) {
-				throw new IndexOutOfRangeException();
-			}
-#endif
-		}
 
 		public struct ChunkData_t {
 			public ChunkStorageArray1D_t pinnedBlockData;
@@ -89,30 +111,6 @@ public partial class World {
 			}
 		};
 
-		public unsafe struct ChunkStorageArray1D_t {
-			[NativeDisableUnsafePtrRestriction]
-			EVoxelBlockType* _arr;
-			int _x;
-
-			public static ChunkStorageArray1D_t New(EVoxelBlockType* array, int x) {
-				return new ChunkStorageArray1D_t {
-					_arr = array,
-					_x = x
-				};
-			}
-
-			public EVoxelBlockType this[int i] {
-				get {
-					BoundsCheckAndThrow(i, 0, _x);
-					return _arr[i];
-				}
-				set {
-					BoundsCheckAndThrow(i, 0, _x);
-					_arr[i] = value;
-				}
-			}
-		};
-
 		public static class BlittableHelper<T> {
 			public static readonly bool IsBlittable;
 
@@ -128,25 +126,17 @@ public partial class World {
 			}
 		}
 
-		public struct PinnedChunkData_t {
-			public ChunkStorageArray1D_t blocktypes;
-			[NativeDisableUnsafePtrRestriction]
-			public unsafe EChunkFlags* pinnedFlags;
-			public EChunkFlags flags;
-			public int valid;
-
-			public static PinnedChunkData_t New(ChunkData_t chunk) {
-				unsafe {
-					Assert(chunk.pinnedFlags != null);
-					return new PinnedChunkData_t {
-						blocktypes = chunk.pinnedBlockData,
-						pinnedFlags = chunk.pinnedFlags,
-						flags = chunk.flags[0],
-						valid = 1
-					};
-				}
+		public static PinnedChunkData_t NewPinnedChunkData_t(ChunkData_t chunk) {
+			unsafe {
+				Assert(chunk.pinnedFlags != null);
+				return new PinnedChunkData_t {
+					blocktypes = chunk.pinnedBlockData,
+					pinnedFlags = chunk.pinnedFlags,
+					flags = chunk.flags[0],
+					valid = 1
+				};
 			}
-		};
+		}
 
 		static NativeArray<T> AllocatePersistentNoInit<T>(int size) where T : struct {
 			return new NativeArray<T>(size, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
@@ -1922,32 +1912,6 @@ public partial class World {
 			}
 		};
 
-		struct GenerateChunkVoxels_t : IJob {
-			WorldChunkPos_t pos;
-			PinnedChunkData_t chunk;
-			bool checkXZSolid;
-
-			public static GenerateChunkVoxels_t New(WorldChunkPos_t pos, PinnedChunkData_t chunk, bool checkSolid) {
-				return new GenerateChunkVoxels_t {
-					pos = pos,
-					chunk = chunk,
-					checkXZSolid = checkSolid
-				};
-			}
-
-			public void Execute() {
-				chunk = GenerateVoxels(pos, chunk);
-
-				if (checkXZSolid && IsSolidXZPlane(chunk)) {
-					chunk.flags |= EChunkFlags.SOLID_XZ_PLANE;
-				}
-
-				unsafe {
-					chunk.pinnedFlags[0] = chunk.flags;
-				}
-			}
-		};
-
 		static T[] Copy<T>(NativeArray<T> src, int size) where T : struct {
 			var t = new T[size];
 			for (int i = 0; i < size; ++i) {
@@ -1980,8 +1944,8 @@ public partial class World {
 			}
 		};
 
-		public static JobHandle ScheduleGenVoxelsJob(WorldChunkPos_t pos, ChunkData_t chunkData, bool checkSolid) {
-			return GenerateChunkVoxels_t.New(pos, PinnedChunkData_t.New(chunkData), checkSolid).Schedule();
+		public static JobHandle ScheduleGenVoxelsJob(WorldChunkPos_t pos, ChunkData_t chunkData, Streaming.CreateGenVoxelsJob createGenVoxelsJob) {
+			return createGenVoxelsJob(pos, NewPinnedChunkData_t(chunkData));
 		}
 
 		public static JobHandle ScheduleGenTrisJob(ref JobInputData jobData, JobHandle dependsOn = default(JobHandle)) {

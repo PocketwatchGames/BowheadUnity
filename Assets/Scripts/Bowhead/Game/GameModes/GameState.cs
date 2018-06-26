@@ -44,6 +44,8 @@ namespace Bowhead.Actors {
 		bool _overtimeEnabled;
 		int _matchTimer;
 		Client.UI.HUD _hud;
+		bool _diposeStreaming;
+		WorldStreaming.IWorldStreaming _streaming;
 
 		readonly ActorRPC<byte, bool, int> rpc_Multicast_SetMatchState;
 
@@ -87,7 +89,13 @@ namespace Bowhead.Actors {
 					throw new System.Exception("HUD class ' " + hudType.FullName + "' does not have a compatible constructor!");
 				}
 			}
+
+			if (!GameManager.instance.isServer) {
+				_streaming = CreateWorldStreaming();
+			}
 		}
+
+		protected abstract WorldStreaming.IWorldStreaming CreateWorldStreaming();
 
 		protected override void Dispose(bool disposing) {
 			base.Dispose(disposing);
@@ -95,6 +103,11 @@ namespace Bowhead.Actors {
 			if (_hud != null) {
 				_hud.Dispose();
 				_hud = null;
+			}
+
+			if (_streaming != null) {
+				_streaming.Dispose();
+				_streaming = null;
 			}
 		}
 
@@ -324,5 +337,9 @@ namespace Bowhead.Actors {
 			private set;
 		}
 
+		public WorldStreaming.IWorldStreaming worldStreaming {
+			get;
+			private set;
+		}
 	}
 }
