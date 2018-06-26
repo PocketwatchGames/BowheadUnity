@@ -53,6 +53,7 @@ public partial class World {
 
 		ChunkJobData _freeJobData;
 		ChunkJobData _usedJobData;
+		IGameInstance _gameInstance;
 		bool _loading;
 
 		public static void StaticInit() {
@@ -66,7 +67,8 @@ public partial class World {
 			ChunkMeshGen.tableStorage.Dispose();
 		}
 		
-		public Streaming(World_ChunkComponent chunkPrefab) {
+		public Streaming(IGameInstance gameInstance, World_ChunkComponent chunkPrefab) {
+			_gameInstance = gameInstance;
 			_chunkPrefab = chunkPrefab;
 
 			for (int i = 0; i < MAX_STREAMING_CHUNKS; ++i) {
@@ -245,7 +247,7 @@ public partial class World {
 			chunk.dbgDraw.state = EDebugDrawState.GENERATING_VOXELS;
 #endif
 
-			jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData);
+			jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData, _gameInstance.isClient);
 			QueueJobData(jobData);
 			return true;
 		}
@@ -266,7 +268,7 @@ public partial class World {
 			if (!(existingJob || chunk.hasVoxelData)) {
 				AddRef(chunk);
 				chunk.chunkData.Pin();
-				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData);
+				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenVoxelsJob(chunk.pos, chunk.chunkData, _gameInstance.isClient);
 			}
 
 			chunk.jobData.jobData.voxelStorage.Pin();

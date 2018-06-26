@@ -86,7 +86,7 @@ public abstract partial class World : INetDriverCallbacks, System.IDisposable {
 		_netArchive = new NetMsgArchive(_netArchiveBytes);
 		_nextNetID = 0;
 
-		_worldStreaming = sharedStreaming ?? new Streaming(chunkComponent);
+		_worldStreaming = sharedStreaming ?? new Streaming(gameInstance, chunkComponent);
 		_sharedWorldStreaming = sharedStreaming != null;
 	}
 

@@ -1925,18 +1925,20 @@ public partial class World {
 		struct GenerateChunkVoxels_t : IJob {
 			WorldChunkPos_t pos;
 			PinnedChunkData_t chunk;
+			bool checkXZSolid;
 
-			public static GenerateChunkVoxels_t New(WorldChunkPos_t pos, PinnedChunkData_t chunk) {
+			public static GenerateChunkVoxels_t New(WorldChunkPos_t pos, PinnedChunkData_t chunk, bool checkSolid) {
 				return new GenerateChunkVoxels_t {
 					pos = pos,
-					chunk = chunk
+					chunk = chunk,
+					checkXZSolid = checkSolid
 				};
 			}
 
 			public void Execute() {
 				chunk = GenerateVoxels(pos, chunk);
 
-				if (IsSolidXZPlane(chunk)) {
+				if (checkXZSolid && IsSolidXZPlane(chunk)) {
 					chunk.flags |= EChunkFlags.SOLID_XZ_PLANE;
 				}
 
@@ -1978,8 +1980,8 @@ public partial class World {
 			}
 		};
 
-		public static JobHandle ScheduleGenVoxelsJob(WorldChunkPos_t pos, ChunkData_t chunkData) {
-			return GenerateChunkVoxels_t.New(pos, PinnedChunkData_t.New(chunkData)).Schedule();
+		public static JobHandle ScheduleGenVoxelsJob(WorldChunkPos_t pos, ChunkData_t chunkData, bool checkSolid) {
+			return GenerateChunkVoxels_t.New(pos, PinnedChunkData_t.New(chunkData), checkSolid).Schedule();
 		}
 
 		public static JobHandle ScheduleGenTrisJob(ref JobInputData jobData, JobHandle dependsOn = default(JobHandle)) {
