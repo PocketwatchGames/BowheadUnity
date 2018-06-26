@@ -881,7 +881,18 @@ namespace Bowhead.Actors {
         void jump(Vector3 dir) {
             useStamina(data.jumpStaminaUse);
             dodgeTimer = dodgeTimer + data.dodgeTime;
+
+            float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+
             velocity += dir;
+
+            float velY = velocity.y;
+            float newSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+            if (newSpeedXZ > data.groundMaxSpeed) {
+                newSpeedXZ = Mathf.Min(curSpeedXZ, data.groundMaxSpeed);
+                velocity = velocity.normalized * newSpeedXZ;
+                velocity.y = velY;
+            }
         }
 
         public void stun(float s) {

@@ -16,7 +16,7 @@ namespace Bowhead.Client.Actors {
 		Vector2 _mapMins;
 		Vector2 _mapMaxs;
 		Camera _camera;
-		bool _hideCursor;
+		bool _hideCursor = true;
 		
 		readonly ActorRPC rpc_Server_ClientHasLoaded;
 		readonly ActorRPC<string> rpc_Server_ExecuteCFunc;

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: LeashCamera
   m_EditorClassIdentifier: 
   lookAtFriction: 10
-  lookAtAcceleration: 200
+  lookAtAcceleration: 20
   lookAtLeadDist: 10
   cameraFriction: 10
   minDistance: 5
