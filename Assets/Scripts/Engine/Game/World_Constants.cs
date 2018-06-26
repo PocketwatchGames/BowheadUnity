@@ -135,6 +135,7 @@ public partial class World {
 	public const int VOXEL_CHUNK_SIZE_XZ = 32;
 	public const int VOXEL_CHUNK_SIZE_Y = 128;
 	public const int VOXELS_PER_CHUNK = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_Y;
+	public const int VOXELS_PER_CHUNK_XZ = VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ;
 
 	public static int MaxVoxelChunkLine(int dim) {
 		return (dim*2) + 1;
@@ -145,7 +146,7 @@ public partial class World {
 		NONE = 0,
 		AIR = 0x1,
 		SOLID = 0x2,
-		TRANSPARENT = 0x4
+		SOLID_XZ_PLANE = 0x4 // no vertical columns of air
 	};
 
 	public static int WorldToChunk(int w, int CHUNK_SIZE) {

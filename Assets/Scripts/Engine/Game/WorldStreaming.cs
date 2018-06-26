@@ -58,6 +58,8 @@ public partial class World {
 		public static void StaticInit() {
 			FastNoise_t.New(); // construct this to init readonly tables.
 			ChunkMeshGen.tableStorage = ChunkMeshGen.TableStorage.New();
+			Utils.ReadMicroseconds(); // init statics
+			Utils.ReadMilliseconds(); 
 		}
 
 		public static void StaticShutdown() {

@@ -1936,6 +1936,10 @@ public partial class World {
 			public void Execute() {
 				chunk = GenerateVoxels(pos, chunk);
 
+				if (IsSolidXZPlane(chunk)) {
+					chunk.flags |= EChunkFlags.SOLID_XZ_PLANE;
+				}
+
 				unsafe {
 					chunk.pinnedFlags[0] = chunk.flags;
 				}
