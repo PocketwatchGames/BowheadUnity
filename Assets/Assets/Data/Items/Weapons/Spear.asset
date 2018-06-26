@@ -14,8 +14,8 @@ MonoBehaviour:
   version: 0
   _index: 12
   prefab:
-    _assetPath: Prefabs/Items/Sword
-    _editorPath: Assets/Assets/Resources/Prefabs/Items/Sword.prefab
+    _assetPath: 
+    _editorPath: 
   hand: 2
   chargeTime: 0.5
   weaponSize: {x: 0, y: 0, z: 0}

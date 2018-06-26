@@ -104,6 +104,7 @@ namespace Bowhead {
 		public Client.UI.InventoryPanel hudInventoryPanelPrefab;
 		public Client.UI.PlayerStatePanel hudPlayerStatePanelPrefab;
         public Client.UI.ButtonHint hudButtonHintPrefab;
+        public CameraData cameraData;
 
         public Canvas dialogDarkenCanvasPrefab;
 		public Canvas dialogNormalCanvasPrefab;

@@ -53,8 +53,8 @@ MonoBehaviour:
   swimDragVertical: 5
   swimDragHorizontal: 0.25
   prefab:
-    _assetPath: Prefabs/Actors/Wolf
-    _editorPath: Assets/Assets/Resources/Prefabs/Actors/Wolf.prefab
+    _assetPath: 
+    _editorPath: 
   visionWeight: 2
   smellWeight: 1
   hearingWeight: 2

@@ -145,7 +145,7 @@ namespace Bowhead.Client.Actors {
 			GameManager.instance.CloseLoadingScreen();
 			GameManager.instance.StartPlayOnAwakeSounds();
 			gameState.hud.OnLevelStart();
-			_cameraController = new CameraController(Camera.main);
+			_cameraController = new CameraController(Camera.main, GameManager.instance.clientData.cameraData);
 			_cameraController.SetTarget(playerPawn);
             _cameraController.SetMouseLookActive(_hideCursor);
             rpc_Server_ClientHasLoaded.Invoke();

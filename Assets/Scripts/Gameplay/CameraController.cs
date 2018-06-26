@@ -5,6 +5,8 @@ using UnityEngine;
 namespace Bowhead.Actors {
     public sealed class CameraController {
 
+        public CameraData data;
+
         private float _yaw;
         private float _pitch;
         private Player _target;
@@ -21,17 +23,11 @@ namespace Bowhead.Actors {
         private Vector3 _lookAtVelocity;
         private Vector3 _lookAt;
 
-        public float lookAtFriction = 10f;
-        public float lookAtAcceleration = 20;
-        public float lookAtLeadDist = 5;
-        public float cameraFriction = 10f;
-        public float minDistance = 20;
-        public float maxDistance = 40;
-
 		Camera _camera;
 
-		public CameraController(Camera camera) {
+		public CameraController(Camera camera, CameraData d) {
 			_camera = camera;
+            data = d;
 			Init();
 		}
         
@@ -106,7 +102,7 @@ namespace Bowhead.Actors {
         void Tick(float dt) {
             if (_target != null) {
 
-                float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (maxDistance - minDistance) + minDistance;
+                float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (data.maxDistance - data.minDistance) + data.minDistance;
 
                 Vector3 avgPlayerPosition = _target.headPosition(_target.renderPosition());
                 Vector3 lookAtDiff = avgPlayerPosition - _lookAt;
@@ -115,8 +111,8 @@ namespace Bowhead.Actors {
                 if (_isLooking) {
 
                     _playerPosition = avgPlayerPosition;
-                    _lookAtVelocity -= _lookAtVelocity * lookAtFriction * dt;
-                    _lookAtVelocity += (lookAtDiff + playerMovement * lookAtLeadDist) * lookAtAcceleration * dt;
+                    _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
+                    _lookAtVelocity += (lookAtDiff + playerMovement * data.lookAtLeadDist) * data.lookAtAcceleration * dt;
                     _lookAt += _lookAtVelocity * dt;
 
                     Vector3 diff = _position - _lookAt;
@@ -127,7 +123,7 @@ namespace Bowhead.Actors {
                     diff *= minDist;
                     var desiredCameraMove = (_lookAt + diff) - _position;
 
-                    _cameraVelocity -= _cameraVelocity * cameraFriction * dt;
+                    _cameraVelocity -= _cameraVelocity * data.cameraFriction * dt;
                     _cameraVelocity += desiredCameraMove * dt;
 
                     _position += _cameraVelocity * dt;

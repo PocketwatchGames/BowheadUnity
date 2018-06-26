@@ -24,6 +24,7 @@ MonoBehaviour:
     type: 2}
   hudButtonHintPrefab: {fileID: 114042321560627920, guid: 70f2a471b6a3a4049853a27d48744fbb,
     type: 2}
+  cameraData: {fileID: 11400000, guid: 9f5732a9f5058c0418bd06e7d5567846, type: 2}
   dialogDarkenCanvasPrefab: {fileID: 0}
   dialogNormalCanvasPrefab: {fileID: 0}
   messageBoxPrefab: {fileID: 0}
