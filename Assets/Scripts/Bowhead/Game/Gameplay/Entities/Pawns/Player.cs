@@ -41,7 +41,7 @@ namespace Bowhead.Actors {
             COUNT
         }
 		        
-		World.Streaming.Volume _worldStreaming;
+		World.Streaming.IVolume _worldStreaming;
 
         Pawn attackTargetPreview;
 		bool _hackDidFindGround;

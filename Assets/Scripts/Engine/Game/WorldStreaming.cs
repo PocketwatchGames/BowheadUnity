@@ -75,7 +75,7 @@ public partial class World {
 			}
 		}
 
-		public Volume NewStreamingVolume(int xzSize, int ySize) {
+		public IVolume NewStreamingVolume(int xzSize, int ySize) {
 			var zPitch = MaxVoxelChunkLine(xzSize);
 			var yPitch = zPitch * zPitch;
 			var yDim = MaxVoxelChunkLine(ySize);
@@ -453,17 +453,22 @@ public partial class World {
 		};
 #endif
 
-		class Chunk : ChunkHandle {
+		class Chunk : IChunk {
 			public Chunk hashNext;
 			public Chunk hashPrev;
 			public WorldChunkPos_t pos;
 			public int refCount;
+			public int genCount;
 			public uint hash;
 			public bool hasVoxelData;
 			public bool hasTrisData;
 			public ChunkMeshGen.ChunkData_t chunkData;
 			public ChunkJobData jobData;
 			public World_ChunkComponent goChunk;
+
+			bool IChunk.hasVoxelData => hasVoxelData;
+			bool IChunk.hasTrisData => hasTrisData;
+			bool IChunk.isGenerating => (jobData != null) || ((genCount > 0) && !hasTrisData);
 
 #if DEBUG_DRAW
 			public DebugDrawState_t dbgDraw;
@@ -522,7 +527,7 @@ public partial class World {
 			}
 		};
 
-		class VolumeData : Volume, IComparer<VolumeData.ChunkRef_t> {
+		class VolumeData : IVolume, IComparer<VolumeData.ChunkRef_t> {
 			public struct ChunkRef_t {
 				public Chunk chunk;
 				public uint sort;
@@ -539,19 +544,19 @@ public partial class World {
 			public WorldChunkPos_t nextPos;
 			public Streaming streaming;
 
-			int Volume.xzSize {
+			int IVolume.xzSize {
 				get {
 					return xzSize;
 				}
 			}
 
-			int Volume.ySize {
+			int IVolume.ySize {
 				get {
 					return ySize;
 				}
 			}
 
-			WorldChunkPos_t Volume.position {
+			WorldChunkPos_t IVolume.position {
 				get {
 					return nextPos;
 				}
@@ -602,6 +607,7 @@ public partial class World {
 							var chunk = streaming.FindOrCreateChunk(chunkPos);
 							
 							if (chunk != null) {
+								++chunk.genCount;
 								chunks[count++] = new ChunkRef_t {
 									chunk = chunk,
 									sort = sort
@@ -614,7 +620,9 @@ public partial class World {
 				Array.Sort(chunks, 0, count, this);
 
 				for (int i = 0; i < prevCount; ++i) {
-					streaming.Release(tempChunks[i].chunk);
+					var chunk = tempChunks[i].chunk;
+					--chunk.genCount;
+					streaming.Release(chunk);
 				}
 			}
 
@@ -622,6 +630,7 @@ public partial class World {
 				for (int i = 0; i < chunks.Length; ++i) {
 					var chunkRef = chunks[i];
 					if (chunkRef.chunk != null) {
+						--chunkRef.chunk.genCount;
 						streaming.Release(chunkRef.chunk);
 					}
 				}
@@ -633,18 +642,21 @@ public partial class World {
 			}
 		};
 
-		public interface Volume : IDisposable {
+		public interface IVolume : IDisposable {
 			WorldChunkPos_t position { get; set; }
 			int xzSize { get; }
 			int ySize { get; }
 		};
 
-		public interface ChunkHandle {
+		public interface IChunk {
 			bool GetVoxelAt(LocalVoxelPos_t pos, out EVoxelBlockType blocktype);
+			bool hasVoxelData { get; }
+			bool hasTrisData { get; }
+			bool isGenerating { get; }
 		};
 
 		public struct ChunkRef_t : IDisposable {
-			public ChunkHandle chunk;
+			public IChunk chunk;
 			public Streaming streaming;
 
 			public void Dispose() {
@@ -747,6 +759,7 @@ public partial class World {
 			chunk.hash = GetChunkPosHash(pos);
 			chunk.hasTrisData = false;
 			chunk.hasVoxelData = false;
+			chunk.genCount = 0;
 
 #if DEBUG_DRAW
 			chunk.dbgDraw.state = EDebugDrawState.QUEUED;

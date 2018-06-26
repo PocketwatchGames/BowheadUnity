@@ -9,7 +9,7 @@ public class TerrainTestMono : MonoBehaviour {
 	bool _tick;
 
 	World.Streaming _streaming;
-	World.Streaming.Volume _volume;
+	World.Streaming.IVolume _volume;
 	
 
 	// Use this for initialization
