@@ -22,7 +22,7 @@ MonoBehaviour:
     type: 2}
   hudPlayerStatePanelPrefab: {fileID: 114420713084272816, guid: 8226cdbdf3116c74b9cc6071c8f58474,
     type: 2}
-  hudButtonHintPrefab: {fileID: 114236155195007442, guid: 70f2a471b6a3a4049853a27d48744fbb,
+  hudButtonHintPrefab: {fileID: 114042321560627920, guid: 70f2a471b6a3a4049853a27d48744fbb,
     type: 2}
   dialogDarkenCanvasPrefab: {fileID: 0}
   dialogNormalCanvasPrefab: {fileID: 0}

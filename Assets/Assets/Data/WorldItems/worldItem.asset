@@ -14,5 +14,5 @@ MonoBehaviour:
   version: 0
   _index: 15
   prefab:
-    _assetPath: TreasureChest
-    _editorPath: Assets/Gameplay/Resources/TreasureChest.prefab
+    _assetPath: Prefabs/Actors/TreasureChest
+    _editorPath: Assets/Assets/Resources/Prefabs/Actors/TreasureChest.prefab

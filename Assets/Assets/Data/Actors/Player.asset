@@ -53,8 +53,8 @@ MonoBehaviour:
   swimDragVertical: 5
   swimDragHorizontal: 0.25
   prefab:
-    _assetPath: Actors/Player
-    _editorPath: Assets/Gameplay/Resources/Actors/Player.prefab
+    _assetPath: Prefabs/Actors/Player
+    _editorPath: Assets/Assets/Resources/Prefabs/Actors/Player.prefab
   maxThirst: 100
   temperatureSleepMinimum: 50
   temperatureSleepMaximum: 100

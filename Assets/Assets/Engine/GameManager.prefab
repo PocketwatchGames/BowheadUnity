@@ -253,8 +253,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hudOverlays: {fileID: 0}
   staticData: {fileID: 11400000, guid: b01fed52530dac7489d593f386fcc5ea, type: 2}
-  bloodAndExplosionDecalLimit: 4096
-  ragdollFadeTime: 0
   _tooltipCanvas: {fileID: 0}
   PIEGameMode: Bowhead.Server.BowheadGame
   PIENumPlayers: 0
