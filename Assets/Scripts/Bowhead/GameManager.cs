@@ -2109,13 +2109,11 @@ namespace Bowhead {
 
 				_inMenus = value;
 
-				if (_inMenus > 0) {
-#if UNITY_EDITOR
-					Cursor.lockState = CursorLockMode.None;
-#else
+				if ((_inMenus > 0) || (Client.Actors.ClientPlayerController.localPlayer != null)) {
 					SetScreenModeCursorLockState();
-#endif
 					Cursor.visible = true;
+				} else {
+					Client.Actors.ClientPlayerController.localPlayer.SetCursorState();
 				}
 			}
 		}
@@ -2126,13 +2124,12 @@ namespace Bowhead {
 		}
 
 		public void SetScreenModeCursorLockState() {
-			if (Screen.fullScreen || ((Client.Actors.ClientPlayerController.localPlayer != null) && Client.Actors.ClientPlayerController.localPlayer.wantsLockedCursor)) {
-#if UNITY_EDITOR
-				Cursor.lockState = CursorLockMode.None;
-#else
+#if !UNITY_EDITOR
+			if (Screen.fullScreen) {
 				Cursor.lockState = CursorLockMode.Confined;
+			} else
 #endif
-			} else {
+			{
 				Cursor.lockState = CursorLockMode.None;
 			}
 		}

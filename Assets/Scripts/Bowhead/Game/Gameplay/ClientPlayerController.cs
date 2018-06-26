@@ -16,6 +16,7 @@ namespace Bowhead.Client.Actors {
 		Vector2 _mapMins;
 		Vector2 _mapMaxs;
 		Camera _camera;
+		bool _hideCursor;
 		
 		readonly ActorRPC rpc_Server_ClientHasLoaded;
 		readonly ActorRPC<string> rpc_Server_ExecuteCFunc;
@@ -102,6 +103,11 @@ namespace Bowhead.Client.Actors {
 				ClickThrough.Pop();
 			}
 
+			// FIXME: plug into input system properly later.
+			if (Input.GetKeyDown(KeyCode.Space)) {
+				_hideCursor = !_hideCursor;
+				SetCursorState();
+			}
 		}
 
 		public override void LateTick() {
@@ -116,22 +122,6 @@ namespace Bowhead.Client.Actors {
 
 			_inputActions = GameplayInputActions.LoadInputSettings();
 			gameState.hud.InputSettingsChanged(_inputActions);
-		}
-
-		void LockCursor() {
-			if (Cursor.lockState != CursorLockMode.Locked) {
-				Cursor.lockState = CursorLockMode.Locked;
-				Cursor.visible = false;
-				GameManager.instance.ClearMouseDelta();
-			}
-		}
-
-		void UnlockCursor() {
-			Cursor.visible = true;
-			GameManager.instance.SetScreenModeCursorLockState();
-		}
-
-		void Pan(float x, float y) {
 		}
 
 		void UpdateCamera(float dt) {
@@ -233,9 +223,12 @@ namespace Bowhead.Client.Actors {
 			return Mathf.Max(time - (localPlayerPingSeconds / 2f), 0f);
 		}
 
-		public bool wantsLockedCursor {
-			get {
-				return _inputActions.edgePanning;
+		public void SetCursorState() {
+			//Cursor.visible = !_hideCursor;
+			if (_hideCursor) {
+				Cursor.lockState = CursorLockMode.Locked;
+			} else {
+				GameManager.instance.SetScreenModeCursorLockState();
 			}
 		}
 
