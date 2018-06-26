@@ -12,12 +12,7 @@ public class TerrainTestMono : MonoBehaviour, IGameInstance {
 	World.Streaming _streaming;
 	World.Streaming.IVolume _volume;
 
-	public bool isDedicatedServer {
-		get {
-			throw new System.NotImplementedException();
-		}
-	}
-
+	public bool isDedicatedServer => false;
 	public bool isServer => true;
 	public bool isClient => true;
 	public ServerWorld serverWorld { get { throw new System.NotImplementedException(); } }
