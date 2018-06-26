@@ -7,7 +7,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 
-public class SocketNetDriver : NetDriver {
+public class SocketNetDriver : INetDriver {
 	const float UDP_CONTROL_RESEND_TIMEOUT = 0.5f;
 	const float UDP_CONTROL_DISCONNECT_TIMEOUT = 8f;
 
@@ -20,8 +20,8 @@ public class SocketNetDriver : NetDriver {
 	SocketNetDriverConnection _serverConnection;
 	DictionaryList<EndPoint, SocketNetDriverConnection> _tcpConnections = new DictionaryList<EndPoint, SocketNetDriverConnection>();
 	DictionaryList<EndPoint, SocketNetDriverConnection> _udpConnections = new DictionaryList<EndPoint, SocketNetDriverConnection>();
-	NetDriverCallbacks _serverCallbacks;
-	NetDriverCallbacks _clientCallbacks;
+	INetDriverCallbacks _serverCallbacks;
+	INetDriverCallbacks _clientCallbacks;
 	EndPoint _recvEndPoint = new IPEndPoint(IPAddress.Any, 0);
 	int nextChannelID;
 	float _sendUdpControlTimeout;
@@ -171,7 +171,7 @@ public class SocketNetDriver : NetDriver {
 		return id;
 	}
 
-	void RecvFrom(NetDriverCallbacks callbacks, Socket socket, byte[] buffer, ref NetIOMetrics metrics) {
+	void RecvFrom(INetDriverCallbacks callbacks, Socket socket, byte[] buffer, ref NetIOMetrics metrics) {
 		Perf.Begin("SocketNetDriver.RecvFrom");
 
 		while (socket.Available > 0) {
@@ -234,7 +234,7 @@ public class SocketNetDriver : NetDriver {
 		Perf.End();
 	}
 
-	void Recv(SocketNetDriverConnection connection, NetDriverCallbacks callbacks, Socket socket, byte[] buffer, ref NetIOMetrics metrics, bool isDatagram) {
+	void Recv(SocketNetDriverConnection connection, INetDriverCallbacks callbacks, Socket socket, byte[] buffer, ref NetIOMetrics metrics, bool isDatagram) {
 		Perf.Begin("SocketNetDriver.Recv");
 
 		if (isDatagram) {
@@ -349,7 +349,7 @@ public class SocketNetDriver : NetDriver {
 		Perf.End();
 	}
 
-	public bool Listen(int port, int maxConnections, NetDriverCallbacks callbacks) {
+	public bool Listen(int port, int maxConnections, INetDriverCallbacks callbacks) {
 
 		_serverCallbacks = callbacks;
 
@@ -392,7 +392,7 @@ public class SocketNetDriver : NetDriver {
 		return null;
 	}
 
-	public bool Connect(string address, int port, NetDriverCallbacks callbacks) {
+	public bool Connect(string address, int port, INetDriverCallbacks callbacks) {
 
 		if (address == "localhost") {
 			address = "127.0.0.1";

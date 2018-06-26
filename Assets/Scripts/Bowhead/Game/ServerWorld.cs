@@ -12,13 +12,13 @@ namespace Bowhead.Server {
 		GameMode _gameMode;
 		
 		public ServerWorld(
-			GameInstance gameInstance,
+			IGameInstance gameInstance,
 			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
 			string serverName,
 			string serverMessage,
 			System.Reflection.Assembly[] assemblies,
-			NetDriver driver
+			INetDriver driver
 		) : base(gameInstance, null, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, serverName, serverMessage, assemblies, driver) {
         }
 

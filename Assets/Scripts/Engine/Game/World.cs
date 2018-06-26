@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using System.Collections.Generic;
 
-public interface GameInstance {
+public interface IGameInstance {
 	bool isDedicatedServer { get; }
 	bool isServer { get; }
 	bool isClient { get; }
@@ -13,7 +13,7 @@ public interface GameInstance {
 	bool fixedUpdateDidRun { get; }
 }
 
-public abstract partial class World : NetDriverCallbacks, System.IDisposable {
+public abstract partial class World : INetDriverCallbacks, System.IDisposable {
 	public const int MAX_RELIABLE_MESSAGE_SIZE = 32*1024;
 	public const int MAX_UNRELIABLE_MESSAGE_SIZE = 4*1024;
 	
@@ -25,7 +25,7 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 	}
 
 	bool _disposed;
-	NetDriver _netDriver;
+	INetDriver _netDriver;
 	IntHashtable<MethodInfo> _netMsgDispatchHash = new IntHashtable<MethodInfo>();
 	object[] _dispatchArgs = new object[2];
 	NetMsgFactory _netMsgFactory;
@@ -59,7 +59,7 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 	bool _sharedWorldStreaming;
 
 	public World(
-		GameInstance gameInstance,
+		IGameInstance gameInstance,
 		Streaming sharedStreaming,
 		World_ChunkComponent chunkComponent,
 		Transform sceneGroup,
@@ -67,7 +67,7 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		GetObjectPoolRootDelegate getStaticPoolRoot,
 		GetObjectPoolRootDelegate getTransientPoolRoot,
 		SerializableObjectFactory objectFactory, 
-		NetDriver netDriver, 
+		INetDriver netDriver, 
 		NetMsgFactory netMsgFactory
 	) {
 		this.gameInstance = gameInstance;
@@ -90,7 +90,7 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		_sharedWorldStreaming = sharedStreaming != null;
 	}
 
-	public GameInstance gameInstance {
+	public IGameInstance gameInstance {
 		get;
 		private set;
 	}
@@ -453,7 +453,7 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		}
 	}
 
-	protected NetDriver netDriver {
+	protected INetDriver netDriver {
 		get {
 			return _netDriver;
 		}
@@ -763,14 +763,14 @@ public abstract partial class World : NetDriverCallbacks, System.IDisposable {
 		return new ActorEnumerable<T>(this);
 	}
 
-	class RPCObjectReferenceCollector : SerializableObjectReferenceCollector {
+	class RPCObjectReferenceCollector : ISerializableObjectReferenceCollector {
 		World world;
 
 		public RPCObjectReferenceCollector(World world) {
 			this.world = world;
 		}
 
-		public SerializableObject AddReference(SerializableObjectFieldSerializer serializer, int id, int fieldIndex) {
+		public SerializableObject AddReference(ISerializableObjectFieldSerializer serializer, int id, int fieldIndex) {
 			return world.GetObjectByNetID(id);
 		}
 

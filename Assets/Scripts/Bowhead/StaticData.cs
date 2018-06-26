@@ -286,7 +286,7 @@ namespace Bowhead {
 
 	public class StaticAssetRefSerializer : SerializableObjectNonReferenceFieldSerializer<StaticAssetRefSerializer> {
 		
-		public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+		public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 			SerializeStaticAssetRef r = (SerializeStaticAssetRef)field;
 			r.Serialize(archive);
 			field = r.Copy();

@@ -17,7 +17,7 @@ using CodeStage.AdvancedFPSCounter;
 
 namespace Bowhead {
 
-	public class GameManager : MonoBehaviour, GameInstance {
+	public class GameManager : MonoBehaviour, IGameInstance {
 		const int DEFAULT_MATCH_TIME = 60*5;
 		const int DEFAULT_OVERTIME = 90;
 		const float NETSTAT_FREQUENCY = 1f;
@@ -32,8 +32,6 @@ namespace Bowhead {
 
 		public Transform hudOverlays;
 		public StaticData staticData;
-		public int bloodAndExplosionDecalLimit;
-		public float ragdollFadeTime;
 
 		public int ragdollLimit { get; set; }
 		public int gibLimit { get; set; }
@@ -81,7 +79,7 @@ namespace Bowhead {
 
 		Server.ServerWorld _server;
 		Client.ClientWorld _client;
-		NetDriver _netDriver;
+		INetDriver _netDriver;
 
 		Type _travelGameMode;
 		string _travelLevel;
@@ -193,6 +191,8 @@ namespace Bowhead {
 
 			World.Streaming.StaticInit();
 			DataManager.InitData();
+
+			MainThreadTaskQueue.maxFrameTimeMicroseconds = 4000;
 
 #if LEAK_TRACKER
 			_leakTracker = new LeakTracker(GetModuleAssemblies());
@@ -847,6 +847,9 @@ namespace Bowhead {
 				//}
 			}
 #endif
+
+			MainThreadTaskQueue.Run();
+
 			// don't exit until all web transactions have posted
 			if (_serverQuitFlag) {
 				if (activeTransactionCount <= 0) {
@@ -919,6 +922,8 @@ namespace Bowhead {
 
 		void UnloadGame() {
 			_asyncLoad = null;
+
+			MainThreadTaskQueue.Flush();
 
 			if (_client != null) {
 				try {
@@ -1214,7 +1219,7 @@ namespace Bowhead {
 #endif
 
 			var asms = GetModuleAssemblies();
-			_netDriver = (NetDriver)System.Activator.CreateInstance(netDriverType);
+			_netDriver = (INetDriver)System.Activator.CreateInstance(netDriverType);
 
 			_server = new Bowhead.Server.ServerWorld(this, dedicatedServer ? staticData.serverTerrainChunkComponent : clientData.clientTerrainChunkComponent, _serverObjectGroup.transform, serverName, null, asms, _netDriver);
 
@@ -1267,7 +1272,7 @@ namespace Bowhead {
 			}
 
 			var asms = GetModuleAssemblies();
-			_netDriver = (NetDriver)Activator.CreateInstance(netDriverType);
+			_netDriver = (INetDriver)Activator.CreateInstance(netDriverType);
 
 			_client = new Client.ClientWorld(this, null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
 			if (!_client.Connect(ip, port)) {
@@ -1509,7 +1514,6 @@ namespace Bowhead {
 		void Reset() {
 			PIEGameMode = typeof(Server.BowheadGame).AssemblyQualifiedName;
 			staticData = GetComponent<StaticData>();
-			bloodAndExplosionDecalLimit = 4096;
 			PIEMatchTime = 60*5;
 			PIEOvertime = 90;
 		}
@@ -1725,14 +1729,6 @@ namespace Bowhead {
 				throw new Exception("Not logged into Bowhead login servers!");
 			}
 #endif
-		}
-
-		[CFunc]
-		static int DecalLimit(params object[] args) {
-			if (args.Length > 0) {
-				instance.bloodAndExplosionDecalLimit = int.Parse((string)args[0]);
-			}
-			return instance.bloodAndExplosionDecalLimit;
 		}
 
 		[CFunc]
@@ -2260,7 +2256,7 @@ namespace Bowhead {
 		public bool isServer => _server != null;
 		public bool isClient => _client != null;
 		public bool isDedicatedServer => isServer && !isClient;
-		global::Server.ServerWorld GameInstance.serverWorld => _server;
+		global::Server.ServerWorld IGameInstance.serverWorld => _server;
 		
 #if UNITY_EDITOR
 		public bool debugDrawAI {

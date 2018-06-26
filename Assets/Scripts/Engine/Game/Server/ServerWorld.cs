@@ -23,7 +23,7 @@ namespace Server {
 		string serverMessage;
 
 		public ServerWorld(
-			GameInstance gameInstance,
+			IGameInstance gameInstance,
 			Streaming sharedStreaming,
 			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
@@ -33,7 +33,7 @@ namespace Server {
 			string serverName,
 			string serverMessage,
 			System.Reflection.Assembly[] assemblies, 
-			NetDriver driver
+			INetDriver driver
 			) : base(gameInstance, sharedStreaming, chunkComponent, sceneGroup, defaultActorPrefab, getStaticPoolRoot, getTransientPoolRoot, new ServerSerializableObjectFactory(assemblies), driver, new ServerNetMsgFactory(assemblies)) {
 			this.serverName = serverName;
 			this.serverMessage = serverMessage;

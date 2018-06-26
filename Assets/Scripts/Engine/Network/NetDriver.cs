@@ -1,9 +1,5 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
-using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.Assertions;
-using System.Collections.Generic;
 
 public enum ENetRole {
 	None,
@@ -34,7 +30,7 @@ public struct NetIOMetrics {
 	}
 }
 
-public interface NetDriverCallbacks {
+public interface INetDriverCallbacks {
 	void OnConnect(NetDriverConnection connection);
 	void OnDisconnect(NetDriverConnection connection);
 	void OnMessageReceived(NetDriverConnection connection, byte[] data, int size);
@@ -42,13 +38,13 @@ public interface NetDriverCallbacks {
 	void OnReliableSendWouldBlock(NetDriverConnection connection);
 }
 
-public interface NetDriver : System.IDisposable {
+public interface INetDriver : System.IDisposable {
 
 	void TickServer(float dt, byte[] recvBuffer, ref NetIOMetrics reliableChannelMetrics, ref NetIOMetrics unreliableChannelMetrics);
 	void TickClient(float dt, byte[] recvBuffer, ref NetIOMetrics reliableChannelMetrics, ref NetIOMetrics unreliableChannelMetrics);
 
-	bool Listen(int port, int maxConnections, NetDriverCallbacks callbacks);
-	bool Connect(string address, int port, NetDriverCallbacks callbacks);
+	bool Listen(int port, int maxConnections, INetDriverCallbacks callbacks);
+	bool Connect(string address, int port, INetDriverCallbacks callbacks);
 }
 
 public interface NetDriverConnection : System.IDisposable {

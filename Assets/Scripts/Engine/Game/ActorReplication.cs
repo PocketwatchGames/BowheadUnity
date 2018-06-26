@@ -124,7 +124,7 @@ public struct QuantizedFloatField {
 
 public class QuantizedFloatFieldSerializer : SerializableObjectNonReferenceFieldSerializer<QuantizedFloatFieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		QuantizedFloatField value = (QuantizedFloatField)field;
 
 		if (archive.isLoading) {
@@ -192,7 +192,7 @@ public struct QuantizedVector2Field {
 
 public class QuantizedVector2FieldSerializer : SerializableObjectNonReferenceFieldSerializer<QuantizedVector2FieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		QuantizedVector2Field value = (QuantizedVector2Field)field;
 
 		if (archive.isLoading) {
@@ -271,7 +271,7 @@ public struct QuantizedVector3Field {
 
 public class QuantizedVector3FieldSerializer : SerializableObjectNonReferenceFieldSerializer<QuantizedVector3FieldSerializer> {
 	
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		QuantizedVector3Field value = (QuantizedVector3Field)field;
 
 		if (archive.isLoading) {
@@ -304,7 +304,7 @@ public class ActorReplicationException : Exception {
 	public ActorReplicationException(string message) : base(message) { }
 }
 
-public class ActorReplicationChannel : SerializableObjectSubobjectSerializer, SerializableObjectReferenceCollector {
+public class ActorReplicationChannel : ISerializableObjectSubobjectSerializer, ISerializableObjectReferenceCollector {
 	public const float PONG_TIMEOUT = 60*3;
 	const float PING_RATE = 5f;
 	const int PING_TABLE_SIZE = 10;
@@ -953,7 +953,7 @@ public class ActorReplicationChannel : SerializableObjectSubobjectSerializer, Se
 		return null;
 	}
 
-	public SerializableObject AddReference(SerializableObjectFieldSerializer serializer, int id, int fieldIndex) {
+	public SerializableObject AddReference(ISerializableObjectFieldSerializer serializer, int id, int fieldIndex) {
 		int hashCode = id.GetHashCode();
 
 		var obj = connection.world.GetObjectByNetIDHashCode(hashCode);
@@ -984,7 +984,7 @@ public class ActorReplicationChannel : SerializableObjectSubobjectSerializer, Se
 	
 }
 
-public class ObjectReplicator : SerializableObjectReferenceCollector {
+public class ObjectReplicator : ISerializableObjectReferenceCollector {
 
 	SerializableObject _object;
 	IntHashtableList<ReplicatedObjectFieldState> fieldStates;
@@ -1026,7 +1026,7 @@ public class ObjectReplicator : SerializableObjectReferenceCollector {
 		}
 	}
 
-	public SerializableObject AddReference(SerializableObjectFieldSerializer serializer, int id, int fieldIndex) {
+	public SerializableObject AddReference(ISerializableObjectFieldSerializer serializer, int id, int fieldIndex) {
 		var obj = channel.AddObjectReferenceToSerialize(this, id);
 		if ((obj != null) || !isLoading) {
 			return obj;
@@ -1225,7 +1225,7 @@ public class ReplicatedObjectFieldState {
 		}
 	}
 
-	public void Write(NetArchive archive, SerializableObjectReferenceCollector collector, object fieldVal, bool deltaField) {
+	public void Write(NetArchive archive, ISerializableObjectReferenceCollector collector, object fieldVal, bool deltaField) {
 		Perf.Begin("FieldState.Write");
 
 		fieldSpec.serializer.Serialize(archive, collector, ref fieldVal, deltaField ? lastState : null);
@@ -1317,7 +1317,7 @@ public class ReplicatedObjectFieldState {
 	}
 }
 
-public sealed class ReplicatedObjectReferenceFieldSerializer : SerializableObjectFieldSerializer {
+public sealed class ReplicatedObjectReferenceFieldSerializer : ISerializableObjectFieldSerializer {
 
 	static ReplicatedObjectReferenceFieldSerializer _instance;
 
@@ -1331,7 +1331,7 @@ public sealed class ReplicatedObjectReferenceFieldSerializer : SerializableObjec
 		}
 	}
 
-	public bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		if (archive.isLoading) {
 			int id = archive.ReadUShort();
 			if (id != 0) {
@@ -1375,7 +1375,7 @@ public sealed class ReplicatedObjectReferenceFieldSerializer : SerializableObjec
 	}
 }
 
-public sealed class ReplicatedObjectFieldSerializerFactory : SerializableObjectFieldSerializerFactory {
+public sealed class ReplicatedObjectFieldSerializerFactory : ISerializableObjectFieldSerializerFactory {
 	static ReplicatedObjectFieldSerializerFactory _instance;
 
 	static ReplicatedObjectFieldSerializerFactory() {
@@ -1388,7 +1388,7 @@ public sealed class ReplicatedObjectFieldSerializerFactory : SerializableObjectF
 		}
 	}
 
-	public SerializableObjectFieldSerializer GetSerializerForField(SerializedObjectFields.FieldSpec field) {
+	public ISerializableObjectFieldSerializer GetSerializerForField(SerializedObjectFields.FieldSpec field) {
 
 		if (field.replication.Using != null) {
 			return CreateSerializer(field.replication.Using);
@@ -1397,13 +1397,13 @@ public sealed class ReplicatedObjectFieldSerializerFactory : SerializableObjectF
 		return GetSerializerForType(field.field.FieldType);
 	}
 
-	SerializableObjectFieldSerializer CreateSerializer(Type type) {
+	ISerializableObjectFieldSerializer CreateSerializer(Type type) {
 		// custom serialization
 		if (type == null) {
 			throw new ObjectSerializationException("Serializer type is null.");
 		}
 
-		if (!typeof(SerializableObjectFieldSerializer).IsAssignableFrom(type)) {
+		if (!typeof(ISerializableObjectFieldSerializer).IsAssignableFrom(type)) {
 			throw new ObjectSerializationException("Serializer must be derived from SerializableObjectFieldSerializer");
 		}
 		if (type.IsAbstract) {
@@ -1416,13 +1416,13 @@ public sealed class ReplicatedObjectFieldSerializerFactory : SerializableObjectF
 				if (getter.ReturnType != type) {
 					throw new ObjectSerializationException("Static serializer instance is wrong type!");
 				}
-				return (SerializableObjectFieldSerializer)getter.Invoke(null, null);
+				return (ISerializableObjectFieldSerializer)getter.Invoke(null, null);
 			}
 		}
 
 		var ctor = type.GetConstructor(System.Type.EmptyTypes);
 		if (ctor != null) {
-			return (SerializableObjectFieldSerializer)ctor.Invoke(null);
+			return (ISerializableObjectFieldSerializer)ctor.Invoke(null);
 		}
 
 		throw new ObjectSerializationException("Serializer does not have a parameterless constructor and therefore could not be instantiated!");
@@ -1433,7 +1433,7 @@ public sealed class ReplicatedObjectFieldSerializerFactory : SerializableObjectF
 		return (attrs.Length > 0) ? (ReplicatedUsing)attrs[0] : null;
 	}
 
-	public SerializableObjectFieldSerializer GetSerializerForType(Type type) {
+	public ISerializableObjectFieldSerializer GetSerializerForType(Type type) {
 		if (type.IsEnum) {
 			return SerializableObjectEnumFieldSerializer.instance;
 		} else if (type == typeof(bool)) {
@@ -1479,9 +1479,9 @@ public sealed class ReplicatedObjectFieldSerializerFactory : SerializableObjectF
 		} else if (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>))) {
 			var baseType = typeof(SerializableObjectListFieldSerializer<>);
 			var serializerType = baseType.MakeGenericType(type.GetGenericArguments()[0]);
-			return Activator.CreateInstance(serializerType, new object[] { this }) as SerializableObjectFieldSerializer;
-		} else if (!type.IsAbstract && typeof(SerializableObjectFieldSerializer).IsAssignableFrom(type)) {
-			return Activator.CreateInstance(type, null) as SerializableObjectFieldSerializer;
+			return Activator.CreateInstance(serializerType, new object[] { this }) as ISerializableObjectFieldSerializer;
+		} else if (!type.IsAbstract && typeof(ISerializableObjectFieldSerializer).IsAssignableFrom(type)) {
+			return Activator.CreateInstance(type, null) as ISerializableObjectFieldSerializer;
 		} else {
 			// type may have a ReplicatedUsing attribute.
 			var replicatedUsing = GetReplicatedUsingAttribute(type);
@@ -1495,7 +1495,7 @@ public sealed class ReplicatedObjectFieldSerializerFactory : SerializableObjectF
 }
 
 public sealed class ObjectRPCSerializer {
-	List<SerializableObjectFieldSerializer> argumentSerializers = new List<SerializableObjectFieldSerializer>();
+	List<ISerializableObjectFieldSerializer> argumentSerializers = new List<ISerializableObjectFieldSerializer>();
 	object[] rpcArgs;
 	RPC rpc;
 	MethodInfo _method;
@@ -1515,7 +1515,7 @@ public sealed class ObjectRPCSerializer {
 		}
 	}
 
-	public void Write(NetArchive archive, SerializableObjectReferenceCollector collector, params object[] args) {
+	public void Write(NetArchive archive, ISerializableObjectReferenceCollector collector, params object[] args) {
 		if (args.Length != argumentSerializers.Count) {
 			throw new ArgumentException("Wrong number of arguments for RPC!");
 		}
@@ -1526,7 +1526,7 @@ public sealed class ObjectRPCSerializer {
 		}
     }
 
-	public object[] Read(NetArchive archive, SerializableObjectReferenceCollector collector) {
+	public object[] Read(NetArchive archive, ISerializableObjectReferenceCollector collector) {
 		
 		for (int i = 0; i < argumentSerializers.Count; ++i) {
 			var p = _parameters[i];

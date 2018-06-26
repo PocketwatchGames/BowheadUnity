@@ -15,17 +15,17 @@ namespace Bowhead.Client {
 		static readonly int NUM_DECAL_GROUPS = Enum.GetNames(typeof(EDecalGroup)).Length;
 
 		DecalGroup[] _decalGroups = new DecalGroup[NUM_DECAL_GROUPS];
-		Queue<RagdollController> _ragdolls = new Queue<RagdollController>();
-		Queue<RagdollController> _gibs = new Queue<RagdollController>();
+		Queue<IRagdollController> _ragdolls = new Queue<IRagdollController>();
+		Queue<IRagdollController> _gibs = new Queue<IRagdollController>();
 		PhysicalContactMatrixState _physicalContactMatrix;
 		
 		public ClientWorld(
-			GameInstance gameInstance,
+			IGameInstance gameInstance,
 			Streaming serverStreaming,
 			World_ChunkComponent chunkComponent,
 			Transform sceneGroup,
 			System.Reflection.Assembly[] assemblies,
-			NetDriver driver
+			INetDriver driver
 		) : base(gameInstance, serverStreaming, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
 		}
 
@@ -62,7 +62,7 @@ namespace Bowhead.Client {
 					}
 				}
 				if (_decalGroups[(int)EDecalGroup.BloodAndExplosions] != null) {
-					_decalGroups[(int)EDecalGroup.BloodAndExplosions].maxDecals = GameManager.instance.bloodAndExplosionDecalLimit;
+					_decalGroups[(int)EDecalGroup.BloodAndExplosions].maxDecals = 100;// GameManager.instance.bloodAndExplosionDecalLimit;
 				}
 			}
 		}
@@ -73,7 +73,7 @@ namespace Bowhead.Client {
 				return numRequested;
 			}
 
-			var fadeTime = GameManager.instance.ragdollFadeTime;
+			var fadeTime = 1f;// GameManager.instance.ragdollFadeTime;
 			var num = Mathf.Min(numRequested, ragdollLimit - _ragdolls.Count);
 			for (; (num < numRequested) && (_ragdolls.Count > 0);) {
 				var x = _ragdolls.Dequeue();
@@ -85,7 +85,7 @@ namespace Bowhead.Client {
 			return num;
 		}
 
-		public void RagdollAdded(RagdollController ragdoll) {
+		public void RagdollAdded(IRagdollController ragdoll) {
 			var ragdollLimit = GameManager.instance.ragdollLimit;
 			if (ragdollLimit > 0) {
 				_ragdolls.Enqueue(ragdoll);
@@ -98,7 +98,7 @@ namespace Bowhead.Client {
 				return numRequested;
 			}
 
-			var fadeTime = GameManager.instance.ragdollFadeTime;
+			var fadeTime = 1f;// GameManager.instance.ragdollFadeTime;
 			var num = Mathf.Min(numRequested, gibLimit - _gibs.Count);
 			for (; (num < numRequested) && (_gibs.Count > 0);) {
 				var x = _gibs.Dequeue();
@@ -110,7 +110,7 @@ namespace Bowhead.Client {
 			return num;
 		}
 
-		public void GibAdded(RagdollController ragdoll) {
+		public void GibAdded(IRagdollController ragdoll) {
 			var gibLimit = GameManager.instance.ragdollLimit;
 			if (gibLimit > 0) {
 				_gibs.Enqueue(ragdoll);
@@ -188,7 +188,7 @@ namespace Bowhead.Client {
 		}
 
 		public void UpdateBloodAndExplosionDecalLimit() {
-			_decalGroups[(int)EDecalGroup.BloodAndExplosions].maxDecals = GameManager.instance.bloodAndExplosionDecalLimit;
+			_decalGroups[(int)EDecalGroup.BloodAndExplosions].maxDecals = 100;// GameManager.instance.bloodAndExplosionDecalLimit;
 		}
 
 		//public void RenderBloodSplat(Vector3 worldPos, Vector2 size, float orientation) {

@@ -689,7 +689,7 @@ public abstract class Actor : ActorRPCObject {
 		return components[index];
 	}
 
-	public override void SerializeSubobjects(SerializableObjectSubobjectSerializer serializer) {
+	public override void SerializeSubobjects(ISerializableObjectSubobjectSerializer serializer) {
 		base.SerializeSubobjects(serializer);
 
 		for (int i = 0; i < components.Count; ++i) {

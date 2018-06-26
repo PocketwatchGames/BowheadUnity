@@ -178,7 +178,7 @@ public abstract class SerializableObject {
 		_netIDHashCode = netID.GetHashCode();
 	}
 
-	public virtual void SerializeSubobjects(SerializableObjectSubobjectSerializer serializer) {	}
+	public virtual void SerializeSubobjects(ISerializableObjectSubobjectSerializer serializer) {	}
 
 	public virtual void SerializeCustomData(Archive archive) {	}
 
@@ -281,7 +281,7 @@ public abstract class SerializableObjectStaticClass<T> where T : SerializableObj
 	}
 }
 
-public interface SerializableObjectSubobjectSerializer {
+public interface ISerializableObjectSubobjectSerializer {
 	void SerializeSubobject(SerializableObject obj);
 }
 
@@ -327,24 +327,24 @@ public class ServerSerializableObjectFactory : SerializableObjectFactory {
 	}
 }
 
-public interface SerializableObjectFieldSerializerFactory {
-	SerializableObjectFieldSerializer GetSerializerForField(SerializedObjectFields.FieldSpec field);
-	SerializableObjectFieldSerializer GetSerializerForType(Type type);
+public interface ISerializableObjectFieldSerializerFactory {
+	ISerializableObjectFieldSerializer GetSerializerForField(SerializedObjectFields.FieldSpec field);
+	ISerializableObjectFieldSerializer GetSerializerForType(Type type);
 }
 
-public interface SerializableObjectReferenceCollector {
-	SerializableObject AddReference(SerializableObjectFieldSerializer serializer, int id, int fieldIndex);
+public interface ISerializableObjectReferenceCollector {
+	SerializableObject AddReference(ISerializableObjectFieldSerializer serializer, int id, int fieldIndex);
 }
 
-public interface SerializableObjectFieldSerializer {
+public interface ISerializableObjectFieldSerializer {
 	void ClearState();
-	bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState);
+	bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState);
 	void ResolveReference(SerializableObject obj, int id, int fieldIndex, ref object field);
 	bool FieldsAreEqual(object a, object b);
 	object Copy(object toCopy);
 }
 
-public abstract class SerializableObjectNonReferenceFieldSerializer<T> : SerializableObjectFieldSerializer where T: SerializableObjectNonReferenceFieldSerializer<T>, new() {
+public abstract class SerializableObjectNonReferenceFieldSerializer<T> : ISerializableObjectFieldSerializer where T: SerializableObjectNonReferenceFieldSerializer<T>, new() {
 
 	static T _instance = new T();
 
@@ -356,7 +356,7 @@ public abstract class SerializableObjectNonReferenceFieldSerializer<T> : Seriali
 
 	public void ClearState() { }
 
-	public abstract bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState);
+	public abstract bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState);
 
 	public void ResolveReference(SerializableObject obj, int id, int fieldIndex, ref object field) {
 		throw new NotImplementedException();
@@ -368,7 +368,7 @@ public abstract class SerializableObjectNonReferenceFieldSerializer<T> : Seriali
 
 public class SerializableObjectBoolFieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectBoolFieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		var value = (bool)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -386,7 +386,7 @@ public class SerializableObjectBoolFieldSerializer : SerializableObjectNonRefere
 
 public class SerializableObjectColorFieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectColorFieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		Color32 value = (Color)field;
 		archive.Serialize(ref value);
 		field = (Color)value;
@@ -404,7 +404,7 @@ public class SerializableObjectColorFieldSerializer : SerializableObjectNonRefer
 
 public class SerializableObjectColor32FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectColor32FieldSerializer> {
 	
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		Color32 value = (Color32)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -422,7 +422,7 @@ public class SerializableObjectColor32FieldSerializer : SerializableObjectNonRef
 
 public class SerializableObjectStringFieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectStringFieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		string value = (string)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -439,7 +439,7 @@ public class SerializableObjectStringFieldSerializer : SerializableObjectNonRefe
 }
 
 public class SerializableObjectByteFieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectByteFieldSerializer> {
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		byte value = (byte)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -457,7 +457,7 @@ public class SerializableObjectByteFieldSerializer : SerializableObjectNonRefere
 
 public class SerializableObjectSByteFieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectSByteFieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		sbyte value = (sbyte)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -475,7 +475,7 @@ public class SerializableObjectSByteFieldSerializer : SerializableObjectNonRefer
 
 public class SerializableObjectInt16FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectInt16FieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		short value = (short)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -493,7 +493,7 @@ public class SerializableObjectInt16FieldSerializer : SerializableObjectNonRefer
 
 public class SerializableObjectUInt16FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectUInt16FieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		ushort value = (ushort)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -511,7 +511,7 @@ public class SerializableObjectUInt16FieldSerializer : SerializableObjectNonRefe
 
 public class SerializableObjectInt32FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectInt32FieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		int value = (int)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -528,7 +528,7 @@ public class SerializableObjectInt32FieldSerializer : SerializableObjectNonRefer
 }
 
 public class SerializableObjectUInt32FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectUInt32FieldSerializer> {
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		uint value = (uint)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -545,7 +545,7 @@ public class SerializableObjectUInt32FieldSerializer : SerializableObjectNonRefe
 }
 
 public class SerializableObjectInt64FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectInt64FieldSerializer> {
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		long value = (long)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -562,7 +562,7 @@ public class SerializableObjectInt64FieldSerializer : SerializableObjectNonRefer
 }
 
 public class SerializableObjectUInt64FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectUInt64FieldSerializer> {
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		ulong value = (ulong)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -580,7 +580,7 @@ public class SerializableObjectUInt64FieldSerializer : SerializableObjectNonRefe
 
 public class SerializableObjectFloatFieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectFloatFieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		float value = (float)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -598,7 +598,7 @@ public class SerializableObjectFloatFieldSerializer : SerializableObjectNonRefer
 
 public class SerializableObjectDoubleFieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectDoubleFieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		double value = (double)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -616,7 +616,7 @@ public class SerializableObjectDoubleFieldSerializer : SerializableObjectNonRefe
 
 public class SerializableObjectEnumFieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectEnumFieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		int value = Convert.ToInt32((Enum)field);
 		archive.Serialize(ref value);
 		field = Enum.ToObject(field.GetType(), value);
@@ -634,7 +634,7 @@ public class SerializableObjectEnumFieldSerializer : SerializableObjectNonRefere
 
 public class SerializableObjectVector2FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectVector2FieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		Vector2 value = (Vector2)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -651,7 +651,7 @@ public class SerializableObjectVector2FieldSerializer : SerializableObjectNonRef
 }
 
 public class SerializableObjectVector3FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectVector3FieldSerializer> {
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		Vector3 value = (Vector3)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -669,7 +669,7 @@ public class SerializableObjectVector3FieldSerializer : SerializableObjectNonRef
 
 public class SerializableObjectVector4FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectVector4FieldSerializer> {
 
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		Vector4 value = (Vector4)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -686,7 +686,7 @@ public class SerializableObjectVector4FieldSerializer : SerializableObjectNonRef
 }
 
 public class SerializableObjectQuaternionFieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectQuaternionFieldSerializer> {
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		Quaternion value = (Quaternion)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -703,7 +703,7 @@ public class SerializableObjectQuaternionFieldSerializer : SerializableObjectNon
 }
 
 public class SerializableObjectMatrix4x4FieldSerializer : SerializableObjectNonReferenceFieldSerializer<SerializableObjectMatrix4x4FieldSerializer> {
-	public override bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		Matrix4x4 value = (Matrix4x4)field;
 		archive.Serialize(ref value);
 		field = value;
@@ -719,11 +719,11 @@ public class SerializableObjectMatrix4x4FieldSerializer : SerializableObjectNonR
 	}
 }
 
-public class SerializableObjectListFieldSerializer<T> : SerializableObjectFieldSerializer, SerializableObjectReferenceCollector {
-	SerializableObjectFieldSerializer _itemSerializer;
+public class SerializableObjectListFieldSerializer<T> : ISerializableObjectFieldSerializer, ISerializableObjectReferenceCollector {
+	ISerializableObjectFieldSerializer _itemSerializer;
 	// [fieldIndex => [id => fields]]
 	Dictionary<int, Dictionary<int, HashSetList<int>>> _subFieldReferences;
-	SerializableObjectReferenceCollector _outerCollector;
+	ISerializableObjectReferenceCollector _outerCollector;
 	int _outerFieldIndex;
 	readonly bool _simpleReferences;
 
@@ -732,12 +732,12 @@ public class SerializableObjectListFieldSerializer<T> : SerializableObjectFieldS
 		_subFieldReferences = null;
 	}
 
-	public SerializableObjectListFieldSerializer(SerializableObjectFieldSerializerFactory factory) {
+	public SerializableObjectListFieldSerializer(ISerializableObjectFieldSerializerFactory factory) {
 		_itemSerializer = factory.GetSerializerForType(typeof(T));
 		_simpleReferences = !typeof(System.Collections.IList).IsAssignableFrom(typeof(T));
 	}
 
-	public bool Serialize(Archive archive, SerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
+	public bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 		_outerCollector = collector;
 
 		List<T> list = (List<T>)field;
@@ -815,7 +815,7 @@ public class SerializableObjectListFieldSerializer<T> : SerializableObjectFieldS
 		return newList;
 	}
 
-	public SerializableObject AddReference(SerializableObjectFieldSerializer serializer, int id, int fieldIndex) {
+	public SerializableObject AddReference(ISerializableObjectFieldSerializer serializer, int id, int fieldIndex) {
 		var obj = _outerCollector.AddReference(this, id, _outerFieldIndex);
 		if (obj != null) {
 			return obj;
@@ -876,7 +876,7 @@ public class SerializedObjectFields {
 
 	public class FieldSpec {
 		public FieldInfo field;
-		public SerializableObjectFieldSerializer serializer;
+		public ISerializableObjectFieldSerializer serializer;
 		public Replicated replication;
 		public MethodInfo onRep;
 		public ushort fieldID;
@@ -886,7 +886,7 @@ public class SerializedObjectFields {
 	IntHashtableList<FieldSpec> _serializedFields = new IntHashtableList<FieldSpec>();
 	int _nextFieldID;
 
-	public SerializedObjectFields(Type t, SerializableObjectFieldSerializerFactory factory, bool forNetwork) {
+	public SerializedObjectFields(Type t, ISerializableObjectFieldSerializerFactory factory, bool forNetwork) {
 		if (!typeof(Actor).IsAssignableFrom(t)) {
 			throw new ObjectSerializationException("Type is not a serializable object!");
 		}

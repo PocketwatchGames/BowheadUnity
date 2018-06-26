@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using UnityEditor;
 #endif
 
-public interface RagdollState {
+public interface IRagdollState {
 	void Ragdoll(SkinnedMeshRenderer renderer, Animator animator, Vector3 velocity);
 	void Wake();
 	void Sleep();
@@ -18,7 +18,7 @@ public interface RagdollState {
 	Transform root { get; }
 }
 
-public interface RagdollController {
+public interface IRagdollController {
 	double lastRagdollExplosionTime { get; set; }
 	int numConcurrentRagdollExplosions { get; set; }
 	bool ragdollExplosionRateLimited { get; set; }
@@ -35,7 +35,7 @@ public class RagdollAsset : ScriptableObject {
 	[SerializeField]
 	List<Element> elements;
 
-	class InternalRagdollState : RagdollState {
+	class InternalRagdollState : IRagdollState {
 		List<Element> _elements;
 		bool _ragdoll;
 		bool _sleeping;
@@ -191,8 +191,8 @@ public class RagdollAsset : ScriptableObject {
 	}
 #endif
 
-	public RagdollState AddRagdollComponents(Transform root, bool addActorRefs) {
-		RagdollState state = null;
+	public IRagdollState AddRagdollComponents(Transform root, bool addActorRefs) {
+		IRagdollState state = null;
 
 		if ((elements != null) && (elements.Count > 0)) {
 			List<InternalRagdollState.Element> ragdollBones = new List<InternalRagdollState.Element>();

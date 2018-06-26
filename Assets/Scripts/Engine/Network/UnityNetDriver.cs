@@ -5,15 +5,15 @@ using UnityEngine.Networking;
 using UnityEngine.Assertions;
 using System.Collections.Generic;
 
-public class UnityNetDriver : NetDriver {
+public class UnityNetDriver : INetDriver {
 	int hostSocketID = -1;
 	int hostReliableChannelID;
 	int hostUnreliableChannelID;
 	int clientSocketID = -1;
 	int clientReliableChannelID;
 	int clientUnreliableChannelID;
-	NetDriverCallbacks hostCallbacks;
-	NetDriverCallbacks clientCallbacks;
+	INetDriverCallbacks hostCallbacks;
+	INetDriverCallbacks clientCallbacks;
 
 	IntHashtable<UnityNetDriverConnection> hostConnections = new IntHashtable<UnityNetDriverConnection>();
 	IntHashtable<UnityNetDriverConnection> clientConnections = new IntHashtable<UnityNetDriverConnection>();
@@ -40,7 +40,7 @@ public class UnityNetDriver : NetDriver {
 		}
 	}
 
-	public bool Listen(int port, int maxConnections, NetDriverCallbacks callbacks) {
+	public bool Listen(int port, int maxConnections, INetDriverCallbacks callbacks) {
 		Assert.IsTrue(hostSocketID == -1);
 
 		hostCallbacks = callbacks;
@@ -65,7 +65,7 @@ public class UnityNetDriver : NetDriver {
 		return hostSocketID != -1;
 	}
 
-	public bool Connect(string address, int port, NetDriverCallbacks callbacks) {
+	public bool Connect(string address, int port, INetDriverCallbacks callbacks) {
 		Assert.IsTrue(clientSocketID == -1);
 
 		if (address == "localhost") {
@@ -133,7 +133,7 @@ public class UnityNetDriver : NetDriver {
 		clientCallbacks = null;
 	}
 
-	void TickSocket(IntHashtable<UnityNetDriverConnection> connections, NetDriverCallbacks callbacks, int socketID, int reliableChannelID, int unreliableChannelID, byte[] recvBuffer, ref NetIOMetrics reliableChannelMetrics, ref NetIOMetrics unreliableChannelMetrics) {
+	void TickSocket(IntHashtable<UnityNetDriverConnection> connections, INetDriverCallbacks callbacks, int socketID, int reliableChannelID, int unreliableChannelID, byte[] recvBuffer, ref NetIOMetrics reliableChannelMetrics, ref NetIOMetrics unreliableChannelMetrics) {
 		int connectionID;
 		int recvSize;
 		int channelID;
@@ -187,7 +187,7 @@ public class UnityNetDriver : NetDriver {
 		return conn;
 	}
 
-	UnityNetDriverConnection CreateConnection(IntHashtable<UnityNetDriverConnection> connections, NetDriverCallbacks callbacks, int socketID, int connectionID, int reliableChannelID, int unreliableChannelID) {
+	UnityNetDriverConnection CreateConnection(IntHashtable<UnityNetDriverConnection> connections, INetDriverCallbacks callbacks, int socketID, int connectionID, int reliableChannelID, int unreliableChannelID) {
 		var hashCode = connectionID.GetHashCode();
 		if (connections.Contains(hashCode)) {
 			throw new System.IO.IOException("Duplicate connection id! " + connectionID);
@@ -212,11 +212,11 @@ public class UnityNetDriverConnection : NetDriverConnection {
 	int _reliableChannel;
 	NetIOMetrics _reliableMetrics;
 	NetIOMetrics _unreliableMetrics;
-	internal NetDriverCallbacks callbacks;
+	internal INetDriverCallbacks callbacks;
 	UnityNetDriver _netDriver;
 	public IntHashtable<UnityNetDriverConnection> connections;
 
-    public UnityNetDriverConnection(IntHashtable<UnityNetDriverConnection> connections, UnityNetDriver driver, NetDriverCallbacks callbacks, int socketId, int connectionId, int reliableChannel, int unreliableChannel) {
+    public UnityNetDriverConnection(IntHashtable<UnityNetDriverConnection> connections, UnityNetDriver driver, INetDriverCallbacks callbacks, int socketId, int connectionId, int reliableChannel, int unreliableChannel) {
 		_netDriver = driver;
 		this.callbacks = callbacks;
 		_socketID = socketId;

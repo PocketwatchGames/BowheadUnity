@@ -6,7 +6,7 @@ using System.Collections;
 
 // Buffers network traffic and passes to the server/client.
 
-public class LocalGameNetDriver : NetDriver {
+public class LocalGameNetDriver : INetDriver {
 	const int MAX_SEND_BUFFER_SIZE = 1024*96*10;
 
 	LocalGameNetDriverConnection serverSend;
@@ -64,14 +64,14 @@ public class LocalGameNetDriver : NetDriver {
 		Perf.End();
 	}
 
-	public bool Listen(int port, int maxConnections, NetDriverCallbacks callbacks) {
+	public bool Listen(int port, int maxConnections, INetDriverCallbacks callbacks) {
 		Assert.IsNull(clientSend);
 		Assert.IsNull(serverSend);
 		serverSend = new LocalGameNetDriverConnection(this, callbacks);
 		return true;
 	}
 
-	public bool Connect(string address, int port, NetDriverCallbacks callbacks) {
+	public bool Connect(string address, int port, INetDriverCallbacks callbacks) {
 		Assert.IsNotNull(serverSend);
 		Assert.IsNull(clientSend);
 		clientSend = new LocalGameNetDriverConnection(this, callbacks);
@@ -171,11 +171,11 @@ public class LocalGameNetDriverConnection : NetDriverConnection {
 	ActorReplicationChannel _outer;
 	LocalGameNetDriver netDriver;
 	NetIOMetrics reliableMetrics;
-	internal NetDriverCallbacks callbacks;
+	internal INetDriverCallbacks callbacks;
 	internal bool connectPending;
 	internal bool disconnectPending;
 
-	internal LocalGameNetDriverConnection(LocalGameNetDriver netDriver, NetDriverCallbacks callbacks) {
+	internal LocalGameNetDriverConnection(LocalGameNetDriver netDriver, INetDriverCallbacks callbacks) {
 		this.netDriver = netDriver;
 		this.callbacks = callbacks;
 	}

@@ -80,7 +80,7 @@ public class CustomAllocatedObjectPool<T> {
 	public CustomAllocatedObjectPool(AllocateDelegate allocate, FreeDelegate free, int initialSize) : this(allocate, free, initialSize, 0) { }
 
 	public CustomAllocatedObjectPool(AllocateDelegate allocate, FreeDelegate free, int initialSize, int maxItems) {
-		Assert.IsNotNull(allocateDelegate);
+		Assert.IsNotNull(allocate);
 		allocateDelegate = allocate;
 		freeDelegate = free;
 		this.free = new Stack<T>(initialSize);
@@ -103,9 +103,8 @@ public class CustomAllocatedObjectPool<T> {
 				destructor(free.Pop());
 			}
 		} else {
-			free = new Stack<T>(initialSize);
-			while (initialSize-- > 0) {
-				free.Push(allocateDelegate());
+			while (free.Count > initialSize) {
+				free.Pop();
 			}
 		}
 	}

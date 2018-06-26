@@ -43,7 +43,6 @@ public partial class World {
 		const uint CHUNK_HASH_SIZE_XZ = VOXEL_CHUNK_SIZE_XZ;
 		const uint CHUNK_HASH_SIZE_Y = VOXEL_CHUNK_SIZE_Y;
 		const uint CHUNK_HASH_SIZE = CHUNK_HASH_SIZE_XZ * CHUNK_HASH_SIZE_XZ * CHUNK_HASH_SIZE_Y;
-		const int MAX_FRAME_TIMEus = 4000;
 
 		readonly ObjectPool<Chunk> _chunkPool = new ObjectPool<Chunk>(VOXEL_CHUNK_VIS_MAX_XZ*VOXEL_CHUNK_VIS_MAX_XZ*VOXEL_CHUNK_VIS_MAX_Y, 0);
 		readonly Chunk[] _chunkHash = new Chunk[CHUNK_HASH_SIZE];
@@ -97,8 +96,6 @@ public partial class World {
 
 		public void Tick() {
 
-			CompleteJobs(MAX_FRAME_TIMEus);
-
 			var anyLoading = false;
 
 			foreach (var volume in _streamingVolumes) {
@@ -130,6 +127,8 @@ public partial class World {
 
 			_loading = anyLoading;
 
+			CompleteJobs();
+
 #if DEBUG_DRAW
 			if (debugDraw) {
 				foreach (var volume in _streamingVolumes) {
@@ -152,7 +151,7 @@ public partial class World {
 			while (_usedJobData != null) {
 				var job = _usedJobData;
 				job.jobHandle.Complete();
-				CompleteJob(job);
+				CompleteJob(job, true);
 				_usedJobData = job.next;
 				job.next = _freeJobData;
 				_freeJobData = job;
@@ -301,11 +300,9 @@ public partial class World {
 			return true;
 		}
 
-		void CompleteJobs(int maxTimeMicroseconds) {
+		void CompleteJobs() {
 			ChunkJobData prev = null;
 			ChunkJobData next;
-
-			var endTime = Utils.ReadMicroseconds() + maxTimeMicroseconds;
 
 			for (var job = _usedJobData; job != null; job = next) {
 				next = job.next;
@@ -313,20 +310,12 @@ public partial class World {
 				if (job.jobHandle.IsCompleted) {
 					job.jobHandle.Complete();
 
-					CompleteJob(job);
+					QueueJobCompletion(job);
 
 					if (prev != null) {
 						prev.next = job.next;
 					} else {
 						_usedJobData = job.next;
-					}
-					
-					job.next = _freeJobData;
-					_freeJobData = job;
-
-					var timestamp = Utils.ReadMicroseconds();
-					if (timestamp >= endTime) {
-						break;
 					}
 				} else {
 					prev = job;
@@ -334,9 +323,47 @@ public partial class World {
 			}
 		}
 
-		void CompleteJob(ChunkJobData job) {
-			var chunk = job.chunk;
+		class CompleteJobTask : PooledTaskQueueTask<CompleteJobTask> {
+			ChunkJobData job;
+			Streaming streaming;
 
+			static CompleteJobTask() {
+				StaticInit(New, null, 0);
+			}
+
+			static CompleteJobTask New() {
+				return new CompleteJobTask();
+			}
+
+			protected override void OnFlush() {
+				Complete(true);
+			}
+
+			protected override void OnRun() {
+				Complete(false);
+			}
+
+			void Complete(bool flush) {
+				streaming.CompleteJob(job, flush);
+				job.next = streaming._freeJobData;
+				streaming._freeJobData = job;
+			}
+
+			static public CompleteJobTask New(Streaming streaming, ChunkJobData job) {
+				var task = NewTask();
+				task.streaming = streaming;
+				task.job = job;
+				return task;
+			}
+		};
+
+		void QueueJobCompletion(ChunkJobData job) {
+			MainThreadTaskQueue.Queue(CompleteJobTask.New(this, job));
+		}
+
+		void CompleteJob(ChunkJobData job, bool flush) {
+			var chunk = job.chunk;
+			
 			chunk.jobData = null;
 			chunk.hasVoxelData = true;
 
@@ -362,7 +389,7 @@ public partial class World {
 			job.chunk = null;
 			job.jobHandle = default(JobHandle);
 			
-			if (chunk.refCount > 0) {
+			if (!flush && (chunk.refCount > 0)) {
 				if (chunk.hasTrisData) {
 					CopyToMesh(job, chunk);
 				}
