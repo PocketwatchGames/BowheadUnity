@@ -16,6 +16,7 @@ namespace Bowhead.Actors {
         public float panic;
         public bool hasLastKnownPosition;
         public Vector3 lastKnownPosition;
+        public bool active;
 
         public Item[] loot = new Item[MaxInventorySize];
         public CritterBehavior behaviorPanic;
@@ -26,17 +27,29 @@ namespace Bowhead.Actors {
 
 		virtual public void ServerSpawn(Vector3 pos, EntityData baseData, Server.Actors.ServerTeam t) {
 			base.ServerSpawn(pos, baseData);
-			AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), position, Quaternion.identity));
 		    behaviorPanic = CritterBehavior.Create(data.panicBehavior);
 			position = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
             team = t;
-            Init();
-			gameMode.CritterSpawned();
+            active = false;
+            canClimb = false;
+            canClimbWell = false;
+            canMove = true;
+            canJump = true;
+            canRun = true;
+            canTurn = true;
+            canAttack = true;
+            gameMode.CritterSpawned();
 		}
 
-		protected override void OnDestroy() {
+        public void SetActive(Vector3 pos) {
+            active = true;
+            position = pos;
+            AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), position, Quaternion.identity));
+        }
+
+        protected override void OnDestroy() {
 			base.OnDestroy();
 			if (gameMode != null) {
 				gameMode.CritterKilled();
@@ -50,7 +63,15 @@ namespace Bowhead.Actors {
 				return;
 			}
 
-			var dt = world.deltaTime;
+            if (!active) {
+                var spawnPos = position;
+                if (!WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPos)) {
+                    return;
+                }
+                SetActive(spawnPos);
+            }
+
+            var dt = world.deltaTime;
 	
             canClimb = false;
             canClimbWell = false;
@@ -109,16 +130,6 @@ namespace Bowhead.Actors {
             if (health <= 0) {
                 Die();
             }
-        }
-
-        public void Init() {
-            canClimb = false;
-            canClimbWell = false;
-            canMove = true;
-            canJump = true;
-            canRun = true;
-            canTurn = true;
-            canAttack = true;
         }
 
 
