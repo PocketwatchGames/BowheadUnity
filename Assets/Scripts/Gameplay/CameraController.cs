@@ -10,6 +10,7 @@ namespace Bowhead.Actors {
         private Player _target;
         private Vector3 _position;
         private bool _isLooking;
+        private bool _mouseLookActive;
         private float _shakeTime;
         private float _shakeTimeTotal;
         private float _shakeAngleMag;
@@ -50,6 +51,10 @@ namespace Bowhead.Actors {
             return _yaw;
         }
 
+        public void SetMouseLookActive(bool a) {
+            _mouseLookActive = a;
+        }
+
         public void SetTarget(Player player) {
             if (_target != null) {
                 _target.OnLand -= OnLand;
@@ -75,25 +80,27 @@ namespace Bowhead.Actors {
 
             _isLooking = false;
 
-            var m = Input.mousePosition;
-            var mouseDelta = m - _oldMousePosition;
+            if (_mouseLookActive) {
+                var m = Input.mousePosition;
+                var mouseDelta = m - _oldMousePosition;
 
-            Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
-            _yaw += gamepad.x * gpTurnSpeed * dt;
-            _pitch += gamepad.y * gpTurnSpeed * dt;
+                Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+                _yaw += gamepad.x * gpTurnSpeed * dt;
+                _pitch += gamepad.y * gpTurnSpeed * dt;
 
-            _isLooking |= gamepad != Vector2.zero;
+                _isLooking |= gamepad != Vector2.zero;
 
-            float maxAngle = Mathf.PI / 2 * 0.95f;
-            float minAngle = -Mathf.PI / 2 * 0.95f;
-            if (_pitch > maxAngle)
-                _pitch = maxAngle;
-            if (_pitch < minAngle)
+                float maxAngle = Mathf.PI / 2 * 0.95f;
+                float minAngle = -Mathf.PI / 2 * 0.95f;
+                if (_pitch > maxAngle)
+                    _pitch = maxAngle;
+                if (_pitch < minAngle)
 
-                _pitch = minAngle;
+                    _pitch = minAngle;
 
 
-            _oldMousePosition = m;
+                _oldMousePosition = m;
+            }
         }
 
         void Tick(float dt) {

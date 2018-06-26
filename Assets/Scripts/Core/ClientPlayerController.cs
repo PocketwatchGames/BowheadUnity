@@ -104,8 +104,9 @@ namespace Bowhead.Client.Actors {
 			}
 
 			// FIXME: plug into input system properly later.
-			if (Input.GetKeyDown(KeyCode.Space)) {
+			if (Input.GetKeyDown(KeyCode.Escape)) {
 				_hideCursor = !_hideCursor;
+                _cameraController.SetMouseLookActive(_hideCursor);
 				SetCursorState();
 			}
 		}
@@ -146,7 +147,8 @@ namespace Bowhead.Client.Actors {
 			gameState.hud.OnLevelStart();
 			_cameraController = new CameraController(Camera.main);
 			_cameraController.SetTarget(playerPawn);
-			rpc_Server_ClientHasLoaded.Invoke();
+            _cameraController.SetMouseLookActive(_hideCursor);
+            rpc_Server_ClientHasLoaded.Invoke();
 		}
 
 		protected override void Dispose(bool disposing) {
