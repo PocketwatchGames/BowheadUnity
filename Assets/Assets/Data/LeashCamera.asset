@@ -11,9 +11,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f071e989e1573314c849b22c07ccccbe, type: 3}
   m_Name: LeashCamera
   m_EditorClassIdentifier: 
-  lookAtFriction: 1
+  lookAtFriction: 10
   lookAtAcceleration: 200
-  lookAtLeadDist: 100
-  cameraFriction: 1
+  lookAtLeadDist: 10
+  cameraFriction: 10
   minDistance: 5
   maxDistance: 20
