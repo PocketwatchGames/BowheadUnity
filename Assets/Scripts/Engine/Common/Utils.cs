@@ -44,6 +44,18 @@ public static class Utils {
 		return arr;
 	}
 
+	public static List<T> Broadcast<T>(this List<T> arr, T value) {
+		return arr.Broadcast(value, 0, arr.Count);
+	}
+
+	public static List<T> Broadcast<T>(this List<T> arr, T value, int index, int count) {
+		var end = index+count;
+		for (int i = index; i < end; ++i) {
+			arr[i] = value;
+		}
+		return arr;
+	}
+
 	public static string activeSceneName {
 		get {
 			return SceneManager.GetActiveScene().name;
