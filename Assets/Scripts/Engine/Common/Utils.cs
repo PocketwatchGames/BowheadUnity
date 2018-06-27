@@ -24,6 +24,26 @@ public static class Utils {
 		return string.Format(GetLocalizedText(key), args);
 	}
 
+	public static void Clear(this Texture2D texture, Color color) {
+		texture.Clear((Color32)color);
+	}
+
+	public static void Clear(this Texture2D texture, Color32 color) {
+		texture.SetPixels32(texture.GetPixels32().Broadcast(color));
+	}
+
+	public static T[] Broadcast<T>(this T[] arr, T value) {
+		return arr.Broadcast(value, 0, arr.Length);
+	}
+
+	public static T[] Broadcast<T>(this T[] arr, T value, int index, int count) {
+		var end = index+count;
+		for (int i = index; i < end; ++i) {
+			arr[i] = value;
+		}
+		return arr;
+	}
+
 	public static string activeSceneName {
 		get {
 			return SceneManager.GetActiveScene().name;
@@ -152,6 +172,13 @@ public static class Utils {
 			return true;
 		}
 		return false;
+	}
+
+	public static void RemoveAtSwap<T>(this T[] arr, int index, ref int count) {
+		if (count > 1) {
+			arr[index] = arr[count-1];
+		}
+		--count;
 	}
 
 	public static Vector3 GetWorldSpaceCenter(this Collider c) {

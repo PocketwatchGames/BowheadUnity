@@ -45,8 +45,8 @@ public partial class World {
 		public delegate JobHandle CreateGenVoxelsJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
 		public delegate void ChunkGeneratedDelegate(IChunk chunk);
 
-		public event ChunkGeneratedDelegate onChunkVoxelsLoaded;
-		public event ChunkGeneratedDelegate onChunkTrisGenerated;
+		public event ChunkGeneratedDelegate onChunkVoxelsUpdated;
+		public event ChunkGeneratedDelegate onChunkTrisUpdated;
 		public event ChunkGeneratedDelegate onChunkUnloaded;
 
 		const uint CHUNK_HASH_SIZE_XZ = VOXEL_CHUNK_SIZE_XZ;
@@ -64,6 +64,7 @@ public partial class World {
 		ChunkJobData _usedJobData;
 		CreateGenVoxelsJob _createGenVoxelsJob;
 		bool _loading;
+		bool _flush;
 
 		public static void StaticInit() {
 			ChunkMeshGen.tableStorage = ChunkMeshGen.TableStorage.New();
@@ -74,6 +75,8 @@ public partial class World {
 		public static void StaticShutdown() {
 			ChunkMeshGen.tableStorage.Dispose();
 		}
+
+		public static Color32[] blockColors => ChunkMeshGen.tableStorage.blockColorsArray;
 		
 		public Streaming(World_ChunkComponent chunkPrefab, CreateGenVoxelsJob createGenVoxelsJob) {
 			_chunkPrefab = chunkPrefab;
@@ -159,7 +162,8 @@ public partial class World {
 #endif
 		}
 
-		public void Flush() {
+		void Flush() {
+			_flush = true;
 			while (_usedJobData != null) {
 				var job = _usedJobData;
 				job.jobHandle.Complete();
@@ -168,9 +172,11 @@ public partial class World {
 				job.next = _freeJobData;
 				_freeJobData = job;
 			}
+			_flush = false;
 		}
 
 		public void BeginTravel() {
+			Flush();
 		}
 
 		public void FinishTravel() {
@@ -375,6 +381,9 @@ public partial class World {
 		}
 
 		void CompleteJob(ChunkJobData job, bool flush) {
+			var saveFlush = _flush;
+			_flush = _flush || flush;
+
 			var chunk = job.chunk;
 
 			chunk.jobData = null;
@@ -403,10 +412,20 @@ public partial class World {
 			job.jobHandle = default(JobHandle);
 			
 			if (!flush && (chunk.refCount > 0)) {
+				if ((job.flags & EJobFlags.VOXELS) != 0) {
+					if (onChunkVoxelsUpdated != null) {
+						onChunkVoxelsUpdated(chunk);
+					}
+				}
 				if (chunk.hasTrisData) {
 					CopyToMesh(job, chunk);
+					if (onChunkTrisUpdated != null) {
+						onChunkTrisUpdated(chunk);
+					}
 				}
 			}
+
+			_flush = saveFlush;
 		}
 
 		void CopyToMesh(ChunkJobData jobData, Chunk chunk) {
@@ -484,6 +503,7 @@ public partial class World {
 			bool IChunk.isGenerating => (jobData != null) || ((genCount > 0) && !hasTrisData);
 			WorldChunkPos_t IChunk.chunkPos => pos;
 			EVoxelBlockType[] IChunk.voxeldata => chunkData.voxeldata;
+			EChunkFlags IChunk.flags => chunkData.flags[0];
 
 #if DEBUG_DRAW
 			public DebugDrawState_t dbgDraw;
@@ -668,38 +688,25 @@ public partial class World {
 			bool hasVoxelData { get; }
 			bool hasTrisData { get; }
 			bool isGenerating { get; }
+			EChunkFlags flags { get; }
 			WorldChunkPos_t chunkPos { get; }
 			EVoxelBlockType[] voxeldata { get; }
 		};
 
-		public struct ChunkRef_t : IDisposable {
-			public IChunk chunk;
-			public Streaming streaming;
-
-			public void Dispose() {
-				streaming.Release((Chunk)chunk);
-				streaming = null;
-				chunk = null;
-			}
-		};
-
-		public ChunkRef_t GetChunkRef(WorldChunkPos_t pos) {
+		public IChunk GetChunk(WorldChunkPos_t pos) {
 			var chunk = FindChunk(pos);
 			if (chunk != null) {
 				AddRef(chunk);
 			}
-			return new ChunkRef_t() {
-				chunk = chunk,
-				streaming = (chunk != null) ? this : null
-			};
+			return chunk;
 		}
 
-		public ChunkRef_t GetChunkRef(IChunk chunk) {
+		public void AddRef(IChunk chunk) {
 			AddRef((Chunk)chunk);
-			return new ChunkRef_t() {
-				chunk = chunk,
-				streaming = this
-			};
+		}
+
+		public void Release(IChunk chunk) {
+			Release((Chunk)chunk);
 		}
 		
 		public bool GetVoxelAt(WorldVoxelPos_t pos, out EVoxelBlockType blocktype) {
@@ -804,6 +811,9 @@ public partial class World {
 			if (chunk.goChunk != null) {
 				Utils.DestroyGameObject(chunk.goChunk.gameObject);
 				chunk.goChunk = null;
+			}
+			if (!_flush && (onChunkUnloaded != null)) {
+				onChunkUnloaded(chunk);
 			}
 			_chunkPool.ReturnObject(chunk);
 		}

@@ -405,6 +405,8 @@ public partial class World {
 				return t;
 			}
 
+			public Color32[] blockColorsArray => _blockColors;
+
 			void Init() {
 				_voxelVerts = new int[8, 3] {
 					{ 0,0,0 },
