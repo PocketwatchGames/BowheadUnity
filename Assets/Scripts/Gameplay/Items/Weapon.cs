@@ -88,21 +88,18 @@ namespace Bowhead {
             castTime = 0;
             cooldown = d.cooldown;
 
-            Vector3 attackDir = new Vector3((float)Mathf.Sin(actor.yaw), 0, (float)Mathf.Cos(actor.yaw));
+            Vector3 attackDir = new Vector3(Mathf.Sin(actor.yaw), 0, Mathf.Cos(actor.yaw));
             Vector3 attackPos = actor.position + attackDir * d.attackRange;
             bool hit = false;
 
-            if (!actor.team.isMonsterTeam) {
-                foreach (var c in actor.world.GetActorIterator<Actors.Critter>()) {
+            foreach (var c in actor.world.GetActorIterator<Pawn>()) {
+                if (c.team != actor.team) {
                     hit |= CheckIfHit(actor, attackPos, attackDir, actor.position, d, c);
                 }
             }
-            else {
-				foreach (var player in actor.world.GetActorIterator<Player>()) {
-					hit |= CheckIfHit(actor, attackPos, attackDir, actor.position, d, player);
-				}
-            }
-            //RendererWorld.createMarker(attackPos, d.attackRadius * 2, 0.1f, hit ? new Color(1, 0, 0, 1f) : new Color(0, 0, 0, 1f));
+
+            var damageIndicator = GameObject.Instantiate<DamageIndicator>(GameManager.instance.clientData.damageIndicatorPrefab);
+            damageIndicator.Init(0.5f, d.attackRadius, attackPos, hit ? Color.red * 0.75f : Color.white * 0.25f);
 
             actor.useStamina(d.staminaUse);
 

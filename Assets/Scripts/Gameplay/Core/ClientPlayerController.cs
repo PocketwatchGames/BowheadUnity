@@ -104,7 +104,7 @@ namespace Bowhead.Client.Actors {
 			}
 
 			// FIXME: plug into input system properly later.
-			if (Input.GetKeyDown(KeyCode.Escape)) {
+			if (Input.GetKeyDown(KeyCode.C)) {
 				_hideCursor = !_hideCursor;
                 _cameraController.SetMouseLookActive(_hideCursor);
 				SetCursorState();
@@ -226,7 +226,7 @@ namespace Bowhead.Client.Actors {
 		}
 
 		public void SetCursorState() {
-			//Cursor.visible = !_hideCursor;
+			Cursor.visible = !_hideCursor;
 			if (_hideCursor) {
 				Cursor.lockState = CursorLockMode.Locked;
 			} else {

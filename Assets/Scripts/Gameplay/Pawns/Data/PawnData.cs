@@ -16,6 +16,7 @@ namespace Bowhead.Actors {
         public float stunLimit;
         public float stunRecoveryTime;
         public float backStabAngle;
+        public ParticleSystem bloodParticle;
 
         [Header("Ground")]
         public float jumpSpeed;

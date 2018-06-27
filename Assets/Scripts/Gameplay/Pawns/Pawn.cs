@@ -42,6 +42,7 @@ namespace Bowhead.Actors {
         #region State
 
         [Header("Basic")]
+        public bool active;
         public Team team;
 
         [Header("Input")]
@@ -57,6 +58,7 @@ namespace Bowhead.Actors {
         public Vector3 groundNormal;
 
         [Header("Stats")]
+        public bool alive = true;
         public float health;
         public float maxHealth;
         public float stamina;
@@ -266,9 +268,41 @@ namespace Bowhead.Actors {
                 && !WorldUtils.IsSolidBlock(world.GetBlock(headPosition(position)));
         }
 
-        virtual public void UpdateBrain(float dt, Vector3 forward, out Input_t input) { input = new Input_t(); }
+        virtual public Input_t GetInput(float dt) { return new Input_t(); }
 
-        public void Tick(float dt, Input_t input) {
+        public override void Tick() {
+            base.Tick();
+
+            if (!hasAuthority) {
+                return;
+            }
+
+            if (active) {
+                float dt = world.deltaTime;
+
+                PreSimulate(dt);
+
+                Input_t input = GetInput(dt);
+
+                Simulate(dt, input);
+            }
+        }
+
+        virtual public void PreSimulate(float dt) {
+
+            for (int i = 0; i < MaxInventorySize; i++) {
+                if (GetInventorySlot(i) != null) {
+                    GetInventorySlot(i).UpdateCast(dt, this);
+                }
+            }
+        }
+
+        virtual public void Simulate(float dt, Input_t input) {
+            if (!alive) {
+                go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
+                return;
+            }
+
             if (recoveryTimer > 0) {
                 recoveryTimer = Math.Max(0, recoveryTimer - dt);
             }
@@ -442,7 +476,7 @@ namespace Bowhead.Actors {
 
             }
 
-            if (position.y < -1000) {
+            if (position.y < -1000 || health <= 0) {
                 Die();
             }
 
@@ -917,6 +951,8 @@ namespace Bowhead.Actors {
 
         public void damage(float d) {
             health = health - d;
+
+            GameObject.Instantiate<ParticleSystem>(data.bloodParticle, go.transform);
         }
 
         public void hit(Pawn attacker, Item weapon, WeaponData.AttackData attackData) {
@@ -1006,7 +1042,7 @@ namespace Bowhead.Actors {
         }
 
         virtual protected void Die() {
-
+            alive = false;
         }
 
         virtual protected bool SetMount(Pawn m) {

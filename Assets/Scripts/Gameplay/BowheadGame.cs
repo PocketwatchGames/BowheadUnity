@@ -255,7 +255,22 @@ namespace Bowhead.Server {
 		}
 		
 		public void SpawnRandomCritter() {
-			if (numCritters < 50) {
+
+            // despawn critters
+            foreach (var c in world.GetActorIterator<Critter>()) {
+                float closestDist = 1000;
+                foreach (var p in world.GetActorIterator<Player>()) {
+                    var diff = c.position - p.position;
+                    closestDist = Mathf.Min(closestDist, diff.magnitude);
+                }
+                if (closestDist > 500) {
+                    c.Destroy();
+                }
+            }
+
+
+
+            if (numCritters < 50) {
 				foreach (var player in world.GetActorIterator<Player>()) {
 					Vector3 pos = player.position;
 					pos.y = 500;
@@ -345,10 +360,20 @@ namespace Bowhead.Server {
 
 			return wind * currentSpeed;
 		}
-		#endregion
-	}
+        #endregion
 
-	public class BowheadGame : BowheadGame<GSBowheadGame> {
+        #region Tick
+        public override void Tick(float dt) {
+            base.Tick(dt);
+
+            SpawnRandomCritter();
+
+        }
+
+        #endregion
+    }
+
+    public class BowheadGame : BowheadGame<GSBowheadGame> {
 		public BowheadGame(ServerWorld world) : base(world) { }
 	}
 

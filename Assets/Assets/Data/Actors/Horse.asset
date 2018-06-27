@@ -23,6 +23,8 @@ MonoBehaviour:
   stunLimit: 1
   stunRecoveryTime: 3
   backStabAngle: 45
+  bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
+    type: 2}
   jumpSpeed: 8
   dodgeSpeed: 0
   jumpBoostAcceleration: 0

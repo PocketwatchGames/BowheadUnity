@@ -27,7 +27,7 @@ namespace Bowhead.Actors {
 		}
 	}
 	
-	public abstract class GameState : Pawn {
+	public abstract class GameState : Actor {
 
 		[Replicated(Condition = EReplicateCondition.InitialOnly)]
 		string _gameModeClass;

@@ -12,11 +12,11 @@ namespace Bowhead.Actors {
 		public override System.Type clientType => typeof(Critter);
 
         #region State
+        public float decayTime;
         public float wary;
         public float panic;
         public bool hasLastKnownPosition;
         public Vector3 lastKnownPosition;
-        public bool active;
 
         public Item[] loot = new Item[MaxInventorySize];
         public CritterBehavior behaviorPanic;
@@ -56,23 +56,24 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		// TODO: move cameraYaw into the PlayerCmd struct
-		public override void Tick() {
-			base.Tick();
-			if (!hasAuthority) {
-				return;
-			}
-
-            if (!active) {
-                var spawnPos = position;
-                if (!WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPos)) {
-                    return;
+        override protected void Die() {
+            base.Die();
+            decayTime = 5;
+            foreach (var i in loot) {
+                if (i != null) {
+                    var worldItem = gameMode.SpawnWorldItem(i, position);
+                    worldItem.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
                 }
-                SetActive(spawnPos);
             }
 
-            var dt = world.deltaTime;
-	
+        }
+
+
+
+        public override void PreSimulate(float dt) {
+            base.PreSimulate(dt);
+
+
             canClimb = false;
             canClimbWell = false;
             canMove = true;
@@ -90,16 +91,39 @@ namespace Bowhead.Actors {
                 canMove = false;
             }
 
-            for (int i = 0; i < MaxInventorySize; i++) {
-                if (GetInventorySlot(i) != null) {
-                    GetInventorySlot(i).UpdateCast(dt, this);
+
+        }
+
+        // TODO: move cameraYaw into the PlayerCmd struct
+        override public void Tick() {
+            base.Tick();
+			if (!hasAuthority) {
+				return;
+			}
+
+            // hacky spawn
+            if (!active) {
+                var spawnPos = position;
+                if (!WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPos)) {
+                    return;
                 }
+                SetActive(spawnPos);
             }
 
-            Input_t input;
-            UpdateBrain(dt, Vector3.forward, out input);
-            if (driver == null) {
-                base.Tick(dt, input);
+
+        }
+
+
+        public override void Simulate(float dt, Input_t input) {
+            base.Simulate(dt, input);
+
+
+            if (!alive) {
+                decayTime -= Time.deltaTime;
+                if (decayTime <= 0) {
+                    Destroy();
+                }
+                return;
             }
 
             if (canAttack) {
@@ -127,38 +151,26 @@ namespace Bowhead.Actors {
                 }
             }
 
-            if (health <= 0) {
-                Die();
-            }
-        }
 
-
-        override protected void Die() {
-            foreach (var i in loot) {
-                if (i != null) {
-                    var worldItem = gameMode.SpawnWorldItem(i, position);
-                    worldItem.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
-                }
-            }
-            Destroy();
         }
 
         #endregion
 
         #region brain
 
-        override public void UpdateBrain(float dt, Vector3 forward, out Input_t input) {
+        override public Input_t GetInput(float dt) {
 
             if (driver != null) {
-                driver.UpdateBrain(dt, forward, out input);
-                return;
+                return driver.GetInput(dt);
             }
 
+            return GetInputFromAI(dt);
 
-            input = new Input_t();
+        }
 
-           
-			foreach (var p in world.GetActorIterator<Player>()) {
+        private Input_t GetInputFromAI(float dt) {
+            Input_t input = new Input_t();
+            foreach (var p in world.GetActorIterator<Player>()) {
 
                 if (p.team == team) {
                     continue;
@@ -211,7 +223,7 @@ namespace Bowhead.Actors {
             //	turn = -dt * turnSpeed;
             //}
             //input.yaw = constrainAngle(yaw + turn);
-
+            return input;
         }
 
         float CanSmell(Player player) {

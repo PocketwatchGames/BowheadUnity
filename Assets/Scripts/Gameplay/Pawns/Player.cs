@@ -44,7 +44,6 @@ namespace Bowhead.Actors {
 		World.Streaming.IVolume _worldStreaming;
 
         Pawn attackTargetPreview;
-		bool _hackDidFindGround;
 
         public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
@@ -58,31 +57,8 @@ namespace Bowhead.Actors {
 			SetReplicates(true);
 		}
 
-		public override void Tick() {
-			base.Tick();
-			if (!hasAuthority) {
-				return;
-			}
-
-			if (!_hackDidFindGround) {
-				if (WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPoint)) {
-					spawnPoint += Vector3.up;
-					position = spawnPoint;
-					Respawn();
-					_hackDidFindGround = true;
-
-                    var horseData = CritterData.Get("horse");
-                    var c = gameMode.SpawnCritter(horseData, position, team);
-                    var weapon = PackData.Get("Pack").CreateItem();
-                    c.SetInventorySlot(0, weapon);
-
-                }
-                else {
-					return;
-				}
-			}
-
-			PlayerCmd_t cmd = new PlayerCmd_t();
+        private void RecordInputDevices() {
+            PlayerCmd_t cmd = new PlayerCmd_t();
             Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal"), Input.GetAxis("MoveVertical"));
             cmd.fwd = (sbyte)(move.y * 127);
             cmd.right = (sbyte)(move.x * 127);
@@ -102,27 +78,46 @@ namespace Bowhead.Actors {
                 cmd.buttons |= 1 << (int)InputType.Map;
             }
 
-			UpdatePlayerCmd(cmd);
-
-			// HACK we should not be directly reading the camera yaw like this in a multiplayer game!
-			if (Client.Actors.ClientPlayerController.localPlayer != null) {
-				Tick(world.deltaTime, Client.Actors.ClientPlayerController.localPlayer.cameraController.GetYaw());
-			}
-
-			// despawn critters
-			foreach (var c in world.GetActorIterator<Critter>()) {
-				var diff = c.position - position;
-				if (diff.magnitude > 500) {
-					c.Destroy();
-				}
-			}
-
-			gameMode.SpawnRandomCritter();
-		}
+            UpdatePlayerCmd(cmd);
+        }
 
 
-        // TODO: move cameraYaw into the PlayerCmd struct
-        public void Tick(float dt, float cameraYaw) {
+
+
+        public override void Tick() {
+            // kinda hacky here
+            RecordInputDevices();
+
+            base.Tick();
+            if (!hasAuthority) {
+                return;
+            }
+
+            // Hacky initial spawn
+            if (!active) {
+                if (WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPoint)) {
+                    spawnPoint += Vector3.up;
+                    position = spawnPoint;
+                    Respawn();
+                    active = true;
+
+                    var horseData = CritterData.Get("horse");
+                    var c = gameMode.SpawnCritter(horseData, position, team);
+                    var weapon = PackData.Get("Pack").CreateItem();
+                    c.SetInventorySlot(0, weapon);
+
+                }
+                else {
+                    return;
+                }
+            }
+
+
+        }
+
+        override public void PreSimulate(float dt) {
+
+            base.PreSimulate(dt);
 
             canMove = weight < WeightClass.IMMOBILE && !stunned;
             canAttack = weight < WeightClass.IMMOBILE;
@@ -153,18 +148,53 @@ namespace Bowhead.Actors {
                 canAttack = false;
             }
 
+        }
 
-            for (int i = 0; i < MaxInventorySize; i++) {
-                if (GetInventorySlot(i) != null) {
-                    GetInventorySlot(i).UpdateCast(dt, this);
-                }
+
+        public override Input_t GetInput(float dt) {
+            Input_t input = base.GetInput(dt);
+
+            Vector3 forward = Vector3.forward;
+            if (Client.Actors.ClientPlayerController.localPlayer != null) {
+                var cameraYaw = Client.Actors.ClientPlayerController.localPlayer.cameraController.GetYaw();
+                forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Cos(cameraYaw));
             }
 
-            Input_t input;
-            var forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Cos(cameraYaw));
-            UpdateBrain(dt, forward, out input);
+            for (int i = 0; i < (int)InputType.Count; i++) {
+                if ((cur.buttons & (0x1 << i)) != 0) {
+                    if ((last.buttons & (0x1 << i)) == 0) {
+                        input.inputs[i] = InputState.JustPressed;
+                    }
+                    else {
+                        input.inputs[i] = InputState.Pressed;
+                    }
+                }
+                else {
+                    if ((last.buttons & (0x1 << i)) != 0) {
+                        input.inputs[i] = InputState.JustReleased;
+                    }
+                    else {
+                        input.inputs[i] = InputState.Released;
+                    }
+                }
+            }
+            var right = Vector3.Cross(Vector3.up, forward);
+            input.movement += forward * (float)cur.fwd / 127f;
+            input.movement += right * (float)cur.right / 127f;
+
+            input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
+
+            return input;
+        }
+
+        override public void Simulate(float dt, Input_t input) {
+
+            if (!alive) {
+                return;
+            }
+
             if (mount != null) {
-                mount.Tick(dt, input);
+                mount.Simulate(dt, input);
             }
 
             if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
@@ -224,7 +254,7 @@ namespace Bowhead.Actors {
 
 
 
-            base.Tick(dt, input);
+            base.Simulate(dt, input);
             UpdateStats(dt);
 
         }
@@ -297,41 +327,11 @@ namespace Bowhead.Actors {
 
         #region Tick
 
-        override public void UpdateBrain(float dt, Vector3 forward, out Input_t input) {
-            input = new Input_t();
-            for (int i = 0; i < (int)InputType.Count; i++) {
-                if ((cur.buttons & (0x1 << i)) != 0) {
-                    if ((last.buttons & (0x1 << i)) == 0) {
-                        input.inputs[i] = InputState.JustPressed;
-                    }
-                    else {
-                        input.inputs[i] = InputState.Pressed;
-                    }
-                }
-                else {
-                    if ((last.buttons & (0x1 << i)) != 0) {
-                        input.inputs[i] = InputState.JustReleased;
-                    }
-                    else {
-                        input.inputs[i] = InputState.Released;
-                    }
-                }
-            }
-            var right = Vector3.Cross(Vector3.up, forward);
-            input.movement += forward * (float)cur.fwd / 127f;
-            input.movement += right * (float)cur.right / 127f;
-
-            input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
-        }
-
 
         void UpdateStats(float dt) {
             //float time = dt / 60 / 24;
             //float sleep = 0;
 
-            if (health <= 0) {
-                Die();
-            }
 
         }
 
@@ -354,7 +354,6 @@ namespace Bowhead.Actors {
         override protected void Die() {
             health = maxHealth;
             Respawn();
-
         }
 
 
@@ -775,28 +774,30 @@ namespace Bowhead.Actors {
 
         Pawn GetAttackTarget(float yaw) {
 
-            float maxDist = 40;
+            float maxDist = 10;
             float maxTargetAngle = Mathf.PI;
 
             Pawn bestTarget = null;
             float bestTargetAngle = maxTargetAngle;
             foreach (var c in world.GetActorIterator<Critter>()) {
-                var diff = c.position - position;
-                float dist = diff.magnitude;
-                if (dist < maxDist) {
-                    float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
+                if (c.team != this.team) {
+                    var diff = c.position - position;
+                    float dist = diff.magnitude;
+                    if (dist < maxDist) {
+                        float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
 
-                    float yawDiff = Math.Abs(Mathf.Repeat(angleToEnemy - yaw, Mathf.PI * 2));
+                        float yawDiff = Math.Abs(Mathf.Repeat(angleToEnemy - yaw, Mathf.PI * 2));
 
-                    // take the target's radius into account based on how far away they are
-                    yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(c.data.collisionRadius, dist));
+                        // take the target's radius into account based on how far away they are
+                        yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(c.data.collisionRadius, dist));
 
-                    float distT = Mathf.Pow(dist / maxDist, 2);
-                    yawDiff *= distT;
+                        float distT = Mathf.Pow(dist / maxDist, 2);
+                        yawDiff *= distT;
 
-                    if (yawDiff < bestTargetAngle) {
-                        bestTarget = c;
-                        bestTargetAngle = yawDiff;
+                        if (yawDiff < bestTargetAngle) {
+                            bestTarget = c;
+                            bestTargetAngle = yawDiff;
+                        }
                     }
                 }
             }
