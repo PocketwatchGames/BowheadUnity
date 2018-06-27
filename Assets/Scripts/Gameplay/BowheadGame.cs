@@ -9,17 +9,17 @@ public static partial class WorldUtils {
 	#region get block
 
 	public static EVoxelBlockType GetBlock(this World world, Vector3 pos) {
-		return world.GetBlock(pos.x, pos.y, pos.z);
-	}
-
-	public static EVoxelBlockType GetBlock(this World world, float x, float y, float z) {
-
+		
 		EVoxelBlockType blockType;
-		if (world.worldStreaming.GetVoxelAt(new WorldVoxelPos_t((int)x, (int)y, (int)z), out blockType)) {
+		if (world.worldStreaming.GetVoxelAt(World.Vec3ToWorld(pos), out blockType)) {
 			return blockType;
 		}
 
 		return EVoxelBlockType.AIR;
+	}
+
+	public static EVoxelBlockType GetBlock(this World world, float x, float y, float z) {
+		return world.GetBlock(new Vector3(x, y, z));
 	}
 
 	public static float GetFirstOpenBlockUp(int checkDist, Vector3 from) {

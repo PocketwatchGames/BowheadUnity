@@ -704,9 +704,9 @@ public partial class World {
 		}
 		
 		public bool GetVoxelAt(WorldVoxelPos_t pos, out EVoxelBlockType blocktype) {
-			var wpos = WorldToChunk(pos);
+			var cpos = WorldToChunk(pos);
 
-			var chunk = FindChunk(wpos);
+			var chunk = FindChunk(cpos);
 			if (chunk != null) {
 				return chunk.GetVoxelAt(WorldToLocalVoxel(pos), out blocktype);
 			}
@@ -718,7 +718,7 @@ public partial class World {
 		static uint GetChunkPosHash(uint cx, uint cy, uint cz) {
 			var hx = cx & (CHUNK_HASH_SIZE_XZ - 1);
 			var hy = cy & (CHUNK_HASH_SIZE_Y - 1);
-			var hz = cx & (CHUNK_HASH_SIZE_XZ - 1);
+			var hz = cz & (CHUNK_HASH_SIZE_XZ - 1);
 			return hx + (hz* CHUNK_HASH_SIZE_XZ) + (hy* CHUNK_HASH_SIZE_XZ * CHUNK_HASH_SIZE_XZ);
 		}
 

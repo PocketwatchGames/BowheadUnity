@@ -69,7 +69,7 @@ public struct WorldVoxelPos_t {
 	}
 
 	public override string ToString() {
-		return "vx = " + vx + ", vy = " + vy + ", cz = " + vz;
+		return "vx = " + vx + ", vy = " + vy + ", vz = " + vz;
 	}
 };
 
@@ -103,7 +103,7 @@ public struct LocalVoxelPos_t {
 	}
 
 	public override string ToString() {
-		return "vx = " + vx + ", vy = " + vy + ", cz = " + vz;
+		return "vx = " + vx + ", vy = " + vy + ", vz = " + vz;
 	}
 };
 
@@ -202,6 +202,14 @@ public partial class World {
 			(float)((c.cy * VOXEL_CHUNK_SIZE_Y) + v.vy),
 			(float)((c.cz * VOXEL_CHUNK_SIZE_XZ) + v.vz)
 		);
+	}
+
+	public static WorldVoxelPos_t Vec3ToWorld(Vector3 p) {
+		return new WorldVoxelPos_t() {
+			vx = Mathf.FloorToInt(p.x),
+			vy = Mathf.FloorToInt(p.y),
+			vz = Mathf.FloorToInt(p.z)
+		};
 	}
 
 	public static WorldVoxelPos_t ChunkToWorld(WorldChunkPos_t p) {
