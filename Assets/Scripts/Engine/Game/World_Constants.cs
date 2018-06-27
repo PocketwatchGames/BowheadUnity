@@ -23,6 +23,18 @@ public struct WorldChunkPos_t {
 		return !(a == b);
 	}
 
+	public static WorldChunkPos_t operator -(WorldChunkPos_t a) {
+		return new WorldChunkPos_t(-a.cx, -a.cy, -a.cz);
+	}
+
+	public static WorldChunkPos_t operator +(WorldChunkPos_t a, WorldChunkPos_t b) {
+		return new WorldChunkPos_t(a.cx + b.cx, a.cy + b.cy, a.cz + b.cz);
+	}
+
+	public static WorldChunkPos_t operator -(WorldChunkPos_t a, WorldChunkPos_t b) {
+		return new WorldChunkPos_t(a.cx - b.cx, a.cy - b.cy, a.cz - b.cz);
+	}
+
 	public override int GetHashCode() {
 		return cx.GetHashCode() ^ cy.GetHashCode() ^ cz.GetHashCode();
 	}
@@ -55,6 +67,18 @@ public struct WorldVoxelPos_t {
 
 	public static bool operator !=(WorldVoxelPos_t a, WorldVoxelPos_t b) {
 		return !(a == b);
+	}
+
+	public static WorldVoxelPos_t operator -(WorldVoxelPos_t a) {
+		return new WorldVoxelPos_t(-a.vx, -a.vy, -a.vz);
+	}
+
+	public static WorldVoxelPos_t operator + (WorldVoxelPos_t a, WorldVoxelPos_t b) {
+		return new WorldVoxelPos_t(a.vx + b.vx, a.vy + b.vy, a.vz + b.vz);
+	}
+
+	public static WorldVoxelPos_t operator - (WorldVoxelPos_t a, WorldVoxelPos_t b) {
+		return new WorldVoxelPos_t(a.vx - b.vx, a.vy - b.vy, a.vz - b.vz);
 	}
 
 	public override int GetHashCode() {

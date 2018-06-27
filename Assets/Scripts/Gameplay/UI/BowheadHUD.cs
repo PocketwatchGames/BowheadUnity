@@ -31,6 +31,9 @@ namespace Bowhead.Client.UI {
 
             var target = localPlayer.playerPawn.GetInteractTarget();
             _interactHint.SetTarget(target);
+
+			var pos = localPlayer.playerPawn.go.transform.position;
+			_minimap.RevealArea(new Vector2(pos.x, pos.z), 100);
         }
     }
 }

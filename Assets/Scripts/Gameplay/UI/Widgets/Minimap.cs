@@ -8,7 +8,7 @@ namespace Bowhead.Client.UI {
 	using IChunk = World.Streaming.IChunk;
 
 	[RequireComponent(typeof(RawImage))]
-	public class Minimap : MonoBehaviour {
+	public class Minimap : MonoBehaviourEx {
 
 		class ChunkTile {
 			public ChunkTile prev, next;
@@ -36,6 +36,10 @@ namespace Bowhead.Client.UI {
 		int _chunkMaxY;
 		[SerializeField]
 		int _chunkXZSize;
+		[SerializeField]
+		Material _blitMaterial;
+		[SerializeField]
+		Texture2D _revealTexture;
 
 		int _chunkX;
 		int _chunkZ;
@@ -45,6 +49,7 @@ namespace Bowhead.Client.UI {
 
 		World.Streaming _streaming;
 		Texture2D _mainTexture;
+		public RenderTexture _maskTexture;
 		Texture2D _blitTexture;
 		Texture2D _blackTexture;
 		RawImage _image;
@@ -56,9 +61,10 @@ namespace Bowhead.Client.UI {
 			_hash = new ChunkTile[HASH_SIZE];
 			_tiles = new ChunkTile[World.MaxVoxelChunkLine(_chunkXZSize)*World.MaxVoxelChunkLine(_chunkXZSize)];
 
-			_mainTexture = new Texture2D(World.MaxVoxelChunkLine(_chunkXZSize) * World.VOXEL_CHUNK_SIZE_XZ, World.MaxVoxelChunkLine(_chunkXZSize) * World.VOXEL_CHUNK_SIZE_XZ, TextureFormat.ARGB32, false);
-			_blitTexture = new Texture2D(World.VOXEL_CHUNK_SIZE_XZ, World.VOXEL_CHUNK_SIZE_XZ, TextureFormat.ARGB32, false);
-			_blackTexture = new Texture2D(World.VOXEL_CHUNK_SIZE_XZ, World.VOXEL_CHUNK_SIZE_XZ, TextureFormat.ARGB32, false);
+			_mainTexture = AddGC(new Texture2D(World.MaxVoxelChunkLine(_chunkXZSize) * World.VOXEL_CHUNK_SIZE_XZ, World.MaxVoxelChunkLine(_chunkXZSize) * World.VOXEL_CHUNK_SIZE_XZ, TextureFormat.ARGB32, false));
+			_maskTexture = AddGC(new RenderTexture(World.MaxVoxelChunkLine(_chunkXZSize) * World.VOXEL_CHUNK_SIZE_XZ, World.MaxVoxelChunkLine(_chunkXZSize) * World.VOXEL_CHUNK_SIZE_XZ, 1, RenderTextureFormat.R8, RenderTextureReadWrite.Linear));
+			_blitTexture = AddGC(new Texture2D(World.VOXEL_CHUNK_SIZE_XZ, World.VOXEL_CHUNK_SIZE_XZ, TextureFormat.ARGB32, false));
+			_blackTexture = AddGC(new Texture2D(World.VOXEL_CHUNK_SIZE_XZ, World.VOXEL_CHUNK_SIZE_XZ, TextureFormat.ARGB32, false));
 
 			_pixels = _blitTexture.GetPixels32();
 
@@ -67,10 +73,16 @@ namespace Bowhead.Client.UI {
 
 			_mainTexture.Clear(Color.black);
 			_mainTexture.Apply(true, true);
-			
+
+			_maskTexture.useMipMap = false;
+			_maskTexture.Create();
+			Graphics.Blit(_blackTexture, _maskTexture);
+									
 			_image = GetComponent<RawImage>();
 			_image.texture = _mainTexture;
-
+			_image.material = AddGC(new Material(_image.material));
+			_image.material.SetTexture("_MaskTex", _maskTexture);
+			
 			_chunkX = int.MaxValue;
 			_chunkZ = int.MaxValue;
 			_chunkMinX = int.MaxValue;
@@ -87,7 +99,8 @@ namespace Bowhead.Client.UI {
 			}
 		}
 
-		void OnDestroy() {
+		protected override void OnDestroy() {
+			base.OnDestroy();
 			_streaming.onChunkVoxelsUpdated -= OnChunkLoaded;
 			_streaming.onChunkUnloaded -= OnChunkUnloaded;
 		}
@@ -113,6 +126,22 @@ namespace Bowhead.Client.UI {
 			PurgeOutOfBoundTiles();
 			AddBoundedTiles();
 			FullUpdate();
+
+			RevealArea(new Vector2(0, 0), 100);
+		}
+
+		public void RevealArea(Vector2 pos, float radius) {
+			var mapBottomLeft = World.ChunkToWorld(new WorldChunkPos_t(_chunkMinX, 0, _chunkMinZ));
+			var mapExtent = World.MaxVoxelChunkLine(_chunkXZSize) * World.VOXEL_CHUNK_SIZE_XZ;
+			var relativePos = World.Vec3ToWorld(new Vector3(pos.x, 0, pos.y)) - mapBottomLeft;
+						
+			GL.sRGBWrite = false;
+			Graphics.SetRenderTarget(_maskTexture);
+			GL.PushMatrix();
+			GL.LoadPixelMatrix(0, mapExtent, 0, mapExtent);
+			Graphics.DrawTexture(new Rect(relativePos.vx - radius, relativePos.vz - radius, radius*2, radius*2), _revealTexture, _blitMaterial);
+			GL.PopMatrix();
+			Graphics.SetRenderTarget(null);
 		}
 
 		void FullUpdate() {
@@ -190,8 +219,8 @@ namespace Bowhead.Client.UI {
 			var srcVoxels = chunk.voxeldata;
 			var dstVoxels = tile.voxelmap;
 
-			int ofs = 0;
-			for (int y = 0; y < World.VOXEL_CHUNK_SIZE_Y; ++y) {
+			for (int y = World.VOXEL_CHUNK_SIZE_Y-1; y >= 0; --y) {
+				var ofs = y*World.VOXEL_CHUNK_SIZE_XZ*World.VOXEL_CHUNK_SIZE_XZ;
 				for (int z = 0; z < World.VOXEL_CHUNK_SIZE_XZ; ++z) {
 					var zofs = z * World.VOXEL_CHUNK_SIZE_XZ;
 					for (int x = 0; x < World.VOXEL_CHUNK_SIZE_XZ; ++x) {

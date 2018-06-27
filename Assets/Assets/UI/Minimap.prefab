@@ -43,6 +43,8 @@ MonoBehaviour:
   _chunkMinY: -1
   _chunkMaxY: 1
   _chunkXZSize: 16
+  _blitMaterial: {fileID: 2100000, guid: eb7646f2b6af5bd4fb0b5525ecb41c57, type: 2}
+  _revealTexture: {fileID: 2800000, guid: 813600220f7521842bfcb7a4816ae5dc, type: 3}
 --- !u!114 &114746448105589144
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -54,7 +56,7 @@ MonoBehaviour:
   m_Script: {fileID: -98529514, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: a9b8033b9a6b79746964a9bc30230953, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
