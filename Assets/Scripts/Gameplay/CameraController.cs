@@ -42,7 +42,7 @@ namespace Bowhead.Actors {
 
             _camera.transform.SetPositionAndRotation(pos, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
 
-            Debug.DrawLine(_target.headPosition(_target.position), _lookAt);
+            Debug.DrawLine(_target.headPosition(), _lookAt);
         }
 
         public float GetYaw() {

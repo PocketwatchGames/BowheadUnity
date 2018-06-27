@@ -6,5 +6,6 @@ namespace Bowhead {
     [CreateAssetMenuAttribute(menuName = "ItemData/Pack")]
     public class PackData : ItemData<Pack, PackData> {
         public int slots;
+        public GameObject_WRef prefab;
     }
 }

@@ -682,6 +682,7 @@ namespace Bowhead.Actors {
 
             Pack pack;
             if ((pack = item as Pack) != null) {
+                pack.contained.Clear();
                 for (int i = 0; i < pack.data.slots; i++) {
                     var packItem = GetInventorySlot(i + slot + 1);
                     if (packItem != null) {
@@ -712,11 +713,14 @@ namespace Bowhead.Actors {
                 SetInventorySlot(slot + packSlots, null);
             }
 
+            item?.OnSlotChange(-1, this);
+
+
         }
 
         public void Drop(Item item) {
             RemoveFromInventory(item);
-			gameMode.SpawnWorldItem(item, handPosition(position));
+			gameMode.SpawnWorldItem(item, handPosition());
         }
 
         #endregion
@@ -742,7 +746,7 @@ namespace Bowhead.Actors {
                 }
             }
             else {
-                var block = world.GetBlock(footPosition(position));
+                var block = world.GetBlock(footPosition());
                 if (block == EVoxelBlockType.WATER) {
                     Loot waterItem = null;
                     var waterData = LootData.Get("Water");

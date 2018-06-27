@@ -14,8 +14,8 @@ MonoBehaviour:
   version: 0
   _index: 11
   prefab:
-    _assetPath: 
-    _editorPath: 
+    _assetPath: Items/Shield
+    _editorPath: Assets/Assets/Prefabs/Resources/Items/Shield.prefab
   hand: 0
   chargeTime: 0.25
   weaponSize: {x: 0, y: 0, z: 0}

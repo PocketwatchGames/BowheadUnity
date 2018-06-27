@@ -903,6 +903,14 @@ public static class Utils {
 		return d;
 	}
 
+    public static float SignOrZero(float a) {
+        if (a == 0)
+            return 0;
+        if (a > 0)
+            return 1;
+        return -1;
+    }
+
 	public static float AngleLerpShortestPath(float a, float b, float t) {
 		a = NormalizeAngle(a);
 		b = NormalizeAngle(b);
