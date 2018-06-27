@@ -10,7 +10,11 @@ namespace Bowhead {
 			SINEWAVE,
 			PROC_V1
 		};
-				
+
+		static WorldStreaming() {
+			FastNoise_t.New();
+		}
+
 		public interface IWorldStreaming : System.IDisposable {
 			JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk, bool checkSolid);
 		};
