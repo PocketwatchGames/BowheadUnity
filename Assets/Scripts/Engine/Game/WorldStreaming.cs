@@ -619,11 +619,13 @@ public partial class World {
 				var xorg = curPos.cx - xzSize;
 				var yorg = curPos.cy - ySize;
 				var zorg = curPos.cz - xzSize;
+
+				var yScale = (uint)(Mathf.Max(VOXEL_CHUNK_SIZE_Y, VOXEL_CHUNK_SIZE_XZ) / VOXEL_CHUNK_SIZE_XZ);
 								
 				for (int y = 0; y < yDim; ++y) {
 
 					var yc = yorg + y;
-					uint dy = (uint)Mathf.Abs(yc - curPos.cy) * VOXEL_CHUNK_SIZE_Y/VOXEL_CHUNK_SIZE_XZ;
+					uint dy = (uint)Mathf.Abs(yc - curPos.cy) * yScale;
 					
 					for (int z = 0; z < zPitch; ++z) {
 
