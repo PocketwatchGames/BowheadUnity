@@ -111,21 +111,6 @@ public partial class World {
 			}
 		};
 
-		public static class BlittableHelper<T> {
-			public static readonly bool IsBlittable;
-
-			static BlittableHelper() {
-				try {
-					// Class test
-					if (default(T) != null) {
-						// Non-blittable types cannot allocate pinned handle
-						GCHandle.Alloc(default(T), GCHandleType.Pinned).Free();
-						IsBlittable = true;
-					}
-				} catch { }
-			}
-		}
-
 		public static PinnedChunkData_t NewPinnedChunkData_t(ChunkData_t chunk) {
 			unsafe {
 				Assert(chunk.pinnedFlags != null);
@@ -1043,7 +1028,7 @@ public partial class World {
 			a face may have vertices that collapse in both directions we only collapse from (-) -> (+) if the opposite vertex doesn't also collapse
 			(otherwise this would cause a crossing fold).
 
-			Takes each visible face and mark all vertices on the faces as collapsable along the two orthogonal axes of the face the face on the orthogonal 
+			Takes each visible face and mark all vertices on the faces as collapsable along the two orthogonal axes of the face if the face on the orthogonal 
 			axis opposite the collapse direction is visible.
 			=======================================
 			*/
@@ -1089,7 +1074,7 @@ public partial class World {
 							// this face can potentially be collapsed, assuming it won't expose
 							// a non-visible face on the voxel.
 							// NOTE: the collapse may expose a non-visible face on a neighboring voxel
-							// but that case is handed by the voxel emitting the faces.
+							// but that case is handled by the voxel emitting the faces.
 
 							int axis = i / 2;
 							var spanning = _tables.spanningAxis[axis];
@@ -1628,10 +1613,10 @@ public partial class World {
 							var POS_Z = chunkIndex + Z_PITCH;
 							var NEG_Z = chunkIndex - Z_PITCH;
 
-							var voxelData = _area[chunkIndex];
+							var neighbor = _area[chunkIndex];
 
-							if (voxelData.valid != 0) {
-								var blocktype = voxelData.voxeldata[zofs + yofs + xofs];
+							if (neighbor.valid != 0) {
+								var blocktype = neighbor.voxeldata[zofs + yofs + xofs];
 								if ((blocktype&~EVoxelBlockType.FULL_VOXEL_FLAG) == EVoxelBlockType.AIR) {
 									++_numVoxels;
 									continue;
@@ -1646,7 +1631,7 @@ public partial class World {
 								_vn[5] = blocktype;
 
 								if (xmin) {
-									_vn[0] = voxelData.voxeldata[zofs + yofs + xofs + 1];
+									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1];
 									if (_area[NEG_X].valid != 0) {
 										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
 									}
@@ -1654,14 +1639,14 @@ public partial class World {
 									if (_area[POS_X].valid != 0) {
 										_vn[0] = _area[POS_X].voxeldata[zofs + yofs];
 									}
-									_vn[1] = voxelData.voxeldata[zofs + yofs + xofs - 1];
+									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1];
 								} else {
-									_vn[0] = voxelData.voxeldata[zofs + yofs + xofs + 1];
-									_vn[1] = voxelData.voxeldata[zofs + yofs + xofs - 1];
+									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1];
+									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1];
 								}
 
 								if (ymin) {
-									_vn[2] = voxelData.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 									if (_area[NEG_Y].valid != 0) {
 										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs];
 									}
@@ -1669,14 +1654,14 @@ public partial class World {
 									if (_area[POS_Y].valid != 0) {
 										_vn[2] = _area[POS_Y].voxeldata[zofs + xofs];
 									}
-									_vn[3] = voxelData.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 								} else {
-									_vn[2] = voxelData.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
-									_vn[3] = voxelData.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 								}
 
 								if (zmin) {
-									_vn[4] = voxelData.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = neighbor.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
 									if (_area[NEG_Z].valid != 0) {
 										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs];
 									}
@@ -1684,10 +1669,10 @@ public partial class World {
 									if (_area[POS_Z].valid != 0) {
 										_vn[4] = _area[POS_Z].voxeldata[yofs + xofs];
 									}
-									_vn[5] = voxelData.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
 								} else {
-									_vn[4] = voxelData.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
-									_vn[5] = voxelData.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
 								}
 
 								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
@@ -1834,10 +1819,10 @@ public partial class World {
 							var POS_Z = chunkIndex + Z_PITCH;
 							var NEG_Z = chunkIndex - Z_PITCH;
 
-							var voxelData = _area[chunkIndex];
+							var neighbor = _area[chunkIndex];
 
-							if (voxelData.valid != 0) {
-								var blocktype = voxelData.voxeldata[zofs + yofs + xofs];
+							if (neighbor.valid != 0) {
+								var blocktype = neighbor.voxeldata[zofs + yofs + xofs];
 								if ((blocktype&~EVoxelBlockType.FULL_VOXEL_FLAG) == EVoxelBlockType.AIR) {
 									continue;
 								}
@@ -1851,7 +1836,7 @@ public partial class World {
 								_vn[5] = blocktype;
 
 								if (xmin) {
-									_vn[0] = voxelData.voxeldata[zofs + yofs + xofs + 1];
+									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1];
 									if (_area[NEG_X].valid != 0) {
 										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
 									}
@@ -1859,14 +1844,14 @@ public partial class World {
 									if (_area[POS_X].valid != 0) {
 										_vn[0] = _area[POS_X].voxeldata[zofs + yofs];
 									}
-									_vn[1] = voxelData.voxeldata[zofs + yofs + xofs - 1];
+									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1];
 								} else {
-									_vn[0] = voxelData.voxeldata[zofs + yofs + xofs + 1];
-									_vn[1] = voxelData.voxeldata[zofs + yofs + xofs - 1];
+									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1];
+									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1];
 								}
 
 								if (ymin) {
-									_vn[2] = voxelData.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 									if (_area[NEG_Y].valid != 0) {
 										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs];
 									}
@@ -1874,14 +1859,14 @@ public partial class World {
 									if (_area[POS_Y].valid != 0) {
 										_vn[2] = _area[POS_Y].voxeldata[zofs + xofs];
 									}
-									_vn[3] = voxelData.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 								} else {
-									_vn[2] = voxelData.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
-									_vn[3] = voxelData.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
 								}
 
 								if (zmin) {
-									_vn[4] = voxelData.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = neighbor.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
 									if (_area[NEG_Z].valid != 0) {
 										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs];
 									}
@@ -1889,10 +1874,10 @@ public partial class World {
 									if (_area[POS_Z].valid != 0) {
 										_vn[4] = _area[POS_Z].voxeldata[yofs + xofs];
 									}
-									_vn[5] = voxelData.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
 								} else {
-									_vn[4] = voxelData.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
-									_vn[5] = voxelData.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
 								}
 
 								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
