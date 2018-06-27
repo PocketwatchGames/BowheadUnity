@@ -17,7 +17,6 @@ namespace Bowhead.Client.UI {
 			public int x, z;
 			public uint hash;
 			public bool solid;
-			public bool revealed;
 			public bool dirty;
 		};
 
@@ -207,7 +206,7 @@ namespace Bowhead.Client.UI {
 			var px = tile.x - _chunkMinX;
 			var py = tile.z - _chunkMinZ;
 
-			if (tile.revealed && tile.solid) {
+			if (tile.solid) {
 				RenderTileToBlitTexture(tile);
 				BlitToMainTexture(_blitTexture, px * World.VOXEL_CHUNK_SIZE_XZ, py * World.VOXEL_CHUNK_SIZE_XZ);
 			} else {
@@ -354,7 +353,6 @@ namespace Bowhead.Client.UI {
 
 			_hash[tile.hash] = tile;
 
-			tile.revealed = true;
 			tile.solid = false;
 			tile.dirty = false;
 			tile.chunks = tile.chunks ?? new IChunk[_chunkNumY];
@@ -386,7 +384,7 @@ namespace Bowhead.Client.UI {
 				if (tile.chunks[i] == chunk) {
 					// chunk is already in this tile, just mark as dirty.
 					tile.dirty = true;
-					_dirty = _dirty || (tile.solid && tile.revealed);
+					_dirty = _dirty || tile.solid;
 					return;
 				}
 				if (tile.chunks[i] == null) {
@@ -433,7 +431,7 @@ namespace Bowhead.Client.UI {
 			}
 
 			tile.dirty = true;
-			_dirty = _dirty || (tile.solid && tile.revealed);
+			_dirty = _dirty || tile.solid;
 		}
 	}
 }
