@@ -41,6 +41,8 @@ namespace Bowhead.Actors {
             GetPositionAngles(out pos, out yaw, out pitch);
 
             _camera.transform.SetPositionAndRotation(pos, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
+
+            Debug.DrawLine(_target.headPosition(_target.position), _lookAt);
         }
 
         public float GetYaw() {
@@ -112,7 +114,7 @@ namespace Bowhead.Actors {
 
                     _playerPosition = avgPlayerPosition;
                     _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
-                    _lookAtVelocity += (lookAtDiff + playerMovement * data.lookAtLeadDist) * data.lookAtAcceleration * dt;
+                    _lookAtVelocity += (lookAtDiff + playerMovement.normalized * data.lookAtLeadDist) * data.lookAtAcceleration * dt;
                     _lookAt += _lookAtVelocity * dt;
 
                     Vector3 diff = _position - _lookAt;
@@ -146,20 +148,12 @@ namespace Bowhead.Actors {
                         _playerPosition = avgPlayerPosition;
 
                         if (!isMoving) {
-                            float lookAtFriction = 10f;
-                            _lookAtVelocity -= _lookAtVelocity * lookAtFriction * dt;
+                            _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
                         }
                         else {
-                            float leadPlayerMotionSpeed = 0.25f;
-                            _position += playerMovement * leadPlayerMotionSpeed;
 
-
-                            float lookAtFriction = 10f;
-                            float lookAtAcceleration = 20;
-                            float lookAtLeadDist = 5;
-
-                            _lookAtVelocity -= _lookAtVelocity * lookAtFriction * dt;
-                            _lookAtVelocity += (lookAtDiff + playerMovement * lookAtLeadDist) * lookAtAcceleration * dt;
+                            _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
+                            _lookAtVelocity += (lookAtDiff + playerMovement.normalized * data.lookAtLeadDist) * data.lookAtAcceleration * dt;
                         }
                         _lookAt += _lookAtVelocity * dt;
 

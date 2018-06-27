@@ -24,15 +24,15 @@ MonoBehaviour:
   stunRecoveryTime: 1
   backStabAngle: 45
   jumpSpeed: 12
-  dodgeSpeed: 12
+  dodgeSpeed: 8
   jumpBoostAcceleration: 24
   jumpStaminaUse: 10
   groundAcceleration: 2
   crouchSpeed: 4
-  walkSpeed: 8
-  walkStartTime: 0.15
-  walkStopTime: 0.15
-  groundMaxSpeed: 12
+  walkSpeed: 4
+  walkStartTime: 0.1
+  walkStopTime: 0.1
+  groundMaxSpeed: 8
   groundWindDrag: 0.01
   slideThresholdSlope: 4
   slideThresholdFlat: 15
@@ -40,7 +40,7 @@ MonoBehaviour:
   fallJumpTime: 0.25
   fallAcceleration: 30
   fallDragHorizontal: 0.05
-  fallMaxHorizontalSpeed: 5
+  fallMaxHorizontalSpeed: 4
   climbWallRange: 0.25
   climbGrabMinZVel: -20
   climbSpeed: 2
@@ -49,7 +49,7 @@ MonoBehaviour:
   swimSinkAcceleration: 100
   swimJumpBoostAcceleration: 12
   swimAcceleration: 15
-  swimMaxSpeed: 10
+  swimMaxSpeed: 6
   swimDragVertical: 5
   swimDragHorizontal: 0.25
   prefab:
