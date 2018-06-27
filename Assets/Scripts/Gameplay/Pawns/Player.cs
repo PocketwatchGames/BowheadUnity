@@ -341,11 +341,16 @@ namespace Bowhead.Actors {
             if (!WorldUtils.IsCapBlock(block)) {
                 block = world.GetBlock(footPosition(position));
             }
-            float d = -velocity.y / data.fallDamageVelocity * WorldUtils.GetFallDamage(block);
-            if (d > 0) {
-                damage(d);
-                useStamina((float)d);
-                stun((float)d);
+
+            float d = 0;
+            float fallSpeed = -velocity.y;
+            if (fallSpeed > data.fallDamageSpeed) {
+                d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * WorldUtils.GetFallDamage(block);
+                if (d > 0) {
+                    damage(d);
+                    useStamina((float)d);
+                    stun((float)d);
+                }
             }
 
             OnLand?.Invoke(d);

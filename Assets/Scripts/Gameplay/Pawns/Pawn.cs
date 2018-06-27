@@ -952,7 +952,8 @@ namespace Bowhead.Actors {
         public void damage(float d) {
             health = health - d;
 
-            GameObject.Instantiate<ParticleSystem>(data.bloodParticle, go.transform);
+            var blood = GameObject.Instantiate<ParticleSystem>(data.bloodParticle, go.transform);
+            blood.transform.localPosition = waistPosition(position) - position;
         }
 
         public void hit(Pawn attacker, Item weapon, WeaponData.AttackData attackData) {

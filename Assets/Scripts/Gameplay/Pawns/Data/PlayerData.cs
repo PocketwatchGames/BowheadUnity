@@ -13,7 +13,7 @@ namespace Bowhead.Actors {
         public float maxThirst;
         public float temperatureSleepMinimum;
         public float temperatureSleepMaximum;
-        public float fallDamageVelocity;
+        public float fallDamageSpeed;
         public float dropTime;
         public int[] weightClassItemCount = new int[(int)Player.WeightClass.COUNT];
     };
