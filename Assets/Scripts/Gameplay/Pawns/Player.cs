@@ -112,8 +112,6 @@ namespace Bowhead.Actors {
                     return;
                 }
             }
-
-
         }
 
         override public void PreSimulate(float dt) {
@@ -273,8 +271,8 @@ namespace Bowhead.Actors {
 			attackTargetPreview = null;
 
 			// JOSEPH: this will be better once this is moved into new Actor framework, for now HACK
-			_worldStreaming = Bowhead.GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y);
-			_worldStreaming.position = default(WorldChunkPos_t);
+			_worldStreaming = GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y);
+			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.z)));
 
             spawnPosition = pos;
 
@@ -337,7 +335,12 @@ namespace Bowhead.Actors {
 
         }
 
-        override public void LandOnGround() {
+		public override void SetPosition(Vector3 p, float interpolateTime = 0) {
+			base.SetPosition(p, interpolateTime);
+			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(p));
+		}
+
+		override public void LandOnGround() {
             // Land on ground
             var block = world.GetBlock(position);
             if (!WorldUtils.IsCapBlock(block)) {

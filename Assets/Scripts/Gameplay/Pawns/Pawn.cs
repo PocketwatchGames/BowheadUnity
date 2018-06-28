@@ -829,7 +829,7 @@ namespace Bowhead.Actors {
 
         }
 
-        public void SetPosition(Vector3 p, float interpolateTime = 0) {
+        public virtual void SetPosition(Vector3 p, float interpolateTime = 0) {
             if (interpolateTime > 0) {
                 interpolateFrom = renderPosition();
                 interpolateTime = interpolateTimeTotal = Math.Max(interpolateTime, interpolateTime);
