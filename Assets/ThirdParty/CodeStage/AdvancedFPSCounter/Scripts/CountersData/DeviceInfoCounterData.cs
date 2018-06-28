@@ -1,4 +1,8 @@
-﻿using System;
+﻿#define UNITY_5_3_2_PLUS
+#if UNITY_4_5 || UNITY_4_6 || UNITY_4_7 || UNITY_4_8 || UNITY_4_9 || UNITY_5_0 || UNITY_5_1 || UNITY_5_2 || UNITY_5_3_0 || UNITY_5_3_1
+#undef UNITY_5_3_2_PLUS
+#endif
+
 using System.Text;
 using CodeStage.AdvancedFPSCounter.Labels;
 using UnityEngine;
@@ -8,33 +12,41 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 	/// <summary>
 	/// Shows additional device information.
 	/// </summary>
-	[Serializable]
+	[AddComponentMenu("")]
+	[System.Serializable]
 	public class DeviceInfoCounterData: BaseCounterData
 	{
-		[HideInInspector]
-		public string lastValue = "";
+		// ----------------------------------------------------------------------------
+		// properties exposed to the inspector
+		// ----------------------------------------------------------------------------
 
+		#region Platform
+		[Tooltip("Shows operating system & platform info.")]
+		[SerializeField]
+		private bool platform = true;
+
+		/// <summary>
+		/// Shows operating system & platform info.
+		/// </summary>
+		public bool Platform
+		{
+			get { return platform; }
+			set
+			{
+				if (platform == value || !Application.isPlaying) return;
+				platform = value;
+				if (!enabled) return;
+
+				Refresh();
+			}
+		}
+		#endregion
+
+		#region CpuModel
+		[Tooltip("CPU model and cores (including virtual cores from Intel's Hyper Threading) count.")]
 		[SerializeField]
 		private bool cpuModel = true;
 
-		[SerializeField]
-		private bool gpuModel = true;
-
-		[SerializeField]
-		private bool ramSize = true;
-
-		[SerializeField]
-		private bool screenData = true;
-
-		private bool inited;
-
-		internal DeviceInfoCounterData()
-		{
-			color = new Color32(172, 172, 172, 255);
-			anchor = LabelAnchor.LowerLeft;
-		}
-
-		#region properties
 		/// <summary>
 		/// Shows CPU model and cores (including virtual cores from Intel's Hyper Threading) count.
 		/// </summary>
@@ -51,8 +63,34 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 			}
 		}
 
+		[Tooltip("Check to show CPU model on new line.")]
+		[SerializeField]
+		private bool cpuModelNewLine = true;
+
 		/// <summary>
-		/// Shows GPU model, graphics API version, supported shader model (if possible), approximate pixel fill-rate in megapixels per second (if possible) and total Video RAM size (if possible).
+		/// Controls if CPU model should be placed on new line or not.
+		/// </summary>
+		public bool CpuModelNewLine
+		{
+			get { return cpuModelNewLine; }
+			set
+			{
+				if (cpuModelNewLine == value || !Application.isPlaying) return;
+				cpuModelNewLine = value;
+				if (!enabled) return;
+
+				Refresh();
+			}
+		}
+		#endregion
+
+		#region GpuModel
+		[Tooltip("Shows GPU model name.")]
+		[SerializeField]
+		private bool gpuModel = true;
+
+		/// <summary>
+		/// Shows GPU model.
 		/// </summary>
 		public bool GpuModel
 		{
@@ -66,6 +104,116 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 				Refresh();
 			}
 		}
+
+		[Tooltip("Check to show GPU model on new line.")]
+		[SerializeField]
+		private bool gpuModelNewLine = true;
+
+		/// <summary>
+		/// Controls if GPU model should be placed on new line or not.
+		/// </summary>
+		public bool GpuModelNewLine
+		{
+			get { return gpuModelNewLine; }
+			set
+			{
+				if (gpuModelNewLine == value || !Application.isPlaying) return;
+				gpuModelNewLine = value;
+				if (!enabled) return;
+
+				Refresh();
+			}
+		}
+		#endregion
+
+		#region GpuApi
+		[Tooltip("Shows graphics API version and type (if possible).")]
+		[SerializeField]
+		private bool gpuApi = true;
+
+		/// <summary>
+		/// Shows graphics API version and type (if possible).
+		/// </summary>
+		public bool GpuApi
+		{
+			get { return gpuApi; }
+			set
+			{
+				if (gpuApi == value || !Application.isPlaying) return;
+				gpuApi = value;
+				if (!enabled) return;
+
+				Refresh();
+			}
+		}
+
+		[Tooltip("Check to show graphics API version on new line.")]
+		[SerializeField]
+		private bool gpuApiNewLine = true;
+
+		/// <summary>
+		/// Controls if graphics API version should be placed on new line or not.
+		/// </summary>
+		public bool GpuApiNewLine
+		{
+			get { return gpuApiNewLine; }
+			set
+			{
+				if (gpuApiNewLine == value || !Application.isPlaying) return;
+				gpuApiNewLine = value;
+				if (!enabled) return;
+
+				Refresh();
+			}
+		}
+		#endregion
+
+		#region GpuSpec
+		[Tooltip("Shows graphics supported shader model (if possible), approximate pixel fill-rate (if possible) and total Video RAM size (if possible).")]
+		[SerializeField]
+		private bool gpuSpec = true;
+
+		/// <summary>
+		/// Shows graphics supported shader model (if possible), approximate pixel fill-rate (if possible) and total Video RAM size (if possible).
+		/// </summary>
+		public bool GpuSpec
+		{
+			get { return gpuSpec; }
+			set
+			{
+				if (gpuSpec == value || !Application.isPlaying) return;
+				gpuSpec = value;
+				if (!enabled) return;
+
+				Refresh();
+			}
+		}
+
+		[Tooltip("Check to show graphics specs on new line.")]
+		[SerializeField]
+		private bool gpuSpecNewLine = true;
+
+		/// <summary>
+		/// Controls if graphics specs should be placed on new line or not.
+		/// </summary>
+		public bool GpuSpecNewLine
+		{
+			get { return gpuSpecNewLine; }
+			set
+			{
+				if (gpuSpecNewLine == value || !Application.isPlaying) return;
+				gpuSpecNewLine = value;
+				if (!enabled) return;
+
+				Refresh();
+			}
+		}
+		#endregion
+
+		#region RAMSize
+		[Tooltip("Shows total RAM size.")]
+		[SerializeField]
+		private bool ramSize = true;
 
 		/// <summary>
 		/// Shows total RAM size.
@@ -83,6 +231,32 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 			}
 		}
 
+		[Tooltip("Check to show RAM size on new line.")]
+		[SerializeField]
+		private bool ramSizeNewLine = true;
+
+		/// <summary>
+		/// Controls if RAM size should be placed on new line or not.
+		/// </summary>
+		public bool RamSizeNewLine
+		{
+			get { return ramSizeNewLine; }
+			set
+			{
+				if (ramSizeNewLine == value || !Application.isPlaying) return;
+				ramSizeNewLine = value;
+				if (!enabled) return;
+
+				Refresh();
+			}
+		}
+		#endregion
+
+		#region ScreenData
+		[Tooltip("Shows screen resolution, size and DPI (if possible).")]
+		[SerializeField]
+		private bool screenData = true;
+
 		/// <summary>
 		/// Shows screen resolution, size and DPI (if possible).
 		/// </summary>
@@ -98,51 +272,99 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 				Refresh();
 			}
 		}
+
+		[Tooltip("Check to show screen data on new line.")]
+		[SerializeField]
+		private bool screenDataNewLine = true;
+
+		/// <summary>
+		/// Controls if screen data should be placed on new line or not.
+		/// </summary>
+		public bool ScreenDataNewLine
+		{
+			get { return screenDataNewLine; }
+			set
+			{
+				if (screenDataNewLine == value || !Application.isPlaying) return;
+				screenDataNewLine = value;
+				if (!enabled) return;
+
+				Refresh();
+			}
+		}
 		#endregion
 
-		protected override void CacheCurrentColor()
+		#region DeviceModel
+		[Tooltip("Shows device model. Actual for mobile devices.")]
+        [SerializeField]
+        private bool deviceModel;
+
+        /// <summary>
+        /// Shows device model.
+        /// </summary>
+        public bool DeviceModel
+        {
+            get { return deviceModel; }
+            set
+            {
+                if (deviceModel == value || !Application.isPlaying) return;
+                deviceModel = value;
+                if (!enabled) return;
+
+                Refresh();
+            }
+        }
+
+		[Tooltip("Check to show device model on new line.")]
+		[SerializeField]
+		private bool deviceModelNewLine = true;
+
+		/// <summary>
+		/// Controls if device model should be placed on new line or not.
+		/// </summary>
+		public bool DeviceModelNewLine
 		{
-			colorCached = "<color=#" + AFPSCounter.Color32ToHex(color) + ">";
-		}
-
-		internal override void Activate()
-		{
-			if (!enabled || !HasData()) return;
-			base.Activate();
-
-			inited = true;
-
-			if (main.OperationMode == OperationMode.Normal)
+			get { return deviceModelNewLine; }
+			set
 			{
-				if (colorCached == null)
-				{
-					colorCached = "<color=#" + AFPSCounter.Color32ToHex(color) + ">";
-				}
+				if (deviceModelNewLine == value || !Application.isPlaying) return;
+				deviceModelNewLine = value;
+				if (!enabled) return;
+
+				Refresh();
 			}
-
-			UpdateValue();
 		}
+		#endregion
 
-		internal override void Deactivate()
+		// ----------------------------------------------------------------------------
+		// properties only accessible from code
+		// ----------------------------------------------------------------------------
+
+		public string LastValue { get; private set; }
+
+		// ----------------------------------------------------------------------------
+		// constructor
+		// ----------------------------------------------------------------------------
+
+		internal DeviceInfoCounterData()
 		{
-			if (!inited) return;
-			base.Deactivate();
-
-			if (text != null) text.Length = 0;
-			main.MakeDrawableLabelDirty(anchor);
-
-			inited = false;
+			color = new Color32(172, 172, 172, 255);
+			anchor = LabelAnchor.LowerLeft;
 		}
+
+		// ----------------------------------------------------------------------------
+		// internal methods
+		// ----------------------------------------------------------------------------
 
 		internal override void UpdateValue(bool force)
 		{
-			if (!inited && (HasData()))
+			if (!inited && HasData())
 			{
 				Activate();
 				return;
 			}
 
-			if (inited && (!HasData()))
+			if (inited && !HasData())
 			{
 				Deactivate();
 				return;
@@ -150,116 +372,114 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 
 			if (!enabled) return;
 
-			bool needNewLine = false;
+			var hasContent = false;
 
 			if (text == null)
 			{
-				text = new StringBuilder(100);
+				text = new StringBuilder(500);
 			}
 			else
 			{
 				text.Length = 0;
 			}
-			
+
+			if (platform)
+			{
+				text.Append("OS: ").Append(SystemInfo.operatingSystem)
+					.Append(" [").Append(Application.platform).Append("]");
+				hasContent = true;
+			}
+
 			if (cpuModel)
 			{
+				if (hasContent) text.Append(cpuModelNewLine ? AFPSCounter.NEW_LINE : ' ');
+
 				text.Append("CPU: ").Append(SystemInfo.processorType).Append(" [").Append(SystemInfo.processorCount).Append(" cores]");
-				needNewLine = true;
+				hasContent = true;
 			}
 
 			if (gpuModel)
 			{
-				if (needNewLine) text.Append(AFPSCounter.NEW_LINE);
+				if (hasContent) text.Append(gpuModelNewLine ? AFPSCounter.NEW_LINE : ' ');
+				text.Append("GPU: ").Append(SystemInfo.graphicsDeviceName);
+				hasContent = true;
+			}
 
-				text.Append("GPU: ").Append(SystemInfo.graphicsDeviceName)
-					.Append(", API: ").Append(SystemInfo.graphicsDeviceVersion);
+			if (gpuApi)
+			{
+				if (hasContent) text.Append(gpuApiNewLine ? AFPSCounter.NEW_LINE : ' ');
+				if (gpuApiNewLine || !gpuModel)
+				{
+					text.Append("GPU: ");
+				}
+				text.Append(SystemInfo.graphicsDeviceVersion);
+#if UNITY_5_3_2_PLUS
+				text.Append(" [").Append(SystemInfo.graphicsDeviceType).Append("]");
+#endif
+				hasContent = true;
+			}
 
-				bool previousExists = true;
+			if (gpuSpec)
+			{
+				if (hasContent) text.Append(gpuSpecNewLine ? AFPSCounter.NEW_LINE : ' ');
 
-				int sm = SystemInfo.graphicsShaderLevel;
-				if (sm == 20)
+				if (gpuSpecNewLine || (!gpuModel && !gpuApi))
 				{
-					text.Append(AFPSCounter.NEW_LINE).Append("GPU: SM: 2.0");
-				}
-				else if (sm == 30)
-				{
-					text.Append(AFPSCounter.NEW_LINE).Append("GPU: SM: 3.0");
-				}
-				else if (sm == 40)
-				{
-					text.Append(AFPSCounter.NEW_LINE).Append("GPU: SM: 4.0");
-				}
-				else if (sm == 41)
-				{
-					text.Append(AFPSCounter.NEW_LINE).Append("GPU: SM: 4.1");
-				}
-				else if (sm == 50)
-				{
-					text.Append(AFPSCounter.NEW_LINE).Append("GPU: SM: 5.0");
+					text.Append("GPU: SM: ");
 				}
 				else
 				{
-					previousExists = false;
+					text.Append("SM: ");
 				}
-
-#if !UNITY_5
-
-				int fillRate = SystemInfo.graphicsPixelFillrate;
-				if (fillRate > 0)
+				
+				var sm = SystemInfo.graphicsShaderLevel;
+				if (sm >= 10 && sm <= 99)
 				{
-					if (previousExists)
-					{
-						text.Append(", FR: ");
-					}
-					else
-					{
-						text.Append(AFPSCounter.NEW_LINE).Append("GPU: FR: ");
-					}
-					text.Append(fillRate).Append(" MP/S");
-					previousExists = true;
+					// getting first and second digits from sm
+					text.Append(sm /= 10).Append('.').Append(sm / 10);
 				}
-#endif
+				else
+				{
+					text.Append("N/A");
+				}
 
-				int vram = SystemInfo.graphicsMemorySize;
+				text.Append(", VRAM: ");
+				var vram = SystemInfo.graphicsMemorySize;
 				if (vram > 0)
 				{
-					if (previousExists)
-					{
-						text.Append(", VRAM: ");
-					}
-					else
-					{
-						text.Append(AFPSCounter.NEW_LINE).Append("GPU: VRAM: ");
-					}
 					text.Append(vram).Append(" MB");
 				}
-				needNewLine = true;
+				else
+				{
+					text.Append("N/A");
+				}
+				hasContent = true;
 			}
 
 			if (ramSize)
 			{
-				if (needNewLine) text.Append(AFPSCounter.NEW_LINE);
+				if (hasContent) text.Append(ramSizeNewLine ? AFPSCounter.NEW_LINE : ' ');
 
-				int ram = SystemInfo.systemMemorySize;
+				var ram = SystemInfo.systemMemorySize;
 
 				if (ram > 0)
 				{
 					text.Append("RAM: ").Append(ram).Append(" MB");
-					needNewLine = true;
+					hasContent = true;
 				}
 				else
 				{
-					needNewLine = false;
+					hasContent = false;
 				}
 			}
 
 			if (screenData)
 			{
-				if (needNewLine) text.Append(AFPSCounter.NEW_LINE);
-				Resolution res = Screen.currentResolution;
+				if (hasContent) text.Append(screenDataNewLine ? AFPSCounter.NEW_LINE : ' ');
+				var res = Screen.currentResolution;
 
 				text.Append("SCR: ").Append(res.width).Append("x").Append(res.height).Append("@").Append(res.refreshRate).Append("Hz [window size: ").Append(Screen.width).Append("x").Append(Screen.height);
-				float dpi = Screen.dpi;
+				var dpi = Screen.dpi;
 				if (dpi > 0)
 				{
 					text.Append(", DPI: ").Append(dpi).Append("]");
@@ -268,15 +488,24 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 				{
 					text.Append("]");
 				}
-			}
+                hasContent = true;
+            }
 
-			lastValue = text.ToString();
+		    if (deviceModel)
+		    {
+		        if (hasContent) text.Append(deviceModelNewLine ? AFPSCounter.NEW_LINE : ' ');
+		        text.Append("Model: ").Append(SystemInfo.deviceModel);
+		    }
+
+		    LastValue = text.ToString();
 
 			if (main.OperationMode == OperationMode.Normal)
 			{
-				text.Insert(0,colorCached);
+				text.Insert(0, colorCached);
 				text.Append("</color>");
-			}
+
+                ApplyTextStyles();
+            }
 			else
 			{
 				text.Length = 0;
@@ -285,9 +514,18 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 			dirty = true;
 		}
 
-		private bool HasData()
+		// ----------------------------------------------------------------------------
+		// protected methods
+		// ----------------------------------------------------------------------------
+
+		protected override bool HasData()
 		{
 			return cpuModel || gpuModel || ramSize || screenData;
+		}
+
+		protected override void CacheCurrentColor()
+		{
+			colorCached = "<color=#" + AFPSCounter.Color32ToHex(color) + ">";
 		}
 	}
 }

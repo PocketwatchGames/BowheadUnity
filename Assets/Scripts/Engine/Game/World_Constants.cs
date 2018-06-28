@@ -154,6 +154,12 @@ public enum EVoxelBlockType : byte {
 	FLAGS_MASK = FULL_VOXEL_FLAG
 };
 
+public static class VoxelBlockTypeExtensions {
+	public static EVoxelBlockType BlockType(this EVoxelBlockType type) {
+		return (EVoxelBlockType)((byte)type & World.BLOCK_TYPE_MASK);
+	}
+};
+
 public partial class World {
 
 	public const int VOXEL_CHUNK_VIS_MAX_XZ = 16;

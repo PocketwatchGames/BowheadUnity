@@ -1348,9 +1348,11 @@ public class EnviroSky : MonoBehaviour
 		{
             EnviroSkyRender.dirVolumeLighting = volumeLightSettings.dirVolumeLighting;
 
-            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Direct3D9)   
+#if !UNITY_2017_2_OR_NEWER
+			if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Direct3D9)   
                 EnviroSkyRender.volumeLighting = false;
             else
+#endif
                 EnviroSkyRender.volumeLighting = volumeLighting;
 
 
@@ -2207,7 +2209,7 @@ public class EnviroSky : MonoBehaviour
 		internalHour = Mathf.Repeat(internalHour, 24f);
 		GameTime.Longitude = Mathf.Clamp(GameTime.Longitude, -180, 180);
 		GameTime.Latitude = Mathf.Clamp(GameTime.Latitude, -90, 90);
-		#if UNITY_EDITOR
+#if UNITY_EDITOR
 		if (GameTime.DayLengthInMinutes <= 0f || GameTime.NightLengthInMinutes<= 0f)
 		{
 		if (GameTime.DayLengthInMinutes < 0f)
@@ -2227,7 +2229,7 @@ public class EnviroSky : MonoBehaviour
 
 		// Moon
 		customMoonPhase = Mathf.Clamp(customMoonPhase, -1f, 1f);
-		#endif
+#endif
 	}
 
 	///////////////////////////////////////////////////////////////////WEATHER SYSTEM /////////////////////////////////////////////////////////////////////////

@@ -225,7 +225,7 @@ namespace Bowhead.Client.UI {
 					for (int x = 0; x < World.VOXEL_CHUNK_SIZE_XZ; ++x) {
 						var pixOfs = zofs+x;
 
-						if ((dstVoxels[pixOfs] == EVoxelBlockType.AIR) && (srcVoxels[ofs] != EVoxelBlockType.AIR)) {
+						if ((dstVoxels[pixOfs].BlockType() == EVoxelBlockType.AIR) && (srcVoxels[ofs].BlockType() != EVoxelBlockType.AIR)) {
 							dstVoxels[pixOfs] = srcVoxels[ofs];
 							++numSolid;
 							if (numSolid == World.VOXELS_PER_CHUNK_XZ) {
@@ -248,7 +248,7 @@ namespace Bowhead.Client.UI {
 				var zofs = z * World.VOXEL_CHUNK_SIZE_XZ;
 				for (int x = 0; x < World.VOXEL_CHUNK_SIZE_XZ; ++x) {
 					var ofs = zofs+x;
-					var voxel = tile.voxelmap[ofs];
+					var voxel = tile.voxelmap[ofs].BlockType();
 					var color = blockColors[(int)(voxel-1)];
 					_pixels[ofs] = color;
 				}

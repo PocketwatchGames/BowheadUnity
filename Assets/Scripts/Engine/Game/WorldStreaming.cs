@@ -803,6 +803,8 @@ public partial class World {
 				chunk.chunkData = ChunkMeshGen.ChunkData_t.New();
 			}
 
+			chunk.chunkData.flags[0] = EChunkFlags.NONE;
+
 			AddChunkToHash(chunk);
 			chunk.refCount = 1;
 			return chunk;

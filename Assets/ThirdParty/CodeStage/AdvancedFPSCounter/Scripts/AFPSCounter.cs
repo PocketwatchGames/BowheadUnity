@@ -1,34 +1,41 @@
-using UnityEngine.SceneManagement;
-using System;
-using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using CodeStage.AdvancedFPSCounter.CountersData;
 using CodeStage.AdvancedFPSCounter.Labels;
-using System.Reflection;
+using UnityEngine.UI;
+
+#if UNITY_5_4_OR_NEWER
+using UnityEngine.SceneManagement;
+#endif
+
+#pragma warning disable 169
 
 namespace CodeStage.AdvancedFPSCounter
 {
-	using UnityEngine;
-
 	/// <summary>
 	/// Allows to see frames per second counter, memory usage counter and some simple hardware information right in running app on any device.<br/>
 	/// Just call AFPSCounter.AddToScene() to use it.
 	/// </summary>
 	/// You also may add it to GameObject (without any child or parent objects, with zero rotation, zero position and 1,1,1 scale) as usual or through the<br/>
 	/// "GameObject > Create Other > Code Stage > Advanced FPS Counter" menu.
+	[AddComponentMenu(MENU_PATH)]
 	[DisallowMultipleComponent]
-	public class AFPSCounter: MonoBehaviour
+	[HelpURL("http://codestage.net/uas_files/afps/api/class_code_stage_1_1_advanced_f_p_s_counter_1_1_a_f_p_s_counter.html")]
+	public class AFPSCounter : MonoBehaviour
 	{
-		private const string CONTAINER_NAME = "Advanced FPS Counter";
+		// ----------------------------------------------------------------------------
+		// constants
+		// ----------------------------------------------------------------------------
+		private const string MENU_PATH = "Code Stage/Advanced FPS Counter";
+		private const string COMPONENT_NAME = "Advanced FPS Counter";
 
-		//internal static string NEW_LINE = Environment.NewLine;
+		internal const string LOG_PREFIX = "<b>[AFPSCounter]:</b> ";
 		internal const char NEW_LINE = '\n';
 		internal const char SPACE = ' ';
 
-		/// <summary>
-		/// Allows reaching public properties from code. Can be null.
-		/// \sa AddToScene()
-		/// </summary>
-		public static AFPSCounter Instance { get; private set; }
+		// ----------------------------------------------------------------------------
+		// public fields
+		// ----------------------------------------------------------------------------
 
 		/// <summary>
 		/// Frames Per Second counter.
@@ -49,211 +56,75 @@ namespace CodeStage.AdvancedFPSCounter
 		/// <summary>
 		/// Used to enable / disable plugin at runtime. Set to KeyCode.None to disable.
 		/// </summary>
+		[Tooltip("Used to enable / disable plugin at runtime.\nSet to None to disable.")]
 		public KeyCode hotKey = KeyCode.BackQuote;
 
 		/// <summary>
-		/// Allows to keep Advanced FPS Counter game object on new level (scene) load.
+		/// Used to enable / disable plugin at runtime. Make two circle gestures with your finger \ mouse to switch plugin on and off.
 		/// </summary>
-		public bool keepAlive = true;
+		[Tooltip("Used to enable / disable plugin at runtime.\nMake two circle gestures with your finger \\ mouse to switch plugin on and off.")]
+		public bool circleGesture = false;
 
-		private bool obsoleteEnabled = true;
+		/// <summary>
+		/// Hot key modifier: any Control on Windows or any Command on Mac.
+		/// </summary>
+		[Tooltip("Hot key modifier: any Control on Windows or any Command on Mac.")]
+		public bool hotKeyCtrl;
 
+		/// <summary>
+		/// Hot key modifier: any Shift.
+		/// </summary>
+		[Tooltip("Hot key modifier: any Shift.")]
+		public bool hotKeyShift;
+
+		/// <summary>
+		/// Hot key modifier: any Alt.
+		/// </summary>
+		[Tooltip("Hot key modifier: any Alt.")]
+		public bool hotKeyAlt;
+
+		[Tooltip("Prevents current or other topmost Game Object from destroying on level (scene) load.\nApplied once, on Start phase.")]
 		[SerializeField]
-		private OperationMode operationMode = OperationMode.Normal;
+		private bool keepAlive = true;
 
-		[SerializeField]
-		private bool forceFrameRate;
+		// ----------------------------------------------------------------------------
+		// private fields
+		// ----------------------------------------------------------------------------
 
-		[SerializeField]
-		[Range(-1, 200)]
-		private int forcedFrameRate = -1;
+		private Canvas canvas;
+		private CanvasScaler canvasScaler;
+		private bool externalCanvas;
 
-		[SerializeField]
-		private Vector2 anchorsOffset = new Vector2(5,5);
-
-		[SerializeField]
-		private Font labelsFont;
-
-		[SerializeField]
-		[Range(0, 100)]
-		private int fontSize;
-
-		[SerializeField]
-		[Range(0f, 10f)]
-		private float lineSpacing = 1;
-
-		[SerializeField]
-		[Range(0, 10)]
-		private int countersSpacing = 0;
-
-		internal DrawableLabel[] labels;
+		private DrawableLabel[] labels;
 
 		private int anchorsCount;
 		private int cachedVSync = -1;
 		private int cachedFrameRate = -1;
-	    private bool inited;
+		private bool inited;
 
-#region editor stuff
-#if UNITY_EDITOR
-		[HideInInspector]
-		[SerializeField]
-		private bool fpsGroupToggle;
-		
-		[HideInInspector]
-		[SerializeField]
-		private bool memoryGroupToggle;
+		/* circle gesture variables */
 
-		[HideInInspector]
-		[SerializeField]
-		private bool deviceGroupToggle;
+		private readonly List<Vector2> gesturePoints = new List<Vector2>();
+		private int gestureCount;
 
-		[HideInInspector]
-		[SerializeField]
-		private bool lookAndFeelToggle;
-
-		private const string MENU_PATH = "GameObject/Create Other/Code Stage/Advanced FPS Counter %&F";
-
-		[UnityEditor.MenuItem(MENU_PATH, false)]
-		private static void AddToSceneInEditor()
-		{
-			AFPSCounter counter = FindObjectOfType<AFPSCounter>();
-			if (counter != null)
-			{
-				if (counter.IsPlacedCorrectly())
-				{
-					if (UnityEditor.EditorUtility.DisplayDialog("Remove Advanced FPS Counter?", "Advanced FPS Counter already exists in scene and placed correctly. Dou you wish to remove it?", "Yes", "No"))
-					{
-						DestroyInEditorImmediate(counter);
-					}
-				}
-				else
-				{
-					if (counter.MayBePlacedHere())
-					{
-						int dialogResult = UnityEditor.EditorUtility.DisplayDialogComplex("Fix existing Game Object to work with Adavnced FPS Counter?", "Advanced FPS Counter already exists in scene and placed onto  Game Object \"" + counter.name + "\".\nDo you wish to let plugin configure and use this Game Object further? Press Delete to remove plugin from scene at all.", "Fix", "Delete", "Cancel");
-
-						switch (dialogResult)
-						{
-							case 0:
-								counter.FixCurrentGameObject();
-								break;
-							case 1:
-								DestroyInEditorImmediate(counter);
-								break;
-						}
-					}
-					else
-					{
-						int dialogResult = UnityEditor.EditorUtility.DisplayDialogComplex("Move existing Adavnced FPS Counter to own Game Object?", "Looks like Advanced FPS Counter plugin already exists in scene and placed incorrectly on Game Object \"" + counter.name + "\".\nDo you wish to let plugin move itself onto separate configured Game Object \"" + CONTAINER_NAME + "\"? Press Delete to remove plugin from scene at all.", "Move", "Delete", "Cancel");
-						switch (dialogResult)
-						{
-							case 0:
-								GameObject go = new GameObject(CONTAINER_NAME);
-								UnityEditor.Undo.RegisterCreatedObjectUndo(go, "Create " + CONTAINER_NAME);
-								UnityEditor.Selection.activeObject = go;
-								AFPSCounter newCounter = go.AddComponent<AFPSCounter>();
-								UnityEditor.EditorUtility.CopySerialized(counter, newCounter);
-								DestroyInEditorImmediate(counter);
-								break;
-							case 1:
-								DestroyInEditorImmediate(counter);
-								break;
-						}
-					}
-				}
-			}
-			else
-			{
-				GameObject container = GameObject.Find(CONTAINER_NAME);
-				if (container == null)
-				{
-					container = new GameObject(CONTAINER_NAME);
-					UnityEditor.Undo.RegisterCreatedObjectUndo(container, "Create " + CONTAINER_NAME);
-					UnityEditor.Selection.activeObject = container;
-				}
-				container.AddComponent<AFPSCounter>();
-
-				UnityEditor.EditorUtility.DisplayDialog("Adavnced FPS Counter added!", "Adavnced FPS Counter successfully added to the object \"" + CONTAINER_NAME + "\"", "OK");
-			}
-
-		}
-
-		private bool MayBePlacedHere()
-		{
-			return (transform.childCount == 0 &&
-					transform.parent == null);
-		}
-
-		private static void DestroyInEditorImmediate(AFPSCounter component)
-		{
-			if (component.transform.childCount == 0 && component.GetComponentsInChildren<Component>(true).Length <= 2)
-			{
-				DestroyImmediate(component.gameObject);
-			}
-			else
-			{
-				DestroyImmediate(component);
-			}
-		}
-#endif
-#endregion
-
-		// добавить проверки в редакторе на положение и т.д.
-		private void FixCurrentGameObject()
-		{
-			gameObject.name = CONTAINER_NAME;
-			transform.position = Vector3.zero;
-			transform.rotation = Quaternion.identity;
-			transform.localScale = Vector3.one;
-			tag = "Untagged";
-			gameObject.layer = 0;
-			gameObject.isStatic = false;
-		}
-
-		private static AFPSCounter GetOrCreateInstance
-		{
-			get
-			{
-				if (Instance == null)
-				{
-					AFPSCounter counter = FindObjectOfType<AFPSCounter>();
-					if (counter != null)
-					{
-						Instance = counter;
-					}
-					else
-					{
-						GameObject go = new GameObject(CONTAINER_NAME);
-						go.AddComponent<AFPSCounter>();
-					}
-				}
-				return Instance;
-			}
-		}
+		// ----------------------------------------------------------------------------
+		// properties
+		// ----------------------------------------------------------------------------
 
 		/// <summary>
-		/// Creates and adds new %AFPSCounter instance to the scene if it doesn't exists.
-		/// Use it to instantiate %AFPSCounter from code before using AFPSCounter.Instance.
+		/// Read-only property allowing to figure out current keepAlive state.
 		/// </summary>
-		/// <returns>Existing or new %AFPSCounter instance.</returns>
-		public static AFPSCounter AddToScene()
+		public bool KeepAlive
 		{
-			return GetOrCreateInstance;
+			get { return keepAlive; }
 		}
 
-		/// <summary>
-		/// Use it to completely dispose current %AFPSCounter instance.
-		/// </summary>
-		public static void Dispose()
-		{
-			if (Instance != null) Instance.DisposeInternal();
-		}
-
-		private void DisposeInternal()
-		{
-			Destroy(this);
-			if (Instance == this) Instance = null;
-		}
+		#region OperationMode
+		[Tooltip("Disabled: removes labels and stops all internal processes except Hot Key listener.\n\n" +
+				 "Background: removes labels keeping counters alive; use for hidden performance monitoring.\n\n" +
+				 "Normal: shows labels and runs all internal processes as usual.")]
+		[SerializeField]
+		private OperationMode operationMode = OperationMode.Normal;
 
 		/// <summary>
 		/// Use it to change %AFPSCounter operation mode.
@@ -293,31 +164,14 @@ namespace CodeStage.AdvancedFPSCounter
 				}
 			}
 		}
+		#endregion
 
-		/// <summary>
-		/// This is deprecated property. Use #OperationMode property instead.
-		/// </summary>
-		[Obsolete("Use AFPSCounter.Instance.OperationMode instead of AFPSCounter.Instance.enabled!")]
-		public new bool enabled
-		{
-			get { return obsoleteEnabled; }
-			set
-			{
-				if (obsoleteEnabled == value || !Application.isPlaying) return;
-				obsoleteEnabled = value;
-
-				if (obsoleteEnabled)
-				{
-					operationMode = OperationMode.Normal;
-					OnEnable();
-				}
-				else
-				{
-					operationMode = OperationMode.Disabled;
-					OnDisable();
-				}
-			}
-		}
+		#region ForceFrameRate
+		[Tooltip("Allows to see how your game performs on specified frame rate.\n" +
+				 "Does not guarantee selected frame rate. Set -1 to render as fast as possible in current conditions.\n" +
+				 "IMPORTANT: this option disables VSync while enabled!")]
+		[SerializeField]
+		private bool forceFrameRate;
 
 		/// <summary>
 		/// Allows to see how your game performs on specified frame rate.<br/>
@@ -336,6 +190,12 @@ namespace CodeStage.AdvancedFPSCounter
 				RefreshForcedFrameRate();
 			}
 		}
+		#endregion
+
+		#region ForcedFrameRate
+		[Range(-1, 200)]
+		[SerializeField]
+		private int forcedFrameRate = -1;
 
 		/// <summary>
 		/// Desired frame rate for ForceFrameRate option, does not guarantee selected frame rate.
@@ -353,26 +213,298 @@ namespace CodeStage.AdvancedFPSCounter
 				RefreshForcedFrameRate();
 			}
 		}
+		#endregion
 
+		/* look and feel settings */
+
+		#region Background
+		[Tooltip("Background for all texts. Cheapest effect. Overhead: 1 Draw Call.")]
+		[SerializeField]
+		private bool background = true;
 
 		/// <summary>
-		/// Pixel offset for anchored labels. Automatically applied to all 4 corners.
+		/// Background for all texts.
 		/// </summary>
-		public Vector2 AnchorsOffset
+		public bool Background
 		{
-			get { return anchorsOffset; }
+			get { return background; }
 			set
 			{
-				if (anchorsOffset == value || !Application.isPlaying) return;
-				anchorsOffset = value;
+				if (background == value || !Application.isPlaying) return;
+				background = value;
+
 				if (operationMode == OperationMode.Disabled || labels == null) return;
 
 				for (int i = 0; i < anchorsCount; i++)
 				{
-					labels[i].ChangeOffset(anchorsOffset);
+					labels[i].ChangeBackground(background);
 				}
 			}
 		}
+		#endregion
+
+		#region BackgroundColor
+		[Tooltip("Color of the background.")]
+		[SerializeField]
+		private Color backgroundColor = new Color32(0, 0, 0, 155);
+
+		/// <summary>
+		/// Color of the background.
+		/// </summary>
+		public Color BackgroundColor
+		{
+			get { return backgroundColor; }
+			set
+			{
+				if (backgroundColor == value || !Application.isPlaying) return;
+				backgroundColor = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				for (int i = 0; i < anchorsCount; i++)
+				{
+					labels[i].ChangeBackgroundColor(backgroundColor);
+				}
+			}
+		}
+		#endregion
+
+		#region BackgroundPadding
+		[Tooltip("Padding of the background.")]
+		[Range(0, 30)]
+		[SerializeField]
+		private int backgroundPadding = 5;
+
+		/// <summary>
+		/// Padding of the background. Change forces the HorizontalLayoutGroup.SetLayoutHorizontal() call.
+		/// </summary>
+		public int BackgroundPadding
+		{
+			get { return backgroundPadding; }
+			set
+			{
+				if (backgroundPadding == value || !Application.isPlaying) return;
+				backgroundPadding = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				for (int i = 0; i < anchorsCount; i++)
+				{
+					labels[i].ChangeBackgroundPadding(backgroundPadding);
+				}
+			}
+		}
+		#endregion
+
+		#region Shadow
+		[Tooltip("Shadow effect for all texts. This effect uses extra resources. Overhead: medium CPU and light GPU usage.")]
+		[SerializeField]
+		private bool shadow;
+
+		/// <summary>
+		/// Shadow effect for all texts.
+		/// </summary>
+		public bool Shadow
+		{
+			get { return shadow; }
+			set
+			{
+				if (shadow == value || !Application.isPlaying) return;
+				shadow = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				for (int i = 0; i < anchorsCount; i++)
+				{
+					labels[i].ChangeShadow(shadow);
+				}
+			}
+		}
+		#endregion
+
+		#region ShadowColor
+		[Tooltip("Color of the shadow effect.")]
+		[SerializeField]
+		private Color shadowColor = new Color32(0, 0, 0, 128);
+
+		/// <summary>
+		/// Color of the shadow effect.
+		/// </summary>
+		public Color ShadowColor
+		{
+			get { return shadowColor; }
+			set
+			{
+				if (shadowColor == value || !Application.isPlaying) return;
+				shadowColor = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				for (int i = 0; i < anchorsCount; i++)
+				{
+					labels[i].ChangeShadowColor(shadowColor);
+				}
+			}
+		}
+		#endregion
+
+		#region ShadowDistance
+		[Tooltip("Distance of the shadow effect.")]
+		[SerializeField]
+		private Vector2 shadowDistance = new Vector2(1, -1);
+
+		/// <summary>
+		/// Distance of the shadow effect.
+		/// </summary>
+		public Vector2 ShadowDistance
+		{
+			get { return shadowDistance; }
+			set
+			{
+				if (shadowDistance == value || !Application.isPlaying) return;
+				shadowDistance = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				for (int i = 0; i < anchorsCount; i++)
+				{
+					labels[i].ChangeShadowDistance(shadowDistance);
+				}
+			}
+		}
+		#endregion
+
+		#region Outline
+		[Tooltip("Outline effect for all texts. Resource-heaviest effect. Overhead: huge CPU and medium GPU usage. Not recommended for use unless really necessary.")]
+		[SerializeField]
+		private bool outline;
+
+		/// <summary>
+		/// Outline effect for all texts.
+		/// </summary>
+		public bool Outline
+		{
+			get { return outline; }
+			set
+			{
+				if (outline == value || !Application.isPlaying) return;
+				outline = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				for (int i = 0; i < anchorsCount; i++)
+				{
+					labels[i].ChangeOutline(outline);
+				}
+			}
+		}
+		#endregion
+
+		#region OutlineColor
+		[Tooltip("Color of the outline effect.")]
+		[SerializeField]
+		private Color outlineColor = new Color32(0, 0, 0, 128);
+
+		/// <summary>
+		/// Color of the outline effect.
+		/// </summary>
+		public Color OutlineColor
+		{
+			get { return outlineColor; }
+			set
+			{
+				if (outlineColor == value || !Application.isPlaying) return;
+				outlineColor = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				for (int i = 0; i < anchorsCount; i++)
+				{
+					labels[i].ChangeOutlineColor(outlineColor);
+				}
+			}
+		}
+		#endregion
+
+		#region OutlineDistance
+		[Tooltip("Distance of the outline effect.")]
+		[SerializeField]
+		private Vector2 outlineDistance = new Vector2(1, -1);
+
+		/// <summary>
+		/// Distance of the outline effect.
+		/// </summary>
+		public Vector2 OutlineDistance
+		{
+			get { return outlineDistance; }
+			set
+			{
+				if (outlineDistance == value || !Application.isPlaying) return;
+				outlineDistance = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				for (int i = 0; i < anchorsCount; i++)
+				{
+					labels[i].ChangeOutlineDistance(outlineDistance);
+				}
+			}
+		}
+		#endregion
+
+		#region AutoScale
+		[Tooltip("Controls own canvas scaler scale mode. Chec to use ScaleWithScreenSize. Otherwise ConstantPixelSize will be used.")]
+		[SerializeField]
+		private bool autoScale;
+
+		/// <summary>
+		/// Controls own canvas scaler scale mode. Chec to use ScaleWithScreenSize. Otherwise ConstantPixelSize will be used.
+		/// </summary>
+		public bool AutoScale
+		{
+			get { return autoScale; }
+			set
+			{
+				if (autoScale == value || !Application.isPlaying) return;
+				autoScale = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+				if (canvasScaler == null) return;
+
+				canvasScaler.uiScaleMode = autoScale
+					? CanvasScaler.ScaleMode.ScaleWithScreenSize
+					: CanvasScaler.ScaleMode.ConstantPixelSize;
+			}
+		}
+		#endregion
+
+		#region ScaleFactor
+		[Tooltip("Controls global scale of all texts.")]
+		[Range(0f, 30f)]
+		[SerializeField]
+		private float scaleFactor = 1;
+
+		/// <summary>
+		/// Controls global scale of all texts.
+		/// </summary>
+		public float ScaleFactor
+		{
+			get { return scaleFactor; }
+			set
+			{
+				if (System.Math.Abs(scaleFactor - value) < 0.001f || !Application.isPlaying) return;
+				scaleFactor = value;
+				if (operationMode == OperationMode.Disabled || canvasScaler == null) return;
+
+				canvasScaler.scaleFactor = scaleFactor;
+			}
+		}
+		#endregion
+
+		#region LabelsFont
+		[Tooltip("Leave blank to use default font.")]
+		[SerializeField]
+		private Font labelsFont;
 
 		/// <summary>
 		/// Font to render labels with.
@@ -392,6 +524,13 @@ namespace CodeStage.AdvancedFPSCounter
 				}
 			}
 		}
+		#endregion
+
+		#region FontSize
+		[Tooltip("Set to 0 to use font size specified in the font importer.")]
+		[Range(0, 100)]
+		[SerializeField]
+		private int fontSize = 14;
 
 		/// <summary>
 		/// The font size to use (for dynamic fonts).
@@ -412,6 +551,13 @@ namespace CodeStage.AdvancedFPSCounter
 				}
 			}
 		}
+		#endregion
+
+		#region LineSpacing
+		[Tooltip("Space between lines in labels.")]
+		[Range(0f, 10f)]
+		[SerializeField]
+		private float lineSpacing = 1;
 
 		/// <summary>
 		/// Space between lines.
@@ -421,7 +567,7 @@ namespace CodeStage.AdvancedFPSCounter
 			get { return lineSpacing; }
 			set
 			{
-				if (Math.Abs(lineSpacing - value) < 0.001f || !Application.isPlaying) return;
+				if (System.Math.Abs(lineSpacing - value) < 0.001f || !Application.isPlaying) return;
 				lineSpacing = value;
 				if (operationMode == OperationMode.Disabled || labels == null) return;
 
@@ -431,7 +577,14 @@ namespace CodeStage.AdvancedFPSCounter
 				}
 			}
 		}
-		
+		#endregion
+
+		#region CountersSpacing
+		[Tooltip("Lines count between different counters in a single label.")]
+		[Range(0, 10)]
+		[SerializeField]
+		private int countersSpacing;
+
 		/// <summary>
 		/// Lines count between different counters in a single label.
 		/// </summary>
@@ -440,7 +593,7 @@ namespace CodeStage.AdvancedFPSCounter
 			get { return countersSpacing; }
 			set
 			{
-				if (Math.Abs(countersSpacing - value) < 0.001f || !Application.isPlaying) return;
+				if (countersSpacing == value || !Application.isPlaying) return;
 				countersSpacing = value;
 				if (operationMode == OperationMode.Disabled || labels == null) return;
 
@@ -451,128 +604,280 @@ namespace CodeStage.AdvancedFPSCounter
 				}
 			}
 		}
+		#endregion
 
-		// preventing direct instantiation =P
+		#region PaddingOffset
+		[Tooltip("Pixel offset for anchored labels. Automatically applied to all labels.")]
+		[SerializeField]
+		private Vector2 paddingOffset = new Vector2(5, 5);
+
+		/// <summary>
+		/// Pixel offset for anchored labels. Automatically applied to all labels.
+		/// </summary>
+		public Vector2 PaddingOffset
+		{
+			get { return paddingOffset; }
+			set
+			{
+				if (paddingOffset == value || !Application.isPlaying) return;
+				paddingOffset = value;
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				for (int i = 0; i < anchorsCount; i++)
+				{
+					labels[i].ChangeOffset(paddingOffset);
+				}
+			}
+		}
+		#endregion
+
+		#region PixelPerfect
+		[Tooltip("Controls own canvas Pixel Perfect property.")]
+		[SerializeField]
+		private bool pixelPerfect = true;
+
+		/// <summary>
+		/// Controls own canvas Pixel Perfect property.
+		/// </summary>
+		public bool PixelPerfect
+		{
+			get { return pixelPerfect; }
+			set
+			{
+				if (pixelPerfect == value || !Application.isPlaying) return;
+				pixelPerfect = value;
+
+				if (operationMode == OperationMode.Disabled || labels == null) return;
+
+				canvas.pixelPerfect = pixelPerfect;
+			}
+		}
+		#endregion
+
+		/* advanced settings */
+
+		#region SortingOrder
+		[Tooltip("Sorting order to use for the canvas.\nSet higher value to get closer to the user.")]
+		[SerializeField]
+		private int sortingOrder = 10000;
+
+		/// <summary>
+		/// Sorting order to use for the canvas.
+		/// </summary>
+		/// Set higher value to get closer to the user.
+		public int SortingOrder
+		{
+			get { return sortingOrder; }
+			set
+			{
+				if (sortingOrder == value || !Application.isPlaying) return;
+				sortingOrder = value;
+
+				if (operationMode == OperationMode.Disabled || canvas == null) return;
+
+				canvas.sortingOrder = sortingOrder;
+			}
+		}
+		#endregion
+
+		// preventing direct instantiation
 		private AFPSCounter() { }
 
-#region Unity callbacks
+		// ----------------------------------------------------------------------------
+		// instance
+		// ----------------------------------------------------------------------------
+
+		/// <summary>
+		/// Allows reaching public properties from code. Can be null.
+		/// \sa AddToScene()
+		/// </summary>
+		public static AFPSCounter Instance { get; private set; }
+
+		private static AFPSCounter GetOrCreateInstance(bool keepAlive)
+		{
+			if (Instance != null) return Instance;
+
+			var counter = FindObjectOfType<AFPSCounter>();
+			if (counter != null)
+			{
+				Instance = counter;
+			}
+			else
+			{
+				AFPSCounter newInstance = CreateInScene(false);
+				newInstance.keepAlive = keepAlive;
+			}
+			return Instance;
+		}
+
+		// ----------------------------------------------------------------------------
+		// public static methods
+		// ----------------------------------------------------------------------------
+
+		/// <summary>
+		/// Creates and adds new %AFPSCounter instance to the scene if it doesn't exists with keepAlive set to true.
+		/// Use it to instantiate %AFPSCounter from code before using AFPSCounter.Instance.
+		/// </summary>
+		/// <returns>Existing or new %AFPSCounter instance.</returns>
+		public static AFPSCounter AddToScene()
+		{
+			return AddToScene(true);
+		}
+
+		/// <summary>
+		/// Creates and adds new %AFPSCounter instance to the scene if it doesn't exists.
+		/// Use it to instantiate %AFPSCounter from code before using AFPSCounter.Instance.
+		/// </summary>
+		/// <param name="keepAlive">Set true to prevent AFPSCounter's Game Object from destroying on level (scene) load.
+		/// Applies to the new Instance only.</param>
+		/// <returns>Existing or new %AFPSCounter instance.</returns>
+		public static AFPSCounter AddToScene(bool keepAlive)
+		{
+			return GetOrCreateInstance(keepAlive);
+		}
+
+		[System.Obsolete("Please use SelfDestroy() instead. This method will be removed in future updates.")]
+		public static void Dispose()
+		{
+			SelfDestroy();
+		}
+		
+		/// <summary>
+		/// Use it to completely dispose current %AFPSCounter instance.
+		/// </summary>
+		public static void SelfDestroy()
+		{
+			if (Instance != null) Instance.DisposeInternal();
+		}
+
+
+
+		// ----------------------------------------------------------------------------
+		// internal static methods
+		// ----------------------------------------------------------------------------
+
+		internal static string Color32ToHex(Color32 color)
+		{
+			return color.r.ToString("x2") + color.g.ToString("x2") + color.b.ToString("x2") + color.a.ToString("x2");
+		}
+
+		// ----------------------------------------------------------------------------
+		// private static methods
+		// ----------------------------------------------------------------------------
+
+		private static AFPSCounter CreateInScene(bool lookForExistingContainer = true)
+		{
+			var container = lookForExistingContainer ? GameObject.Find(COMPONENT_NAME) : null;
+			if (container == null)
+			{
+				container = new GameObject(COMPONENT_NAME)
+				{
+					layer = LayerMask.NameToLayer("UI")
+				};
+#if UNITY_EDITOR
+				if (!Application.isPlaying)
+				{
+					UnityEditor.Undo.RegisterCreatedObjectUndo(container, "Create " + COMPONENT_NAME);
+					if (UnityEditor.Selection.activeTransform != null)
+					{
+						container.transform.parent = UnityEditor.Selection.activeTransform;
+					}
+					UnityEditor.Selection.activeObject = container;
+				}
+#endif
+			}
+
+			var newInstance = container.AddComponent<AFPSCounter>();
+			return newInstance;
+		}
+
+		// ----------------------------------------------------------------------------
+		// unity callbacks
+		// ----------------------------------------------------------------------------
+
+		#region unity callbacks
 		private void Awake()
 		{
+			/* checks for duplication */
+
 			if (Instance != null && Instance.keepAlive)
 			{
 				Destroy(this);
 				return;
 			}
 
+			/* editor-only checks */
+
+#if UNITY_EDITOR && false
 			if (!IsPlacedCorrectly())
 			{
-				Debug.LogWarning("Advanced FPS Counter is placed in scene incorrectly and will be auto-destroyed! Please, use \"GameObject->Create Other->Code Stage->Advanced FPS Counter\" menu to correct this!");
-				Destroy(this);
-				return;
+				Debug.LogWarning(LOG_PREFIX + "incorrect placement detected! Please, use \"" + GAME_OBJECT_MENU_GROUP + MENU_PATH + "\" menu to fix it!", this);
 			}
+#endif
 
-			SceneManager.sceneLoaded += LevelWasLoaded;
+			/* initialization */
+
+			Instance = this;
 
 			fpsCounter.Init(this);
 			memoryCounter.Init(this);
 			deviceInfoCounter.Init(this);
 
-			Instance = this;
-			DontDestroyOnLoad(gameObject);
-
-			anchorsCount = Enum.GetNames(typeof(LabelAnchor)).Length;
-			labels = new DrawableLabel[anchorsCount];
-
-			for (int i = 0; i < anchorsCount; i++)
-			{
-				labels[i] = new DrawableLabel((LabelAnchor)i, anchorsOffset, labelsFont, fontSize, lineSpacing);
-			}
+			ConfigureCanvas();
+			ConfigureLabels();
 
 			inited = true;
 		}
 
-		#region EditorChecks
-#if UNITY_EDITOR
 		private void Start()
 		{
-
-
-			Camera[] cameras = Camera.allCameras;
-			int len = Camera.allCamerasCount;
-			bool willRender = false;
-
-			for (int i = 0; i < len; i++)
+			if (keepAlive)
 			{
-				Camera cam = cameras[i];
-				GUILayer guiLayer = cam.GetComponent<GUILayer>();
-				if (guiLayer != null && guiLayer.enabled)
-				{
-					// checking if AFPSCounter's layer in the camera's culling mask
-					if ((cam.cullingMask & (1 << gameObject.layer)) != 0)
-					{
-						willRender = true;
-						break;
-					}
-				}
-			}
-
-			if (!willRender)
-			{
-			//	Debug.LogWarning("Please check you have at least one camera with enabled GUILayer and layer \"" + LayerMask.LayerToName(gameObject.layer) + "\" in the culling mask!");
-			}
-
-			if (transform.position != Vector3.zero)
-			{
-				Debug.LogWarning("AFPSCounter should be placed on Game Object with zero position!", gameObject);
-			}
-
-			if (transform.rotation != Quaternion.identity)
-			{
-				Debug.LogWarning("AFPSCounter should be placed on Game Object with zero rotation!", gameObject);
-			}
-
-			if (transform.localScale != Vector3.one)
-			{
-				Debug.LogWarning("AFPSCounter should be placed on Game Object with 1,1,1 scale!", gameObject);
+				// will keep alive itself or other topmost game object
+				DontDestroyOnLoad(transform.root.gameObject);
+#if UNITY_5_4_OR_NEWER
+				SceneManager.sceneLoaded += OnLevelWasLoadedNew;
+#endif
 			}
 		}
-#endif
-		#endregion
 
 		private void Update()
 		{
 			if (!inited) return;
 
-			if (hotKey != KeyCode.None)
+			ProcessHotKey();
+
+			if (circleGesture && CircleGestureMade())
 			{
-				if (Input.GetKeyDown(hotKey))
-				{
-					SwitchCounter();
-				}
+				SwitchCounter();
 			}
 		}
 
-		private void LevelWasLoaded(Scene scene, LoadSceneMode mode)
+#if UNITY_5_4_OR_NEWER
+		private void OnLevelWasLoadedNew(Scene scene, LoadSceneMode mode)
+		{
+			OnLevelLoadedCallback();
+		}
+#else
+		private void OnLevelWasLoaded()
+		{
+			OnLevelLoadedCallback();
+		}
+#endif
+
+		private void OnLevelLoadedCallback()
 		{
 			if (!inited) return;
+			if (!fpsCounter.Enabled) return;
 
-			if (!keepAlive)
-			{
-				DisposeInternal();
-			}
-			else
-			{
-				if (fpsCounter.Enabled)
-				{
-					if (fpsCounter.ShowMinMax && fpsCounter.resetMinMaxOnNewScene) fpsCounter.ResetMinMax();
-					if (fpsCounter.ShowAverage && fpsCounter.resetAverageOnNewScene) fpsCounter.ResetAverage();
-				}
-			}
+			fpsCounter.OnLevelLoadedCallback();
 		}
 
 		private void OnEnable()
 		{
+			if (!inited) return;
 			if (operationMode == OperationMode.Disabled) return;
+
 			ActivateCounters();
 			Invoke("RefreshForcedFrameRate", 0.5f);
 		}
@@ -595,37 +900,41 @@ namespace CodeStage.AdvancedFPSCounter
 		{
 			if (inited)
 			{
-				fpsCounter.Dispose();
-				memoryCounter.Dispose();
-				deviceInfoCounter.Dispose();
+				fpsCounter.Destroy();
+				memoryCounter.Destroy();
+				deviceInfoCounter.Destroy();
 
 				if (labels != null)
 				{
 					for (int i = 0; i < anchorsCount; i++)
 					{
-						labels[i].Dispose();
+						labels[i].Destroy();
 					}
 
-					Array.Clear(labels, 0, anchorsCount);
+					System.Array.Clear(labels, 0, anchorsCount);
 					labels = null;
 				}
 				inited = false;
 			}
 
-			if (transform.childCount == 0 && GetComponentsInChildren<Component>().Length <= 2)
+			if (canvas != null)
+			{
+				Destroy(canvas.gameObject);
+			}
+
+			if (transform.childCount <= 1)
 			{
 				Destroy(gameObject);
 			}
 
-			SceneManager.sceneLoaded -= LevelWasLoaded;
-		}
-#endregion
-
-		private bool IsPlacedCorrectly()
-		{
-			return true;
+			if (Instance == this) Instance = null;
 		}
 
+		#endregion
+
+		// ----------------------------------------------------------------------------
+		// internal methods
+		// ----------------------------------------------------------------------------
 
 		internal void MakeDrawableLabelDirty(LabelAnchor anchor)
 		{
@@ -646,7 +955,7 @@ namespace CodeStage.AdvancedFPSCounter
 				DrawableLabel label = labels[(int)fpsCounter.Anchor];
 				if (label.newText.Length > 0)
 				{
-					label.newText.Append(new String(NEW_LINE, countersSpacing + 1));
+					label.newText.Append(new string(NEW_LINE, countersSpacing + 1));
 				}
 				label.newText.Append(fpsCounter.text);
 				label.dirty |= fpsCounter.dirty;
@@ -660,7 +969,7 @@ namespace CodeStage.AdvancedFPSCounter
 				DrawableLabel label = labels[(int)memoryCounter.Anchor];
 				if (label.newText.Length > 0)
 				{
-					label.newText.Append(new String(NEW_LINE, countersSpacing + 1));
+					label.newText.Append(new string(NEW_LINE, countersSpacing + 1));
 				}
 				label.newText.Append(memoryCounter.text);
 				label.dirty |= memoryCounter.dirty;
@@ -674,7 +983,7 @@ namespace CodeStage.AdvancedFPSCounter
 				DrawableLabel label = labels[(int)deviceInfoCounter.Anchor];
 				if (label.newText.Length > 0)
 				{
-					label.newText.Append(new String(NEW_LINE, countersSpacing + 1));
+					label.newText.Append(new string(NEW_LINE, countersSpacing + 1));
 				}
 				label.newText.Append(deviceInfoCounter.text);
 				label.dirty |= deviceInfoCounter.dirty;
@@ -699,30 +1008,170 @@ namespace CodeStage.AdvancedFPSCounter
 			}
 		}
 
-		private IEnumerator UpdateFPSCounter()
+		// ----------------------------------------------------------------------------
+		// private methods
+		// ----------------------------------------------------------------------------
+		private void ConfigureCanvas()
 		{
-			while (true)
+			Canvas parentCanvas = GetComponentInParent<Canvas>();
+			if (parentCanvas != null)
 			{
-				float previousUpdateTime = Time.unscaledTime;
-				int previousUpdateFrames = Time.frameCount;
-				yield return new WaitForSeconds(fpsCounter.UpdateInterval);
-				float timeElapsed = Time.unscaledTime - previousUpdateTime;
-				int framesChanged = Time.frameCount - previousUpdateFrames;
+				externalCanvas = true;
 
-				fpsCounter.newValue = framesChanged / timeElapsed;
-				fpsCounter.UpdateValue(false);
-				UpdateTexts();
+				RectTransform ownRectTransform = gameObject.GetComponent<RectTransform>();
+				if (ownRectTransform == null)
+				{
+					ownRectTransform = gameObject.AddComponent<RectTransform>();
+				}
+
+				UIUtils.ResetRectTransform(ownRectTransform);
+			}
+
+			GameObject canvasObject = new GameObject("CountersCanvas", typeof(Canvas));
+			canvasObject.tag = gameObject.tag;
+			canvasObject.layer = gameObject.layer;
+			canvasObject.transform.SetParent(transform, false);
+
+			canvas = canvasObject.GetComponent<Canvas>();
+
+			RectTransform canvasRectTransform = canvasObject.GetComponent<RectTransform>();
+
+			UIUtils.ResetRectTransform(canvasRectTransform);
+
+			if (!externalCanvas)
+			{
+				canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+				canvas.pixelPerfect = pixelPerfect;
+				canvas.sortingOrder = sortingOrder;
+
+				canvasScaler = canvasObject.AddComponent<CanvasScaler>();
+
+				if (autoScale)
+				{
+					canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+				}
+				else
+				{
+					canvasScaler.scaleFactor = scaleFactor;
+				}
 			}
 		}
-		
-		private IEnumerator UpdateMemoryCounter()
+
+		private void ConfigureLabels()
 		{
-			while (true)
+			anchorsCount = System.Enum.GetNames(typeof(LabelAnchor)).Length;
+			labels = new DrawableLabel[anchorsCount];
+
+			for (int i = 0; i < anchorsCount; i++)
 			{
-				memoryCounter.UpdateValue();
-				UpdateTexts();
-				yield return new WaitForSeconds(memoryCounter.UpdateInterval);
+				labels[i] = new DrawableLabel(canvas.gameObject, (LabelAnchor)i,
+					new LabelEffect(background, backgroundColor, backgroundPadding),
+					new LabelEffect(shadow, shadowColor, shadowDistance),
+					new LabelEffect(outline, outlineColor, outlineDistance),
+					labelsFont, fontSize, lineSpacing, paddingOffset);
 			}
+		}
+
+		private void DisposeInternal()
+		{
+			Destroy(this);
+			if (Instance == this) Instance = null;
+		}
+
+		private void ProcessHotKey()
+		{
+			if (hotKey == KeyCode.None) return;
+
+			if (Input.GetKeyDown(hotKey))
+			{
+				bool modifiersPressed = true;
+
+				if (hotKeyCtrl)
+				{
+					modifiersPressed &= Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftCommand) || Input.GetKey(KeyCode.RightCommand);
+				}
+
+				if (hotKeyAlt)
+				{
+					modifiersPressed &= Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt);
+				}
+
+				if (hotKeyShift)
+				{
+					modifiersPressed &= Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+				}
+
+				if (modifiersPressed)
+				{
+					SwitchCounter();
+				}
+			}
+		}
+
+		private bool CircleGestureMade()
+		{
+			bool result = false;
+
+			int pointsCount = gesturePoints.Count;
+
+			if (Input.GetMouseButton(0))
+			{
+				Vector2 mousePosition = Input.mousePosition;
+				if (pointsCount == 0 || (mousePosition - gesturePoints[pointsCount - 1]).magnitude > 10)
+				{
+					gesturePoints.Add(mousePosition);
+					pointsCount++;
+				}
+			}
+			else if (Input.GetMouseButtonUp(0))
+			{
+				pointsCount = 0;
+				gestureCount = 0;
+				gesturePoints.Clear();
+			}
+
+			if (pointsCount < 10)
+				return result;
+
+			float finalDeltaLength = 0;
+
+			Vector2 finalDelta = Vector2.zero;
+			Vector2 previousPointsDelta = Vector2.zero;
+
+			for (int i = 0; i < pointsCount - 2; i++)
+			{
+				Vector2 pointsDelta = gesturePoints[i + 1] - gesturePoints[i];
+				finalDelta += pointsDelta;
+
+				float pointsDeltaLength = pointsDelta.magnitude;
+				finalDeltaLength += pointsDeltaLength;
+
+				float dotProduct = Vector2.Dot(pointsDelta, previousPointsDelta);
+				if (dotProduct < 0f)
+				{
+					gesturePoints.Clear();
+					gestureCount = 0;
+					return result;
+				}
+
+				previousPointsDelta = pointsDelta;
+			}
+
+			int gestureBase = (Screen.width + Screen.height) / 4;
+
+			if (finalDeltaLength > gestureBase && finalDelta.magnitude < gestureBase / 2f)
+			{
+				gesturePoints.Clear();
+				gestureCount++;
+
+				if (gestureCount >= 2)
+				{
+					gestureCount = 0;
+					result = true;
+				}
+			}
+
+			return result;
 		}
 
 		private void SwitchCounter()
@@ -773,7 +1222,7 @@ namespace CodeStage.AdvancedFPSCounter
 					cachedFrameRate = Application.targetFrameRate;
 					QualitySettings.vSyncCount = 0;
 				}
-				
+
 				Application.targetFrameRate = forcedFrameRate;
 			}
 			else
@@ -787,9 +1236,149 @@ namespace CodeStage.AdvancedFPSCounter
 			}
 		}
 
-		internal static string Color32ToHex(Color32 color)
+		// ----------------------------------------------------------------------------
+		// editor-only code
+		// ----------------------------------------------------------------------------
+
+		#region editor-only code
+#if UNITY_EDITOR
+		private const string GAME_OBJECT_MENU_GROUP = "GameObject/Create Other/";
+		private const string GAME_OBJECT_MENU_PATH = GAME_OBJECT_MENU_GROUP + MENU_PATH;
+
+		[HideInInspector]
+		[SerializeField]
+		private bool lookAndFeelFoldout;
+
+		[HideInInspector]
+		[SerializeField]
+		private bool advancedFoldout;
+
+		// ReSharper disable once UnusedMember.Local
+		[UnityEditor.MenuItem(GAME_OBJECT_MENU_PATH, false)]
+		private static void AddToSceneInEditor()
 		{
-			return color.r.ToString("x2") + color.g.ToString("x2") + color.b.ToString("x2") + color.a.ToString("x2");
+			AFPSCounter counter = FindObjectOfType<AFPSCounter>();
+			if (counter != null)
+			{
+				if (counter.IsPlacedCorrectly())
+				{
+					if (UnityEditor.EditorUtility.DisplayDialog("Remove " + COMPONENT_NAME + "?",
+						COMPONENT_NAME + " already exists in scene and placed correctly. Do you wish to remove it?", "Yes", "No"))
+					{
+						DestroyInEditorImmediate(counter);
+					}
+				}
+				else
+				{
+					if (counter.MayBePlacedHere())
+					{
+						int dialogResult = UnityEditor.EditorUtility.DisplayDialogComplex("Fix existing Game Object to work with " +
+							COMPONENT_NAME + "?",
+							COMPONENT_NAME + " already exists in scene and placed on Game Object \"" +
+							counter.name + "\" with minor errors.\nDo you wish to let plugin fix and use this Game Object further? " +
+							"Press Delete to remove plugin from scene at all.", "Fix", "Delete", "Cancel");
+
+						switch (dialogResult)
+						{
+							case 0:
+								counter.FixCurrentGameObject();
+								break;
+							case 1:
+								DestroyInEditorImmediate(counter);
+								break;
+						}
+					}
+					else
+					{
+						int dialogResult = UnityEditor.EditorUtility.DisplayDialogComplex("Move existing " + COMPONENT_NAME +
+							" to own Game Object?",
+							"Looks like " + COMPONENT_NAME + " already exists in scene and placed incorrectly on Game Object \"" +
+							counter.name + "\".\nDo you wish to let plugin move itself onto separate correct Game Object \"" +
+							COMPONENT_NAME + "\"? Press Delete to remove plugin from scene at all.", "Move", "Delete", "Cancel");
+
+						switch (dialogResult)
+						{
+							case 0:
+								AFPSCounter newCounter = CreateInScene(false);
+								UnityEditor.EditorUtility.CopySerialized(counter, newCounter);
+								DestroyInEditorImmediate(counter);
+								break;
+							case 1:
+								DestroyInEditorImmediate(counter);
+								break;
+						}
+					}
+				}
+			}
+			else
+			{
+				var newCounter = CreateInScene();
+
+				var fonts = UnityEditor.AssetDatabase.FindAssets("t:Font, VeraMono");
+				if (fonts != null && fonts.Length != 0)
+				{
+					string veraMonoPath = null;
+					foreach (var font in fonts)
+					{
+						var fontPath = UnityEditor.AssetDatabase.GUIDToAssetPath(font);
+						var fontFileName = System.IO.Path.GetFileName(fontPath);
+						if (fontFileName == "VeraMono.ttf")
+						{
+							veraMonoPath = fontPath;
+							break;
+						}
+					}
+
+					if (!string.IsNullOrEmpty(veraMonoPath))
+					{
+						var font = (Font) UnityEditor.AssetDatabase.LoadAssetAtPath(veraMonoPath, typeof(Font));
+						var so = new UnityEditor.SerializedObject(newCounter);
+						so.FindProperty("labelsFont").objectReferenceValue = font;
+						so.ApplyModifiedProperties();
+						UnityEditor.EditorUtility.SetDirty(newCounter);
+					}
+				}
+				UnityEditor.EditorUtility.DisplayDialog("Advanced FPS Counter added!", "Advanced FPS Counter successfully added to the object \"" + COMPONENT_NAME + "\"", "OK");
+			}
+
 		}
+
+		private bool MayBePlacedHere()
+		{
+			return transform.childCount == 0;
+		}
+
+		private bool IsPlacedCorrectly()
+		{
+			return transform.localRotation == Quaternion.identity &&
+				transform.localScale == Vector3.one &&
+				gameObject.isStatic == false &&
+				MayBePlacedHere();
+		}
+
+		private void FixCurrentGameObject()
+		{
+			gameObject.name = COMPONENT_NAME;
+			transform.position = Vector3.zero;
+			transform.rotation = Quaternion.identity;
+			transform.localScale = Vector3.one;
+			tag = "Untagged";
+			gameObject.layer = LayerMask.NameToLayer("UI");
+			gameObject.isStatic = false;
+		}
+
+		private static void DestroyInEditorImmediate(AFPSCounter component)
+		{
+			if (component.transform.childCount == 0 && component.GetComponentsInChildren<Component>(true).Length <= 2)
+			{
+				UnityEditor.Undo.DestroyObjectImmediate(component.gameObject);
+			}
+			else
+			{
+				UnityEditor.Undo.DestroyObjectImmediate(component);
+			}
+		}
+#endif
+		#endregion
 	}
 }

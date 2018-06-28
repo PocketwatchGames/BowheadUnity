@@ -43,8 +43,9 @@ MonoBehaviour:
   _chunkMinY: -1
   _chunkMaxY: 1
   _chunkXZSize: 16
-  _blitMaterial: {fileID: 2100000, guid: eb7646f2b6af5bd4fb0b5525ecb41c57, type: 2}
+  _maskBlitMaterial: {fileID: 2100000, guid: eb7646f2b6af5bd4fb0b5525ecb41c57, type: 2}
   _revealTexture: {fileID: 2800000, guid: 813600220f7521842bfcb7a4816ae5dc, type: 3}
+  _maskTexture: {fileID: 0}
 --- !u!114 &114746448105589144
 MonoBehaviour:
   m_ObjectHideFlags: 1

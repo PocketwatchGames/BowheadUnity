@@ -1,63 +1,113 @@
-﻿using CodeStage.AdvancedFPSCounter.Labels;
+﻿#if UNITY_EDITOR
+using CodeStage.AdvancedFPSCounter.Editor.UI;
+using CodeStage.AdvancedFPSCounter.Labels;
 using UnityEditor;
 using UnityEngine;
 
 namespace CodeStage.AdvancedFPSCounter
 {
 	[CustomEditor(typeof(AFPSCounter))]
-	public class AFPSCounterEditor: Editor
+	internal class AFPSCounterEditor: UnityEditor.Editor
 	{
-		private AFPSCounter self;
+		private AFPSCounter me;
 
 		private SerializedProperty operationMode;
-		private SerializedProperty fpsGroupToggle;
-		private SerializedProperty fpsCounter;
-		private SerializedProperty fpsCounterEnabled;
-		private SerializedProperty fpsCounterAnchor;
-		private SerializedProperty fpsCounterUpdateInterval;
-		private SerializedProperty fpsCounterShowMilliseconds;
-		private SerializedProperty fpsCounterShowAverage;
-		private SerializedProperty fpsCounterShowMinMax;
-		private SerializedProperty fpsCounterMinMaxOnNewLine;
-		private SerializedProperty fpsCounterResetMinMaxOnNewScene;
-		private SerializedProperty fpsCounterMinMaxIntervalsToSkip;
-		private SerializedProperty fpsCounterAverageFromSamples;
-		private SerializedProperty fpsCounterResetAverageOnNewScene;
-		private SerializedProperty fpsCounterWarningLevelValue;
-		private SerializedProperty fpsCounterCriticalLevelValue;
-		private SerializedProperty fpsCounterColor;
-		private SerializedProperty fpsCounterColorWarning;
-		private SerializedProperty fpsCounterColorCritical;
+		private SerializedProperty fps;
+		private SerializedProperty fpsEnabled;
+		private SerializedProperty fpsAnchor;
+		private SerializedProperty fpsInterval;
+		private SerializedProperty fpsMilliseconds;
 
-		private SerializedProperty memoryGroupToggle;
-		private SerializedProperty memoryCounter;
-		private SerializedProperty memoryCounterEnabled;
-		private SerializedProperty memoryCounterAnchor;
-		private SerializedProperty memoryCounterUpdateInterval;
-		private SerializedProperty memoryCounterPreciseValues;
-		private SerializedProperty memoryCounterColor;
-		private SerializedProperty memoryCounterTotalReserved;
-		private SerializedProperty memoryCounterAllocated;
-		private SerializedProperty memoryCounterMonoUsage;
+		private SerializedProperty fpsAverage;
+		private SerializedProperty fpsAverageMilliseconds;
+		private SerializedProperty fpsAverageNewLine;
+		private SerializedProperty fpsAverageSamples;
+		private SerializedProperty fpsResetAverageOnNewScene;
 
-		private SerializedProperty deviceGroupToggle;
-		private SerializedProperty deviceCounter;
-		private SerializedProperty deviceCounterEnabled;
-		private SerializedProperty deviceCounterAnchor;
-		private SerializedProperty deviceCounterColor;
-		private SerializedProperty deviceCounterCpuModel;
-		private SerializedProperty deviceCounterGpuModel;
-		private SerializedProperty deviceCounterRamSize;
-		private SerializedProperty deviceCounterScreenData;
+		private SerializedProperty fpsMinMax;
+		private SerializedProperty fpsMinMaxMilliseconds;
+		private SerializedProperty fpsMinMaxNewLine;
+		private SerializedProperty fpsMinMaxTwoLines;
+		private SerializedProperty fpsResetMinMaxOnNewScene;
+		private SerializedProperty fpsMinMaxIntervalsToSkip;
 
-		private SerializedProperty lookAndFeelToggle;
+		private SerializedProperty fpsRender;
+		private SerializedProperty fpsRenderNewLine;
+		private SerializedProperty fpsRenderAutoAdd;
+
+		private SerializedProperty fpsWarningLevelValue;
+		private SerializedProperty fpsCriticalLevelValue;
+		private SerializedProperty fpsColor;
+		private SerializedProperty fpsColorWarning;
+		private SerializedProperty fpsColorCritical;
+		private SerializedProperty fpsColorRender;
+		private SerializedProperty fpsStyle;
+
+		private SerializedProperty memory;
+		private SerializedProperty memoryEnabled;
+		private SerializedProperty memoryAnchor;
+	    private SerializedProperty memoryColor;
+	    private SerializedProperty memoryStyle;
+	    private SerializedProperty memoryInterval;
+	    private SerializedProperty memoryPrecise;
+	    private SerializedProperty memoryTotal;
+	    private SerializedProperty memoryAllocated;
+	    private SerializedProperty memoryMonoUsage;
+#if UNITY_2018_1_OR_NEWER
+		private SerializedProperty memoryGfx;
+#endif
+
+		private SerializedProperty device;
+		private SerializedProperty deviceEnabled;
+		private SerializedProperty deviceAnchor;
+	    private SerializedProperty deviceColor;
+	    private SerializedProperty deviceStyle;
+	    private SerializedProperty deviceCpuModel;
+	    private SerializedProperty deviceCpuModelNewLine;
+		private SerializedProperty devicePlatform;
+		private SerializedProperty deviceGpuModel;
+		private SerializedProperty deviceGpuModelNewLine;
+		private SerializedProperty deviceGpuApi;
+		private SerializedProperty deviceGpuApiNewLine;
+		private SerializedProperty deviceGpuSpec;
+		private SerializedProperty deviceGpuSpecNewLine;
+		private SerializedProperty deviceRamSize;
+		private SerializedProperty deviceRamSizeNewLine;
+		private SerializedProperty deviceScreenData;
+		private SerializedProperty deviceScreenDataNewLine;
+		private SerializedProperty deviceModel;
+		private SerializedProperty deviceModelNewLine;
+
+		private SerializedProperty lookAndFeelFoldout;
+		private SerializedProperty autoScale;
+		private SerializedProperty scaleFactor;
 		private SerializedProperty labelsFont;
 		private SerializedProperty fontSize;
 		private SerializedProperty lineSpacing;
 		private SerializedProperty countersSpacing;
-		private SerializedProperty anchorsOffset;
+		private SerializedProperty paddingOffset;
+		private SerializedProperty pixelPerfect;
+
+		private SerializedProperty background;
+		private SerializedProperty backgroundColor;
+		private SerializedProperty backgroundPadding;
+
+		private SerializedProperty shadow;
+		private SerializedProperty shadowColor;
+		private SerializedProperty shadowDistance;
+
+		private SerializedProperty outline;
+		private SerializedProperty outlineColor;
+		private SerializedProperty outlineDistance;
+
+		private SerializedProperty advancedFoldout;
+		private SerializedProperty sortingOrder;
 
 		private SerializedProperty hotKey;
+		private SerializedProperty hotKeyCtrl;
+		private SerializedProperty hotKeyShift;
+		private SerializedProperty hotKeyAlt;
+		private SerializedProperty circleGesture;
 		private SerializedProperty keepAlive;
 		private SerializedProperty forceFrameRate;
 		private SerializedProperty forcedFrameRate;
@@ -66,432 +116,458 @@ namespace CodeStage.AdvancedFPSCounter
 
 		public void OnEnable()
 		{
-			self = (target as AFPSCounter);
+			me = target as AFPSCounter;
 
 			operationMode = serializedObject.FindProperty("operationMode");
 
-			fpsGroupToggle = serializedObject.FindProperty("fpsGroupToggle");
+			hotKey = serializedObject.FindProperty("hotKey");
+			hotKeyCtrl = serializedObject.FindProperty("hotKeyCtrl");
+			hotKeyShift = serializedObject.FindProperty("hotKeyShift");
+			hotKeyAlt = serializedObject.FindProperty("hotKeyAlt");
+            circleGesture = serializedObject.FindProperty("circleGesture");
+			keepAlive = serializedObject.FindProperty("keepAlive");
+			forceFrameRate = serializedObject.FindProperty("forceFrameRate");
+			forcedFrameRate = serializedObject.FindProperty("forcedFrameRate");
 
-			fpsCounter = serializedObject.FindProperty("fpsCounter");
-			fpsCounterEnabled = fpsCounter.FindPropertyRelative("enabled");
-			fpsCounterUpdateInterval = fpsCounter.FindPropertyRelative("updateInterval");
-			fpsCounterAnchor = fpsCounter.FindPropertyRelative("anchor");
-			fpsCounterShowMilliseconds = fpsCounter.FindPropertyRelative("showMilliseconds");
-			fpsCounterShowAverage = fpsCounter.FindPropertyRelative("showAverage");
-			fpsCounterShowMinMax = fpsCounter.FindPropertyRelative("showMinMax");
-			fpsCounterMinMaxOnNewLine = fpsCounter.FindPropertyRelative("minMaxOnNewLine");
-			fpsCounterResetMinMaxOnNewScene = fpsCounter.FindPropertyRelative("resetMinMaxOnNewScene");
-			fpsCounterMinMaxIntervalsToSkip = fpsCounter.FindPropertyRelative("minMaxIntervalsToSkip");
-			fpsCounterAverageFromSamples = fpsCounter.FindPropertyRelative("averageFromSamples");
-			fpsCounterResetAverageOnNewScene = fpsCounter.FindPropertyRelative("resetAverageOnNewScene");
-			fpsCounterWarningLevelValue = fpsCounter.FindPropertyRelative("warningLevelValue");
-			fpsCounterCriticalLevelValue = fpsCounter.FindPropertyRelative("criticalLevelValue");
-			fpsCounterColor = fpsCounter.FindPropertyRelative("color");
-			fpsCounterColorWarning = fpsCounter.FindPropertyRelative("colorWarning");
-			fpsCounterColorCritical = fpsCounter.FindPropertyRelative("colorCritical");
-
-			memoryGroupToggle = serializedObject.FindProperty("memoryGroupToggle");
-
-			memoryCounter = serializedObject.FindProperty("memoryCounter");
-			memoryCounterEnabled = memoryCounter.FindPropertyRelative("enabled");
-			memoryCounterUpdateInterval = memoryCounter.FindPropertyRelative("updateInterval");
-			memoryCounterAnchor = memoryCounter.FindPropertyRelative("anchor");
-			memoryCounterPreciseValues = memoryCounter.FindPropertyRelative("preciseValues");
-			memoryCounterColor = memoryCounter.FindPropertyRelative("color");
-			memoryCounterTotalReserved = memoryCounter.FindPropertyRelative("totalReserved");
-			memoryCounterAllocated = memoryCounter.FindPropertyRelative("allocated");
-			memoryCounterMonoUsage = memoryCounter.FindPropertyRelative("monoUsage");
-
-			deviceGroupToggle = serializedObject.FindProperty("deviceGroupToggle");
-
-			deviceCounter = serializedObject.FindProperty("deviceInfoCounter");
-			deviceCounterEnabled = deviceCounter.FindPropertyRelative("enabled");
-			deviceCounterAnchor = deviceCounter.FindPropertyRelative("anchor");
-			deviceCounterColor = deviceCounter.FindPropertyRelative("color");
-			deviceCounterCpuModel = deviceCounter.FindPropertyRelative("cpuModel");
-			deviceCounterGpuModel = deviceCounter.FindPropertyRelative("gpuModel");
-			deviceCounterRamSize = deviceCounter.FindPropertyRelative("ramSize");
-			deviceCounterScreenData = deviceCounter.FindPropertyRelative("screenData");
-
-			lookAndFeelToggle = serializedObject.FindProperty("lookAndFeelToggle");
+			lookAndFeelFoldout = serializedObject.FindProperty("lookAndFeelFoldout");
+            autoScale = serializedObject.FindProperty("autoScale");
+			scaleFactor = serializedObject.FindProperty("scaleFactor");
 			labelsFont = serializedObject.FindProperty("labelsFont");
 			fontSize = serializedObject.FindProperty("fontSize");
 			lineSpacing = serializedObject.FindProperty("lineSpacing");
 			countersSpacing = serializedObject.FindProperty("countersSpacing");
-			anchorsOffset = serializedObject.FindProperty("anchorsOffset");
+			paddingOffset = serializedObject.FindProperty("paddingOffset");
+            pixelPerfect = serializedObject.FindProperty("pixelPerfect");
 
-			hotKey = serializedObject.FindProperty("hotKey");
-			keepAlive = serializedObject.FindProperty("keepAlive");
-			forceFrameRate = serializedObject.FindProperty("forceFrameRate");
-			forcedFrameRate = serializedObject.FindProperty("forcedFrameRate");
+			background = serializedObject.FindProperty("background");
+			backgroundColor = serializedObject.FindProperty("backgroundColor");
+            backgroundPadding = serializedObject.FindProperty("backgroundPadding");
+
+			shadow = serializedObject.FindProperty("shadow");
+			shadowColor = serializedObject.FindProperty("shadowColor");
+			shadowDistance = serializedObject.FindProperty("shadowDistance");
+
+			outline = serializedObject.FindProperty("outline");
+			outlineColor = serializedObject.FindProperty("outlineColor");
+			outlineDistance = serializedObject.FindProperty("outlineDistance");
+
+			advancedFoldout = serializedObject.FindProperty("advancedFoldout");
+			sortingOrder = serializedObject.FindProperty("sortingOrder");
+
+			fps = serializedObject.FindProperty("fpsCounter");
+			fpsEnabled = fps.FindPropertyRelative("enabled");
+			fpsInterval = fps.FindPropertyRelative("updateInterval");
+			fpsAnchor = fps.FindPropertyRelative("anchor");
+		    fpsMilliseconds = fps.FindPropertyRelative("milliseconds");
+
+		    fpsAverage = fps.FindPropertyRelative("average");
+		    fpsAverageMilliseconds = fps.FindPropertyRelative("averageMilliseconds");
+		    fpsAverageNewLine = fps.FindPropertyRelative("averageNewLine");
+		    fpsAverageSamples = fps.FindPropertyRelative("averageSamples");
+		    fpsResetAverageOnNewScene = fps.FindPropertyRelative("resetAverageOnNewScene");
+
+			fpsMinMax = fps.FindPropertyRelative("minMax");
+		    fpsMinMaxMilliseconds = fps.FindPropertyRelative("minMaxMilliseconds");
+		    fpsMinMaxNewLine = fps.FindPropertyRelative("minMaxNewLine");
+		    fpsMinMaxTwoLines = fps.FindPropertyRelative("minMaxTwoLines");
+		    fpsResetMinMaxOnNewScene = fps.FindPropertyRelative("resetMinMaxOnNewScene");
+		    fpsMinMaxIntervalsToSkip = fps.FindPropertyRelative("minMaxIntervalsToSkip");
+
+			fpsRender = fps.FindPropertyRelative("render");
+			fpsRenderNewLine = fps.FindPropertyRelative("renderNewLine");
+			fpsRenderAutoAdd = fps.FindPropertyRelative("renderAutoAdd");
+
+		    fpsWarningLevelValue = fps.FindPropertyRelative("warningLevelValue");
+		    fpsCriticalLevelValue = fps.FindPropertyRelative("criticalLevelValue");
+		    fpsColor = fps.FindPropertyRelative("color");
+		    fpsColorWarning = fps.FindPropertyRelative("colorWarning");
+		    fpsColorCritical = fps.FindPropertyRelative("colorCritical");
+			fpsColorRender = fps.FindPropertyRelative("colorRender");
+		    fpsStyle = fps.FindPropertyRelative("style");
+
+		    memory = serializedObject.FindProperty("memoryCounter");
+			memoryEnabled = memory.FindPropertyRelative("enabled");
+			memoryInterval = memory.FindPropertyRelative("updateInterval");
+			memoryAnchor = memory.FindPropertyRelative("anchor");
+		    memoryPrecise = memory.FindPropertyRelative("precise");
+		    memoryColor = memory.FindPropertyRelative("color");
+            memoryStyle = memory.FindPropertyRelative("style");
+		    memoryTotal = memory.FindPropertyRelative("total");
+			memoryAllocated = memory.FindPropertyRelative("allocated");
+			memoryMonoUsage = memory.FindPropertyRelative("monoUsage");
+#if UNITY_2018_1_OR_NEWER
+			memoryGfx = memory.FindPropertyRelative("gfx");
+#endif
+
+			device = serializedObject.FindProperty("deviceInfoCounter");
+			deviceEnabled = device.FindPropertyRelative("enabled");
+			deviceAnchor = device.FindPropertyRelative("anchor");
+		    deviceColor = device.FindPropertyRelative("color");
+            deviceStyle = device.FindPropertyRelative("style");
+		    devicePlatform = device.FindPropertyRelative("platform");
+			deviceCpuModel = device.FindPropertyRelative("cpuModel");
+			deviceCpuModelNewLine = device.FindPropertyRelative("cpuModelNewLine");
+			deviceGpuModel = device.FindPropertyRelative("gpuModel");
+			deviceGpuModelNewLine = device.FindPropertyRelative("gpuModelNewLine");
+			deviceGpuApi = device.FindPropertyRelative("gpuApi");
+			deviceGpuApiNewLine = device.FindPropertyRelative("gpuApiNewLine");
+			deviceGpuSpec = device.FindPropertyRelative("gpuSpec");
+			deviceGpuSpecNewLine = device.FindPropertyRelative("gpuSpecNewLine");
+			deviceRamSize = device.FindPropertyRelative("ramSize");
+			deviceRamSizeNewLine = device.FindPropertyRelative("ramSizeNewLine");
+			deviceScreenData = device.FindPropertyRelative("screenData");
+			deviceScreenDataNewLine = device.FindPropertyRelative("screenDataNewLine");
+            deviceModel = device.FindPropertyRelative("deviceModel");
+			deviceModelNewLine = device.FindPropertyRelative("deviceModelNewLine");
 		}
 
 		public override void OnInspectorGUI()
 		{
-			if (self == null) return;
-
+			if (me == null) return;
 			serializedObject.Update();
-			
-			int indent = EditorGUI.indentLevel;
 
-			if (PropertyFieldChanged(operationMode, new GUIContent("Operation Mode", "Disabled: removes labels and stops all internal processes except Hot Key listener\n\nBackground: removes labels keeping counters alive; use for hidden performance monitoring\n\nNormal: shows labels and runs all internal processes as usual")))
+			EditorUIUtils.SetupStyles();
+
+			GUILayout.Space(5);
+
+			EditorGUIUtility.labelWidth = 120;
+
+			EditorUIUtils.DrawProperty(operationMode, () => me.OperationMode = (OperationMode)operationMode.enumValueIndex);
+			EditorGUILayout.PropertyField(hotKey);
+
+			EditorGUIUtility.labelWidth = 0;
+
+			using (EditorUIUtils.Horizontal())
 			{
-				self.OperationMode = (OperationMode)operationMode.enumValueIndex;
+				GUILayout.FlexibleSpace();
+
+				EditorGUIUtility.labelWidth = 70;
+				EditorGUILayout.PropertyField(hotKeyCtrl, new GUIContent("Ctrl / Cmd", hotKeyCtrl.tooltip), GUILayout.Width(85));
+
+				EditorGUIUtility.labelWidth = 20;
+				EditorGUILayout.PropertyField(hotKeyAlt, new GUIContent("Alt", hotKeyAlt.tooltip), GUILayout.Width(35));
+
+				EditorGUIUtility.labelWidth = 35;
+				EditorGUILayout.PropertyField(hotKeyShift, new GUIContent("Shift", hotKeyShift.tooltip), GUILayout.Width(50));
+
+				EditorGUIUtility.labelWidth = 0;
 			}
 
-			EditorGUILayout.PropertyField(hotKey, new GUIContent("Hot Key", "Used to enable / disable plugin. Set to None to disable"));
-			EditorGUILayout.PropertyField(keepAlive, new GUIContent("Keep Alive", "Prevent current Game Object from destroying on level (scene) load"));
+			EditorGUIUtility.labelWidth = 120;
+			EditorGUILayout.PropertyField(circleGesture);
 
-			EditorGUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
-			if (PropertyFieldChanged(forceFrameRate, new GUIContent("Force FPS", "Allows to see how your game performs on specified frame rate.\nDoes not guarantee selected frame rate. Set -1 to render as fast as possible in current conditions.\nIMPORTANT: this option disables VSync while enabled!")))
+            EditorGUILayout.PropertyField(keepAlive);
+			if (me.transform.parent != null)
 			{
-				self.ForceFrameRate = forceFrameRate.boolValue;
+				EditorGUILayout.LabelField("Keep Alive option will keep alive root level object (" + me.transform.root.name + ")!", EditorStyles.wordWrappedMiniLabel);
 			}
 
-			//EditorGUI.indentLevel = 1;
-			if (PropertyFieldChanged(forcedFrameRate, new GUIContent("")))
+			using (EditorUIUtils.Horizontal(GUILayout.ExpandWidth(true)))
 			{
-				self.ForcedFrameRate = forcedFrameRate.intValue;
-			}
-			//EditorGUI.indentLevel = indent;
-			EditorGUILayout.EndHorizontal();
-
-			
-			if (Foldout(lookAndFeelToggle, "Look and feel"))
-			{
-				EditorGUI.indentLevel = 1;
-
-				EditorGUIUtility.fieldWidth = 70;
-
-				if (PropertyFieldChanged(labelsFont, new GUIContent("Labels font", "Leave blank to use default font")))
-				{
-					self.LabelsFont = (Font)labelsFont.objectReferenceValue;
-				}
-
-				if (PropertyFieldChanged(fontSize, new GUIContent("Font size", "Set to 0 to use font size specified in the font importer")))
-				{
-					self.FontSize = fontSize.intValue;
-				}
-
-				if (PropertyFieldChanged(lineSpacing, new GUIContent("Line spacing", "Space between lines in labels")))
-				{
-					self.LineSpacing = lineSpacing.floatValue;
-				}
-
-				if (PropertyFieldChanged(countersSpacing, new GUIContent("Counters spacing", "Lines count between different counters in a single label")))
-				{
-					self.CountersSpacing = countersSpacing.intValue;
-				}
-
-				EditorGUIUtility.wideMode = true;
-				if (PropertyFieldChanged(anchorsOffset, new GUIContent("Pixel offset", "Offset in pixels, will be applied to all 4 corners automatically")))
-				{
-					self.AnchorsOffset = anchorsOffset.vector2Value;
-				}
-				EditorGUIUtility.wideMode = false;
-
-				GUILayout.BeginHorizontal();
-				groupAnchor = (LabelAnchor)EditorGUILayout.EnumPopup(new GUIContent("Move all to", "Use to explicitly move all counters to the specified anchor label.\nSelect anchor and press Apply"), groupAnchor);
-
-				if (GUILayout.Button(new GUIContent("Apply", "Press to move all counters to the selected anchor label"), GUILayout.Width(45)))
-				{
-					self.fpsCounter.Anchor = groupAnchor;
-					fpsCounterAnchor.enumValueIndex = (int)groupAnchor;
-
-					self.memoryCounter.Anchor = groupAnchor;
-					memoryCounterAnchor.enumValueIndex = (int)groupAnchor;
-
-					self.deviceInfoCounter.Anchor = groupAnchor;
-					deviceCounterAnchor.enumValueIndex = (int)groupAnchor;
-				}
-				GUILayout.EndHorizontal();
-				 
-
-				EditorGUIUtility.fieldWidth = 0;
-				EditorGUI.indentLevel = indent;
-
-				EditorGUILayout.Space();
+				EditorUIUtils.DrawProperty(forceFrameRate, "Force FPS", () => me.ForceFrameRate = forceFrameRate.boolValue, GUILayout.ExpandWidth(false));
+				GUILayout.Space(2);
+				EditorUIUtils.DrawProperty(forcedFrameRate, GUIContent.none, () => me.ForcedFrameRate = forcedFrameRate.intValue);
 			}
 
-			if (ToggleFoldout(fpsGroupToggle, "FPS Counter", fpsCounterEnabled))
+			EditorGUIUtility.labelWidth = 0;
+
+			if (EditorUIUtils.Foldout(lookAndFeelFoldout, "Look & Feel"))
 			{
-				self.fpsCounter.Enabled = fpsCounterEnabled.boolValue;
-			}
+				EditorGUIUtility.labelWidth = 130; 
 
-			if (fpsGroupToggle.boolValue)
-			{
-				EditorGUI.indentLevel = 2;
+				EditorUIUtils.DrawProperty(autoScale, () => me.AutoScale = autoScale.boolValue);
 
-				if (PropertyFieldChanged(fpsCounterUpdateInterval, new GUIContent("Interval", "Update interval in seconds")))
+			    if (autoScale.boolValue)
+			    {
+			        GUI.enabled = false;
+			    }
+				EditorUIUtils.DrawProperty(scaleFactor, () => me.ScaleFactor = scaleFactor.floatValue);
+                GUI.enabled = true;
+                EditorUIUtils.DrawProperty(labelsFont, () => me.LabelsFont = (Font)labelsFont.objectReferenceValue);
+				EditorUIUtils.DrawProperty(fontSize, () => me.FontSize = fontSize.intValue);
+				EditorUIUtils.DrawProperty(lineSpacing, () => me.LineSpacing = lineSpacing.floatValue);
+				EditorUIUtils.DrawProperty(countersSpacing, () => me.CountersSpacing = countersSpacing.intValue);
+				EditorUIUtils.DrawProperty(paddingOffset, () => me.PaddingOffset = paddingOffset.vector2Value);
+				EditorUIUtils.DrawProperty(pixelPerfect, () => me.PixelPerfect = pixelPerfect.boolValue);
+
+				EditorUIUtils.Header("Effects");
+				EditorUIUtils.Separator();
+
+				EditorUIUtils.DrawProperty(background, () => me.Background = background.boolValue);
+				if (background.boolValue)
 				{
-					self.fpsCounter.UpdateInterval = fpsCounterUpdateInterval.floatValue;
+					EditorUIUtils.Indent();
+					EditorUIUtils.DrawProperty(backgroundColor, "Color", () => me.BackgroundColor = backgroundColor.colorValue);
+					EditorUIUtils.DrawProperty(backgroundPadding, "Padding", () => me.BackgroundPadding = backgroundPadding.intValue);
+					EditorUIUtils.UnIndent();
 				}
 
-				if (PropertyFieldChanged(fpsCounterAnchor))
+				EditorUIUtils.DrawProperty(shadow, () => me.Shadow = shadow.boolValue);
+				if (shadow.boolValue)
 				{
-					self.fpsCounter.Anchor = (LabelAnchor)fpsCounterAnchor.enumValueIndex;
+					EditorUIUtils.Indent();
+                    EditorUIUtils.DrawProperty(shadowColor, () => me.ShadowColor = shadowColor.colorValue);
+					EditorUIUtils.DrawProperty(shadowDistance, () => me.ShadowDistance = shadowDistance.vector2Value);
+                    EditorGUILayout.LabelField(new GUIContent("<b>This effect is resource-heavy</b>", "Such effect increases resources usage on each text refresh."), EditorUIUtils.richMiniLabel);
+                    EditorUIUtils.UnIndent();
 				}
 
-				float minVal = fpsCounterCriticalLevelValue.intValue;
-				float maxVal = fpsCounterWarningLevelValue.intValue;
-
-				EditorGUILayout.MinMaxSlider(new GUIContent("Colors range", "This range will be used to apply colors below on specific FPS:\nCritical: 0 - min\nWarning: min+1 - max-1\nNormal: max+"), ref minVal, ref maxVal, 1, 60);
-
-				fpsCounterCriticalLevelValue.intValue = (int)minVal;
-				fpsCounterWarningLevelValue.intValue = (int)maxVal;
-
-				GUILayout.BeginHorizontal();
-				if (PropertyFieldChanged(fpsCounterColor, new GUIContent("Normal")))
+				EditorUIUtils.DrawProperty(outline, () => me.Outline = outline.boolValue);
+				if (outline.boolValue)
 				{
-					self.fpsCounter.Color = fpsCounterColor.colorValue;
+					EditorUIUtils.Indent();
+					EditorUIUtils.DrawProperty(outlineColor, () => me.OutlineColor = outlineColor.colorValue);
+					EditorUIUtils.DrawProperty(outlineDistance, () => me.OutlineDistance = outlineDistance.vector2Value);
+                    EditorGUILayout.LabelField(new GUIContent("<b>This effect is <color=#FF4040ff>very</color> resource-heavy!</b>", "Such effect significantly increases resources usage on each text refresh. Use only if really necessary."), EditorUIUtils.richMiniLabel);
+                    EditorUIUtils.UnIndent();
 				}
 
-				GUILayout.Label(maxVal + "+ FPS", GUILayout.Width(75));
-				GUILayout.EndHorizontal();
+				EditorUIUtils.Header("Service Commands");
 
-				GUILayout.BeginHorizontal();
-
-				if (PropertyFieldChanged(fpsCounterColorWarning, new GUIContent("Warning")))
+				using (EditorUIUtils.Horizontal())
 				{
-					self.fpsCounter.ColorWarning = fpsCounterColorWarning.colorValue;
-				}
-				GUILayout.Label((minVal + 1) + " - " + (maxVal - 1) + " FPS", GUILayout.Width(75));
-				GUILayout.EndHorizontal();
+					groupAnchor = (LabelAnchor)EditorGUILayout.EnumPopup(
+						new GUIContent("Move All To", "Use to explicitly move all counters to the specified anchor label.\n" +
+					                                  "Select anchor and press Apply."), groupAnchor);
 
-				GUILayout.BeginHorizontal();
-				if (PropertyFieldChanged(fpsCounterColorCritical, new GUIContent("Critical")))
-				{
-					self.fpsCounter.ColorCritical = fpsCounterColorCritical.colorValue;
-				}
-				GUILayout.Label("0 - " + minVal + " FPS", GUILayout.Width(75));
-				GUILayout.EndHorizontal();
-
-				EditorGUILayout.Space();
-
-				if (PropertyFieldChanged(fpsCounterShowMilliseconds, new GUIContent("Milliseconds", "Shows average time in milliseconds spent to process 1 frame")))
-				{
-					self.fpsCounter.ShowMilliseconds = fpsCounterShowMilliseconds.boolValue;
-				}
-
-				if (PropertyFieldChanged(fpsCounterShowAverage, new GUIContent("Average FPS", "Shows Average FPS calculated from specified Samples amount or since game or scene start, depending on Samples value and 'Reset On Load' toggle")))
-				{
-					self.fpsCounter.ShowAverage = fpsCounterShowAverage.boolValue;
-				}
-
-				if (fpsCounterShowAverage.boolValue)
-				{
-					EditorGUI.indentLevel = 3;
-
-					if (PropertyFieldChanged(fpsCounterAverageFromSamples, new GUIContent("Samples", "Amount of last samples to get average from. Set 0 to get average from all samples since startup or level load. One Sample recodred per Interval")))
+					if (GUILayout.Button(new GUIContent("Apply", "Press to move all counters to the selected anchor label."),
+					                     GUILayout.Width(45)))
 					{
-						self.fpsCounter.AverageFromSamples = fpsCounterAverageFromSamples.intValue;
+						Undo.RegisterCompleteObjectUndo(target, "Move all counters to anchor");
+
+						me.fpsCounter.Anchor = groupAnchor;
+						fpsAnchor.enumValueIndex = (int)groupAnchor;
+
+						me.memoryCounter.Anchor = groupAnchor;
+						memoryAnchor.enumValueIndex = (int)groupAnchor;
+
+						me.deviceInfoCounter.Anchor = groupAnchor;
+						deviceAnchor.enumValueIndex = (int)groupAnchor;
+						
+					}
+				}
+				EditorGUIUtility.labelWidth = 0;
+			}
+
+			if (EditorUIUtils.Foldout(advancedFoldout, "Advanced Settings"))
+			{
+				EditorGUIUtility.labelWidth = 120;
+				EditorUIUtils.DrawProperty(sortingOrder, () => me.SortingOrder = sortingOrder.intValue);
+				EditorGUIUtility.labelWidth = 0;
+			}
+
+			GUI.enabled = EditorUIUtils.ToggleFoldout(fpsEnabled, fps, "FPS Counter");
+			me.fpsCounter.Enabled = fpsEnabled.boolValue;
+
+			if (fps.isExpanded)
+			{
+				EditorGUIUtility.labelWidth = 120;
+
+				EditorUIUtils.DrawProperty(fpsInterval, "Interval", () => me.fpsCounter.UpdateInterval = fpsInterval.floatValue);
+				EditorUIUtils.DrawProperty(fpsAnchor, () => me.fpsCounter.Anchor = (LabelAnchor)fpsAnchor.enumValueIndex);
+                EditorUIUtils.Separator(5);
+
+                float minVal = fpsCriticalLevelValue.intValue;
+				float maxVal = fpsWarningLevelValue.intValue;
+
+				EditorGUILayout.MinMaxSlider(new GUIContent("Colors Range", 
+					"This range will be used to apply colors below on specific FPS:\n" +
+					"Critical: 0 - min\n" +
+					"Warning: min+1 - max-1\n" +
+					"Normal: max+"), 
+					ref minVal, ref maxVal, 1, 60);
+
+				fpsCriticalLevelValue.intValue = (int)minVal;
+				fpsWarningLevelValue.intValue = (int)maxVal;
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(fpsColor, "Normal", () => me.fpsCounter.Color = fpsColor.colorValue);
+					GUILayout.Label(maxVal + "+ FPS", GUILayout.Width(75));
+				}
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(fpsColorWarning, "Warning", () => me.fpsCounter.ColorWarning = fpsColorWarning.colorValue);
+					GUILayout.Label((minVal + 1) + " - " + (maxVal - 1) + " FPS", GUILayout.Width(75));
+				}
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(fpsColorCritical, "Critical", () => me.fpsCounter.ColorCritical = fpsColorCritical.colorValue);
+					GUILayout.Label("0 - " + minVal + " FPS", GUILayout.Width(75));
+				}
+
+				EditorUIUtils.Separator(5);
+
+                EditorUIUtils.DrawProperty(fpsStyle, () => me.fpsCounter.Style = (FontStyle)fpsStyle.enumValueIndex);
+
+                EditorUIUtils.Separator(5);
+				EditorUIUtils.DrawProperty(fpsMilliseconds, () => me.fpsCounter.Milliseconds = fpsMilliseconds.boolValue);
+				EditorUIUtils.DrawProperty(fpsAverage, "Average FPS", () => me.fpsCounter.Average = fpsAverage.boolValue);
+
+				if (fpsAverage.boolValue)
+				{
+					EditorUIUtils.Indent();
+					EditorUIUtils.DrawProperty(fpsAverageSamples, "Samples", () => me.fpsCounter.AverageSamples = fpsAverageSamples.intValue);
+					EditorUIUtils.DrawProperty(fpsAverageMilliseconds, "Milliseconds", () => me.fpsCounter.AverageMilliseconds = fpsAverageMilliseconds.boolValue);
+					EditorUIUtils.DrawProperty(fpsAverageNewLine, "New Line", () => me.fpsCounter.AverageNewLine = fpsAverageNewLine.boolValue);
+					using (EditorUIUtils.Horizontal())
+					{
+						EditorGUILayout.PropertyField(fpsResetAverageOnNewScene, new GUIContent("Auto Reset"), GUILayout.ExpandWidth(false));
+						if (GUILayout.Button("Reset", /*GUILayout.MaxWidth(200),*/ GUILayout.MinWidth(40)))
+						{
+							me.fpsCounter.ResetAverage();
+						}
 					}
 
-					EditorGUILayout.BeginHorizontal();
-					EditorGUILayout.PropertyField(fpsCounterResetAverageOnNewScene, new GUIContent("Auto reset", "Average FPS counter accumulative data will be reset on new scene load if enabled"));
-					if (GUILayout.Button("Reset now"))
+					EditorUIUtils.UnIndent();
+				}
+
+				EditorUIUtils.DrawProperty(fpsMinMax, "MinMax FPS", () => me.fpsCounter.MinMax = fpsMinMax.boolValue);
+
+				if (fpsMinMax.boolValue)
+				{
+					EditorUIUtils.Indent();
+					EditorGUILayout.PropertyField(fpsMinMaxIntervalsToSkip, new GUIContent("Delay"));
+					EditorUIUtils.DrawProperty(fpsMinMaxMilliseconds, "Milliseconds", () => me.fpsCounter.MinMaxMilliseconds = fpsMinMaxMilliseconds.boolValue);
+					EditorUIUtils.DrawProperty(fpsMinMaxNewLine, "New Line", () => me.fpsCounter.MinMaxNewLine = fpsMinMaxNewLine.boolValue);
+					EditorUIUtils.DrawProperty(fpsMinMaxTwoLines, "Two Lines", () => me.fpsCounter.MinMaxTwoLines = fpsMinMaxTwoLines.boolValue);
+					using (EditorUIUtils.Horizontal())
 					{
-						self.fpsCounter.ResetAverage();
+						EditorGUILayout.PropertyField(fpsResetMinMaxOnNewScene, new GUIContent("Auto Reset"), GUILayout.ExpandWidth(false));
+						if (GUILayout.Button("Reset", /*GUILayout.MaxWidth(200),*/ GUILayout.MinWidth(40)))
+						{
+							me.fpsCounter.ResetMinMax();
+						}
 					}
-					EditorGUILayout.EndHorizontal();
-
-					EditorGUI.indentLevel = 2;
+					EditorUIUtils.UnIndent();
 				}
 
-				if (PropertyFieldChanged(fpsCounterShowMinMax, new GUIContent("MinMax FPS", "Shows minimum and maximum FPS readouts since game or scene start, depending on 'Reset On Load' toggle")))
+				EditorUIUtils.DrawProperty(fpsRender, "Render Time", () => me.fpsCounter.Render = fpsRender.boolValue);
+				if (fpsRender.boolValue)
 				{
-					self.fpsCounter.ShowMinMax = fpsCounterShowMinMax.boolValue;
+					EditorUIUtils.Indent();
+					EditorUIUtils.DrawProperty(fpsColorRender, "Color", () => me.fpsCounter.ColorRender = fpsColorRender.colorValue);
+					EditorUIUtils.DrawProperty(fpsRenderNewLine, "New Line", () => me.fpsCounter.RenderNewLine = fpsRenderNewLine.boolValue);
+					EditorUIUtils.DrawProperty(fpsRenderAutoAdd, "Auto add", () => me.fpsCounter.RenderAutoAdd = fpsRenderAutoAdd.boolValue);
+					EditorUIUtils.UnIndent();
 				}
 
-				if (fpsCounterShowMinMax.boolValue)
+				EditorGUIUtility.labelWidth = 0;
+			}
+			GUI.enabled = true;
+
+			GUI.enabled = EditorUIUtils.ToggleFoldout(memoryEnabled, memory, "Memory Counter");
+			me.memoryCounter.Enabled = memoryEnabled.boolValue;
+			if (memory.isExpanded)
+			{
+				EditorGUIUtility.labelWidth = 100;
+
+				EditorUIUtils.DrawProperty(memoryInterval, "Interval", () => me.memoryCounter.UpdateInterval = memoryInterval.floatValue);
+				EditorUIUtils.DrawProperty(memoryAnchor, () => me.memoryCounter.Anchor = (LabelAnchor)memoryAnchor.enumValueIndex);
+				EditorUIUtils.DrawProperty(memoryColor, () => me.memoryCounter.Color = memoryColor.colorValue);
+                EditorUIUtils.DrawProperty(memoryStyle, () => me.memoryCounter.Style = (FontStyle)memoryStyle.enumValueIndex);
+                EditorGUILayout.Space();
+				EditorUIUtils.DrawProperty(memoryPrecise, () => me.memoryCounter.Precise = memoryPrecise.boolValue);
+				EditorUIUtils.DrawProperty(memoryTotal, () => me.memoryCounter.Total = memoryTotal.boolValue);
+				EditorUIUtils.DrawProperty(memoryAllocated, () => me.memoryCounter.Allocated = memoryAllocated.boolValue);
+				EditorUIUtils.DrawProperty(memoryMonoUsage, "Mono", () => me.memoryCounter.MonoUsage = memoryMonoUsage.boolValue);
+#if UNITY_2018_1_OR_NEWER
+				using (EditorUIUtils.Horizontal())
 				{
-					EditorGUI.indentLevel = 3;
-
-					EditorGUILayout.PropertyField(fpsCounterMinMaxIntervalsToSkip, new GUIContent("Delay", "Amount of update intervals to skip before recording minimum and maximum FPS, use it to skip initialization performance spikes and drops"));
-
-					if (PropertyFieldChanged(fpsCounterMinMaxOnNewLine, new GUIContent("On new line", "Controls placing Min Max on the new line")))
+					EditorUIUtils.DrawProperty(memoryGfx, "GfxDriver", () => me.memoryCounter.Gfx = memoryGfx.boolValue, GUILayout.ExpandWidth(false));
+					GUILayout.Space(0);
+					if (!EditorUserBuildSettings.development)
 					{
-						self.fpsCounter.MinMaxOnNewLine = fpsCounterMinMaxOnNewLine.boolValue;
+						EditorGUILayout.LabelField(
+							new GUIContent("works in <b>Development builds</b> only"),
+							EditorUIUtils.richMiniLabel, GUILayout.ExpandWidth(false));
 					}
-
-					EditorGUILayout.BeginHorizontal();
-					EditorGUILayout.PropertyField(fpsCounterResetMinMaxOnNewScene, new GUIContent("Auto reset", "Minimum and maximum FPS readouts will be reset on new scene load if enabled"));
-					if (GUILayout.Button("Reset now"))
-					{
-						self.fpsCounter.ResetMinMax();
-					}
-					EditorGUILayout.EndHorizontal();
-
-					EditorGUI.indentLevel = 2;
 				}
-
-				EditorGUILayout.Space();
-
-				EditorGUI.indentLevel = indent;
+#endif
+				EditorGUIUtility.labelWidth = 0;
 			}
+			GUI.enabled = true;
 
-			if (ToggleFoldout(memoryGroupToggle, "Memory Counter", memoryCounterEnabled))
+
+			var deviceInfoEnabled = EditorUIUtils.ToggleFoldout(deviceEnabled, device, "Device Information");
+			GUI.enabled = deviceInfoEnabled;
+			me.deviceInfoCounter.Enabled = deviceEnabled.boolValue;
+			if (device.isExpanded)
 			{
-				self.memoryCounter.Enabled = memoryCounterEnabled.boolValue;
+				EditorGUIUtility.labelWidth = 100;
+
+				EditorUIUtils.DrawProperty(deviceAnchor, () => me.deviceInfoCounter.Anchor = (LabelAnchor)deviceAnchor.intValue);
+				EditorUIUtils.DrawProperty(deviceColor, () => me.deviceInfoCounter.Color = deviceColor.colorValue);
+                EditorUIUtils.DrawProperty(deviceStyle, () => me.deviceInfoCounter.Style = (FontStyle)deviceStyle.enumValueIndex);
+                EditorGUILayout.Space();
+
+
+				EditorUIUtils.DrawProperty(devicePlatform, "Platform", () => me.deviceInfoCounter.Platform = devicePlatform.boolValue);
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(deviceCpuModel, "CPU", () => me.deviceInfoCounter.CpuModel = deviceCpuModel.boolValue, GUILayout.ExpandWidth(false));
+					GUI.enabled = deviceInfoEnabled && deviceCpuModel.boolValue;
+					EditorUIUtils.DrawProperty(deviceCpuModelNewLine, "New Line", () => me.deviceInfoCounter.CpuModelNewLine = deviceCpuModelNewLine.boolValue);
+					GUI.enabled = deviceInfoEnabled;
+				}
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(deviceGpuModel, "GPU Model", () => me.deviceInfoCounter.GpuModel = deviceGpuModel.boolValue, GUILayout.ExpandWidth(false));
+					GUI.enabled = deviceInfoEnabled && deviceGpuModel.boolValue;
+					EditorUIUtils.DrawProperty(deviceGpuModelNewLine, "New Line", () => me.deviceInfoCounter.GpuModelNewLine = deviceGpuModelNewLine.boolValue);
+					GUI.enabled = deviceInfoEnabled;
+				}
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(deviceGpuApi, "GPU API", () => me.deviceInfoCounter.GpuApi = deviceGpuApi.boolValue, GUILayout.ExpandWidth(false));
+					GUI.enabled = deviceInfoEnabled && deviceGpuApi.boolValue;
+					EditorUIUtils.DrawProperty(deviceGpuApiNewLine, "New Line", () => me.deviceInfoCounter.GpuApiNewLine = deviceGpuApiNewLine.boolValue);
+					GUI.enabled = deviceInfoEnabled;
+				}
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(deviceGpuSpec, "GPU Spec", () => me.deviceInfoCounter.GpuSpec = deviceGpuSpec.boolValue, GUILayout.ExpandWidth(false));
+					GUI.enabled = deviceInfoEnabled && deviceGpuSpec.boolValue;
+					EditorUIUtils.DrawProperty(deviceGpuSpecNewLine, "New Line", () => me.deviceInfoCounter.GpuSpecNewLine = deviceGpuSpecNewLine.boolValue);
+					GUI.enabled = deviceInfoEnabled;
+				}
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(deviceRamSize, "RAM", () => me.deviceInfoCounter.RamSize = deviceRamSize.boolValue, GUILayout.ExpandWidth(false));
+					GUI.enabled = deviceInfoEnabled && deviceRamSize.boolValue;
+					EditorUIUtils.DrawProperty(deviceRamSizeNewLine, "New Line", () => me.deviceInfoCounter.RamSizeNewLine = deviceRamSizeNewLine.boolValue);
+					GUI.enabled = deviceInfoEnabled;
+				}
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(deviceScreenData, "Screen", () => me.deviceInfoCounter.ScreenData = deviceScreenData.boolValue, GUILayout.ExpandWidth(false));
+					GUI.enabled = deviceInfoEnabled && deviceScreenData.boolValue;
+					EditorUIUtils.DrawProperty(deviceScreenDataNewLine, "New Line", () => me.deviceInfoCounter.ScreenDataNewLine = deviceScreenDataNewLine.boolValue);
+					GUI.enabled = deviceInfoEnabled;
+				}
+
+				using (EditorUIUtils.Horizontal())
+				{
+					EditorUIUtils.DrawProperty(deviceModel, "Model", () => me.deviceInfoCounter.DeviceModel = deviceModel.boolValue, GUILayout.ExpandWidth(false));
+					GUI.enabled = deviceInfoEnabled && deviceModel.boolValue;
+					EditorUIUtils.DrawProperty(deviceModelNewLine, "New Line", () => me.deviceInfoCounter.DeviceModelNewLine = deviceModelNewLine.boolValue);
+					GUI.enabled = deviceInfoEnabled;
+				}
+
+				EditorGUIUtility.labelWidth = 0;
 			}
-
-			if (memoryGroupToggle.boolValue)
-			{
-				EditorGUI.indentLevel = 2;
-
-				if (PropertyFieldChanged(memoryCounterUpdateInterval, new GUIContent("Interval", "Update interval in seconds")))
-				{
-					self.memoryCounter.UpdateInterval = memoryCounterUpdateInterval.floatValue;
-				}
-
-				if (PropertyFieldChanged(memoryCounterAnchor))
-				{
-					self.memoryCounter.Anchor = (LabelAnchor)memoryCounterAnchor.enumValueIndex;
-				}
-
-				if (PropertyFieldChanged(memoryCounterColor, new GUIContent("Color")))
-				{
-					self.memoryCounter.Color = memoryCounterColor.colorValue;
-				}
-
-				EditorGUILayout.Space();
-
-				if (PropertyFieldChanged(memoryCounterPreciseValues, new GUIContent("Precise", "Maked memory usage output more precise thus using more system resources (not recommended)")))
-				{
-					self.memoryCounter.PreciseValues = memoryCounterPreciseValues.boolValue;
-				}
-
-				if (PropertyFieldChanged(memoryCounterTotalReserved, new GUIContent("Total", "Total reserved memory size")))
-				{
-					self.memoryCounter.TotalReserved = memoryCounterTotalReserved.boolValue;
-				}
-
-				if (PropertyFieldChanged(memoryCounterAllocated, new GUIContent("Allocated", "Amount of allocated memory")))
-				{
-					self.memoryCounter.Allocated = memoryCounterAllocated.boolValue;
-				}
-
-				if (PropertyFieldChanged(memoryCounterMonoUsage, new GUIContent("Mono", "Amount of memory used by managed Mono objects")))
-				{
-					self.memoryCounter.MonoUsage = memoryCounterMonoUsage.boolValue;
-				}
-
-				EditorGUILayout.Space();
-
-				EditorGUI.indentLevel = indent;
-			}
-
-
-			if (ToggleFoldout(deviceGroupToggle, "Device Information", deviceCounterEnabled))
-			{
-				self.deviceInfoCounter.Enabled = deviceCounterEnabled.boolValue;
-			}
-
-			if (deviceGroupToggle.boolValue)
-			{
-				EditorGUI.indentLevel = 2;
-
-				if (PropertyFieldChanged(deviceCounterAnchor))
-				{
-					self.deviceInfoCounter.Anchor = (LabelAnchor)deviceCounterAnchor.intValue;
-				}
-
-				if (PropertyFieldChanged(deviceCounterColor, new GUIContent("Color")))
-				{
-					self.deviceInfoCounter.Color = deviceCounterColor.colorValue;
-				}
-
-				EditorGUILayout.Space();
-
-				if (PropertyFieldChanged(deviceCounterCpuModel, new GUIContent("CPU", "CPU model and cores (including virtual cores from Intel's Hyper Threading) count")))
-				{
-					self.deviceInfoCounter.CpuModel = deviceCounterCpuModel.boolValue;
-				}
-
-				if (PropertyFieldChanged(deviceCounterGpuModel, new GUIContent("GPU", "GPU model, graphics API version, supported shader model (if possible), approximate pixel fill-rate in megapixels per second (if possible) and total Video RAM size (if possible)")))
-				{
-					self.deviceInfoCounter.GpuModel = deviceCounterGpuModel.boolValue;
-				}
-
-				if (PropertyFieldChanged(deviceCounterRamSize, new GUIContent("RAM", "Total RAM size")))
-				{
-					self.deviceInfoCounter.RamSize = deviceCounterRamSize.boolValue;
-				}
-
-				if (PropertyFieldChanged(deviceCounterScreenData, new GUIContent("Screen", "Screen resolution, size and DPI (if possible)")))
-				{
-					self.deviceInfoCounter.ScreenData = deviceCounterScreenData.boolValue;
-				}
-
-				EditorGUI.indentLevel = indent;
-			}
-			
+			GUI.enabled = true;
 			EditorGUILayout.Space();
 			serializedObject.ApplyModifiedProperties();
 		}
-
-		private bool PropertyFieldChanged(SerializedProperty property)
-		{
-			return PropertyFieldChanged(property, null);
-		}
-
-		private bool PropertyFieldChanged(SerializedProperty property, GUIContent content, params GUILayoutOption[] options)
-		{
-			bool result = false;
-			
-			EditorGUI.BeginChangeCheck();
-
-			if (content == null)
-			{
-				EditorGUILayout.PropertyField(property, options);
-			}
-			else
-			{
-				EditorGUILayout.PropertyField(property, content, options);
-			}
-
-			if (EditorGUI.EndChangeCheck())
-			{
-				result = true;
-			}
-
-			return result;
-		}
-
-		private bool ToggleFoldout(SerializedProperty foldout, string caption, SerializedProperty toggle)
-		{
-			bool toggleStateChanged = false;
-
-			Rect foldoutRect = EditorGUILayout.BeginHorizontal();
-			Rect toggleRect = new Rect(foldoutRect);
-
-			toggleRect.width = 15;
-
-			EditorGUI.BeginChangeCheck();
-			EditorGUI.PropertyField(toggleRect, toggle, new GUIContent(""));
-			if (EditorGUI.EndChangeCheck())
-			{
-				toggleStateChanged = true;
-			}
-
-			foldoutRect.xMin = toggleRect.xMax + 15;
-
-			foldout.boolValue = EditorGUI.Foldout(foldoutRect, foldout.boolValue, caption, true);
-			EditorGUILayout.LabelField("");
-			EditorGUILayout.EndHorizontal();
-
-			return toggleStateChanged;
-		}
-
-		private bool Foldout(SerializedProperty foldout, string caption)
-		{
-			Rect foldoutRect = EditorGUILayout.BeginHorizontal();
-			foldoutRect.xMin += 11;
-			foldout.boolValue = EditorGUI.Foldout(foldoutRect, foldout.boolValue, caption, true);
-			EditorGUILayout.LabelField("");
-			EditorGUILayout.EndHorizontal();
-
-			return foldout.boolValue;
-		}
 	}
 }
+#endif

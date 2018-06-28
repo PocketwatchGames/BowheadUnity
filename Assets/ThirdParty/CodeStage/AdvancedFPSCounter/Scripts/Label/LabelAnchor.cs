@@ -6,22 +6,22 @@
 	public enum LabelAnchor: byte
 	{
 		/// <summary>
-		/// Upper left sceen corner. Text will be left-aligned.
+		/// Upper left screen corner. Text will be left-aligned.
 		/// </summary>
 		UpperLeft,
 
 		/// <summary>
-		/// Upper right sceen corner. Text will be right-aligned.
+		/// Upper right screen corner. Text will be right-aligned.
 		/// </summary>
 		UpperRight,
 
 		/// <summary>
-		/// Lower left sceen corner. Text will be left-aligned.
+		/// Lower left screen corner. Text will be left-aligned.
 		/// </summary>
 		LowerLeft,
 
 		/// <summary>
-		/// Lower right sceen corner. Text will be right-aligned.
+		/// Lower right screen corner. Text will be right-aligned.
 		/// </summary>
 		LowerRight,
 

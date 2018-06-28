@@ -45,7 +45,7 @@ namespace Bowhead {
 
 					for (int x = 0; x < VOXEL_CHUNK_SIZE_XZ; ++x) {
 						if (solidFlags[ofsxz] == 0) {
-							var block = chunk.voxeldata[ofs];
+							var block = chunk.voxeldata[ofs].BlockType();
 							if (block != EVoxelBlockType.AIR) {
 								solidFlags[ofsxz] = 1;
 								++numSolid;

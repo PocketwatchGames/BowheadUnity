@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: MinimapBlitMaskMaterial
+  m_Name: MinimapMaskBlitMaterial
   m_Shader: {fileID: 4800000, guid: c3f307e2a5f897949a3e098f74fb46f4, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4

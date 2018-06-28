@@ -2191,26 +2191,21 @@ namespace Bowhead {
 
 		public string fpsStat {
 			get {
-				var fps = _fpsCounter.fpsCounter.lastValue;
-				var avg = _fpsCounter.fpsCounter.lastAverageValue;
-				var millis = _fpsCounter.fpsCounter.lastMillisecondsValue;
-				var min = _fpsCounter.fpsCounter.lastMinimumValue;
-				var max = _fpsCounter.fpsCounter.lastMaximumValue;
+				var fps = _fpsCounter.fpsCounter.LastValue;
+				var avg = _fpsCounter.fpsCounter.LastAverageValue;
+				var millis = _fpsCounter.fpsCounter.LastMillisecondsValue;
+				var min = _fpsCounter.fpsCounter.LastMinimumValue;
+				var max = _fpsCounter.fpsCounter.LastMaximumValue;
 				return string.Format("{0} fps | {1} ms | {2} avg | [{3}/{4}]", fps, millis, avg, min, max);
 			}
 		}
 
 		public string memStat {
 			get {
-				var total = _fpsCounter.memoryCounter.lastTotalValue;
-				var alloc = _fpsCounter.memoryCounter.lastAllocatedValue;
-				var mono = _fpsCounter.memoryCounter.lastMonoValue;
-
-				if (_fpsCounter.memoryCounter.PreciseValues) {
-					return string.Format("{0:0.00} total | {1:0.00} alloc | {2:0.00} mono", total/1048576f, alloc/1048576f, mono/1048576f);
-                } else {
-					return string.Format("{0} total | {1} alloc | {2} mono", total/1048576, alloc/1048576, mono/1048576);
-				}
+				var total = _fpsCounter.memoryCounter.LastTotalValue;
+				var alloc = _fpsCounter.memoryCounter.LastAllocatedValue;
+				var mono = _fpsCounter.memoryCounter.LastMonoValue;
+				return string.Format("{0:0.00} total | {1:0.00} alloc | {2:0.00} mono", total/1048576f, alloc/1048576f, mono/1048576f);
 			}
 		}
 

@@ -1,7 +1,7 @@
 ﻿namespace CodeStage.AdvancedFPSCounter
 {
 	/// <summary>
-	/// Enumeration of possible \link CodeStage.AdvancedFPSCounter.CountersData.FPSCounterData.currentFPSLevel FPSCounterData.currentFPSLevel\endlink values.
+	/// Enumeration of possible \link CodeStage.AdvancedFPSCounter.CountersData.FPSCounterData.CurrentFpsLevel FPSCounterData.CurrentFpsLevel\endlink values.
 	/// </summary>
 	public enum FPSLevel: byte
 	{
