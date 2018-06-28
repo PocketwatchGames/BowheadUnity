@@ -109,7 +109,7 @@ namespace Bowhead {
 
 		[MenuItem("Bowhead/Re-index All Assets...")]
 		public static void ReindexAll() {
-			var gameManager = AssetDatabase.LoadAssetAtPath<GameManager>("Assets/Prefabs/GameManager.prefab");
+			var gameManager = AssetDatabase.LoadAssetAtPath<GameManager>("Assets/Assets/Engine/GameManager.prefab");
 			if (gameManager != null) {
 
 				var progress = new EditorProgressBar("Re-indexing Bowhead Assets...", 3);
@@ -131,7 +131,7 @@ namespace Bowhead {
 						changed = true;
 					}
 				}
-								
+
 				if (changed) {
 					if (changed) {
 						gameManager.staticData.indexedObjects = indexedObjects.ToArray();
@@ -139,6 +139,8 @@ namespace Bowhead {
 					EditorUtility.SetDirty(gameManager.staticData);
 				}
 
+			} else {
+				Debug.LogError("StaticAsset index failed, could not load Assets/Engine/GameManager.prefab!");
 			}
 		}
 #endif

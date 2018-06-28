@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: Map
   m_EditorClassIdentifier: 
   version: 0
-  _index: 0
+  _index: 4
   prefab:
     _assetPath: Map
     _editorPath: Assets/Assets/Prefabs/Resources/Map.prefab
