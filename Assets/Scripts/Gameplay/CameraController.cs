@@ -251,12 +251,12 @@ namespace Bowhead.Actors {
                 else {
                     t = 1f - (_shakeTime - rampUpTime) / (_shakeTimeTotal - rampUpTime);
                 }
-                //int perlinTime = (int)(world.time * 100);
-                //_pos.x += t * shakePositionMag * GetPerlinValue(perlinTime, perlinTime + 5422, perlinTime + 123, 0.1f);
-                //_pos.y += t * shakePositionMag * GetPerlinValue(perlinTime, perlinTime + 5, perlinTime + 165423, 0.1f);
-                //_pos.z += t * shakePositionMag * GetPerlinValue(perlinTime, perlinTime + 542462, perlinTime + 1253, 0.1f);
-                //_yaw += t * shakeAngleMag * GetPerlinValue(perlinTime, perlinTime + 52, perlinTime + 13, 0.1f);
-                //_pitch += t * shakeAngleMag * GetPerlinValue(perlinTime, perlinTime + 542, perlinTime + 1273, 0.1f);
+                int perlinTime = (int)(_target.world.time * 100);
+                _pos.x += t * _shakePositionMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 5422, perlinTime + 123, 0.1f);
+                _pos.y += t * _shakePositionMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 5, perlinTime + 165423, 0.1f);
+                _pos.z += t * _shakePositionMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 542462, perlinTime + 1253, 0.1f);
+                _yaw += t * _shakeAngleMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 52, perlinTime + 13, 0.1f);
+                _pitch += t * _shakeAngleMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 542, perlinTime + 1273, 0.1f);
             }
         }
 

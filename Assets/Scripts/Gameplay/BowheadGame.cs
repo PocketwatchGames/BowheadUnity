@@ -194,14 +194,14 @@ namespace Bowhead.Server {
 			return WorldStreaming.NewProceduralWorldStreaming(0, WORLD_GENERATOR_TYPE);
 		}
 
-		#region perlin utils
-		float GetPerlinNormal(int x, int y, int z, float scale) {
+        #region perlin utils
+        public float GetPerlinNormal(int x, int y, int z, float scale) {
             noise.SetFrequency(scale);
             var v = noise.GetPerlin(x, y, z);
             return (v + 1) / 2;
         }
 
-        float GetPerlinValue(int x, int y, int z, float scale) {
+        public float GetPerlinValue(int x, int y, int z, float scale) {
             noise.SetFrequency(scale);
             return noise.GetPerlin(x, y, z);
         }
