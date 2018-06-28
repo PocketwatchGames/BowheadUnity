@@ -535,7 +535,7 @@ public partial class World {
 			public bool GetVoxelAt(LocalVoxelPos_t pos, out EVoxelBlockType blocktype) {
 				if (hasVoxelData) {
 					var idx = pos.vx + (pos.vz * VOXEL_CHUNK_SIZE_XZ) + (pos.vy * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-					blocktype = chunkData.voxeldata[idx];
+					blocktype = chunkData.voxeldata[idx].BlockType();
 					return true;
 				}
 				blocktype = EVoxelBlockType.AIR;
