@@ -82,18 +82,18 @@ namespace Bowhead {
 							bool isCave = false;
 							if (ypos > lowerGroundHeight && ypos <= upperGroundHeight) {
 								// Let's see about some caves er valleys!
-								float caveNoise = GetPerlinValue(ref noise, (int)xpos, (int)ypos, (int)zpos, 0.01f) * (0.015f * ypos) + 0.1f;
-								caveNoise += GetPerlinValue(ref noise, (int)xpos, (int)ypos, (int)zpos, 0.1f) * 0.06f + 0.1f;
-								caveNoise += GetPerlinValue(ref noise, (int)xpos, (int)ypos, (int)zpos, 0.2f) * 0.02f + 0.01f;
-								isCave = caveNoise > GetPerlinNormal(ref noise, (int)xpos, (int)ypos, (int)zpos, 0.01f) * 0.3f + 0.4f;
+								float caveNoise = GetPerlinValue(ref noise, xpos, ypos, zpos, 0.001f) * (0.015f * ypos) + 0.1f;
+								caveNoise += GetPerlinValue(ref noise, xpos, ypos, zpos, 0.01f) * 0.06f + 0.1f;
+								caveNoise += GetPerlinValue(ref noise, xpos, ypos, zpos, 0.02f) * 0.02f + 0.01f;
+								isCave = caveNoise > GetPerlinNormal(ref noise, xpos, ypos, zpos, 0.01f) * 0.3f + 0.4f;
 							}
 
 							if (ypos <= upperGroundHeight && !isCave) {
 								bt = GetBlockType(ref noise, xpos, (int)ypos, zpos, (int)upperGroundHeight, isRoad, false);
 							} else {
 								if (ypos < waterLevel) {
-									float temperature = GetTemperature(ref noise, (int)xpos, (int)ypos, (int)zpos);
-									if (IsFrozen(temperature, GetHumidity(ref noise, (int)xpos, (int)zpos))) {
+									float temperature = GetTemperature(ref noise, (int)xpos, (int)ypos, zpos);
+									if (IsFrozen(temperature, GetHumidity(ref noise, xpos, zpos))) {
 										bt = EVoxelBlockType.ICE;
 									} else {
 										bt = EVoxelBlockType.WATER;
@@ -107,8 +107,8 @@ namespace Bowhead {
 									isEmptyAtBottom = true;
 								}
 								if (waterDepth > 0 && !isEmptyAtBottom) {
-									float temperature = GetTemperature(ref noise, (int)xpos, (int)ypos, (int)zpos);
-									if (IsFrozen(temperature, GetHumidity(ref noise, (int)xpos, (int)zpos))) {
+									float temperature = GetTemperature(ref noise, xpos, (int)ypos, zpos);
+									if (IsFrozen(temperature, GetHumidity(ref noise, xpos, zpos))) {
 										bt = EVoxelBlockType.ICE;
 									} else {
 										bt = EVoxelBlockType.WATER;
@@ -162,7 +162,7 @@ namespace Bowhead {
 
 									float humidity = GetHumidity(ref noise, xpos, zpos);
 									float forestPower = (1.0f - (GetPerlinNormal(ref noise, xpos, zpos, NoiseFloatScale._01) * GetPerlinNormal(ref noise, xpos + 64325, zpos + 6543, NoiseFloatScale._005))) * Mathf.Pow(humidity, 2) * (1.0f - Mathf.Pow(rock, 4));
-									float cutoff = 0.2f;
+									float cutoff = 0.05f;
 									if (forestPower > cutoff) {
 										float forestLimit = Mathf.Pow(1.0f - (forestPower - cutoff) / (1.0f - cutoff), 8) * 100 + 4;
 										if (GetWhiteNoise(ref noise, xpos, ypos, zpos) < 1.0f / forestLimit) {
@@ -242,7 +242,7 @@ namespace Bowhead {
 
 			static EVoxelBlockType GetBlockType(ref FastNoise_t noise, int x, int y, int z, int upperGroundHeight, bool isRoad, bool isRiver) {
 
-				float humidity = GetHumidity(ref noise, x, y);
+				float humidity = GetHumidity(ref noise, x, z);
 				if (z == upperGroundHeight + 1) {
 					float temperature = GetTemperature(ref noise, x, y, z);
 					if (IsFrozen(temperature, humidity)) {
@@ -253,13 +253,13 @@ namespace Bowhead {
 					}
 				}
 
-				if (z == upperGroundHeight && z < waterLevel + 10 * (GetPerlinNormal(ref noise, x, y, z, 0.2f) * GetPerlinNormal(ref noise, x + 452, y + 784, z + 6432, 0.1f))) {
+				if (y == upperGroundHeight && y < waterLevel + 10 * (GetPerlinNormal(ref noise, x, y, z, 0.2f) * GetPerlinNormal(ref noise, x + 452, y + 784, z + 6432, 0.1f))) {
 					return EVoxelBlockType.SAND;
 				}
 
 
 				float rock = GetRock(ref noise, x, y, z);
-				if (z < upperGroundHeight) {
+				if (y < upperGroundHeight) {
 					if (rock > 0.5f) {
 						return EVoxelBlockType.ROCK;
 					}
@@ -283,17 +283,17 @@ namespace Bowhead {
 			}
 
 
-			static float GetLowerGroundHeight(ref FastNoise_t noise, int x, int y) {
+			static float GetLowerGroundHeight(ref FastNoise_t noise, int x, int z) {
 				int maxGroundHeight = 128;
 
-				float distToOriginSquared = 1.0f - Mathf.Sqrt((float)(Mathf.Pow(x, 2) + Mathf.Pow(y, 2))) / GetDistImportance(ref noise, x, y);
+				float distToOriginSquared = 1.0f - Mathf.Sqrt((float)(Mathf.Pow(x, 2) + Mathf.Pow(z, 2))) / GetDistImportance(ref noise, x, z);
 				distToOriginSquared = Mathf.Clamp(distToOriginSquared, 0f, 1f);
 
 				float lowerGroundHeight = 0;
-				lowerGroundHeight += GetPerlinNormal(ref noise, x, y, NoiseFloatScale._001) * 0.55f * distToOriginSquared;
-				lowerGroundHeight += GetPerlinNormal(ref noise, x, y, NoiseFloatScale._005) * 0.35f * distToOriginSquared;
-				lowerGroundHeight += GetPerlinNormal(ref noise, x, y, 0, 0.02f) * 0.05f;
-				lowerGroundHeight += GetPerlinNormal(ref noise, x, y, NoiseFloatScale._1) * 0.05f;
+				lowerGroundHeight += GetPerlinNormal(ref noise, x, z, NoiseFloatScale._001) * 0.55f * distToOriginSquared;
+				lowerGroundHeight += GetPerlinNormal(ref noise, x, z, NoiseFloatScale._005) * 0.35f * distToOriginSquared;
+				lowerGroundHeight += GetPerlinNormal(ref noise, x, z, 0, 0.02f) * 0.05f;
+				lowerGroundHeight += GetPerlinNormal(ref noise, x, z, NoiseFloatScale._1) * 0.05f;
 
 				lowerGroundHeight *= maxGroundHeight;
 
@@ -303,31 +303,31 @@ namespace Bowhead {
 
 			}
 
-			static float GetUpperGroundHeight(ref FastNoise_t noise, int x, int y, float lowerGroundHeight) {
+			static float GetUpperGroundHeight(ref FastNoise_t noise, int x, int z, float lowerGroundHeight) {
 				float mountainHeight = lowerGroundHeight;
 
-				mountainHeight += CalculatePlateauPower(ref noise, x, y, mountainHeight, 6000, 0, 1, 1000, 128, 64, 1, 78456, 14);
-				mountainHeight += CalculateHillPower(ref noise, x, y, 6000, 2, 500, 256, 1, 5, 0, 0);
-				mountainHeight -= 128 * GetPerlinNormal(ref noise, x + 1000, y + 4395, NoiseFloatScale._001) * GetPerlinNormal(ref noise, x + 18000, y + 43095, NoiseFloatScale._0005);
-				mountainHeight += CalculatePlateauPower(ref noise, x, y, mountainHeight, 6000, 100, 3, 1000, 128, 64, 1, 7846, 1464);
-				mountainHeight -= 64 * GetPerlinNormal(ref noise, x + 100, y + 435, NoiseFloatScale._001) * GetPerlinNormal(ref noise, x + 1000, y + 4095, NoiseFloatScale._0005);
-				mountainHeight += CalculatePlateauPower(ref noise, x, y, mountainHeight, 2000, 100, 2, 1000, 32, 16, 8, 736, 3242);
-				mountainHeight -= 16 * GetPerlinNormal(ref noise, x + 100, y + 435, NoiseFloatScale._005) * GetPerlinNormal(ref noise, x + 1070, y + 43905, 0, 0.0025f);
-				mountainHeight += CalculateHillPower(ref noise, x, y, 1000, 3, 100, 64, 1, 10, 2554, 7648);
-				mountainHeight += CalculatePlateauPower(ref noise, x, y, mountainHeight, 2000, 100, 3, 1000, 16, 8, 1, 7336, 32842);
-				mountainHeight -= 4 * GetPerlinNormal(ref noise, x + 10670, y + 4385, 0, 0.02f) * GetPerlinNormal(ref noise, x + 1070, y + 485, NoiseFloatScale._01);
-				mountainHeight -= 3 * (1.0f - Mathf.Pow(2.0f * Mathf.Min(0.5f, GetRock(ref noise, x, y, (int)mountainHeight)), 3));
+				mountainHeight += CalculatePlateauPower(ref noise, x, z, mountainHeight, 6000, 0, 1, 1000, 128, 64, 1, 78456, 14);
+				mountainHeight += CalculateHillPower(ref noise, x, z, 6000, 2, 500, 256, 1, 5, 0, 0);
+				mountainHeight -= 128 * GetPerlinNormal(ref noise, x + 1000, z + 4395, NoiseFloatScale._001) * GetPerlinNormal(ref noise, x + 18000, z + 43095, NoiseFloatScale._0005);
+				mountainHeight += CalculatePlateauPower(ref noise, x, z, mountainHeight, 6000, 100, 3, 1000, 128, 64, 1, 7846, 1464);
+				mountainHeight -= 64 * GetPerlinNormal(ref noise, x + 100, z + 435, NoiseFloatScale._001) * GetPerlinNormal(ref noise, x + 1000, z + 4095, NoiseFloatScale._0005);
+				mountainHeight += CalculatePlateauPower(ref noise, x, z, mountainHeight, 2000, 100, 2, 1000, 32, 16, 8, 736, 3242);
+				mountainHeight -= 16 * GetPerlinNormal(ref noise, x + 100, z + 435, NoiseFloatScale._005) * GetPerlinNormal(ref noise, x + 1070, z + 43905, 0, 0.0025f);
+				mountainHeight += CalculateHillPower(ref noise, x, z, 1000, 3, 100, 64, 1, 10, 2554, 7648);
+				mountainHeight += CalculatePlateauPower(ref noise, x, z, mountainHeight, 2000, 100, 3, 1000, 16, 8, 1, 7336, 32842);
+				mountainHeight -= 4 * GetPerlinNormal(ref noise, x + 10670, z + 4385, 0, 0.02f) * GetPerlinNormal(ref noise, x + 1070, z + 485, NoiseFloatScale._01);
+				mountainHeight -= 3 * (1.0f - Mathf.Pow(2.0f * Mathf.Min(0.5f, GetRock(ref noise, x, z, (int)mountainHeight)), 3));
 
 				//float hillHeight = lowerGroundHeight;
-				//hillHeight += 32 * GetPerlinNormal(x + 100, y, NoiseFloatScale._01);
-				//hillHeight += 16 * GetPerlinNormal(x + 100, y, 0, 0.02f);
-				//hillHeight += 8 * GetPerlinNormal(x + 100, y, NoiseFloatScale._1);
+				//hillHeight += 32 * GetPerlinNormal(x + 100, z, NoiseFloatScale._01);
+				//hillHeight += 16 * GetPerlinNormal(x + 100, z, 0, 0.02f);
+				//hillHeight += 8 * GetPerlinNormal(x + 100, z, NoiseFloatScale._1);
 
-				//float hillInfluence = Mathf.Pow(GetPerlinNormal(x + 104350, y, NoiseFloatScale._001), 3);
+				//float hillInfluence = Mathf.Pow(GetPerlinNormal(x + 104350, z, NoiseFloatScale._001), 3);
 				//float curHeight = hillHeight * hillInfluence + (1.f - hillInfluence) * mountainHeight;
 				float curHeight = mountainHeight;
 
-				float distToOriginSquared = 1.0f - Mathf.Sqrt((float)(Mathf.Pow(x, 2) + Mathf.Pow(y, 2))) / GetDistImportance(ref noise, x, y);
+				float distToOriginSquared = 1.0f - Mathf.Sqrt((float)(Mathf.Pow(x, 2) + Mathf.Pow(z, 2))) / GetDistImportance(ref noise, x, z);
 				distToOriginSquared = Mathf.Clamp(distToOriginSquared, 0f, 1f);
 				curHeight *= distToOriginSquared;
 
@@ -336,58 +336,50 @@ namespace Bowhead {
 
 			}
 
-			static float CalculatePlateauPower(ref FastNoise_t noise, int x, int y, float startingHeight, float plateauRegionSize, float detailSize, float regionPower, float plateauHorizontalScale, float maxPlateau, int plateauStepMax, int plateauStepMin, int offsetX, int offsetY) {
+			static float CalculatePlateauPower(ref FastNoise_t noise, int x, int z, float startingHeight, float plateauRegionSize, float detailSize, float regionPower, float plateauHorizontalScale, float maxPlateau, int plateauStepMax, int plateauStepMin, int offsetX, int offsetZ) {
 				float inverseRegionSize = 1.0f / plateauRegionSize;
 				float inversePlateauScale = 1.0f / plateauHorizontalScale;
-				float plateauRegionPower = Mathf.Pow(GetPerlinNormal(ref noise, x + 100 + offsetX, y + offsetY, 0, inverseRegionSize), regionPower);
+				float plateauRegionPower = Mathf.Pow(GetPerlinNormal(ref noise, x + 100 + offsetX, z + offsetZ, 0, inverseRegionSize), regionPower);
 
 				if (detailSize > 0) {
 					float inverseDetailSize = 1.0f / detailSize;
-					plateauRegionPower *= GetPerlinNormal(ref noise, x + 157400 + offsetX, y + 54254 + offsetY, 0, inverseDetailSize);
+					plateauRegionPower *= GetPerlinNormal(ref noise, x + 157400 + offsetX, z + 54254 + offsetZ, 0, inverseDetailSize);
 				}
 
-				float plateauStep = plateauStepMin + (plateauStepMax - plateauStepMin) * GetPerlinNormal(ref noise, x + 1000 + offsetX, y + 1000 + offsetY, 0, inversePlateauScale);
+				float plateauStep = plateauStepMin + (plateauStepMax - plateauStepMin) * GetPerlinNormal(ref noise, x + 1000 + offsetX, z + 1000 + offsetZ, 0, inversePlateauScale);
 
 				float newHeight = (int)((startingHeight + plateauRegionPower * maxPlateau) / plateauStep) * plateauStep - startingHeight;
 				return Mathf.Max(0, newHeight);
 			}
 
-			static float CalculateHillPower(ref FastNoise_t noise, int x, int y, float regionSize, float regionPower, float hillSizeHorizontal, float hillHeight, float minSteepness, float maxSteepness, int offsetX, int offsetY) {
+			static float CalculateHillPower(ref FastNoise_t noise, int x, int z, float regionSize, float regionPower, float hillSizeHorizontal, float hillHeight, float minSteepness, float maxSteepness, int offsetX, int offsetY) {
 				float regionScaleInverse = 1.0f / regionSize;
 				float hillScaleInverse = 1.0f / hillSizeHorizontal;
 
-				float hillRegionPower = Mathf.Pow(GetPerlinNormal(ref noise, x + 1040 + offsetX, (y + 3234 + offsetY), 0, regionScaleInverse), regionPower);
-				float hillRegionSteepness = GetPerlinNormal(ref noise, x + 100 + offsetX, y + 3243 + offsetY, 0, regionScaleInverse) * (maxSteepness - minSteepness) + minSteepness;
-				float height = GetPerlinNormal(ref noise, x + 10 + offsetX, y + 1070 + offsetY, 0, hillScaleInverse) * hillHeight;
-				float hill = (1.0f / (1.0f + Mathf.Exp(-hillRegionSteepness * (GetPerlinNormal(ref noise, x + 180 + offsetX, y + 180 + offsetY, 0, hillScaleInverse) - 0.5f)))) * height * hillRegionPower;
+				float hillRegionPower = Mathf.Pow(GetPerlinNormal(ref noise, x + 1040 + offsetX, (z + 3234 + offsetY), 0, regionScaleInverse), regionPower);
+				float hillRegionSteepness = GetPerlinNormal(ref noise, x + 100 + offsetX, z + 3243 + offsetY, 0, regionScaleInverse) * (maxSteepness - minSteepness) + minSteepness;
+				float height = GetPerlinNormal(ref noise, x + 10 + offsetX, z + 1070 + offsetY, 0, hillScaleInverse) * hillHeight;
+				float hill = (1.0f / (1.0f + Mathf.Exp(-hillRegionSteepness * (GetPerlinNormal(ref noise, x + 180 + offsetX, z + 180 + offsetY, 0, hillScaleInverse) - 0.5f)))) * height * hillRegionPower;
 				return hill;
 			}
 
 
-			static float GetWhiteNoise(ref FastNoise_t noise, int x, int y, int z) {
-				var v = noise.GetWhiteNoise(x, z, y);
+			static float GetWhiteNoise(ref FastNoise_t noise, float x, float y, float z) {
+				var v = noise.GetWhiteNoise(x, y, z);
 				return (v + 1) / 2;
 			}
 
-			static float GetPerlinNormal(ref FastNoise_t noise, int x, int y, int z, float scale) {
+			static float GetPerlinNormal(ref FastNoise_t noise, float x, float y, float z, float scale) {
 				noise.SetFrequency(scale);
-				var v = noise.GetPerlin(x, z, y);
+				var v = noise.GetPerlin(x, y, z);
 				return (v + 1) / 2;
 			}
-			static float GetPerlinValue(ref FastNoise_t noise, int x, int y, int z, float scale) {
+			static float GetPerlinValue(ref FastNoise_t noise, float x, float y, float z, float scale) {
 				noise.SetFrequency(scale);
-				var v = noise.GetPerlin(x, z, y);
+				var v = noise.GetPerlin(x, y, z);
 				return v;
 			}
-			static float GetPerlinNormal(ref FastNoise_t noise, int x, int y, float scale) {
-				if (positive_modulo(Mathf.FloorToInt((float)x / noiseFloatPregenSize), 2) == 0)
-					x = positive_modulo(x, noiseFloatPregenSize);
-				else
-					x = noiseFloatPregenSize - positive_modulo(x, noiseFloatPregenSize) - 1;
-				if (positive_modulo(Mathf.FloorToInt((float)y / noiseFloatPregenSize), 2) == 0)
-					y = positive_modulo(y, noiseFloatPregenSize);
-				else
-					y = noiseFloatPregenSize - positive_modulo(y, noiseFloatPregenSize) - 1;
+			static float GetPerlinNormal(ref FastNoise_t noise, float x, float y, float scale) {
 				noise.SetFrequency(scale);
 				float v = noise.GetPerlin(x, y);
 				return (v + 1) / 2;
@@ -398,9 +390,9 @@ namespace Bowhead {
 			//	return v;
 			//}
 
-			static float GetDistImportance(ref FastNoise_t noise, int x, int y) {
+			static float GetDistImportance(ref FastNoise_t noise, int x, int z) {
 				float scale = 0.0025f;
-				return 2000 + 10000 * GetPerlinNormal(ref noise, x, y, 0, scale);
+				return 2000 + 10000 * GetPerlinNormal(ref noise, x, 0, z, scale);
 			}
 
 
@@ -420,11 +412,11 @@ namespace Bowhead {
 					0.8f * GetPerlinNormal(ref noise, x, y, z, 0.001f);
 			}
 
-			static float GetHumidity(ref FastNoise_t noise, int x, int y) {
+			static float GetHumidity(ref FastNoise_t noise, int x, int z) {
 				return
-					Mathf.Pow(0.05f * GetPerlinNormal(ref noise, (x + 4342), (y + 87886), NoiseFloatScale._5) +
-					0.15f * GetPerlinNormal(ref noise, (x + 42), (y + 8786), NoiseFloatScale._01) +
-					0.8f * GetPerlinNormal(ref noise, (x + 3423), (y + 123142), NoiseFloatScale._001), 1.25f);
+					Mathf.Pow(0.05f * GetPerlinNormal(ref noise, (x + 4342), (z + 87886), NoiseFloatScale._5) +
+					0.15f * GetPerlinNormal(ref noise, (x + 42), (z + 8786), NoiseFloatScale._01) +
+					0.8f * GetPerlinNormal(ref noise, (x + 3423), (z + 123142), NoiseFloatScale._001), 1.25f);
 			}
 
 			static float GetTemperature(ref FastNoise_t noise, int x, int y, int z) {
@@ -481,8 +473,8 @@ namespace Bowhead {
 							for (int j = -radius; j <= radius; j++) {
 								for (int k = -radius; k <= radius; k++) {
 									int lx = x + i;
-									int ly = y + j;
-									int lz = z + k + height;
+									int lz = z + j;
+									int ly = y + k + height;
 									if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 										var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 										chunk.flags |= EChunkFlags.SOLID;
@@ -506,9 +498,9 @@ namespace Bowhead {
 							for (int i = -r; i <= r; i++) {
 								for (int j = -r; j <= r; j++) {
 									int lx = x + i;
-									int ly = y + j;
-									int lz = z + k + height;
-									if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
+									int ly = y + k + height;
+                                    int lz = z + j;
+                                    if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 										var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 										chunk.flags |= EChunkFlags.SOLID;
 										chunk.voxeldata[ofs] = EVoxelBlockType.NEEDLES;
@@ -540,7 +532,7 @@ namespace Bowhead {
 										branchDir = new Vector2Int(-1, 0);
 									else
 										branchDir = new Vector2Int(1, 0);
-									int ly = z + i;
+									int ly = y + i;
 									for (int k = 1; k <= radius; k++) {
 										int lx = x + branchDir.x * k;
 										int lz = z + branchDir.y * k;
@@ -573,7 +565,7 @@ namespace Bowhead {
 				}
 			}
 
-			static bool CalculateRoad(ref FastNoise_t noise, int x, int y, float lowerGroundHeight, int offsetX, int offsetY, ref float height) {
+			static bool CalculateRoad(ref FastNoise_t noise, int x, int z, float lowerGroundHeight, int offsetX, int offsetY, ref float height) {
 				if (height <= waterLevel)
 					return false;
 
@@ -582,11 +574,11 @@ namespace Bowhead {
 				float slopeWidthMin = 0.01f;
 				float slopeWidthRange = 0.05f;
 				float power =
-					0.4f * GetPerlinNormal(ref noise, x + offsetX + 4235, y + offsetY + 324576, NoiseFloatScale._01) +
-					0.3f * GetPerlinNormal(ref noise, x + offsetX + 254, y + offsetY + 6563, NoiseFloatScale._005) +
-					0.3f * GetPerlinNormal(ref noise, x + offsetX + 224, y + offsetY + 6476563, NoiseFloatScale._001);
-				float range = GetPerlinNormal(ref noise, x + offsetX + 7646745, y + offsetY + 24, NoiseFloatScale._01) * roadWidthRange + roadWidthMin;
-				float falloff = GetPerlinNormal(ref noise, x + offsetX + 104, y + offsetY + 235, NoiseFloatScale._01) * slopeWidthRange + slopeWidthMin;
+					0.4f * GetPerlinNormal(ref noise, x + offsetX + 4235, z + offsetY + 324576, NoiseFloatScale._01) +
+					0.3f * GetPerlinNormal(ref noise, x + offsetX + 254, z + offsetY + 6563, NoiseFloatScale._005) +
+					0.3f * GetPerlinNormal(ref noise, x + offsetX + 224, z + offsetY + 6476563, NoiseFloatScale._001);
+				float range = GetPerlinNormal(ref noise, x + offsetX + 7646745, z + offsetY + 24, NoiseFloatScale._01) * roadWidthRange + roadWidthMin;
+				float falloff = GetPerlinNormal(ref noise, x + offsetX + 104, z + offsetY + 235, NoiseFloatScale._01) * slopeWidthRange + slopeWidthMin;
 				if (power > 0.5f - range - falloff && power < 0.5f + range + falloff) {
 					bool isRoad = false;
 					if (power > 0.5f - range && power < 0.5f + range) {
@@ -608,23 +600,23 @@ namespace Bowhead {
 				return false;
 			}
 
-			static float CalculateRiver(ref FastNoise_t noise, int x, int y, float lowerGroundHeight, int offsetX, int offsetY, ref float height) {
+			static float CalculateRiver(ref FastNoise_t noise, int x, int z, float lowerGroundHeight, int offsetX, int offsetY, ref float height) {
 				if (height <= waterLevel)
 					return 0;
 
 				float powerScaleInverse = 0.005f;
 				float roadWidthMin = 0.001f;
 				float roadWidthRange = 0.1f;
-				float humidity = GetHumidity(ref noise, x, y);
+				float humidity = GetHumidity(ref noise, x, z);
 				float power =
-					0.4f * GetPerlinNormal(ref noise, x + offsetX, y + offsetY, NoiseFloatScale._0005) +
-					0.3f * GetPerlinNormal(ref noise, x + offsetX + 25254, y + offsetY + 65363, 0, powerScaleInverse * 0.5f) +
-					0.3f * GetPerlinNormal(ref noise, x + offsetX + 2254, y + offsetY + 6563, 0, powerScaleInverse * 0.1f);
-				float range = Mathf.Pow(0.2f * Mathf.Pow(humidity, 3) + 0.8f * (0.8f * GetPerlinNormal(ref noise, x + offsetX + 7646745, y + offsetY + 24, NoiseFloatScale._0005) + 0.2f * GetPerlinNormal(ref noise, x + offsetX + 7645, y + offsetY + 234, NoiseFloatScale._01)), 4) * roadWidthRange + roadWidthMin;
+					0.4f * GetPerlinNormal(ref noise, x + offsetX, z + offsetY, NoiseFloatScale._0005) +
+					0.3f * GetPerlinNormal(ref noise, x + offsetX + 25254, z + offsetY + 65363, 0, powerScaleInverse * 0.5f) +
+					0.3f * GetPerlinNormal(ref noise, x + offsetX + 2254, z + offsetY + 6563, 0, powerScaleInverse * 0.1f);
+				float range = Mathf.Pow(0.2f * Mathf.Pow(humidity, 3) + 0.8f * (0.8f * GetPerlinNormal(ref noise, x + offsetX + 7646745, z + offsetY + 24, NoiseFloatScale._0005) + 0.2f * GetPerlinNormal(ref noise, x + offsetX + 7645, z + offsetY + 234, NoiseFloatScale._01)), 4) * roadWidthRange + roadWidthMin;
 
 				float slopeWidthMin = 0.01f;
 				float slopeWidthRange = 0.1f;
-				float falloff = (height - lowerGroundHeight) * powerScaleInverse * GetPerlinNormal(ref noise, x + offsetX + 104, y + offsetY + 235, NoiseFloatScale._01) * slopeWidthRange + slopeWidthMin;
+				float falloff = (height - lowerGroundHeight) * powerScaleInverse * GetPerlinNormal(ref noise, x + offsetX + 104, z + offsetY + 235, NoiseFloatScale._01) * slopeWidthRange + slopeWidthMin;
 				if (power > 0.5f - range - falloff && power < 0.5f + range + falloff) {
 					float depth = 0;
 					if (power > 0.5f - range && power < 0.5f + range) {
