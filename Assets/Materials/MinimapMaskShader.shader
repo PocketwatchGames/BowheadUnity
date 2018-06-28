@@ -1,12 +1,11 @@
 ﻿// Unity built-in shader source. Copyright (c) 2016 Unity Technologies. MIT license (see license.txt)
 
-Shader "Bowhead/UI/Minimap"
+Shader "Bowhead/UI/MinimapMask"
 {
     Properties
     {
         [PerRendererData] _MainTex ("Sprite Texture", 2D) = "white" {}
-		_MaskTex("Mask Texture", 2D) = "white" {}
-        _Color ("Tint", Color) = (1,1,1,1)
+		_Color ("Tint", Color) = (1,1,1,1)
 
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
@@ -100,10 +99,9 @@ Shader "Bowhead/UI/Minimap"
 
             fixed4 frag(v2f IN) : SV_Target
             {
-                half4 color = (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd) * IN.color;
-				half4 mask = tex2D(_MaskTex, IN.texcoord);
-				color.rgb = color.rgb * mask.r;
-
+				half4 color = IN.color;
+				color.a = 1 - (tex2D(_MainTex, IN.texcoord) + _TextureSampleAdd).r;
+				
                 #ifdef UNITY_UI_CLIP_RECT
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
                 #endif

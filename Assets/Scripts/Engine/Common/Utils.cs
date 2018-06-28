@@ -424,6 +424,10 @@ public static class Utils {
 		return default(T);
 	}
 
+	public static T GetChildComponent<T>(this Component c, string name) {
+		return c.gameObject.GetChildComponent<T>(name);
+	}
+
 	public static T GetAnyChildComponent<T>(this GameObject go, string name) {
 		var x = go.transform.FindAnyChild(name);
 		if (x != null) {

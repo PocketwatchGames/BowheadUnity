@@ -39,6 +39,8 @@ namespace Bowhead.Client.UI {
 		Material _maskBlitMaterial;
 		[SerializeField]
 		Texture2D _revealTexture;
+		[SerializeField]
+		RawImage _maskImage;
 
 		int _chunkX;
 		int _chunkZ;
@@ -48,7 +50,7 @@ namespace Bowhead.Client.UI {
 
 		World.Streaming _streaming;
 		Texture2D _mainTexture;
-		public RenderTexture _maskTexture;
+		RenderTexture _maskTexture;
 		Texture2D _blitTexture;
 		Texture2D _blackTexture;
 		RawImage _image;
@@ -79,8 +81,8 @@ namespace Bowhead.Client.UI {
 									
 			_image = GetComponent<RawImage>();
 			_image.texture = _mainTexture;
-			_image.material = AddGC(new Material(_image.material));
-			_image.material.SetTexture("_MaskTex", _maskTexture);
+
+			_maskImage.texture = _maskTexture;
 			
 			_chunkX = int.MaxValue;
 			_chunkZ = int.MaxValue;
