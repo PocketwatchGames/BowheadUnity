@@ -274,7 +274,6 @@ namespace Bowhead {
 				float rock = GetRock(ref noise, x, y, z);
 				if (y < upperGroundHeight) {
 					if (rock > 0.5f) {
-                        fullVoxel = true;
                         return EVoxelBlockType.ROCK;
 					}
 					return EVoxelBlockType.DIRT;
@@ -286,7 +285,7 @@ namespace Bowhead {
 				} else if ((0.95f * GetPerlinNormal(ref noise, x, y, z, 0.01f) + 0.05f * GetPerlinNormal(ref noise, x + 5432, y + 874423, z + 12, 0.1f)) * humidity * Mathf.Pow(rock, 0.25f) < 0.1f) {
                     if (rock > 0.5f)
                     {
-                        fullVoxel = true;
+                        fullVoxel = GetWhiteNoise(ref noise, x, y, z) > 0.5;
                         return EVoxelBlockType.ROCK;
                     } else
                     {
@@ -589,7 +588,7 @@ namespace Bowhead {
                                     if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 										var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 										chunk.flags |= EChunkFlags.SOLID;
-										chunk.voxeldata[ofs] = EVoxelBlockType.NEEDLES | EVoxelBlockType.FULL_VOXEL_FLAG;
+										chunk.voxeldata[ofs] = EVoxelBlockType.NEEDLES;
 									}
 
 								}
