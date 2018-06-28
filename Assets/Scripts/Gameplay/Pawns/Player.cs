@@ -47,6 +47,7 @@ namespace Bowhead.Actors {
 
         public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
+        public event Action<Vector2, float> OnExplore;
 
         public delegate void OnLandFn(float damage);
         public event OnLandFn OnLand;
@@ -376,7 +377,7 @@ namespace Bowhead.Actors {
             OnMoneyChange?.Invoke();
         }
 
-        bool PickUp(Item item) {
+        public bool PickUp(Item item) {
             Money m;
             if ((m = item as Money) != null) {
                 SetMoney(money + m.data.count * m.count);
@@ -725,7 +726,8 @@ namespace Bowhead.Actors {
 
         public void Drop(Item item) {
             RemoveFromInventory(item);
-			gameMode.SpawnWorldItem(item, handPosition());
+			var worldItem = gameMode.SpawnWorldItem("chest", handPosition());
+            worldItem.item = item;
         }
 
         #endregion
@@ -738,9 +740,7 @@ namespace Bowhead.Actors {
             WorldItem worldItem;
             Critter critter;
             if ((worldItem = t as WorldItem) != null && !t.pendingKill) {
-                if (PickUp(worldItem.item)) {
-					t.Destroy();
-                }
+                worldItem.Interact(this);
             }
             else if ((critter = t as Critter) != null) {
                 if (mount == critter) {
@@ -850,6 +850,10 @@ namespace Bowhead.Actors {
 
         }
 
+
+        public void Explore(Vector2 pos, float radius) {
+            OnExplore?.Invoke(pos, radius);
+        }
 
         #endregion
     }

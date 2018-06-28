@@ -170,11 +170,22 @@ namespace Bowhead.Server {
 			base.PrepareForMatchInProgress();
 
 			for (int i = 0; i < 100; i++) {
-				var item = MoneyData.Get("Money").CreateItem();
-				item.count = 100;
-				//var worldItem = CreateWorldItem(item);
-				//worldItem.position = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
-			}
+                WorldItem worldItem = null;
+                var pos = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
+                int itemType = UnityEngine.Random.Range(0, 2);
+                switch (itemType) {
+                    case 0:
+                        worldItem = SpawnWorldItem("Chest", pos);
+                        var money = MoneyData.Get("Money").CreateItem();
+                        worldItem.item = money;
+                        money.count = 100;
+                        break;
+                    case 1:
+                        //worldItem = SpawnWorldItem("Map", pos);
+                        //worldItem.map = new WorldItem.MapReveal() { position = pos, radius = 100 };
+                        break;
+                }
+            }
 
 		}
 
@@ -222,13 +233,13 @@ namespace Bowhead.Server {
 			return player;
 		}
 
-		public WorldItem SpawnWorldItem(Item item, Vector3 pos) {
-			var data = WorldItemData.Get("worldItem");
+		public WorldItem SpawnWorldItem(string dataName, Vector3 pos) {
+			var data = WorldItemData.Get(dataName);
 			if (data == null) {
 				return null;
 			}
 			var actor = world.Spawn<WorldItem>(null, default(SpawnParameters));
-			actor.ServerSpawn(item, pos, data);
+			actor.ServerSpawn(pos, data);
 			return actor;
 		}
 				

@@ -24,16 +24,19 @@ namespace Bowhead.Client.UI {
 
 			_minimap.SetStreaming(player.world.worldStreaming);
 			_minimap.SetOrigin(0, 0);
+
+            player.OnExplore += OnExplore;
 		}
+
+        private void OnExplore(Vector2 pos, float radius) {
+            _minimap.RevealArea(new Vector2(pos.x, pos.y), 100);
+        }
 
         public override void Tick(float dt) {
             base.Tick(dt);
 
             var target = localPlayer.playerPawn.GetInteractTarget();
             _interactHint.SetTarget(target);
-
-			var pos = localPlayer.playerPawn.go.transform.position;
-			_minimap.RevealArea(new Vector2(pos.x, pos.z), 100);
         }
     }
 }

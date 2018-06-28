@@ -7,11 +7,18 @@ namespace Bowhead.Actors {
 
         #region State
 
+        public class MapReveal {
+            public Vector2 position;
+            public float radius;
+        }
+
         public bool inMotion;
         public Vector3 position;
         public Vector3 velocity;
         public float yaw;
         public Item item;
+
+        public MapReveal map;
 
 		#endregion
 
@@ -20,9 +27,8 @@ namespace Bowhead.Actors {
 		public override System.Type clientType => typeof(WorldItem);
 		public override System.Type serverType => typeof(WorldItem);
 		
-        public void ServerSpawn(Item i, Vector3 pos, WorldItemData data) {
-			ServerSpawn(pos, data);
-            item = i;
+        public void ServerSpawn(Vector3 pos, WorldItemData data) {
+			base.ServerSpawn(pos, data);
 			position = pos;
 			AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null));
         }
@@ -105,7 +111,17 @@ namespace Bowhead.Actors {
             go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
         }
 
-
+        public void Interact(Player player) {
+            if (item != null) {
+                if (!player.PickUp(item)) {
+                    return;
+                }
+            }
+            if (map != null) {
+                player.Explore(map.position, map.radius);
+            }
+            Destroy();
+        }
 
     }
 
