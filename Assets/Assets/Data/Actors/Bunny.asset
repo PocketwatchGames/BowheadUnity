@@ -14,7 +14,6 @@ MonoBehaviour:
   version: 0
   _index: 0
   height: 1
-  collisionRadius: 0.5
   maxHealth: 30
   maxStamina: 20
   recoveryTime: 1
@@ -34,7 +33,7 @@ MonoBehaviour:
   walkSpeed: 1
   walkStartTime: 0
   walkStopTime: 0
-  groundMaxSpeed: 12
+  groundMaxSpeed: 10
   groundWindDrag: 0.01
   slideThresholdSlope: 4
   slideThresholdFlat: 15

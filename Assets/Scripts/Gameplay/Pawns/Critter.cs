@@ -28,7 +28,7 @@ namespace Bowhead.Actors {
 		virtual public void ServerSpawn(Vector3 pos, EntityData baseData, Server.Actors.ServerTeam t) {
 			base.ServerSpawn(pos, baseData);
 		    behaviorPanic = CritterBehavior.Create(data.panicBehavior);
-			position = pos;
+            spawnPosition = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
             team = t;
@@ -44,9 +44,9 @@ namespace Bowhead.Actors {
 		}
 
         public void SetActive(Vector3 pos) {
-            active = true;
+            AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
             position = pos;
-            AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), position, Quaternion.identity));
+            active = true;
         }
 
         protected override void OnDestroy() {
@@ -103,11 +103,10 @@ namespace Bowhead.Actors {
 
             // hacky spawn
             if (!active) {
-                var spawnPos = position;
-                if (!WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPos)) {
+                if (!WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPosition)) {
                     return;
                 }
-                SetActive(spawnPos);
+                SetActive(spawnPosition);
             }
 
 

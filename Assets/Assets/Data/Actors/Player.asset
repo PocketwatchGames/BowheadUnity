@@ -60,6 +60,6 @@ MonoBehaviour:
   maxThirst: 100
   temperatureSleepMinimum: 50
   temperatureSleepMaximum: 100
-  fallDamageVelocity: 20
+  fallDamageSpeed: 30
   dropTime: 0.5
   weightClassItemCount: 00000000050000000a0000000f00000014000000

@@ -50,7 +50,8 @@ namespace Bowhead.Actors {
         public PlayerCmd_t last;
 
         [Header("Physics")]
-        public Vector3 position;
+        public Vector3 spawnPosition;
+        public Rigidbody rigidBody;
         public Vector3 velocity;
         public float yaw;
         public Vector3 moveImpulse;
@@ -102,6 +103,9 @@ namespace Bowhead.Actors {
 
         #endregion
 
+
+        public Vector3 position { get { return rigidBody.position; } set { rigidBody.position = value; } }
+        
         public const int MaxInventorySize = 32;
 
         public enum Activity {
@@ -151,7 +155,13 @@ namespace Bowhead.Actors {
 			get;
 			private set;
 		}
-		#endregion
+        #endregion
+
+        protected override void OnGameObjectAttached() {
+            base.OnGameObjectAttached();
+
+            rigidBody = go.GetComponent<Rigidbody>();
+        }
 
         public void UpdatePlayerCmd(PlayerCmd_t cmd) {
             last = cur;
@@ -176,7 +186,8 @@ namespace Bowhead.Actors {
                 }
 
                 // Step forward
-                if (IsOpen(movePosition)) {
+                if (!Physics.Raycast(waistPosition(), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))
+                    && !Physics.Raycast(headPosition(), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
                     position += move;
                     return true;
                 }
@@ -226,10 +237,8 @@ namespace Bowhead.Actors {
         }
 
         Vector3 getClimbingVector(Vector3 i, Vector3 surfaceNormal) {
-            var axis = Vector3.Cross(-Vector3.up, surfaceNormal);
-            var rotation = Quaternion.AngleAxis(Mathf.PI / 2, axis);
-            Matrix4x4 climbMatrix = Matrix4x4.Rotate(rotation);
-            var climbingVector = climbMatrix.MultiplyVector(i);
+            var axis = Vector3.Cross(Vector3.up, surfaceNormal);            
+            var climbingVector = Quaternion.AngleAxis(90, axis) * i;
 
             // If we're climbing nearly exaclty up, change it to up
             if (Math.Abs(climbingVector.y) > Math.Sqrt(Math.Pow(climbingVector.x, 2) + Math.Pow(climbingVector.z, 2))) {
@@ -238,11 +247,11 @@ namespace Bowhead.Actors {
             }
             else if (Math.Abs(climbingVector.x) > Math.Abs(climbingVector.z)) {
                 float inputSpeed = climbingVector.magnitude;
-                climbingVector = new Vector3(Mathf.Sign(climbingVector.x), 0f, 0f) * inputSpeed;
+                climbingVector = new Vector3(Utils.SignOrZero(climbingVector.x), 0f, 0f) * inputSpeed;
             }
             else {
                 float inputSpeed = climbingVector.magnitude;
-                climbingVector = new Vector3(0f, 0f, Mathf.Sign(climbingVector.z)) * inputSpeed;
+                climbingVector = new Vector3(0f, 0f, Utils.SignOrZero(climbingVector.z)) * inputSpeed;
             }
             return climbingVector;
         }
@@ -253,7 +262,7 @@ namespace Bowhead.Actors {
             float checkDist = activity == Activity.OnGround ? data.height + 0.25f : data.height;
 
             RaycastHit hit;
-            if (Physics.Raycast(headPosition(position), Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+            if (Physics.Raycast(headPosition(), Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
                 floorHeight = hit.point.y;
                 groundNormal = hit.normal;
                 return true;
@@ -264,8 +273,8 @@ namespace Bowhead.Actors {
         }
 
         bool IsOpen(Vector3 position) {
-            return !WorldUtils.IsSolidBlock(world.GetBlock(waistPosition(position)))
-                && !WorldUtils.IsSolidBlock(world.GetBlock(headPosition(position)));
+            return !WorldUtils.IsSolidBlock(world.GetBlock(waistPosition()))
+                && !WorldUtils.IsSolidBlock(world.GetBlock(headPosition()));
         }
 
         virtual public Input_t GetInput(float dt) { return new Input_t(); }
@@ -340,7 +349,7 @@ namespace Bowhead.Actors {
                 }
                 else {
                     if (lockedToTarget) {
-                        var diff = attackTarget.position - position;
+                        var diff = attackTarget.rigidBody.position - rigidBody.position;
                         yaw = Mathf.Atan2(diff.x, diff.z);
                     }
                     else if (input.movement != Vector3.zero) {
@@ -373,7 +382,7 @@ namespace Bowhead.Actors {
                 moveImpulseTimer = Math.Max(0, moveImpulseTimer - dt);
             }
 
-            position.y += velocity.y * dt;
+            position = new Vector3(position.x, position.y + velocity.y * dt, position.z);
 
             // Collide feet
             float floorPosition;
@@ -393,12 +402,12 @@ namespace Bowhead.Actors {
                     }
                     velocity.y = Math.Max(0, velocity.y);
                 }
-                position.y = Mathf.Max(position.y, floorPosition);
+                position = new Vector3(position.x, floorPosition, position.z);
             }
             // Collide head
-            else if (WorldUtils.IsSolidBlock(world.GetBlock(headPosition(position)))) {
+            else if (WorldUtils.IsSolidBlock(world.GetBlock(headPosition()))) {
                 // TODO: this is broken
-                position.y = Math.Min(position.y, (int)headPosition(position).y - data.height);
+                position = new Vector3(position.x, Math.Min(position.y, (int)headPosition().y - data.height), position.z);
                 velocity.y = Math.Min(0, velocity.y);
             }
 
@@ -463,12 +472,12 @@ namespace Bowhead.Actors {
 
                 if (canClimb) {
                     if (firstCheck.magnitude > 0 && CanClimb(firstCheck, position)) {
-                        climbingNormal = -new Vector3(Mathf.Sign(firstCheck.x), 0, Mathf.Sign(firstCheck.z));
+                        climbingNormal = -new Vector3(Utils.SignOrZero(firstCheck.x), 0, Utils.SignOrZero(firstCheck.z));
                         velocity = Vector3.zero;
                         activity = Activity.Climbing;
                     }
                     else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, position)) {
-                        climbingNormal = -new Vector3(Mathf.Sign(secondCheck.x), 0, Mathf.Sign(secondCheck.z));
+                        climbingNormal = -new Vector3(Utils.SignOrZero(secondCheck.x), 0, Utils.SignOrZero(secondCheck.z));
                         velocity = Vector3.zero;
                         activity = Activity.Climbing;
                     }
@@ -581,9 +590,9 @@ namespace Bowhead.Actors {
             else {
                 fallJumpTimer = data.fallJumpTime;
             }
-            var block = world.GetBlock(footPosition(position));
-            var midblock = world.GetBlock(waistPosition(position));
-            var topblock = world.GetBlock(headPosition(position));
+            var block = world.GetBlock(footPosition());
+            var midblock = world.GetBlock(waistPosition());
+            var topblock = world.GetBlock(headPosition());
             float slideFriction, slideThreshold;
 			WorldUtils.GetSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
             float workModifier = WorldUtils.GetWorkModifier(block, midblock, topblock);
@@ -695,7 +704,7 @@ namespace Bowhead.Actors {
                 velocity.y = velocity.y - data.swimSinkAcceleration * dt;
             }
             velocity.y += data.gravity * dt;
-            if (world.GetBlock(headPosition(position)) == EVoxelBlockType.WATER) {
+            if (world.GetBlock(headPosition()) == EVoxelBlockType.WATER) {
                 velocity.y += -velocity.y * dt * data.swimDragVertical;
                 velocity.y += data.bouyancy * dt;
             }
@@ -772,7 +781,7 @@ namespace Bowhead.Actors {
             if (onGround) {
                 activity = Activity.OnGround;
                 velocity.y = Math.Max(0, velocity.y);
-                position.y = floorPosition;
+                position = new Vector3(position.x, floorPosition, position.z);
             }
             else {
                 Vector3 move = velocity * dt;
@@ -825,11 +834,12 @@ namespace Bowhead.Actors {
                 interpolateFrom = renderPosition();
                 interpolateTime = interpolateTimeTotal = Math.Max(interpolateTime, interpolateTime);
             }
+            go.GetComponent<Rigidbody>().MovePosition(p);
             position = p;
         }
 
         public bool IsWading() {
-            return activity == Activity.OnGround && world.GetBlock(waistPosition(position)) == EVoxelBlockType.WATER && world.GetBlock(position) != EVoxelBlockType.WATER;
+            return activity == Activity.OnGround && world.GetBlock(waistPosition()) == EVoxelBlockType.WATER && world.GetBlock(position) != EVoxelBlockType.WATER;
         }
 
         public float getGroundJumpVelocity() {
@@ -878,6 +888,20 @@ namespace Bowhead.Actors {
             //	if (i != null && i.Active)
             //		v += i.data.AirFrictionHorizontal;
             return v;
+        }
+
+        public Vector3 footPosition() {
+            return footPosition(position);
+        }
+        public Vector3 waistPosition() {
+            return waistPosition(position);
+        }
+        public Vector3 headPosition() {
+            return headPosition(position);
+        }
+
+        public Vector3 handPosition() {
+            return handPosition(position);
         }
 
         public Vector3 footPosition(Vector3 p) {
@@ -952,14 +976,15 @@ namespace Bowhead.Actors {
         public void damage(float d) {
             health = health - d;
 
-            GameObject.Instantiate<ParticleSystem>(data.bloodParticle, go.transform);
+            var blood = GameObject.Instantiate<ParticleSystem>(data.bloodParticle, go.transform);
+            blood.transform.localPosition = waistPosition() - rigidBody.position;
         }
 
         public void hit(Pawn attacker, Item weapon, WeaponData.AttackData attackData) {
             float remainingStun;
             float remainingDamage;
 
-            var dirToEnemy = (attacker.position - position);
+            var dirToEnemy = (attacker.rigidBody.position - rigidBody.position);
             if (dirToEnemy == Vector3.zero) {
                 dirToEnemy.x = 1;
             }
@@ -997,7 +1022,7 @@ namespace Bowhead.Actors {
 
                 if (attackData.knockback != 0) {
                     moveImpulseTimer = 0.1f;
-                    var kb = (position - attacker.position);
+                    var kb = (rigidBody.position - attacker.rigidBody.position);
                     kb.y = 0;
                     kb.Normalize();
                     moveImpulse = attackData.knockback * kb;
@@ -1062,7 +1087,7 @@ namespace Bowhead.Actors {
 
             if (mount != null) {
                 go.transform.parent = mount.go.transform;
-                go.transform.position = mount.headPosition(mount.position);
+                go.transform.position = mount.headPosition();
             }
             else {
                 go.transform.parent = null;

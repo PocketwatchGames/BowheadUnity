@@ -7,7 +7,6 @@ namespace Bowhead.Actors {
     public class PawnData : EntityData {
         [Header("Basic")]
         public float height;
-        public float collisionRadius;
         public float maxHealth;
         public float maxStamina;
         public float recoveryTime;

@@ -14,7 +14,6 @@ MonoBehaviour:
   version: 0
   _index: 3
   height: 1
-  collisionRadius: 0.5
   maxHealth: 100
   maxStamina: 50
   recoveryTime: 1
@@ -25,7 +24,7 @@ MonoBehaviour:
   backStabAngle: 45
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
-  jumpSpeed: 8
+  jumpSpeed: 0
   dodgeSpeed: 0
   jumpBoostAcceleration: 0
   jumpStaminaUse: 0
@@ -34,7 +33,7 @@ MonoBehaviour:
   walkSpeed: 1
   walkStartTime: 0
   walkStopTime: 0
-  groundMaxSpeed: 12
+  groundMaxSpeed: 10
   groundWindDrag: 0.01
   slideThresholdSlope: 4
   slideThresholdFlat: 15

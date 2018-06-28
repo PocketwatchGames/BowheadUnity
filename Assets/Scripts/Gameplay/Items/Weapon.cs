@@ -25,7 +25,7 @@ namespace Bowhead {
             if (_mesh != null) {
                 GameObject.Destroy(_mesh);
             }
-            if (data.prefab != null) {
+            if (data.prefab != null && owner != null) {
                 if (newSlot == (int)Player.InventorySlot.LEFT_HAND || newSlot == (int)Player.InventorySlot.RIGHT_HAND) {
                     var prefab = data.prefab.Load();
                     _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
@@ -66,7 +66,7 @@ namespace Bowhead {
             Debug.Assert(owner != enemy);
 
             float critterRadius = 1.0f;
-            var diff = enemy.waistPosition(enemy.position) - attackPos;
+            var diff = enemy.waistPosition() - attackPos;
             float dist = diff.magnitude;
             if (dist <= attackData.attackRadius + critterRadius) {
 
@@ -89,7 +89,7 @@ namespace Bowhead {
             cooldown = d.cooldown;
 
             Vector3 attackDir = new Vector3(Mathf.Sin(actor.yaw), 0, Mathf.Cos(actor.yaw));
-            Vector3 attackPos = actor.position + attackDir * d.attackRange;
+            Vector3 attackPos = actor.waistPosition() + attackDir * d.attackRange;
             bool hit = false;
 
             foreach (var c in actor.world.GetActorIterator<Pawn>()) {

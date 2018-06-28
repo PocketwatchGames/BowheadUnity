@@ -14,3 +14,6 @@ MonoBehaviour:
   version: 0
   _index: 24
   slots: 4
+  prefab:
+    _assetPath: Items/Pack
+    _editorPath: Assets/Assets/Prefabs/Resources/Items/Pack.prefab
