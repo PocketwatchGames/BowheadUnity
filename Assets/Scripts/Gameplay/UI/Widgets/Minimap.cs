@@ -128,7 +128,7 @@ namespace Bowhead.Client.UI {
 			AddBoundedTiles();
 			FullUpdate();
 
-			RevealArea(new Vector2(0, 0), 100);
+			RevealArea(new Vector2(0, 0), 1000);
 		}
 
 		public void RevealArea(Vector2 pos, float radius) {
@@ -252,7 +252,18 @@ namespace Bowhead.Client.UI {
 					var ofs = zofs+x;
 					var voxel = tile.voxelmap[ofs].BlockType();
 					var color = blockColors[(int)(voxel-1)];
-					_pixels[ofs] = color;
+                    const float minElevation = -100;
+                    const float maxElevation = 200;
+                    float midElevation = (maxElevation - minElevation) / 2 + minElevation;
+                    float elevation =50;
+                    Color elevationColor;
+                    if (elevation < midElevation) {
+                        elevationColor = Color.Lerp(Color.black, color, Mathf.Max(0.25f, (elevation - minElevation) / (midElevation - minElevation)));
+                    }
+                    else {
+                        elevationColor = Color.Lerp(color, Color.white, Mathf.Min(0.75f, (elevation - midElevation) / (maxElevation - midElevation)));
+                    }
+                    _pixels[ofs] = elevationColor;
 				}
 			}
 
