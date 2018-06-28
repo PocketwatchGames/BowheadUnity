@@ -31,6 +31,7 @@ namespace Bowhead.Actors {
 			base.ServerSpawn(pos, data);
 			position = pos;
 			AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null));
+            go.SetActive(false);
         }
 
         public override void Tick() {
@@ -43,7 +44,9 @@ namespace Bowhead.Actors {
 				if (WorldUtils.GetFirstSolidBlockDown(1000, ref position)) {
 					position += Vector3.up;
 					_hackDidFindGround = true;
-				} else {
+                    go.SetActive(true);
+                }
+                else {
 					return;
 				}
 			}
