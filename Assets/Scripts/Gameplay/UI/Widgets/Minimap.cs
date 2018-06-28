@@ -36,7 +36,7 @@ namespace Bowhead.Client.UI {
 		[SerializeField]
 		int _chunkXZSize;
 		[SerializeField]
-		Material _blitMaterial;
+		Material _maskBlitMaterial;
 		[SerializeField]
 		Texture2D _revealTexture;
 
@@ -138,7 +138,7 @@ namespace Bowhead.Client.UI {
 			Graphics.SetRenderTarget(_maskTexture);
 			GL.PushMatrix();
 			GL.LoadPixelMatrix(0, mapExtent, 0, mapExtent);
-			Graphics.DrawTexture(new Rect(relativePos.vx - radius, relativePos.vz - radius, radius*2, radius*2), _revealTexture, _blitMaterial);
+			Graphics.DrawTexture(new Rect(relativePos.vx - radius, relativePos.vz - radius, radius*2, radius*2), _revealTexture, _maskBlitMaterial);
 			GL.PopMatrix();
 			Graphics.SetRenderTarget(null);
 		}
