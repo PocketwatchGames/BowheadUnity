@@ -13,8 +13,9 @@ namespace Bowhead.Client.UI {
 		class ChunkTile {
 			public ChunkTile prev, next;
 			public IChunk[] chunks;
-			public EVoxelBlockType[] voxelmap;
-			public int x, z;
+            public EVoxelBlockType[] voxelmap;
+            public int[] elevationmap;
+            public int x, z;
 			public uint hash;
 			public bool solid;
 			public bool dirty;
@@ -186,9 +187,10 @@ namespace Bowhead.Client.UI {
 
 		void RenderTile(ChunkTile tile) {
 			if (tile.dirty && tile.solid) {
-				tile.voxelmap.Broadcast(EVoxelBlockType.AIR);
+                tile.voxelmap.Broadcast(EVoxelBlockType.AIR);
+                tile.elevationmap.Broadcast(0);
 
-				int numSolid = 0;
+                int numSolid = 0;
 
 				for (int i = 0; i < tile.chunks.Length; ++i) {
 					var chunk = tile.chunks[i];
@@ -219,6 +221,7 @@ namespace Bowhead.Client.UI {
 		bool RenderChunkToTile(ChunkTile tile, IChunk chunk, ref int numSolid) {
 			var srcVoxels = chunk.voxeldata;
 			var dstVoxels = tile.voxelmap;
+            var dstElevations = tile.elevationmap;
 
 			for (int y = World.VOXEL_CHUNK_SIZE_Y-1; y >= 0; --y) {
 				var ofs = y*World.VOXEL_CHUNK_SIZE_XZ*World.VOXEL_CHUNK_SIZE_XZ;
@@ -227,13 +230,17 @@ namespace Bowhead.Client.UI {
 					for (int x = 0; x < World.VOXEL_CHUNK_SIZE_XZ; ++x) {
 						var pixOfs = zofs+x;
 
-						if ((dstVoxels[pixOfs].BlockType() == EVoxelBlockType.AIR) && (srcVoxels[ofs].BlockType() != EVoxelBlockType.AIR)) {
-							dstVoxels[pixOfs] = srcVoxels[ofs];
-							++numSolid;
-							if (numSolid == World.VOXELS_PER_CHUNK_XZ) {
-								return true;
-							}
-						}
+                        if ((dstVoxels[pixOfs].BlockType() == EVoxelBlockType.AIR) && (srcVoxels[ofs].BlockType() != EVoxelBlockType.AIR)) {
+                            dstVoxels[pixOfs] = srcVoxels[ofs];
+                            int elevation = y + chunk.chunkPos.cy * World.VOXEL_CHUNK_SIZE_Y;
+                            if (elevation > dstElevations[pixOfs]) {
+                                dstElevations[pixOfs] = elevation;
+                            }
+                            ++numSolid;
+                            if (numSolid == World.VOXELS_PER_CHUNK_XZ) {
+                                return true;
+                            }
+                        }
 
 						++ofs;
 					}
@@ -252,17 +259,10 @@ namespace Bowhead.Client.UI {
 					var ofs = zofs+x;
 					var voxel = tile.voxelmap[ofs].BlockType();
 					var color = blockColors[(int)(voxel-1)];
-                    const float minElevation = -100;
-                    const float maxElevation = 200;
-                    float midElevation = (maxElevation - minElevation) / 2 + minElevation;
-                    float elevation =50;
-                    Color elevationColor;
-                    if (elevation < midElevation) {
-                        elevationColor = Color.Lerp(Color.black, color, Mathf.Max(0.25f, (elevation - minElevation) / (midElevation - minElevation)));
-                    }
-                    else {
-                        elevationColor = Color.Lerp(color, Color.white, Mathf.Min(0.75f, (elevation - midElevation) / (maxElevation - midElevation)));
-                    }
+                    const float minElevation = 0;
+                    const float maxElevation = 150;
+                    float elevation =(float)(tile.elevationmap[ofs] - minElevation)/(maxElevation-minElevation);
+                    Color elevationColor = Color.Lerp(new Color(elevation, elevation, elevation,1f), color, 0.5f);
                     _pixels[ofs] = elevationColor;
 				}
 			}
@@ -369,9 +369,10 @@ namespace Bowhead.Client.UI {
 			tile.solid = false;
 			tile.dirty = false;
 			tile.chunks = tile.chunks ?? new IChunk[_chunkNumY];
-			tile.voxelmap = tile.voxelmap ?? new EVoxelBlockType[World.VOXELS_PER_CHUNK_XZ];
+            tile.voxelmap = tile.voxelmap ?? new EVoxelBlockType[World.VOXELS_PER_CHUNK_XZ];
+            tile.elevationmap = tile.elevationmap ?? new int[World.VOXELS_PER_CHUNK_XZ];
 
-			return tile;
+            return tile;
 		}
 
 		static int Compare(IChunk a, IChunk b) {
