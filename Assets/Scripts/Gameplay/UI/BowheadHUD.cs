@@ -29,7 +29,8 @@ namespace Bowhead.Client.UI {
 		}
 
         private void OnExplore(Vector2 pos, float radius) {
-            _minimap.RevealArea(new Vector2(pos.x, pos.y), 100);
+            _minimap.RevealArea(new Vector2(pos.x, pos.y), radius);
+            _minimap.SetOrigin((int)(pos.x/32), (int)(pos.y/32));
         }
 
         public override void Tick(float dt) {

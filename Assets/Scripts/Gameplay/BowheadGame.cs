@@ -181,8 +181,8 @@ namespace Bowhead.Server {
                         money.count = 100;
                         break;
                     case 1:
-                        //worldItem = SpawnWorldItem("Map", pos);
-                        //worldItem.map = new WorldItem.MapReveal() { position = pos, radius = 100 };
+                        worldItem = SpawnWorldItem("Map", pos);
+                        worldItem.map = new WorldItem.MapReveal() { position = new Vector2(pos.x,pos.z), radius = 1000 };
                         break;
                 }
             }
