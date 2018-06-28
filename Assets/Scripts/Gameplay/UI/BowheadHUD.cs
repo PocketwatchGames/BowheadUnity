@@ -9,18 +9,21 @@ namespace Bowhead.Client.UI {
 		PlayerStatePanel _playerState;
         ButtonHint _interactHint;
 		Minimap _minimap;
+        Compass _compass;
 
 		public BowheadHUD(ClientWorld world, GameState gameState) : base(world, gameState) {
 			_inventory = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPanelPrefab, hudCanvas.transform, false);
 			_playerState = GameObject.Instantiate(GameManager.instance.clientData.hudPlayerStatePanelPrefab, hudCanvas.transform, false);
             _interactHint = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, hudCanvas.transform, false);
-			_minimap = GameObject.Instantiate(GameManager.instance.clientData.minimapPrefab, hudCanvas.transform, false);
+            _minimap = GameObject.Instantiate(GameManager.instance.clientData.minimapPrefab, hudCanvas.transform, false);
+            _compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
         }
 
         public override void OnPlayerPossessed(Player player) {
 			base.OnPlayerPossessed(player);
 			_inventory.Init(player);
 			_playerState.Init(player);
+            _compass.Init(Camera.main, player);
 
 			_minimap.SetStreaming(player.world.worldStreaming);
 			_minimap.SetOrigin(0, 0);
