@@ -800,8 +800,10 @@ namespace Bowhead.Actors {
 
                             float yawDiff = Math.Abs(Mathf.Repeat(angleToEnemy - yaw, Mathf.PI * 2));
 
+                            float collisionRadius = 0.5f;
+
                             // take the target's radius into account based on how far away they are
-                            yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(c.data.collisionRadius, dist));
+                            yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(collisionRadius, dist));
 
                             float distT = Mathf.Pow(dist / maxDist, 2);
                             yawDiff *= distT;
