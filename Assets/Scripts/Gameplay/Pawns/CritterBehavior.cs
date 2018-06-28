@@ -48,7 +48,7 @@ namespace Bowhead.Actors {
             input.inputs[(int)InputType.Jump] = InputState.Released;
             input.inputs[(int)InputType.AttackRight] = InputState.Released;
             if (c.hasLastKnownPosition) {
-                var diff = c.position - c.lastKnownPosition;
+                var diff = c.rigidBody.position - c.lastKnownPosition;
 
                 if (diff.y <= -3) {
                     if (c.canJump && c.activity == Pawn.Activity.OnGround) {

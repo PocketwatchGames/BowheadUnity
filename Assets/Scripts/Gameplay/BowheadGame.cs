@@ -258,13 +258,17 @@ namespace Bowhead.Server {
 
             // despawn critters
             foreach (var c in world.GetActorIterator<Critter>()) {
-                float closestDist = 1000;
-                foreach (var p in world.GetActorIterator<Player>()) {
-                    var diff = c.position - p.position;
-                    closestDist = Mathf.Min(closestDist, diff.magnitude);
-                }
-                if (closestDist > 500) {
-                    c.Destroy();
+                if (c.active) {
+                    float closestDist = 1000;
+                    foreach (var p in world.GetActorIterator<Player>()) {
+                        if (p.active) {
+                            var diff = c.position - p.position;
+                            closestDist = Mathf.Min(closestDist, diff.magnitude);
+                        }
+                    }
+                    if (closestDist > 500) {
+                        c.Destroy();
+                    }
                 }
             }
 

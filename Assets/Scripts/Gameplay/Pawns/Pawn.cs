@@ -50,7 +50,8 @@ namespace Bowhead.Actors {
         public PlayerCmd_t last;
 
         [Header("Physics")]
-        public Vector3 position;
+        public Vector3 spawnPosition;
+        public Rigidbody rigidBody;
         public Vector3 velocity;
         public float yaw;
         public Vector3 moveImpulse;
@@ -102,6 +103,9 @@ namespace Bowhead.Actors {
 
         #endregion
 
+
+        public Vector3 position { get { return rigidBody.position; } set { rigidBody.position = value; } }
+        
         public const int MaxInventorySize = 32;
 
         public enum Activity {
@@ -151,7 +155,13 @@ namespace Bowhead.Actors {
 			get;
 			private set;
 		}
-		#endregion
+        #endregion
+
+        protected override void OnGameObjectAttached() {
+            base.OnGameObjectAttached();
+
+            rigidBody = go.GetComponent<Rigidbody>();
+        }
 
         public void UpdatePlayerCmd(PlayerCmd_t cmd) {
             last = cur;
@@ -176,7 +186,8 @@ namespace Bowhead.Actors {
                 }
 
                 // Step forward
-                if (IsOpen(movePosition)) {
+                if (!Physics.Raycast(waistPosition(), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))
+                    && !Physics.Raycast(headPosition(), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
                     position += move;
                     return true;
                 }
@@ -338,7 +349,7 @@ namespace Bowhead.Actors {
                 }
                 else {
                     if (lockedToTarget) {
-                        var diff = attackTarget.position - position;
+                        var diff = attackTarget.rigidBody.position - rigidBody.position;
                         yaw = Mathf.Atan2(diff.x, diff.z);
                     }
                     else if (input.movement != Vector3.zero) {
@@ -371,7 +382,7 @@ namespace Bowhead.Actors {
                 moveImpulseTimer = Math.Max(0, moveImpulseTimer - dt);
             }
 
-            position.y += velocity.y * dt;
+            position = new Vector3(position.x, position.y + velocity.y * dt, position.z);
 
             // Collide feet
             float floorPosition;
@@ -391,12 +402,12 @@ namespace Bowhead.Actors {
                     }
                     velocity.y = Math.Max(0, velocity.y);
                 }
-                position.y = Mathf.Max(position.y, floorPosition);
+                position = new Vector3(position.x, floorPosition, position.z);
             }
             // Collide head
             else if (WorldUtils.IsSolidBlock(world.GetBlock(headPosition()))) {
                 // TODO: this is broken
-                position.y = Math.Min(position.y, (int)headPosition().y - data.height);
+                position = new Vector3(position.x, Math.Min(position.y, (int)headPosition().y - data.height), position.z);
                 velocity.y = Math.Min(0, velocity.y);
             }
 
@@ -770,7 +781,7 @@ namespace Bowhead.Actors {
             if (onGround) {
                 activity = Activity.OnGround;
                 velocity.y = Math.Max(0, velocity.y);
-                position.y = floorPosition;
+                position = new Vector3(position.x, floorPosition, position.z);
             }
             else {
                 Vector3 move = velocity * dt;
@@ -823,6 +834,7 @@ namespace Bowhead.Actors {
                 interpolateFrom = renderPosition();
                 interpolateTime = interpolateTimeTotal = Math.Max(interpolateTime, interpolateTime);
             }
+            go.GetComponent<Rigidbody>().MovePosition(p);
             position = p;
         }
 
@@ -965,14 +977,14 @@ namespace Bowhead.Actors {
             health = health - d;
 
             var blood = GameObject.Instantiate<ParticleSystem>(data.bloodParticle, go.transform);
-            blood.transform.localPosition = waistPosition() - position;
+            blood.transform.localPosition = waistPosition() - rigidBody.position;
         }
 
         public void hit(Pawn attacker, Item weapon, WeaponData.AttackData attackData) {
             float remainingStun;
             float remainingDamage;
 
-            var dirToEnemy = (attacker.position - position);
+            var dirToEnemy = (attacker.rigidBody.position - rigidBody.position);
             if (dirToEnemy == Vector3.zero) {
                 dirToEnemy.x = 1;
             }
@@ -1010,7 +1022,7 @@ namespace Bowhead.Actors {
 
                 if (attackData.knockback != 0) {
                     moveImpulseTimer = 0.1f;
-                    var kb = (position - attacker.position);
+                    var kb = (rigidBody.position - attacker.rigidBody.position);
                     kb.y = 0;
                     kb.Normalize();
                     moveImpulse = attackData.knockback * kb;

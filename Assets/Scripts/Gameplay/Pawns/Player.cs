@@ -103,6 +103,7 @@ namespace Bowhead.Actors {
 
                     var horseData = CritterData.Get("horse");
                     var c = gameMode.SpawnCritter(horseData, position, team);
+                    c.SetActive(position);
                     var weapon = PackData.Get("Pack").CreateItem();
                     c.SetInventorySlot(0, weapon);
 
@@ -266,7 +267,8 @@ namespace Bowhead.Actors {
 		public override void ServerSpawn(Vector3 pos, EntityData baseData) {
 			base.ServerSpawn(pos, baseData);
 
-			AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null));
+            var gameObject = GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null);
+            AttachExternalGameObject(gameObject);
 
 			attackTargetPreview = null;
 
@@ -274,7 +276,7 @@ namespace Bowhead.Actors {
 			_worldStreaming = Bowhead.GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y);
 			_worldStreaming.position = default(WorldChunkPos_t);
 
-			position = pos;
+            spawnPosition = pos;
 
             SetSpawnPoint(pos);
 
@@ -789,23 +791,25 @@ namespace Bowhead.Actors {
             Pawn bestTarget = null;
             float bestTargetAngle = maxTargetAngle;
             foreach (var c in world.GetActorIterator<Critter>()) {
-                if (c.team != this.team) {
-                    var diff = c.position - position;
-                    float dist = diff.magnitude;
-                    if (dist < maxDist) {
-                        float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
+                if (c.active) {
+                    if (c.team != this.team) {
+                        var diff = c.position - position;
+                        float dist = diff.magnitude;
+                        if (dist < maxDist) {
+                            float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
 
-                        float yawDiff = Math.Abs(Mathf.Repeat(angleToEnemy - yaw, Mathf.PI * 2));
+                            float yawDiff = Math.Abs(Mathf.Repeat(angleToEnemy - yaw, Mathf.PI * 2));
 
-                        // take the target's radius into account based on how far away they are
-                        yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(c.data.collisionRadius, dist));
+                            // take the target's radius into account based on how far away they are
+                            yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(c.data.collisionRadius, dist));
 
-                        float distT = Mathf.Pow(dist / maxDist, 2);
-                        yawDiff *= distT;
+                            float distT = Mathf.Pow(dist / maxDist, 2);
+                            yawDiff *= distT;
 
-                        if (yawDiff < bestTargetAngle) {
-                            bestTarget = c;
-                            bestTargetAngle = yawDiff;
+                            if (yawDiff < bestTargetAngle) {
+                                bestTarget = c;
+                                bestTargetAngle = yawDiff;
+                            }
                         }
                     }
                 }
@@ -822,7 +826,7 @@ namespace Bowhead.Actors {
             float closestDist = 2;
             Entity closestItem = null;
             foreach (var i in world.GetActorIterator<WorldItem>()) {
-                float dist = (i.position - position).magnitude;
+                float dist = (i.position - rigidBody.position).magnitude;
                 if (dist < closestDist) {
                     closestDist = dist;
                     closestItem = i;
@@ -830,7 +834,7 @@ namespace Bowhead.Actors {
             }
             foreach (var i in world.GetActorIterator<Critter>()) {
                 if (i.team == team) {
-                    float dist = (i.position - position).magnitude;
+                    float dist = (i.rigidBody.position - rigidBody.position).magnitude;
                     if (dist < closestDist) {
                         closestDist = dist;
                         closestItem = i;
