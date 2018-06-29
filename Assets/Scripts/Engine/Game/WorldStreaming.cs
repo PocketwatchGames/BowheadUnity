@@ -254,6 +254,7 @@ public partial class World {
 
 			jobData.flags = EJobFlags.VOXELS;
 			jobData.chunk = chunk;
+			jobData.hasSubJob = false;
 			chunk.jobData = jobData;
 			chunk.chunkData.Pin();
 
@@ -269,21 +270,29 @@ public partial class World {
 		bool ScheduleGenTrisJob(Chunk chunk) {
 			bool existingJob = chunk.jobData != null;
 
-			if (!existingJob) {
+			if (existingJob) {
+				chunk.jobData.subJobHandle = chunk.jobData.jobHandle;
+				chunk.jobData.hasSubJob = true;
+			} else {
 				chunk.jobData = GetFreeJobData();
 				if (chunk.jobData == null) {
 					return false;
 				}
 				chunk.jobData.chunk = chunk;
+				chunk.jobData.hasSubJob = false;
 			}
 
 			chunk.jobData.flags = EJobFlags.TRIS;
-			
+
 			if (!(existingJob || chunk.hasVoxelData)) {
 				AddRef(chunk);
 				chunk.jobData.flags |= EJobFlags.VOXELS;
 				chunk.chunkData.Pin();
 				chunk.jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
+				chunk.jobData.subJobHandle = chunk.jobData.jobHandle;
+				chunk.jobData.hasSubJob = true;
+			} else if (existingJob) {
+				chunk.jobData.flags |= EJobFlags.VOXELS;
 			}
 
 			chunk.jobData.jobData.voxelStorage.Pin();
@@ -328,7 +337,7 @@ public partial class World {
 
 				if (job.jobHandle.IsCompleted) {
 					job.jobHandle.Complete();
-
+					
 					QueueJobCompletion(job);
 
 					if (prev != null) {
@@ -337,6 +346,18 @@ public partial class World {
 						_usedJobData = job.next;
 					}
 				} else {
+					if (job.hasSubJob && (job.flags & (EJobFlags.TRIS|EJobFlags.VOXELS)) == (EJobFlags.TRIS|EJobFlags.VOXELS)) {
+						// don't wait for tris to notify that we have voxel data.
+						if (job.subJobHandle.IsCompleted) {
+							job.subJobHandle.Complete();
+							job.subJobHandle = default(JobHandle);
+							job.hasSubJob = false;
+							job.chunk.hasVoxelData = true;
+							job.flags &= ~EJobFlags.VOXELS;
+							onChunkVoxelsUpdated?.Invoke(job.chunk);
+						}
+					}
+
 					prev = job;
 				}
 			}
@@ -410,18 +431,15 @@ public partial class World {
 
 			job.chunk = null;
 			job.jobHandle = default(JobHandle);
+			job.subJobHandle = default(JobHandle);
 			
 			if (!flush && (chunk.refCount > 0)) {
 				if ((job.flags & EJobFlags.VOXELS) != 0) {
-					if (onChunkVoxelsUpdated != null) {
-						onChunkVoxelsUpdated(chunk);
-					}
+					onChunkVoxelsUpdated?.Invoke(chunk);
 				}
 				if (chunk.hasTrisData) {
 					CopyToMesh(job, chunk);
-					if (onChunkTrisUpdated != null) {
-						onChunkTrisUpdated(chunk);
-					}
+					onChunkTrisUpdated?.Invoke(chunk);
 				}
 			}
 
@@ -556,6 +574,8 @@ public partial class World {
 			public ChunkMeshGen.JobInputData jobData = ChunkMeshGen.JobInputData.New();
 			public EJobFlags flags;
 			public JobHandle jobHandle;
+			public JobHandle subJobHandle;
+			public bool hasSubJob;
 
 			public void Dispose() {
 				jobData.Dispose();
