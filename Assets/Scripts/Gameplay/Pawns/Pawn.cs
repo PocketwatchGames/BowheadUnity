@@ -186,7 +186,8 @@ namespace Bowhead.Actors {
                 }
 
                 // Step forward
-                if (!Physics.Raycast(waistPosition(), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))
+                if (!Physics.Raycast(footPosition() + new Vector3(0, 0.25f, 0), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))
+                    && !Physics.Raycast(waistPosition(), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))
                     && !Physics.Raycast(headPosition(), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
                     position += move;
                     return true;
@@ -216,16 +217,15 @@ namespace Bowhead.Actors {
 
         bool CanClimb(Vector3 checkDir, Vector3 checkPos) {
             var p = checkPos;
-            var handHoldPos = p + checkDir.normalized * data.climbWallRange;
+            var handHoldPos = handPosition(p) + checkDir.normalized * data.climbWallRange;
             if (!IsOpen(p))
                 return false;
-            var handblock = world.GetBlock(handPosition(handHoldPos));
+            var handblock = world.GetBlock(handHoldPos);
             bool isClimbable = WorldUtils.IsClimbable(handblock, canClimbWell);
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
                 if (isHangPosition
                     && WorldUtils.IsHangable(handblock, canClimbWell)
-                    && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(handHoldPos)))
                     && !WorldUtils.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
                     isClimbable = true;
                 }

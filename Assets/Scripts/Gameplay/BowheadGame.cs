@@ -165,8 +165,9 @@ namespace Bowhead.Server {
 		public WorldData data;
 
 		int numCritters;
-				
-		protected override void PrepareForMatchInProgress() {
+        FastNoise_t noise = FastNoise_t.New();
+
+        protected override void PrepareForMatchInProgress() {
 			base.PrepareForMatchInProgress();
 
 			for (int i = 0; i < 100; i++) {
@@ -181,8 +182,8 @@ namespace Bowhead.Server {
                         money.count = 100;
                         break;
                     case 1:
-                        //worldItem = SpawnWorldItem("Map", pos);
-                        //worldItem.map = new WorldItem.MapReveal() { position = pos, radius = 100 };
+                        worldItem = SpawnWorldItem("Map", pos);
+                        worldItem.map = new WorldItem.MapReveal() { position = new Vector2(pos.x,pos.z), radius = 1000 };
                         break;
                 }
             }
@@ -193,28 +194,23 @@ namespace Bowhead.Server {
 			return WorldStreaming.NewProceduralWorldStreaming(0, WORLD_GENERATOR_TYPE);
 		}
 
-		#region perlin utils
-		float GetPerlinNormal(int x, int y, int z, float scale) {
-			//noise->SetFrequency(scale);
-			//noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
-			//const float v = noiseFloats[0];
-			//return (v + 1) / 2;
-			return 0.5f;
-		}
+        #region perlin utils
+        public float GetPerlinNormal(int x, int y, int z, float scale) {
+            noise.SetFrequency(scale);
+            var v = noise.GetPerlin(x, y, z);
+            return (v + 1) / 2;
+        }
 
-		float GetPerlinValue(int x, int y, int z, float scale) {
-			//noise->SetFrequency(scale);
-			//noise->FillPerlinSet(noiseFloats, x, y, z, 1, 1, 1);
-			//const float v = noiseFloats[0];
-			//return v;
-			return 0;
-		}
+        public float GetPerlinValue(int x, int y, int z, float scale) {
+            noise.SetFrequency(scale);
+            return noise.GetPerlin(x, y, z);
+        }
 
-		#endregion
+        #endregion
 
-		#region entity creation
+        #region entity creation
 
-		protected override ServerTeam GetTeamForSpawningPlayer(ServerPlayerController playerController) {
+        protected override ServerTeam GetTeamForSpawningPlayer(ServerPlayerController playerController) {
 			// TODO: base assigns every player to a new team
 			return base.GetTeamForSpawningPlayer(playerController);
 		}
@@ -352,8 +348,8 @@ namespace Bowhead.Server {
 		}
 		public Vector3 GetWind(int x, int y, int z) {
 			float inverseRegionSize = 0.001f;
-			float windAngle = GetPerlinValue(x + 6543, z + 6543, 0, inverseRegionSize) * Mathf.PI * 2;
-			var wind = new Vector3(Mathf.Cos(windAngle), Mathf.Sin(windAngle), 0);
+			float windAngle = GetPerlinNormal(x + 6543, z + 6543, 0, inverseRegionSize) * Mathf.PI * 2;
+			var wind = new Vector3(Mathf.Cos(windAngle), 0, Mathf.Sin(windAngle));
 			float currentSpeed = data.minWindSpeedVariance + (data.maxWindSpeedVariance - data.minWindSpeedVariance) * Mathf.Pow(0.5f + 0.5f * GetPerlinValue((x + 88943), (y + 653), z, inverseRegionSize), 2f);
 
 			float timeScale = 0.002f;
