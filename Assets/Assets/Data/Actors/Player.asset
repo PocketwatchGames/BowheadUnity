@@ -14,7 +14,6 @@ MonoBehaviour:
   version: 0
   _index: 1
   height: 2
-  collisionRadius: 0.5
   maxHealth: 200
   maxStamina: 100
   recoveryTime: 2
@@ -57,6 +56,9 @@ MonoBehaviour:
   prefab:
     _assetPath: Actors/Player
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Player.prefab
+  minimapMarker:
+    _assetPath: MinimapExampleMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MinimapExampleMarker.prefab
   maxThirst: 100
   temperatureSleepMinimum: 50
   temperatureSleepMaximum: 100

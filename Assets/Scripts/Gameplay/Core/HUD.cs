@@ -93,6 +93,8 @@ namespace Bowhead.Client.UI {
 
 		public virtual void Fade(Color src, Color dst, float time) { }
 
+		public abstract T CreateMinimapMarker<T>(T prefab) where T: UnityEngine.Object;
+
 		protected virtual GameObject hudPrefab {
 			get {
 				return null;

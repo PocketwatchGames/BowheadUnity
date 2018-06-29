@@ -8,7 +8,7 @@ namespace Bowhead.Client.UI {
 	using IChunk = World.Streaming.IChunk;
 
 	[RequireComponent(typeof(RawImage))]
-	public class Minimap : MonoBehaviourEx {
+	public sealed class Minimap : MonoBehaviourEx {
 
 		class ChunkTile {
 			public ChunkTile prev, next;
@@ -41,6 +41,8 @@ namespace Bowhead.Client.UI {
 		Texture2D _revealTexture;
 		[SerializeField]
 		RawImage _maskImage;
+		[SerializeField]
+		Transform _markers;
 
 		int _chunkX;
 		int _chunkZ;
@@ -55,6 +57,7 @@ namespace Bowhead.Client.UI {
 		Texture2D _blackTexture;
 		RawImage _image;
 		Color32[] _pixels;
+		Vector3 _markersOrigin;
 		bool _dirty;
 
 		void Awake() {
@@ -92,6 +95,12 @@ namespace Bowhead.Client.UI {
 			_chunkMaxZ = int.MaxValue;
 
 			_chunkNumY = _chunkMaxY - _chunkMinY + 1;
+
+			float numVoxels = World.MaxVoxelChunkLine(_chunkXZSize) * World.VOXEL_CHUNK_SIZE_XZ;
+			var scale = _image.rectTransform.sizeDelta / numVoxels;
+
+			_markersOrigin = _markers.localPosition;
+			_markers.localScale = new Vector3(scale.x, scale.y, 1);
 		}
 
 		void Update() {
@@ -128,7 +137,7 @@ namespace Bowhead.Client.UI {
 			AddBoundedTiles();
 			FullUpdate();
 
-			RevealArea(new Vector2(0, 0), 100);
+			_markers.localPosition = _markersOrigin + Vector3.Scale(_markers.localScale, new Vector3(_chunkX * World.VOXEL_CHUNK_SIZE_XZ, _chunkZ * World.VOXEL_CHUNK_SIZE_XZ, 0));
 		}
 
 		public void RevealArea(Vector2 pos, float radius) {
@@ -143,6 +152,10 @@ namespace Bowhead.Client.UI {
 			Graphics.DrawTexture(new Rect(relativePos.vx - radius, relativePos.vz - radius, radius*2, radius*2), _revealTexture, _maskBlitMaterial);
 			GL.PopMatrix();
 			Graphics.SetRenderTarget(null);
+		}
+
+		public T CreateMarker<T>(T prefab) where T: UnityEngine.Object {
+			return Instantiate(prefab, _markers.transform, false);
 		}
 
 		void FullUpdate() {

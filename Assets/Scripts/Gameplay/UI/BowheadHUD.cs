@@ -38,5 +38,9 @@ namespace Bowhead.Client.UI {
             var target = localPlayer.playerPawn.GetInteractTarget();
             _interactHint.SetTarget(target);
         }
+
+		public override T CreateMinimapMarker<T>(T prefab) {
+			return _minimap.CreateMarker(prefab);
+		}
     }
 }

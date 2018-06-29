@@ -10,6 +10,7 @@ namespace Bowhead.Actors {
 
         [Header("Player")]
         public GameObject_WRef prefab;
+		public GameObject_WRef minimapMarker;
         public float maxThirst;
         public float temperatureSleepMinimum;
         public float temperatureSleepMaximum;

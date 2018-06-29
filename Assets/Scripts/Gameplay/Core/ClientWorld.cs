@@ -197,7 +197,7 @@ namespace Bowhead.Client {
 
 		public Bowhead.Actors.GameState gameState {
 			get {
-				return _gameState;
+				return _gameState != null ? _gameState : null;
 			}
 		}
 

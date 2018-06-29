@@ -44,6 +44,7 @@ namespace Bowhead.Actors {
 		World.Streaming.IVolume _worldStreaming;
 
         Pawn attackTargetPreview;
+		GameObject _marker;
 
         public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
@@ -113,6 +114,16 @@ namespace Bowhead.Actors {
                     return;
                 }
             }
+			
+			if ((_marker == null) && ((data.minimapMarker != null) && (data.minimapMarker.Load() != null))) {
+
+				// this is just horrible, normally we'd have the gamestate on the client from the World object
+				// but this is all server code... so fuck it dude let's go bowling.
+				if (GameManager.instance.clientWorld.gameState != null) {
+					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMinimapMarker(data.minimapMarker.Load()));
+					// SetPosition will set the position
+				}
+			}
         }
 
         override public void PreSimulate(float dt) {
@@ -339,6 +350,9 @@ namespace Bowhead.Actors {
 		public override void SetPosition(Vector3 p, float interpolateTime = 0) {
 			base.SetPosition(p, interpolateTime);
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(p));
+			if (_marker != null) {
+				_marker.transform.localPosition = new Vector2(p.x, p.z);
+			}
 		}
 
 		override public void LandOnGround() {
