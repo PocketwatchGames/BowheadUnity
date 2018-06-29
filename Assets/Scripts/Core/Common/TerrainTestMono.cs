@@ -24,7 +24,7 @@ public class TerrainTestMono : MonoBehaviour {
 
 		_tick = true;
 		_streaming = new World.Streaming(_chunkPrefab, CreateGenVoxelsJob);
-		_volume = _streaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y);
+		_volume = _streaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);
 		_volume.position = default(WorldChunkPos_t);
 
 		_streaming.FinishTravel();

@@ -283,7 +283,7 @@ namespace Bowhead.Actors {
 			attackTargetPreview = null;
 
 			// JOSEPH: this will be better once this is moved into new Actor framework, for now HACK
-			_worldStreaming = GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y);
+			_worldStreaming = GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.z)));
 
             spawnPosition = pos;

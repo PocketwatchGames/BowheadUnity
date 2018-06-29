@@ -90,17 +90,18 @@ public partial class World {
 			}
 		}
 
-		public IVolume NewStreamingVolume(int xzSize, int ySize) {
+		public IVolume NewStreamingVolume(int xzSize, int yUp, int yDown) {
 			var zPitch = MaxVoxelChunkLine(xzSize);
 			var yPitch = zPitch * zPitch;
-			var yDim = MaxVoxelChunkLine(ySize);
+			var yDim = MaxVoxelChunkLine(yUp+yDown);
 
 			var numChunks = yPitch * yDim;
 
 			var data = new VolumeData() {
 				curPos = new WorldChunkPos_t(int.MaxValue, int.MaxValue, int.MaxValue),
 				xzSize = xzSize,
-				ySize = ySize,
+				yUp = yUp,
+				yDown = yDown,
 				chunks = new VolumeData.ChunkRef_t[numChunks],
 				tempChunks = new VolumeData.ChunkRef_t[numChunks],
 				streaming = this
@@ -594,7 +595,7 @@ public partial class World {
 			public int count;
 			public bool loading;
 			public int xzSize;
-			public int ySize;
+			public int yUp, yDown;
 			public WorldChunkPos_t curPos;
 			public WorldChunkPos_t nextPos;
 			public Streaming streaming;
@@ -605,9 +606,15 @@ public partial class World {
 				}
 			}
 
-			int IVolume.ySize {
+			int IVolume.yUp {
 				get {
-					return ySize;
+					return yUp;
+				}
+			}
+
+			int IVolume.yDown {
+				get {
+					return yDown;
 				}
 			}
 
@@ -634,10 +641,10 @@ public partial class World {
 				count = 0;
 
 				var zPitch = MaxVoxelChunkLine(xzSize);
-				var yDim = MaxVoxelChunkLine(ySize);
+				var yDim = MaxVoxelChunkLine(yUp+yDown);
 
 				var xorg = curPos.cx - xzSize;
-				var yorg = curPos.cy - ySize;
+				var yorg = curPos.cy - yDown;
 				var zorg = curPos.cz - xzSize;
 
 				var yScale = (uint)(Mathf.Max(VOXEL_CHUNK_SIZE_Y, VOXEL_CHUNK_SIZE_XZ) / VOXEL_CHUNK_SIZE_XZ);
@@ -702,7 +709,8 @@ public partial class World {
 		public interface IVolume : IDisposable {
 			WorldChunkPos_t position { get; set; }
 			int xzSize { get; }
-			int ySize { get; }
+			int yUp { get; }
+			int yDown { get; }
 		};
 
 		public interface IChunk {

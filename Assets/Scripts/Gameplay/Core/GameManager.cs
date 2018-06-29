@@ -2112,7 +2112,7 @@ namespace Bowhead {
 				if ((_inMenus > 0) || (Client.Actors.ClientPlayerController.localPlayer != null)) {
 					SetScreenModeCursorLockState();
 					Cursor.visible = true;
-				} else {
+				} else if (Client.Actors.ClientPlayerController.localPlayer != null) {
 					Client.Actors.ClientPlayerController.localPlayer.SetCursorState();
 				}
 			}
