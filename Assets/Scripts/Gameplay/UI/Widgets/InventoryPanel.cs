@@ -13,6 +13,8 @@ namespace Bowhead.Client.UI {
         InventoryContainer _inventoryContainerPrefab;
         [SerializeField]
         InventorySlot _inventorySlotPrefab;
+        [SerializeField]
+        ButtonHint _buttonHintDrop;
 
         public int slotMargin = 8;
         private Vector3 slotSize;
@@ -56,9 +58,11 @@ namespace Bowhead.Client.UI {
                     break;
                 }
             }
-        }
+			OnInventorySelected();
 
-        private void Rebuild() {
+		}
+
+		private void Rebuild() {
             float x = slotMargin;
             for (int slot = 0; slot <= (int)Player.InventorySlot.RIGHT_HAND; slot++) {
                 var s = Instantiate(_inventorySlotPrefab, _mainContainer.transform, false);
@@ -101,6 +105,8 @@ namespace Bowhead.Client.UI {
             }
 
             SelectInventory(inventorySelected);
+
+			_buttonHintDrop.transform.SetAsFirstSibling();
         }
 
         private void Update() {
@@ -112,6 +118,7 @@ namespace Bowhead.Client.UI {
             }
             if (Input.GetButton("Use")) {
                 dropTimer = dropTimer + Time.deltaTime;
+				OnInventorySelected();
             }
             else {
                 if (Input.GetButtonUp("Use")) {
@@ -178,10 +185,40 @@ namespace Bowhead.Client.UI {
             if (_slots[i] != null) {
                 _slots[i].Select();
             }
-        }
+			OnInventorySelected();
 
+		}
 
-        private void RearrangeLeft() {
+		void OnInventorySelected() {
+			var selectedItem = _player.GetInventorySlot(inventorySelected);
+			if (selectedItem != null && _slots[inventorySelected] != null) {
+				_buttonHintDrop.gameObject.SetActive(true);
+				_buttonHintDrop.transform.position = _slots[inventorySelected].transform.position + new Vector3(0,30,0);
+				_buttonHintDrop.SetButton("B");
+
+				if (dropTimer >= dropTime) {
+					_buttonHintDrop.SetHint("Drop");
+				}
+				else if (inventorySelected < (int)Player.InventorySlot.PACK) {
+					_buttonHintDrop.SetHint("Unequip");
+				}
+				else if (selectedItem is Clothing || selectedItem is Weapon) {
+					_buttonHintDrop.SetHint("Equip");
+				}
+				else if (selectedItem is Pack) {
+					_buttonHintDrop.SetHint("...");
+				}
+				else {
+					_buttonHintDrop.SetHint("Use");
+				}
+			}
+			else {
+				_buttonHintDrop.gameObject.SetActive(false);
+			}
+
+		}
+
+		private void RearrangeLeft() {
             var curItem = _player.GetInventorySlot(inventorySelected);
             if (curItem != null) {
                 Pack pack;

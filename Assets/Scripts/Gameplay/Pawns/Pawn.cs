@@ -359,7 +359,10 @@ namespace Bowhead.Actors {
             }
 
 
-            if (activity == Activity.Climbing) {
+            if (mount != null) {
+                return;
+            }
+            else if (activity == Activity.Climbing) {
                 UpdateClimbing(dt, input);
             }
             else if (activity == Activity.Swimming) {
@@ -491,10 +494,6 @@ namespace Bowhead.Actors {
 
             if (mount == null) {
                 go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
-            }
-            else {
-                position = mount.position;
-                yaw = mount.yaw;
             }
         }
 
@@ -1087,7 +1086,7 @@ namespace Bowhead.Actors {
 
             if (mount != null) {
                 go.transform.parent = mount.go.transform;
-                go.transform.position = mount.headPosition();
+                go.transform.localPosition = mount.headPosition()-mount.position;
             }
             else {
                 go.transform.parent = null;

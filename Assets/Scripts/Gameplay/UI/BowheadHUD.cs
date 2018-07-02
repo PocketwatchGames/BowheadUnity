@@ -39,8 +39,13 @@ namespace Bowhead.Client.UI {
         public override void Tick(float dt) {
             base.Tick(dt);
 
-            var target = localPlayer.playerPawn.GetInteractTarget();
+            Entity target;
+            string interaction;
+            localPlayer.playerPawn.GetInteractTarget(out target, out interaction);
+
             _interactHint.SetTarget(target);
+            _interactHint.SetButton("X");
+            _interactHint.SetHint(interaction);
         }
 
 		public override T CreateMinimapMarker<T>(T prefab) {
