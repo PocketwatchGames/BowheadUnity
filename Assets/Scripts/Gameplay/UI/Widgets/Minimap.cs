@@ -221,7 +221,6 @@ namespace Bowhead.Client.UI {
 				tile.dirty = false;
 			}
 
-
 			var px = tile.x - _chunkMinX;
 			var py = tile.z - _chunkMinZ;
 
