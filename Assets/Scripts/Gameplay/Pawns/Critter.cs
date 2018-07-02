@@ -23,6 +23,8 @@ namespace Bowhead.Actors {
 
 		#endregion
 
+		private PawnHUD _hud;
+
 		#region core
 
 		virtual public void ServerSpawn(Vector3 pos, EntityData baseData, Server.Actors.ServerTeam t) {
@@ -41,15 +43,24 @@ namespace Bowhead.Actors {
             canTurn = true;
             canAttack = true;
             gameMode.CritterSpawned();
+			
 		}
 
         public void SetActive(Vector3 pos) {
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
             position = pos;
             active = true;
-        }
+		}
 
-        protected override void OnDestroy() {
+		protected override void OnGameObjectAttached() {
+			base.OnGameObjectAttached();
+
+			if (GameManager.instance.clientWorld.gameState != null) {
+				GameManager.instance.clientWorld.OnCritterActive(this);
+			}
+		}
+
+		protected override void OnDestroy() {
 			base.OnDestroy();
 			if (gameMode != null) {
 				gameMode.CritterKilled();

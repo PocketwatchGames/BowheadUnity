@@ -21,7 +21,7 @@ namespace Bowhead.Client.UI {
         }
         private void LateUpdate() {
             if (_target != null) {
-                transform.localPosition = Camera.main.WorldToViewportPoint(_target.go.transform.position);
+                transform.position = Camera.main.WorldToScreenPoint(_target.go.transform.position);
             }
         }
 

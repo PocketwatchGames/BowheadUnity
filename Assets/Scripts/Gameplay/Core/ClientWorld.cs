@@ -20,6 +20,8 @@ namespace Bowhead.Client {
 		Queue<IRagdollController> _gibs = new Queue<IRagdollController>();
 		PhysicalContactMatrixState _physicalContactMatrix;
 		ActorSingleton<Bowhead.Actors.GameState> _gameState;
+
+		public event Action<Bowhead.Actors.Critter> CritterActiveEvent;
 		
 		public ClientWorld(
 			IGameInstance gameInstance,
@@ -259,5 +261,11 @@ namespace Bowhead.Client {
 		protected override JobHandle CreateGenVoxelsJob(WorldChunkPos_t pos, PinnedChunkData_t chunk) {
 			return gameState.worldStreaming.ScheduleChunkGenerationJob(pos, chunk, true);
 		}
+
+		public void OnCritterActive(Bowhead.Actors.Critter c) {
+			CritterActiveEvent?.Invoke(c);
+		}
+
+
 	}
 }

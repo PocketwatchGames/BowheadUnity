@@ -107,6 +107,8 @@ namespace Bowhead {
         public Client.UI.ButtonHint hudButtonHintPrefab;
         public CameraData cameraData;
         public DamageIndicator damageIndicatorPrefab;
+		public PawnHUD critterHudPrefab;
+		public WeaponChargeHUD weaponChargePrefab;
 
         public Canvas dialogDarkenCanvasPrefab;
 		public Canvas dialogNormalCanvasPrefab;
