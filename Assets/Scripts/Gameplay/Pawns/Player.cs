@@ -65,8 +65,12 @@ namespace Bowhead.Actors {
             cmd.fwd = (sbyte)(move.y * 127);
             cmd.right = (sbyte)(move.x * 127);
 
+			Vector2 look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+			cmd.lookFwd = (sbyte)(look.y * 127);
+			cmd.lookRight = (sbyte)(look.x * 127);
 
-            if (Input.GetButton("Jump")) {
+
+			if (Input.GetButton("Jump")) {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
             if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
@@ -169,7 +173,7 @@ namespace Bowhead.Actors {
 
             Vector3 forward = Vector3.forward;
             if (Client.Actors.ClientPlayerController.localPlayer != null) {
-                var cameraYaw = Client.Actors.ClientPlayerController.localPlayer.cameraController.GetYaw();
+                float cameraYaw = Client.Actors.ClientPlayerController.localPlayer.cameraController.GetYaw();
                 forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Cos(cameraYaw));
             }
 
@@ -195,9 +199,15 @@ namespace Bowhead.Actors {
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
 
-            input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
+			if (cur.lookRight != 0 || cur.lookFwd != 0) {
+				var lookDir = -forward * (float)cur.lookFwd / 127f + right * (float)cur.lookRight / 127f;
+				input.yaw = Mathf.Atan2(lookDir.x, lookDir.z);
+			}
+			else if (input.movement != Vector3.zero) {
+				input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
+			}
 
-            return input;
+			return input;
         }
 
         override public void Simulate(float dt, Input_t input) {

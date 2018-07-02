@@ -18,6 +18,8 @@ MonoBehaviour:
     _editorPath: Assets/Assets/Prefabs/Resources/Items/2HSword.prefab
   hand: 2
   chargeTime: 0.9
+  moveSpeedWhileCharging: 0.25
+  moveSpeedChargeDelay: 0.2
   weaponSize: {x: 0, y: 0, z: 0}
   attacks:
   - castTime: 0.35

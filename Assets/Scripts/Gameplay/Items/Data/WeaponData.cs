@@ -35,6 +35,8 @@ namespace Bowhead {
         public GameObject_WRef prefab;
         public Hand hand;
         public float chargeTime;
+		public float moveSpeedWhileCharging = 1f;
+		public float moveSpeedChargeDelay = 0.2f;
         public Vector3 weaponSize;
         public AttackData[] attacks;
         public AttackData[] parries;
