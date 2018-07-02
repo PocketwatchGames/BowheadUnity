@@ -50,14 +50,14 @@ public class MeshCopyHelper {
 		}
 	}
 
-	public static void SetMeshColors(Mesh mesh, Color[] colors, int count) {
+	public static void SetMeshColors(Mesh mesh, Color32[] colors, int count) {
 		unsafe {
 			fixed (void* p = colors) {
 				var plen = ((UIntPtr*)p) - 1;
 				UIntPtr origLen = *plen;
 				*plen = (UIntPtr)count;
 				try {
-					mesh.colors = colors;
+					mesh.colors32 = colors;
 				} finally {
 					*plen = origLen;
 				}
@@ -108,14 +108,14 @@ public class MeshCopyHelper {
 		}
 	}
 
-	public static void SetSubMeshTris(Mesh mesh, int submesh, int[] tris, int count) {
+	public static void SetSubMeshTris(Mesh mesh, int submesh, int[] tris, int count, bool calculateBounds, int baseVertex) {
 		unsafe {
 			fixed (void* p = tris) {
 				var plen = ((UIntPtr*)p) - 1;
 				UIntPtr origLen = *plen;
 				*plen = (UIntPtr)count;
 				try {
-					mesh.SetTriangles(tris, submesh);
+					mesh.SetTriangles(tris, submesh, calculateBounds, baseVertex);
 				} finally {
 					*plen = origLen;
 				}
