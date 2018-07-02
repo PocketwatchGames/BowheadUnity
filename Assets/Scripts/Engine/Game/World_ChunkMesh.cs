@@ -56,7 +56,7 @@ public partial class World {
 	static partial class ChunkMeshGen {
 		const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
 		const int BANK_SIZE = 16;
-		const int MAX_MESH_LAYERS = 3;
+		const int MAX_SUBMESHES = 3;
 
 		const int BORDER_SIZE = 2;
 		const int NUM_VOXELS_XZ = VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE*2;
@@ -608,15 +608,15 @@ public partial class World {
 			[WriteOnly]
 			public NativeArray<int> counts;
 			[WriteOnly]
-			public NativeArray<int> layers;
-
+			public NativeArray<int> submeshes;
+			
 			NativeArray<int> _vtoi;
 			NativeArray<int> _vtoiCounts;
 
 			int _vertCount;
 			int _indexCount;
-			int _layerVertOfs;
-			int _layerIndexOfs;
+			int _submeshVertOfs;
+			int _submeshIndexOfs;
 
 			public static FinalMeshVerts_t New() {
 				var verts = new FinalMeshVerts_t {
@@ -624,8 +624,8 @@ public partial class World {
 					normals = AllocatePersistentNoInit<Vector3>(ushort.MaxValue),
 					colors = AllocatePersistentNoInit<Color32>(ushort.MaxValue),
 					indices = AllocatePersistentNoInit<int>(ushort.MaxValue),
-					counts = AllocatePersistentNoInit<int>(2),
-					layers = AllocatePersistentNoInit<int>(MAX_MESH_LAYERS),
+					counts = AllocatePersistentNoInit<int>(3),
+					submeshes = AllocatePersistentNoInit<int>(MAX_SUBMESHES),
 					_vtoi = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES*BANK_SIZE),
 					_vtoiCounts = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES)
 				};
@@ -638,7 +638,7 @@ public partial class World {
 				colors.Dispose();
 				indices.Dispose();
 				counts.Dispose();
-				layers.Dispose();
+				submeshes.Dispose();
 				_vtoi.Dispose();
 				_vtoiCounts.Dispose();
 			}
@@ -648,9 +648,9 @@ public partial class World {
 				_indexCount = 0;				
 			}
 
-			public void BeginLayer() {
-				_layerVertOfs = _vertCount;
-				_layerIndexOfs = _indexCount;
+			public void BeginSubmesh() {
+				_submeshVertOfs = _vertCount;
+				_submeshIndexOfs = _indexCount;
 
 				for (int i = 0; i < _vtoiCounts.Length; ++i) {
 					_vtoiCounts[i] = 0;
@@ -677,14 +677,14 @@ public partial class World {
 				for (int i = 0; i < vtoiCount; ++i) {
 					int idx = _vtoi[(INDEX*BANK_SIZE)+i];
 					if (ColorEqual(colors[idx], color) && (normals[idx] == normal)) {
-						Assert((_indexCount-_layerIndexOfs) < ushort.MaxValue);
-						indices[_indexCount++] = idx;
+						Assert((_indexCount-_submeshIndexOfs) < ushort.MaxValue);
+						indices[_indexCount++] = idx - _submeshVertOfs;
 						return;
 					}
 				}
 
-				Assert((_vertCount-_layerVertOfs) < ushort.MaxValue);
-				Assert((_indexCount-_layerIndexOfs) < ushort.MaxValue);
+				Assert((_vertCount-_submeshVertOfs) < ushort.MaxValue);
+				Assert((_indexCount-_submeshIndexOfs) < ushort.MaxValue);
 				Assert(vtoiCount < BANK_SIZE);
 
 				positions[_vertCount] = new Vector3(x, y, z);
@@ -694,7 +694,7 @@ public partial class World {
 				_vtoi[(INDEX*BANK_SIZE)+vtoiCount] = _vertCount;
 				_vtoiCounts[INDEX] = vtoiCount + 1;
 
-				indices[_indexCount++] = _vertCount - _layerVertOfs;
+				indices[_indexCount++] = _vertCount - _submeshVertOfs;
 				_vertCount++;
 			}
 		};
@@ -715,7 +715,7 @@ public partial class World {
 			[ReadOnly]
 			public NativeArray<uint> smgs;
 			[ReadOnly]
-			public NativeArray<uint> layers;
+			public NativeArray<uint> submeshes;
 			[ReadOnly]
 			public NativeArray<int> indices;
 			[ReadOnly]
@@ -723,7 +723,7 @@ public partial class World {
 			[ReadOnly]
 			public NativeArray<int> vtoiCounts;
 
-			public uint maxLayer;
+			public uint maxSubmesh;
 
 			public static SmoothingVertsIn_t New(SmoothingVertsOut_t smv) {
 				return new SmoothingVertsIn_t {
@@ -732,11 +732,11 @@ public partial class World {
 					colors = smv.colors,
 					smoothFactor = smv.smoothFactor,
 					smgs = smv.smgs,
-					layers = smv.layers,
+					submeshes = smv.submeshes,
 					indices = smv.indices,
 					numIndices = smv.numIndices,
 					vtoiCounts = smv.vtoiCounts,
-					maxLayer = smv.maxLayer
+					maxSubmesh = smv.maxSubmesh
 				};
 			}
 		};
@@ -753,14 +753,14 @@ public partial class World {
 			[WriteOnly]
 			public NativeArray<uint> smgs;
 			[WriteOnly]
-			public NativeArray<uint> layers;
+			public NativeArray<uint> submeshes;
 			[WriteOnly]
 			public NativeArray<int> indices;
 			[WriteOnly]
 			public NativeArray<int> numIndices;
 			public NativeArray<int> vtoiCounts;
 
-			public uint maxLayer;
+			public uint maxSubmesh;
 
 			NativeArray<int> _vtoi;
 
@@ -774,7 +774,7 @@ public partial class World {
 					colors = AllocatePersistentNoInit<Color32>(ushort.MaxValue*BANK_SIZE),
 					smoothFactor = AllocatePersistentNoInit<float>(ushort.MaxValue*BANK_SIZE),
 					smgs = AllocatePersistentNoInit<uint>(ushort.MaxValue*BANK_SIZE),
-					layers = AllocatePersistentNoInit<uint>(ushort.MaxValue*BANK_SIZE),
+					submeshes = AllocatePersistentNoInit<uint>(ushort.MaxValue*BANK_SIZE),
 					indices = AllocatePersistentNoInit<int>(ushort.MaxValue),
 					numIndices = AllocatePersistentNoInit<int>(1),
 					_vtoi = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES),
@@ -789,7 +789,7 @@ public partial class World {
 				colors.Dispose();
 				smoothFactor.Dispose();
 				smgs.Dispose();
-				layers.Dispose();
+				submeshes.Dispose();
 				indices.Dispose();
 				numIndices.Dispose();
 				_vtoi.Dispose();
@@ -808,7 +808,7 @@ public partial class World {
 				numIndices[0] = _indexCount;
 			}
 
-			int EmitVert(int x, int y, int z, uint smg, float smoothingFactor, Color32 color, Vector3 normal, uint layer) {
+			int EmitVert(int x, int y, int z, uint smg, float smoothingFactor, Color32 color, Vector3 normal, uint submesh) {
 				int INDEX = (y*(VOXEL_CHUNK_SIZE_XZ + 1)*(VOXEL_CHUNK_SIZE_XZ + 1)) + (z*(VOXEL_CHUNK_SIZE_XZ + 1)) + x;
 
 				var idx = _vtoi[INDEX] - 1;
@@ -831,30 +831,30 @@ public partial class World {
 				colors[(idx*BANK_SIZE) + count] = color;
 				smoothFactor[(idx*BANK_SIZE) + count] = smoothingFactor;
 				smgs[(idx*BANK_SIZE) + count] = smg;
-				layers[(idx*BANK_SIZE) + count] = layer;
+				submeshes[(idx*BANK_SIZE) + count] = submesh;
 
 				vtoiCounts[idx] = count + 1;
-				maxLayer = (layer > maxLayer) ? layer : maxLayer;
+				maxSubmesh = (submesh > maxSubmesh) ? submesh : maxSubmesh;
 
 				return idx | (count << 24);
 			}
 
-			public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, float smoothFactor, Color32 color, uint layer, bool isBorderVoxel) {
+			public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, float smoothFactor, Color32 color, uint submesh, bool isBorderVoxel) {
 				var n = GetNormalAndAngles((float)x0, (float)y0, (float)z0, (float)x1, (float)y1, (float)z1, (float)x2, (float)y2, (float)z2);
 				if (isBorderVoxel) {
 					if ((x0 >= 0) && (x0 <= VOXEL_CHUNK_SIZE_XZ) && (y0 >= 0) && (y0 <= VOXEL_CHUNK_SIZE_Y) && (z0 >= 0) && (z0 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x0, y0, z0, smg, smoothFactor, color, n, layer);
+						EmitVert(x0, y0, z0, smg, smoothFactor, color, n, submesh);
 					}
 					if ((x1 >= 0) && (x1 <= VOXEL_CHUNK_SIZE_XZ) && (y1 >= 0) && (y1 <= VOXEL_CHUNK_SIZE_Y) && (z1 >= 0) && (z1 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x1, y1, z1, smg, smoothFactor, color, n, layer);
+						EmitVert(x1, y1, z1, smg, smoothFactor, color, n, submesh);
 					}
 					if ((x2 >= 0) && (x2 <= VOXEL_CHUNK_SIZE_XZ) && (y2 >= 0) && (y2 <= VOXEL_CHUNK_SIZE_Y) && (z2 >= 0) && (z2 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x2, y2, z2, smg, smoothFactor, color, n, layer);
+						EmitVert(x2, y2, z2, smg, smoothFactor, color, n, submesh);
 					}
 				} else {
-					indices[_indexCount++] = EmitVert(x0, y0, z0, smg, smoothFactor, color, n, layer);
-					indices[_indexCount++] = EmitVert(x1, y1, z1, smg, smoothFactor, color, n, layer);
-					indices[_indexCount++] = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, layer);
+					indices[_indexCount++] = EmitVert(x0, y0, z0, smg, smoothFactor, color, n, submesh);
+					indices[_indexCount++] = EmitVert(x1, y1, z1, smg, smoothFactor, color, n, submesh);
+					indices[_indexCount++] = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, submesh);
 				}
 			}
 
@@ -884,34 +884,36 @@ public partial class World {
 				finalVerts.Init();
 
 				var numIndices = smoothVerts.numIndices[0];
-				var maxLayer = smoothVerts.maxLayer;
+				var maxSubmesh = smoothVerts.maxSubmesh;
+
+				finalVerts.counts[2] = (int)maxSubmesh;
 				
-				for (int layer = 0; layer <= maxLayer; ++layer) {
-					var numLayerVerts = 0;
-					finalVerts.BeginLayer();
+				for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
+					var numSubmeshVerts = 0;
+					finalVerts.BeginSubmesh();
 
 					for (int i = 0; i < numIndices; ++i) {
 						Int3_t p;
 						Vector3 n;
 						Color32 c;
 
-						if (BlendVertex(layer, smoothVerts.indices[i], out p, out n, out c)) {
+						if (BlendVertex(submesh, smoothVerts.indices[i], out p, out n, out c)) {
 							finalVerts.EmitVert(p.x, p.y, p.z, n, c);
-							++numLayerVerts;
+							++numSubmeshVerts;
 						}
 					}
 
-					finalVerts.layers[layer] = numLayerVerts;
+					finalVerts.submeshes[submesh] = numSubmeshVerts;
 				}
 
 				finalVerts.Finish();
 			}
 
-			bool BlendVertex(int layer, int packedIndex, out Int3_t outPos, out Vector3 outNormal, out Color32 outColor) {
+			bool BlendVertex(int submesh, int packedIndex, out Int3_t outPos, out Vector3 outNormal, out Color32 outColor) {
 				int index = packedIndex & (0x00ffffff);
 				int ofs = packedIndex >> 24;
 
-				if (smoothVerts.layers[(index*BANK_SIZE) + ofs] != layer) {
+				if (smoothVerts.submeshes[(index*BANK_SIZE) + ofs] != submesh) {
 					outPos = default(Int3_t);
 					outNormal = default(Vector3);
 					outColor = default(Color32);
@@ -2011,8 +2013,10 @@ public partial class World {
 			int submesh = 0;
 			int indexOfs = 0;
 
-			for (int layer = 0; layer < MAX_MESH_LAYERS; ++layer) {
-				int numLayerVerts = outputVerts.layers[layer];
+			var maxSubmesh = outputVerts.counts[2];
+
+			for (int layer = 0; layer <= maxSubmesh; ++layer) {
+				int numLayerVerts = outputVerts.submeshes[layer];
 				if (numLayerVerts > 0) {
 					MeshCopyHelper.SetSubMeshTris(dstMesh, submesh, Copy(staticIndices, outputVerts.indices, indexOfs, numLayerVerts), numLayerVerts, true, indexOfs);
 					indexOfs += numLayerVerts;
