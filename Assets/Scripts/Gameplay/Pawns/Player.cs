@@ -231,29 +231,33 @@ namespace Bowhead.Actors {
             var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
             if (canAttack) {
                 if (itemLeft != null) {
-                    if (input.IsPressed(InputType.AttackLeft)) {
-                        itemLeft.Charge(dt);
-                    }
-                    else {
-                        if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
-                            itemLeft.Attack(this);
-                        }
-                        itemLeft.chargeTime = 0;
-                    }
+					if (itemLeft.CanCast()) {
+						if (input.IsPressed(InputType.AttackLeft)) {
+							itemLeft.Charge(dt);
+						}
+						else {
+							if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
+								itemLeft.Attack(this);
+							}
+							itemLeft.chargeTime = 0;
+						}
+					}
                     if (itemLeft.castTime > 0) {
                         isCasting = true;
                     }
                 }
                 if (itemRight != null) {
-                    if (input.IsPressed(InputType.AttackRight)) {
-                        itemRight.Charge(dt);
-                    }
-                    else {
-                        if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
-                            itemRight.Attack(this);
-                        }
-                        itemRight.chargeTime = 0;
-                    }
+					if (itemRight.CanCast()) {
+						if (input.IsPressed(InputType.AttackRight)) {
+							itemRight.Charge(dt);
+						}
+						else {
+							if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
+								itemRight.Attack(this);
+							}
+							itemRight.chargeTime = 0;
+						}
+					}
                     if (itemRight.castTime > 0) {
                         isCasting = true;
                     }

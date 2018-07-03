@@ -853,8 +853,16 @@ namespace Bowhead.Actors {
 			float modifier = 1;
 			for (int i=0;i<MaxInventorySize;i++) {
 				var item = GetInventorySlot(i) as Weapon;
-				if (item!= null && item.chargeTime >= item.data.moveSpeedChargeDelay) {
-					modifier = Mathf.Min(modifier, item.data.moveSpeedWhileCharging);
+				if (item!= null) {
+					if (item.cooldown > 0) {
+						modifier = Mathf.Min(modifier, item.data.attacks[item.attackType].moveSpeedDuringCooldown);
+					}
+					else if (item.castTime >= item.data.moveSpeedChargeDelay) {
+						modifier = Mathf.Min(modifier, item.data.attacks[item.attackType].moveSpeedDuringCast);
+					}
+					else if (item.chargeTime >= item.data.moveSpeedChargeDelay) {
+						modifier = Mathf.Min(modifier, item.data.moveSpeedWhileCharging);
+					}
 				}
 			}
 			float maxSpeed = data.groundMaxSpeed * modifier;

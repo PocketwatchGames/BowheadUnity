@@ -11,16 +11,31 @@ namespace Bowhead {
 
         public int attackType;
         public float castTime;
+		public float activeTime;
         public float cooldown;
         public float chargeTime;
+		public List<Pawn> hitTargets = new List<Pawn>();
 
-        #endregion
+		#endregion
 
+		private DamageIndicator _damageIndicator;
         private GameObject _mesh;
+
+		public override void Init(ItemData data) {
+			base.Init(data);
+
+			_damageIndicator = GameObject.Instantiate<DamageIndicator>(GameManager.instance.clientData.damageIndicatorPrefab);
+
+		}
+
+		public bool CanCast() {
+			return castTime == 0 && activeTime == 0 && cooldown == 0;
+		}
 
         public override void OnSlotChange(int newSlot, Pawn owner) {
             castTime = 0;
             chargeTime = 0;
+			activeTime = 0;
 
             if (_mesh != null) {
                 GameObject.Destroy(_mesh);
@@ -34,29 +49,23 @@ namespace Bowhead {
             }
         }
         public void Charge(float dt) {
-            if (cooldown <= 0) {
-                chargeTime += dt;
-            }
-        }
+            if (CanCast()) {
+				chargeTime += dt;
+			}
+		}
 
-        public bool Attack(Pawn actor) {
-            if (castTime > 0 || cooldown > 0) {
+		public bool Attack(Pawn owner) {
+            if (!CanCast()) {
                 return false;
             }
-            attackType = getCurCharge();
+			hitTargets.Clear();
+			attackType = getCurCharge();
             var attackData = getCurAttackData();
 
             castTime = attackData.castTime;
             chargeTime = 0;
-            Vector3 attackDir = new Vector3(Mathf.Sin(actor.yaw), 0, Mathf.Cos(actor.yaw));
-            float stepAmt = attackData.stepDistance;
-            if (stepAmt != 0 && actor.activity == Pawn.Activity.OnGround) {
-                actor.moveImpulse = attackDir * stepAmt;
-                actor.moveImpulseTimer = attackData.castTime;
-                actor.velocity = Vector3.zero;
-            }
             if (castTime <= 0) {
-                Activate(actor);
+                Activate(owner);
             }
             return true;
         }
@@ -86,54 +95,82 @@ namespace Bowhead {
             }
             return false;
         }
-        void Activate(Pawn actor) {
+        void Activate(Pawn owner) {
             var d = getCurAttackData();
 
-            castTime = 0;
+			Vector3 attackDir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
+			float stepAmt = d.stepDistance;
+			if (stepAmt != 0 && owner.activity == Pawn.Activity.OnGround) {
+				owner.moveImpulse = attackDir * stepAmt;
+				owner.moveImpulseTimer = d.activeTime;
+				owner.velocity = Vector3.zero;
+			}
+
+			castTime = 0;
             cooldown = d.cooldown;
+			_damageIndicator.Init(d.activeTime > 0 ? d.activeTime : 0.05f, d.attackRadius);
 
-            Vector3 attackDir = new Vector3(Mathf.Sin(actor.yaw), 0, Mathf.Cos(actor.yaw));
-            Vector3 attackPos = actor.waistPosition() + attackDir * d.attackRange;
-            bool hit = false;
+			if (d.activeTime == 0) {
+				DoActiveTick(owner);
+			}
+			else {
+				activeTime = d.activeTime;
+			}
 
-            foreach (var c in actor.world.GetActorIterator<Pawn>()) {
-                if (c.team != actor.team && c.active) {
-                    hit |= CheckIfHit(actor, attackPos, attackDir, actor.position, d, c);
-                }
-            }
-
-            var damageIndicator = GameObject.Instantiate<DamageIndicator>(GameManager.instance.clientData.damageIndicatorPrefab);
-            damageIndicator.Init(0.5f, d.attackRadius, attackPos, hit ? Color.red * 0.75f : Color.white * 0.25f);
-
-            actor.useStamina(d.staminaUse);
+			owner.useStamina(d.staminaUse);
 
         }
 
-        override public void Tick(float dt, Pawn actor) {
+        override public void Tick(float dt, Pawn owner) {
 
             if (cooldown > 0) {
                 cooldown = Mathf.Max(0, cooldown - dt);
                 if (cooldown > 0) {
-                    actor.canMove = false;
-                    actor.canTurn = false;
+					owner.canMove = false;
+					owner.canTurn = false;
                 }
             }
             if (castTime > 0) {
-                actor.canMove = false;
-                castTime = Mathf.Max(0, castTime - dt);
-                actor.canTurn = false;
+				owner.canMove = false;
+				owner.canTurn = false;
+				castTime = Mathf.Max(0, castTime - dt);
                 if (castTime <= 0) {
-                    Activate(actor);
+                    Activate(owner);
                 }
             }
+			if (activeTime > 0) {
+				owner.canMove = false;
+				owner.canTurn = false;
+				activeTime = Mathf.Max(0, activeTime - dt);
+				DoActiveTick(owner);
+			}
 
-            if (chargeTime > 0) {
-                actor.canRun = false;
+			if (chargeTime > 0) {
+				owner.canRun = false;
             }
 
 			UpdateAnimation();
 
         }
+
+		private void DoActiveTick(Pawn owner) {
+			var d = getCurAttackData();
+			Vector3 attackDir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
+			Vector3 attackPos = owner.waistPosition() + attackDir * d.attackRange;
+			bool hit = false;
+
+			foreach (var c in owner.world.GetActorIterator<Pawn>()) {
+				if (c.team != owner.team && c.active && !hitTargets.Contains(c)) {
+					if (CheckIfHit(owner, attackPos, attackDir, owner.position, d, c)) {
+						hit = true;
+						hitTargets.Add(c);
+					}
+				}
+			}
+
+			_damageIndicator.Tick(attackPos, hit);
+
+		}
 
 		private void UpdateAnimation() {
 			if (_mesh == null) {
@@ -151,9 +188,14 @@ namespace Bowhead {
 				pos += new Vector3(0, 2, 0.25f);
 
 			}
-			else if (cooldown > 0) {
+			else if (activeTime > 0) {
 				_mesh.transform.localRotation = Quaternion.Euler(90, 0, 0);
 				pos += new Vector3(0, 1, 0.25f);
+
+			}
+			else if (cooldown > 0) {
+				_mesh.transform.localRotation = Quaternion.Euler(135, 0, 0);
+				pos += new Vector3(0, 0.75f, 0.25f);
 			}
 			else {
 				_mesh.transform.localRotation = Quaternion.Euler(0, -90, 0);

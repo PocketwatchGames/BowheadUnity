@@ -16,6 +16,7 @@ namespace Bowhead {
         [System.Serializable]
         public class AttackData {
             public float castTime;
+			public float activeTime;
             public float cooldown;
             public float attackRange;
             public float attackRadius;
@@ -30,9 +31,11 @@ namespace Bowhead {
             public float stunPower;
             public float stunPowerBackstab;
             public float attackDamageBackstab;
-        }
+			public float moveSpeedDuringCooldown;
+			public float moveSpeedDuringCast;
+		}
 
-        public GameObject_WRef prefab;
+		public GameObject_WRef prefab;
         public Hand hand;
         public float chargeTime;
 		public float moveSpeedWhileCharging = 1f;

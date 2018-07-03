@@ -139,7 +139,8 @@ namespace Bowhead.Actors {
             if (canAttack) {
                 foreach (var weapon in getInventory()) {
                     Weapon w = weapon as Weapon;
-                    if (w != null) {
+                    if (w != null && w.CanCast()) {
+						
                         if (input.IsPressed(InputType.AttackRight)) {
                             w.Charge(dt);
                         }

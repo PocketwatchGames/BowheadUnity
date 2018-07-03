@@ -22,7 +22,8 @@ MonoBehaviour:
   moveSpeedChargeDelay: 0.2
   weaponSize: {x: 0, y: 0, z: 0}
   attacks:
-  - castTime: 0.1
+  - castTime: 0.05
+    activeTime: 0.05
     cooldown: 0.05
     attackRange: 1.5
     attackRadius: 0.75
@@ -37,8 +38,11 @@ MonoBehaviour:
     stunPower: 0.25
     stunPowerBackstab: 1
     attackDamageBackstab: 50
+    moveSpeedDuringCooldown: 0
+    moveSpeedDuringCast: 0
   - castTime: 0.2
-    cooldown: 0.5
+    activeTime: 0.2
+    cooldown: 0.3
     attackRange: 2
     attackRadius: 1.25
     knockback: 1
@@ -52,4 +56,6 @@ MonoBehaviour:
     stunPower: 2
     stunPowerBackstab: 2
     attackDamageBackstab: 50
+    moveSpeedDuringCooldown: 0
+    moveSpeedDuringCast: 0
   parries: []
