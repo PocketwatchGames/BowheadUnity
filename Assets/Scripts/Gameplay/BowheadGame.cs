@@ -201,12 +201,14 @@ namespace Bowhead.Server {
 		protected override void OnChunkUnloaded(World.Streaming.IChunk chunk) {}
 
 		void SpawnDecorations(World.Streaming.IChunk chunk) {
-			var decorations = chunk.decorations;
 			var decorationCount = chunk.decorationCount;
-			var wpos = World.WorldToVec3(World.ChunkToWorld(chunk.chunkPos));
+			if (decorationCount > 0) {
+				var decorations = chunk.decorations;
+				var wpos = World.WorldToVec3(World.ChunkToWorld(chunk.chunkPos));
 
-			for (int i = 0; i < decorationCount; ++i) {
-				SpawnDecoration(chunk, wpos, decorations[i]);
+				for (int i = 0; i < decorationCount; ++i) {
+					SpawnDecoration(chunk, wpos, decorations[i]);
+				}
 			}
 		}
 
