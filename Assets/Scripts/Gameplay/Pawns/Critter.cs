@@ -207,7 +207,7 @@ namespace Bowhead.Actors {
 
             }
 
-            input.yaw = yaw;
+            input.look = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
             if (IsPanicked()) {
                 if (behaviorPanic != null) {
                     behaviorPanic.Tick(this, dt, ref input);
@@ -217,7 +217,7 @@ namespace Bowhead.Actors {
                 input.movement = Vector3.zero;
                 if (hasLastKnownPosition) {
                     var diff = lastKnownPosition - position;
-                    input.yaw = Mathf.Atan2(diff.x, diff.z);
+                    input.look = diff.normalized;
                 }
             }
 

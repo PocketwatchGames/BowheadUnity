@@ -34,7 +34,7 @@ namespace Bowhead.Actors {
                     diff.x = 1;
                 }
                 input.movement = diff.normalized;
-                input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
+                input.look = input.movement;
             }
             if (c.canJump && c.activity == Pawn.Activity.OnGround) {
                 input.inputs[(int)InputType.Jump] = InputState.JustPressed;
@@ -71,7 +71,7 @@ namespace Bowhead.Actors {
                         input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
                     }
                 }
-                input.yaw = Mathf.Atan2(-diff.x, -diff.z);
+				input.look = -diff;
             }
 
         }

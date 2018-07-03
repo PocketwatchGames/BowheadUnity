@@ -29,7 +29,7 @@ namespace Bowhead {
                 if (newSlot == (int)Player.InventorySlot.LEFT_HAND || newSlot == (int)Player.InventorySlot.RIGHT_HAND) {
                     var prefab = data.prefab.Load();
                     _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
-                    _mesh.transform.localPosition = new Vector3(newSlot == (int)Player.InventorySlot.LEFT_HAND ? -0.35f : 0.35f, 1, 0.25f);
+					UpdateAnimation();
                 }
             }
         }
@@ -109,7 +109,7 @@ namespace Bowhead {
 
         }
 
-        override public void UpdateCast(float dt, Pawn actor) {
+        override public void Tick(float dt, Pawn actor) {
 
             if (cooldown > 0) {
                 cooldown = Mathf.Max(0, cooldown - dt);
@@ -131,9 +131,39 @@ namespace Bowhead {
                 actor.canRun = false;
             }
 
+			UpdateAnimation();
+
         }
 
-        public void interrupt(Pawn owner) {
+		private void UpdateAnimation() {
+			if (_mesh == null) {
+				return;
+			}
+
+			Vector3 pos = new Vector3(data.hand == WeaponData.Hand.LEFT ? -0.35f : 0.35f, 0, 0);
+
+			if (chargeTime > 0) {
+				_mesh.transform.localRotation = Quaternion.Euler(-45, 0, 0);
+				pos += new Vector3(0, 1.5f, 0.25f);
+			}
+			else if (castTime > 0) {
+				_mesh.transform.localRotation = Quaternion.Euler(-90, 0, 0);
+				pos += new Vector3(0, 2, 0.25f);
+
+			}
+			else if (cooldown > 0) {
+				_mesh.transform.localRotation = Quaternion.Euler(90, 0, 0);
+				pos += new Vector3(0, 1, 0.25f);
+			}
+			else {
+				_mesh.transform.localRotation = Quaternion.Euler(0, -90, 0);
+				pos += new Vector3(0, 1, 0.25f);
+			}
+
+			_mesh.transform.localPosition = pos;
+		}
+
+		public void interrupt(Pawn owner) {
 
             if (castTime > 0) {
                 owner.moveImpulseTimer = 0;
