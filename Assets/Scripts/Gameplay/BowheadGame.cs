@@ -194,8 +194,28 @@ namespace Bowhead.Server {
 			return WorldStreaming.NewProceduralWorldStreaming(0, WORLD_GENERATOR_TYPE);
 		}
 
-        #region perlin utils
-        public float GetPerlinNormal(int x, int y, int z, float scale) {
+		protected override void OnChunkLoaded(World.Streaming.IChunk chunk) {
+			SpawnDecorations(chunk);
+		}
+
+		protected override void OnChunkUnloaded(World.Streaming.IChunk chunk) {}
+
+		void SpawnDecorations(World.Streaming.IChunk chunk) {
+			var decorations = chunk.decorations;
+			var decorationCount = chunk.decorationCount;
+			var wpos = World.WorldToVec3(World.ChunkToWorld(chunk.chunkPos));
+
+			for (int i = 0; i < decorationCount; ++i) {
+				SpawnDecoration(chunk, wpos, decorations[i]);
+			}
+		}
+
+		void SpawnDecoration(World.Streaming.IChunk chunk, Vector3 chunkWorldPos, World.Decoration_t decoration) {
+			// TODO: Andy things
+		}
+
+		#region perlin utils
+		public float GetPerlinNormal(int x, int y, int z, float scale) {
             noise.SetFrequency(scale);
             var v = noise.GetPerlin(x, y, z);
             return (v + 1) / 2;

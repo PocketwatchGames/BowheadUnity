@@ -35,6 +35,11 @@ namespace Bowhead.Server {
 				gameMode = _gameMode.GetType();
 			}
 
+			if (_gameMode != null) {
+				_gameMode.Dispose();
+				_gameMode = null;
+			}
+
 			if ((gameMode == null) || !typeof(GameMode).IsAssignableFrom(gameMode) || gameMode.IsAbstract) {
 				throw new System.Exception("Invalid game mode class!");
 			}
@@ -78,6 +83,10 @@ namespace Bowhead.Server {
 		}
 
 		protected override void Dispose(bool disposing) {
+			if (_gameMode != null) {
+				_gameMode.Dispose();
+				_gameMode = null;
+			}
 			base.Dispose(disposing);
 		}
 

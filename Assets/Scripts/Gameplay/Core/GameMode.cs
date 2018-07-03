@@ -35,7 +35,7 @@ namespace Bowhead.Server {
 		}
 	}
 
-	public abstract class GameMode {
+	public abstract class GameMode : IDisposable {
 		const float DELAY_UNTIL_MATCH_FREEZE = 15;
 		const float DELAY_UNTIL_EXIT = 20;
 		public enum EMatchState {
@@ -71,7 +71,21 @@ namespace Bowhead.Server {
 			_matchState = EMatchState.Traveling;
 			_roTeams = new ReadOnlyCollection<Actors.ServerTeam>(_teams);
 			_roPlayers = new ReadOnlyCollection<ServerPlayerController>(_players);
+			world.worldStreaming.onChunkLoaded += OnChunkLoaded;
+			world.worldStreaming.onChunkUnloaded += OnChunkUnloaded;
 		}
+
+		public void Dispose() {
+			if (worldStreaming != null) {
+				worldStreaming.Dispose();
+				worldStreaming = null;
+			}
+			_world.worldStreaming.onChunkLoaded -= OnChunkLoaded;
+			_world.worldStreaming.onChunkUnloaded -= OnChunkUnloaded;
+		}
+
+		protected abstract void OnChunkLoaded(World.Streaming.IChunk chunk);
+		protected abstract void OnChunkUnloaded(World.Streaming.IChunk chunk);
 
 		public virtual void Tick(float dt) {
 

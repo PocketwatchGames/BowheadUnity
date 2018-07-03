@@ -45,8 +45,10 @@ public partial class World {
 		public delegate JobHandle CreateGenVoxelsJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
 		public delegate void ChunkGeneratedDelegate(IChunk chunk);
 
+		public event ChunkGeneratedDelegate onChunkVoxelsLoaded;
 		public event ChunkGeneratedDelegate onChunkVoxelsUpdated;
 		public event ChunkGeneratedDelegate onChunkTrisUpdated;
+		public event ChunkGeneratedDelegate onChunkLoaded;
 		public event ChunkGeneratedDelegate onChunkUnloaded;
 
 		const uint CHUNK_HASH_SIZE_XZ = VOXEL_CHUNK_SIZE_XZ;
@@ -355,7 +357,11 @@ public partial class World {
 							job.hasSubJob = false;
 							job.chunk.hasVoxelData = true;
 							job.flags &= ~EJobFlags.VOXELS;
+							if (!job.chunk.hasLoaded) {
+								onChunkVoxelsLoaded?.Invoke(job.chunk);
+							}
 							onChunkVoxelsUpdated?.Invoke(job.chunk);
+							job.chunk.InvokeVoxelsUpdated();
 						}
 					}
 
@@ -436,11 +442,19 @@ public partial class World {
 			
 			if (!flush && (chunk.refCount > 0)) {
 				if ((job.flags & EJobFlags.VOXELS) != 0) {
+					if (!chunk.hasLoaded) {
+						onChunkVoxelsLoaded?.Invoke(chunk);
+					}
 					onChunkVoxelsUpdated?.Invoke(chunk);
+					chunk.InvokeVoxelsUpdated();
 				}
 				if (chunk.hasTrisData) {
 					CopyToMesh(job, chunk);
+					if (!chunk.hasLoaded) {
+						onChunkLoaded?.Invoke(chunk);
+					}
 					onChunkTrisUpdated?.Invoke(chunk);
+					chunk.InvokeTrisUpdated();
 				}
 			}
 
@@ -618,6 +632,7 @@ public partial class World {
 			public uint hash;
 			public bool hasVoxelData;
 			public bool hasTrisData;
+			public bool hasLoaded;
 			public ChunkMeshGen.ChunkData_t chunkData;
 			public ChunkJobData jobData;
 			public World_ChunkComponent goChunk;
@@ -628,6 +643,33 @@ public partial class World {
 			WorldChunkPos_t IChunk.chunkPos => pos;
 			EVoxelBlockType[] IChunk.voxeldata => chunkData.voxeldata;
 			EChunkFlags IChunk.flags => chunkData.flags[0];
+			Decoration_t[] IChunk.decorations => chunkData.decorations;
+			int IChunk.decorationCount => chunkData.decorationCount[0];
+
+			public event ChunkGeneratedDelegate onChunkVoxelsLoaded;
+			public event ChunkGeneratedDelegate onChunkVoxelsUpdated;
+			public event ChunkGeneratedDelegate onChunkTrisUpdated;
+			public event ChunkGeneratedDelegate onChunkLoaded;
+			public event ChunkGeneratedDelegate onChunkUnloaded;
+
+			public void InvokeVoxelsUpdated() {
+				if (!hasLoaded) {
+					onChunkVoxelsLoaded?.Invoke(this);
+				}
+				onChunkVoxelsUpdated?.Invoke(this);
+			}
+
+			public void InvokeTrisUpdated() {
+				if (!hasLoaded) {
+					onChunkLoaded?.Invoke(this);
+					hasLoaded = true;
+				}
+				onChunkTrisUpdated?.Invoke(this);
+			}
+
+			public void InvokeChunkUnloaded() {
+				onChunkUnloaded?.Invoke(this);
+			}
 
 #if DEBUG_DRAW
 			public DebugDrawState_t dbgDraw;
@@ -826,6 +868,13 @@ public partial class World {
 			EChunkFlags flags { get; }
 			WorldChunkPos_t chunkPos { get; }
 			EVoxelBlockType[] voxeldata { get; }
+			Decoration_t[] decorations { get; }
+			int decorationCount { get; }
+			event ChunkGeneratedDelegate onChunkVoxelsLoaded;
+			event ChunkGeneratedDelegate onChunkVoxelsUpdated;
+			event ChunkGeneratedDelegate onChunkTrisUpdated;
+			event ChunkGeneratedDelegate onChunkLoaded;
+			event ChunkGeneratedDelegate onChunkUnloaded;
 		};
 
 		public IChunk GetChunk(WorldChunkPos_t pos) {
@@ -926,6 +975,7 @@ public partial class World {
 			chunk.hash = GetChunkPosHash(pos);
 			chunk.hasTrisData = false;
 			chunk.hasVoxelData = false;
+			chunk.hasLoaded = false;
 			chunk.genCount = 0;
 
 #if DEBUG_DRAW
@@ -945,13 +995,15 @@ public partial class World {
 		}
 
 		void DestroyChunk(Chunk chunk) {
+			if (!_flush) {
+				onChunkUnloaded?.Invoke(chunk);
+				chunk.InvokeChunkUnloaded();
+			}
+
 			RemoveChunkFromHash(chunk);
 			if (chunk.goChunk != null) {
 				Utils.DestroyGameObject(chunk.goChunk.gameObject);
 				chunk.goChunk = null;
-			}
-			if (!_flush && (onChunkUnloaded != null)) {
-				onChunkUnloaded(chunk);
 			}
 			_chunkPool.ReturnObject(chunk);
 		}
