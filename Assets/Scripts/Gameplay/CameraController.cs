@@ -235,7 +235,7 @@ namespace Bowhead.Actors {
 
             RaycastHit hit;
             var dir = _position - _lookAt;
-            if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Layers.TerrainMask)) {
+            if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Layers.CameraTraceMask)) {
                 _pos = hit.point;
             }
 			

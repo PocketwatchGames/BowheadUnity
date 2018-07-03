@@ -41,6 +41,8 @@ public static class Layers {
 
 	public const int CameraTraceMask = TerrainMask;
 
+	public const int PawnCollisionMask = TerrainMask|WaterMask|TreesMask;
+
 	public static int ToLayerMask(this ELayers layers) {
 		int mask = 0;
 
@@ -90,7 +92,8 @@ public enum ELayers {
 	NoCollision = 0x40,
 	Trigger = 0x80,
 	HitTest = 0x100,
-	Trees = 0x200
+	Trees = 0x200,
+	PawnCollision = Terrain|Water|Trees
 }
 
 public static class Tags {

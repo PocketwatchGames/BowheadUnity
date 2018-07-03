@@ -495,6 +495,7 @@ public partial class World {
 			}
 
 			child = GameObject.Instantiate(_chunkPrefab, root.transform, false);
+			child.gameObject.name = ChunkLayerNames[layer];
 			child.gameObject.layer = ChunkLayers[layer];
 			return child;
 		}
@@ -536,6 +537,8 @@ public partial class World {
 			var component = CreateChunkMeshForLayer(ref root, pos, layer);
 			var mesh = component.mesh;
 
+			mesh.Clear();
+
 			MeshCopyHelper.SetMeshVerts(mesh, Copy(staticVec3, outputVerts.positions, baseVertex, vertCount), vertCount);
 			MeshCopyHelper.SetMeshNormals(mesh, Copy(staticVec3, outputVerts.normals, baseVertex, vertCount), vertCount);
 			MeshCopyHelper.SetMeshColors(mesh, Copy(staticColors, outputVerts.colors, baseVertex, vertCount), vertCount);
@@ -546,9 +549,9 @@ public partial class World {
 			var maxSubmesh = outputVerts.counts[layer*3+2];
 
 			for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
-				int numLayerVerts = outputVerts.submeshes[submesh];
+				int numLayerVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
 				if (numLayerVerts > 0) {
-					MeshCopyHelper.SetSubMeshTris(mesh, submeshidx, Copy(staticIndices, outputVerts.indices, indexOfs+baseIndex, numLayerVerts), numLayerVerts, true, indexOfs);
+					MeshCopyHelper.SetSubMeshTris(mesh, submeshidx, Copy(staticIndices, outputVerts.indices, indexOfs+baseIndex, numLayerVerts), numLayerVerts, true, 0);
 					indexOfs += numLayerVerts;
 					++submeshidx;
 				}

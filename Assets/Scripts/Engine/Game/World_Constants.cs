@@ -154,9 +154,19 @@ public enum EVoxelBlockType : byte {
 	FLAGS_MASK = FULL_VOXEL_FLAG
 };
 
-public static class VoxelBlockTypeExtensions {
+public enum EChunkLayers : int {
+	Terrain,
+	Water,
+	Trees
+};
+
+public static class WorldConstantExtensions {
 	public static EVoxelBlockType BlockType(this EVoxelBlockType type) {
 		return (EVoxelBlockType)((byte)type & World.BLOCK_TYPE_MASK);
+	}
+
+	public static int ToIndex(this EChunkLayers layer) {
+		return (int)layer;
 	}
 };
 
@@ -174,6 +184,9 @@ public partial class World {
 		"Trees"
 	};
 
+	public static readonly int MAX_CHUNK_LAYERS = Enum.GetNames(typeof(EChunkLayers)).Length;
+	public const int MAX_CHUNK_SUBMESHES = 3;
+	
 	public const int VOXEL_CHUNK_VIS_MAX_XZ = 16;
 	public const int VOXEL_CHUNK_VIS_MAX_Y_UP = 1;
 	public const int VOXEL_CHUNK_VIS_MAX_Y_DOWN = 1;
