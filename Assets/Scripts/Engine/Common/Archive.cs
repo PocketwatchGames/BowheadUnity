@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.Assertions;
 #endif
 
-public abstract unsafe class Archive : System.IDisposable {
+public abstract unsafe class Archive : IDisposable {
 	bool _isLoading;
 	byte[] _bytes = new byte[8];
 	bool _disposed = false;
