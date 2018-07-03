@@ -13,7 +13,7 @@ public interface IGameInstance {
 	bool fixedUpdateDidRun { get; }
 }
 
-public abstract partial class World : INetDriverCallbacks, System.IDisposable {
+public abstract partial class World : INetDriverCallbacks, IDisposable {
 	public const int MAX_RELIABLE_MESSAGE_SIZE = 32*1024;
 	public const int MAX_UNRELIABLE_MESSAGE_SIZE = 4*1024;
 	
@@ -827,7 +827,7 @@ public abstract partial class World : INetDriverCallbacks, System.IDisposable {
 		}
 	}
 
-	class ActorEnumerable<T> : IEnumerable<T> where T : class {
+	struct ActorEnumerable<T> : IEnumerable<T> where T : class {
 
 		World world;
 
@@ -835,7 +835,7 @@ public abstract partial class World : INetDriverCallbacks, System.IDisposable {
 			this.world = world;
 		}
 
-		public System.Collections.Generic.IEnumerator<T> GetEnumerator() {
+		public IEnumerator<T> GetEnumerator() {
 			return new ActorEnumerator<T>(world);
 		}
 
@@ -844,7 +844,7 @@ public abstract partial class World : INetDriverCallbacks, System.IDisposable {
 		}
 	}
 
-	class ActorEnumerator<T> : IEnumerator<T> where T : class {
+	struct ActorEnumerator<T> : IEnumerator<T> where T : class {
 
 		int ofs;
 		T current;
@@ -852,6 +852,8 @@ public abstract partial class World : INetDriverCallbacks, System.IDisposable {
 
 		public ActorEnumerator(World world) {
 			this.world = world;
+			ofs = 0;
+			current = null;
 		}
 
 		public void Dispose() {	}
