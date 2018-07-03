@@ -502,7 +502,7 @@ public abstract partial class World : INetDriverCallbacks, IDisposable {
 
 	public T Spawn<T>(object outer, SpawnParameters spawnArgs) where T : Actor, new() {
 		int classID = SerializableObject.StaticClassID<T>();
-		return InternalSpawn(null, typeof(T), classID, outer, spawnArgs) as T;
+		return (T)InternalSpawn(null, typeof(T), classID, outer, spawnArgs);
 	}
 
 	public Actor Spawn(Type type, object outer, SpawnParameters spawnArgs) {
@@ -591,7 +591,7 @@ public abstract partial class World : INetDriverCallbacks, IDisposable {
 	public SerializableObject CreateSerializableObject(object outer, int classID) {
 		var obj = _objectFactory.NewObject(classID);
 		if (obj == null) {
-			throw new ObjectStaticClassMismatchException("There is no actor with static class !" + classID);
+			throw new ObjectStaticClassMismatchException("There is no actor with static class " + classID + "!");
 		}
 		if (obj.replicates && (this is Server.ServerWorld)) {
 			obj.SetNetID(GetNextNetID());
