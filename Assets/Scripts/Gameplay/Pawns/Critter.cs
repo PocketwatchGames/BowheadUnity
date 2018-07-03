@@ -73,6 +73,7 @@ namespace Bowhead.Actors {
             foreach (var i in loot) {
                 if (i != null) {
                     var worldItem = gameMode.SpawnWorldItem("Chest", position);
+					worldItem.item = i;
                     worldItem.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
                 }
             }
@@ -82,8 +83,6 @@ namespace Bowhead.Actors {
 
 
         public override void PreSimulate(float dt) {
-            base.PreSimulate(dt);
-
 
             canClimb = false;
             canClimbWell = false;
@@ -102,11 +101,13 @@ namespace Bowhead.Actors {
                 canMove = false;
             }
 
+			base.PreSimulate(dt);
 
-        }
 
-        // TODO: move cameraYaw into the PlayerCmd struct
-        override public void Tick() {
+		}
+
+		// TODO: move cameraYaw into the PlayerCmd struct
+		override public void Tick() {
             base.Tick();
 			if (!hasAuthority) {
 				return;
@@ -139,7 +140,8 @@ namespace Bowhead.Actors {
             if (canAttack) {
                 foreach (var weapon in getInventory()) {
                     Weapon w = weapon as Weapon;
-                    if (w != null) {
+                    if (w != null && w.CanCast()) {
+						
                         if (input.IsPressed(InputType.AttackRight)) {
                             w.Charge(dt);
                         }

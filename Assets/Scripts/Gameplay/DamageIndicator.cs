@@ -6,17 +6,24 @@ public class DamageIndicator : MonoBehaviourEx {
 
     float time, totalTime;
     Color color;
-    public void Init(float t, float scale, Vector3 position, Color c) {
+    public void Init(float t, float scale) {
         transform.localScale = Vector3.one * scale;
-        transform.position = position;
         time = totalTime = t;
-        color = c;
 
         AddGC(GetComponent<MeshRenderer>().material);
-        GetComponent<MeshRenderer>().material.color = color;
+		color = Color.white * 0.25f;
+		gameObject.SetActive(true);
 
-        Destroy(gameObject, time);
-    }
+	}
+
+	public void Tick(Vector3 position, bool hit) {
+		if (hit) {
+			color = Color.red * 0.75f;
+		}
+		GetComponent<MeshRenderer>().material.color = color;
+		transform.position = position;
+	}
+
     // Use this for initialization
     void Start () {
 		
@@ -25,6 +32,8 @@ public class DamageIndicator : MonoBehaviourEx {
 	// Update is called once per frame
 	void Update () {
         time -= Time.deltaTime;
-        GetComponent<MeshRenderer>().material.color = color * Mathf.Max(0,time) / totalTime;
-    }
+		if (time <= 0) {
+			gameObject.SetActive(false);
+		}
+	}
 }

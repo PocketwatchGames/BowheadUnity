@@ -18,10 +18,13 @@ MonoBehaviour:
     _editorPath: 
   hand: 1
   chargeTime: 0
+  moveSpeedWhileCharging: 1
+  moveSpeedChargeDelay: 0.2
   weaponSize: {x: 0, y: 0, z: 0}
   attacks:
   - castTime: 0.5
-    cooldown: 1
+    activeTime: 0.5
+    cooldown: 0.5
     attackRange: 1.5
     attackRadius: 0.75
     knockback: 0
@@ -35,4 +38,6 @@ MonoBehaviour:
     stunPower: 10
     stunPowerBackstab: 20
     attackDamageBackstab: 20
+    moveSpeedDuringCooldown: 0
+    moveSpeedDuringCast: 0
   parries: []

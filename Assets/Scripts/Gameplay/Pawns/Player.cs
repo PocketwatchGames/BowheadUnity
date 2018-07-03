@@ -115,8 +115,18 @@ namespace Bowhead.Actors {
                     var weapon = PackData.Get("Pack").CreateItem();
                     c.SetInventorySlot(0, weapon);
 
-                }
-                else {
+
+					var wolfData = CritterData.Get("wolf");
+					var wolf = gameMode.SpawnCritter(wolfData, new Vector3(16, 500, 16), gameMode.monsterTeam);
+					var teeth = WeaponData.Get("Teeth").CreateItem();
+					wolf.SetInventorySlot(0, teeth);
+					if (!WorldUtils.GetFirstSolidBlockDown(1000, ref wolf.spawnPosition)) {
+						return;
+					}
+					wolf.SetActive(wolf.spawnPosition);
+
+				}
+				else {
                     return;
                 }
             }
@@ -130,11 +140,25 @@ namespace Bowhead.Actors {
 					// SetPosition will set the position
 				}
 			}
+
+			var head = go.GetChildComponent<MeshRenderer>("Head");
+			if (head != null) {
+				if (stunTimer > 0) {
+					head.material.color = Color.red;
+				}
+				else if (dodgeTimer > 0) {
+					head.material.color = Color.black;
+				}
+				else if (recovering) {
+					head.material.color = Color.yellow;
+				}
+				else {
+					head.material.color = Color.white;
+				}
+			}
         }
 
         override public void PreSimulate(float dt) {
-
-            base.PreSimulate(dt);
 
             canMove = weight < WeightClass.IMMOBILE && !stunned;
             canAttack = weight < WeightClass.IMMOBILE;
@@ -165,10 +189,13 @@ namespace Bowhead.Actors {
                 canAttack = false;
             }
 
-        }
+			base.PreSimulate(dt);
 
 
-        public override Input_t GetInput(float dt) {
+		}
+
+
+		public override Input_t GetInput(float dt) {
             Input_t input = base.GetInput(dt);
 
             Vector3 forward = Vector3.forward;
@@ -231,29 +258,33 @@ namespace Bowhead.Actors {
             var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
             if (canAttack) {
                 if (itemLeft != null) {
-                    if (input.IsPressed(InputType.AttackLeft)) {
-                        itemLeft.Charge(dt);
-                    }
-                    else {
-                        if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
-                            itemLeft.Attack(this);
-                        }
-                        itemLeft.chargeTime = 0;
-                    }
+					if (itemLeft.CanCast()) {
+						if (input.IsPressed(InputType.AttackLeft)) {
+							itemLeft.Charge(dt);
+						}
+						else {
+							if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
+								itemLeft.Attack(this);
+							}
+							itemLeft.chargeTime = 0;
+						}
+					}
                     if (itemLeft.castTime > 0) {
                         isCasting = true;
                     }
                 }
                 if (itemRight != null) {
-                    if (input.IsPressed(InputType.AttackRight)) {
-                        itemRight.Charge(dt);
-                    }
-                    else {
-                        if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
-                            itemRight.Attack(this);
-                        }
-                        itemRight.chargeTime = 0;
-                    }
+					if (itemRight.CanCast()) {
+						if (input.IsPressed(InputType.AttackRight)) {
+							itemRight.Charge(dt);
+						}
+						else {
+							if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
+								itemRight.Attack(this);
+							}
+							itemRight.chargeTime = 0;
+						}
+					}
                     if (itemRight.castTime > 0) {
                         isCasting = true;
                     }
