@@ -13,16 +13,19 @@ namespace Bowhead {
 
         #endregion
 
-        public bool use(Actor actor) {
-            if (data.use == null) {
-                return true;
-            }
-            return data.use(this, actor);
+        public bool use(Pawn owner) {
+			if (data.useType == LootData.UseType.Food) {
+				return UseFood(this, owner);
+			}
+			else if (data.useType == LootData.UseType.Water) {
+				return UseWater(this, owner);
+			}
+			return false;
         }
 
-        static bool UseWater(Loot item, Actor actor) {
+        static bool UseWater(Loot item, Pawn owner) {
             // TODO: This static cast is not good
-            Player player = actor as Player;
+            Player player = owner as Player;
             if (player == null)
                 return false;
             if (player.thirst >= player.maxThirst) {
@@ -32,11 +35,11 @@ namespace Bowhead {
             return true;
         }
 
-        static bool UseFood(Loot item, Pawn actor) {
-            if (actor.health >= actor.maxHealth) {
+        static bool UseFood(Loot item, Pawn owner) {
+            if (owner.health >= owner.maxHealth) {
                 return false;
             }
-            actor.health = Mathf.Min(actor.health + item.data.power, actor.maxHealth);
+            owner.health = Mathf.Min(owner.health + item.data.power, owner.maxHealth);
             return true;
         }
 

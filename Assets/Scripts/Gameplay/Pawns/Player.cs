@@ -134,8 +134,6 @@ namespace Bowhead.Actors {
 
         override public void PreSimulate(float dt) {
 
-            base.PreSimulate(dt);
-
             canMove = weight < WeightClass.IMMOBILE && !stunned;
             canAttack = weight < WeightClass.IMMOBILE;
             canRun = weight < WeightClass.ENCUMBERED;
@@ -165,10 +163,13 @@ namespace Bowhead.Actors {
                 canAttack = false;
             }
 
-        }
+			base.PreSimulate(dt);
 
 
-        public override Input_t GetInput(float dt) {
+		}
+
+
+		public override Input_t GetInput(float dt) {
             Input_t input = base.GetInput(dt);
 
             Vector3 forward = Vector3.forward;
