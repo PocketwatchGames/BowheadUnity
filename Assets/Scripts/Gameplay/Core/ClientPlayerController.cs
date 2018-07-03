@@ -16,7 +16,7 @@ namespace Bowhead.Client.Actors {
 		Vector2 _mapMins;
 		Vector2 _mapMaxs;
 		Camera _camera;
-		bool _hideCursor = true;
+		bool _hideCursor = false;
 		
 		readonly ActorRPC rpc_Server_ClientHasLoaded;
 		readonly ActorRPC<string> rpc_Server_ExecuteCFunc;
@@ -103,12 +103,12 @@ namespace Bowhead.Client.Actors {
 				ClickThrough.Pop();
 			}
 
-			// FIXME: plug into input system properly later.
-			if (Input.GetKeyDown(KeyCode.C)) {
-				_hideCursor = !_hideCursor;
-                _cameraController.SetMouseLookActive(_hideCursor);
-				SetCursorState();
-			}
+			//// FIXME: plug into input system properly later.
+			//if (Input.GetKeyDown(KeyCode.C)) {
+			//	_hideCursor = !_hideCursor;
+   //             _cameraController.SetMouseLookActive(_hideCursor);
+			//	SetCursorState();
+			//}
 		}
 
 		public override void LateTick() {
@@ -147,7 +147,7 @@ namespace Bowhead.Client.Actors {
 			gameState.hud.OnLevelStart();
 			_cameraController = new CameraController(Camera.main, GameManager.instance.clientData.cameraData);
 			_cameraController.SetTarget(playerPawn);
-            _cameraController.SetMouseLookActive(_hideCursor);
+            //_cameraController.SetMouseLookActive(_hideCursor);
             rpc_Server_ClientHasLoaded.Invoke();
 		}
 

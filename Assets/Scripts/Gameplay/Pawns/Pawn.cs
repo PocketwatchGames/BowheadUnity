@@ -124,7 +124,7 @@ namespace Bowhead.Actors {
 
         public class Input_t {
             public Vector3 movement = Vector3.zero;
-            public float yaw = 0;
+            public Vector3 look = Vector3.zero;
             public InputState[] inputs = new InputState[(int)InputType.Count];
 
             public bool IsPressed(InputType i) {
@@ -301,7 +301,7 @@ namespace Bowhead.Actors {
 
             for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) != null) {
-                    GetInventorySlot(i).UpdateCast(dt, this);
+                    GetInventorySlot(i).Tick(dt, this);
                 }
             }
         }
@@ -348,7 +348,9 @@ namespace Bowhead.Actors {
                     yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
                 }
                 else {
-					yaw = input.yaw;
+					if (input.look != Vector3.zero) {
+						yaw = Mathf.Atan2(input.look.x, input.look.z);
+					}
 				}
 			}
 

@@ -14,7 +14,7 @@ namespace Bowhead {
 			this.data = data;
 		}
 
-        virtual public void UpdateCast(float dt, Actors.Pawn actor) {}
+        virtual public void Tick(float dt, Actors.Pawn actor) {}
         public virtual void OnSlotChange(int newSlot, Actors.Pawn owner) {}
     }
 

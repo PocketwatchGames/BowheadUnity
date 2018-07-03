@@ -200,11 +200,10 @@ namespace Bowhead.Actors {
             input.movement += right * (float)cur.right / 127f;
 
 			if (cur.lookRight != 0 || cur.lookFwd != 0) {
-				var lookDir = -forward * (float)cur.lookFwd / 127f + right * (float)cur.lookRight / 127f;
-				input.yaw = Mathf.Atan2(lookDir.x, lookDir.z);
+				input.look = -forward * (float)cur.lookFwd / 127f + right * (float)cur.lookRight / 127f;
 			}
 			else if (input.movement != Vector3.zero) {
-				input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
+				input.look = input.movement.normalized;
 			}
 
 			return input;
