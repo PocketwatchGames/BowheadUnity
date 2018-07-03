@@ -65,6 +65,10 @@ namespace Bowhead {
 
             Debug.Assert(owner != enemy);
 
+            if (!enemy.active) {
+                return false;
+            }
+
             float critterRadius = 1.0f;
             var diff = enemy.waistPosition() - attackPos;
             float dist = diff.magnitude;
@@ -93,7 +97,7 @@ namespace Bowhead {
             bool hit = false;
 
             foreach (var c in actor.world.GetActorIterator<Pawn>()) {
-                if (c.team != actor.team) {
+                if (c.team != actor.team && c.active) {
                     hit |= CheckIfHit(actor, attackPos, attackDir, actor.position, d, c);
                 }
             }

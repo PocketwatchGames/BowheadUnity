@@ -64,13 +64,19 @@ namespace Bowhead.Actors {
             Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal"), Input.GetAxis("MoveVertical"));
             cmd.fwd = (sbyte)(move.y * 127);
             cmd.right = (sbyte)(move.x * 127);
-            if (Input.GetButton("Jump")) {
+
+			Vector2 look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+			cmd.lookFwd = (sbyte)(look.y * 127);
+			cmd.lookRight = (sbyte)(look.x * 127);
+
+
+			if (Input.GetButton("Jump")) {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
-            if (Input.GetButton("AttackLeft")) {
+            if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
                 cmd.buttons |= 1 << (int)InputType.AttackLeft;
             }
-            if (Input.GetButton("AttackRight")) {
+            if (Input.GetButton("AttackRight") || Input.GetAxis("RightTrigger") != 0) {
                 cmd.buttons |= 1 << (int)InputType.AttackRight;
             }
             if (Input.GetButton("Interact")) {
@@ -167,7 +173,7 @@ namespace Bowhead.Actors {
 
             Vector3 forward = Vector3.forward;
             if (Client.Actors.ClientPlayerController.localPlayer != null) {
-                var cameraYaw = Client.Actors.ClientPlayerController.localPlayer.cameraController.GetYaw();
+                float cameraYaw = Client.Actors.ClientPlayerController.localPlayer.cameraController.GetYaw();
                 forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Cos(cameraYaw));
             }
 
@@ -193,9 +199,15 @@ namespace Bowhead.Actors {
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
 
-            input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
+			if (cur.lookRight != 0 || cur.lookFwd != 0) {
+				var lookDir = -forward * (float)cur.lookFwd / 127f + right * (float)cur.lookRight / 127f;
+				input.yaw = Mathf.Atan2(lookDir.x, lookDir.z);
+			}
+			else if (input.movement != Vector3.zero) {
+				input.yaw = Mathf.Atan2(input.movement.x, input.movement.z);
+			}
 
-            return input;
+			return input;
         }
 
         override public void Simulate(float dt, Input_t input) {
@@ -750,13 +762,16 @@ namespace Bowhead.Actors {
         #region World Interaction
 
         void Interact() {
-            var t = GetInteractTarget();
+            Entity target;
+            string interaction;
+            GetInteractTarget(out target, out interaction);
+
             WorldItem worldItem;
             Critter critter;
-            if ((worldItem = t as WorldItem) != null && !t.pendingKill) {
+            if ((worldItem = target as WorldItem) != null && !target.pendingKill) {
                 worldItem.Interact(this);
             }
-            else if ((critter = t as Critter) != null) {
+            else if ((critter = target as Critter) != null) {
                 if (mount == critter) {
                     SetMount(null);
                 }
@@ -837,10 +852,14 @@ namespace Bowhead.Actors {
         }
 
 
-        public Entity GetInteractTarget() {
+        public void GetInteractTarget(out Entity target, out string interactionType) {
             if (mount != null) {
-                return mount;
+                target = mount;
+                interactionType = "Dismount";
+                return;
             }
+
+            interactionType = null;
 
             float closestDist = 2;
             Entity closestItem = null;
@@ -849,18 +868,20 @@ namespace Bowhead.Actors {
                 if (dist < closestDist) {
                     closestDist = dist;
                     closestItem = i;
+                    interactionType = "Get";
                 }
             }
             foreach (var i in world.GetActorIterator<Critter>()) {
-                if (i.team == team) {
+                if (i.team == team && i.active) {
                     float dist = (i.rigidBody.position - rigidBody.position).magnitude;
                     if (dist < closestDist) {
                         closestDist = dist;
                         closestItem = i;
+                        interactionType = "Mount";
                     }
                 }
             }
-            return closestItem;
+            target = closestItem;
 
         }
 

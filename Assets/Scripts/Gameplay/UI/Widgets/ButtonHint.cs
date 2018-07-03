@@ -7,6 +7,9 @@ namespace Bowhead.Client.UI {
 
         private Bowhead.Actors.Entity _target;
 
+        public UnityEngine.UI.Text buttonText;
+        public UnityEngine.UI.Text hintText;
+
         // Use this for initialization
         void Start() {
 
@@ -18,7 +21,7 @@ namespace Bowhead.Client.UI {
         }
         private void LateUpdate() {
             if (_target != null) {
-                transform.localPosition = Camera.main.WorldToViewportPoint(_target.go.transform.position);
+                transform.position = Camera.main.WorldToScreenPoint(_target.go.transform.position);
             }
         }
 
@@ -34,7 +37,13 @@ namespace Bowhead.Client.UI {
             }
 
             _target = target;
+        }
 
+        public void SetButton(string b) {
+            buttonText.text = b;
+        }
+        public void SetHint(string h) {
+            hintText.text = h;
         }
     }
 }

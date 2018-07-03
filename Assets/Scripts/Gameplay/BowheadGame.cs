@@ -260,7 +260,8 @@ namespace Bowhead.Server {
 		public void CritterKilled() {
 			--numCritters;
 		}
-		
+
+
 		public void SpawnRandomCritter() {
 
             // despawn critters

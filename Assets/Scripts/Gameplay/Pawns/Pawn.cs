@@ -117,9 +117,9 @@ namespace Bowhead.Actors {
 
         public struct PlayerCmd_t {
             public int serverTime;
-            public float[] angles;
             public int buttons;
             public sbyte fwd, right, up;
+			public sbyte lookFwd, lookRight;
         };
 
         public class Input_t {
@@ -348,18 +348,15 @@ namespace Bowhead.Actors {
                     yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
                 }
                 else {
-                    if (lockedToTarget) {
-                        var diff = attackTarget.rigidBody.position - rigidBody.position;
-                        yaw = Mathf.Atan2(diff.x, diff.z);
-                    }
-                    else if (input.movement != Vector3.zero) {
-                        yaw = input.yaw;
-                    }
-                }
+					yaw = input.yaw;
+				}
+			}
+
+
+            if (mount != null) {
+                return;
             }
-
-
-            if (activity == Activity.Climbing) {
+            else if (activity == Activity.Climbing) {
                 UpdateClimbing(dt, input);
             }
             else if (activity == Activity.Swimming) {
@@ -491,10 +488,6 @@ namespace Bowhead.Actors {
 
             if (mount == null) {
                 go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
-            }
-            else {
-                position = mount.position;
-                yaw = mount.yaw;
             }
         }
 
@@ -855,11 +848,20 @@ namespace Bowhead.Actors {
             return v;
         }
         public float getGroundMaxSpeed() {
-            if (canRun) {
-                return data.groundMaxSpeed;
+			float modifier = 1;
+			for (int i=0;i<MaxInventorySize;i++) {
+				var item = GetInventorySlot(i) as Weapon;
+				if (item!= null && item.chargeTime >= item.data.moveSpeedChargeDelay) {
+					modifier = Mathf.Min(modifier, item.data.moveSpeedWhileCharging);
+				}
+			}
+			float maxSpeed = data.groundMaxSpeed * modifier;
+
+			if (canRun) {
+                return maxSpeed;
             }
             else {
-                return data.crouchSpeed;
+                return Mathf.Min(maxSpeed, data.crouchSpeed);
             }
         }
         public float getGroundAcceleration() {
@@ -1087,7 +1089,7 @@ namespace Bowhead.Actors {
 
             if (mount != null) {
                 go.transform.parent = mount.go.transform;
-                go.transform.position = mount.headPosition();
+                go.transform.localPosition = mount.headPosition()-mount.position;
             }
             else {
                 go.transform.parent = null;

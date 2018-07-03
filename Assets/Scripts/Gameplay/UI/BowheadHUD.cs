@@ -11,12 +11,21 @@ namespace Bowhead.Client.UI {
 		Minimap _minimap;
         Compass _compass;
 
+		GameObject _pawnHUDs;
+		WeaponChargeHUD _weaponChargeLeft, _weaponChargeRight;
+
 		public BowheadHUD(ClientWorld world, GameState gameState) : base(world, gameState) {
 			_inventory = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPanelPrefab, hudCanvas.transform, false);
 			_playerState = GameObject.Instantiate(GameManager.instance.clientData.hudPlayerStatePanelPrefab, hudCanvas.transform, false);
             _interactHint = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, hudCanvas.transform, false);
             _minimap = GameObject.Instantiate(GameManager.instance.clientData.minimapPrefab, hudCanvas.transform, false);
-            _compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
+			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
+			_weaponChargeLeft = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
+			_weaponChargeRight = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
+			_pawnHUDs = new GameObject();
+			_pawnHUDs.transform.parent = hudCanvas.transform;
+
+			world.CritterActiveEvent += OnCritterActive;
         }
 
         public override void OnPlayerPossessed(Player player) {
@@ -29,9 +38,17 @@ namespace Bowhead.Client.UI {
 			_minimap.SetOrigin(0, 0);
 
             player.OnExplore += OnExplore;
+
+			_weaponChargeLeft.SetTarget(player, 1);
+			_weaponChargeRight.SetTarget(player, 2);
 		}
 
-        private void OnExplore(Vector2 pos, float radius) {
+		public void OnCritterActive(Critter critter) {
+			var critterHUD = GameObject.Instantiate<PawnHUD>(GameManager.instance.clientData.critterHudPrefab, _pawnHUDs.transform);
+			critterHUD.SetTarget(critter);
+		}
+
+		private void OnExplore(Vector2 pos, float radius) {
             _minimap.RevealArea(new Vector2(pos.x, pos.y), radius);
             _minimap.SetOrigin((int)(pos.x/32), (int)(pos.y/32));
         }
@@ -39,8 +56,13 @@ namespace Bowhead.Client.UI {
         public override void Tick(float dt) {
             base.Tick(dt);
 
-            var target = localPlayer.playerPawn.GetInteractTarget();
+            Entity target;
+            string interaction;
+            localPlayer.playerPawn.GetInteractTarget(out target, out interaction);
+
             _interactHint.SetTarget(target);
+            _interactHint.SetButton("X");
+            _interactHint.SetHint(interaction);
         }
 
 		public override T CreateMinimapMarker<T>(T prefab) {
