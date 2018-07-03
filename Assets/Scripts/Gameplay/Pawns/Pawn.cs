@@ -168,7 +168,7 @@ namespace Bowhead.Actors {
             cur = cmd;
         }
 
-        public bool CanMoveTo(Vector3 moveVector, bool allowFall, float gameTime, ref Vector3 position) {
+        public bool CanMoveTo(Vector3 moveVector, bool allowFall, ref Vector3 position) {
 
             Vector3 move = moveVector;
 
@@ -414,7 +414,7 @@ namespace Bowhead.Actors {
             if (activity != Activity.Climbing) {
                 // Collide XY
                 Vector3 moveXZ = new Vector3(velocity.x, 0, velocity.z) * dt;
-                Move(moveXZ, dt);
+                Move(moveXZ);
             }
 
             Vector3 firstCheck, secondCheck;
@@ -493,7 +493,7 @@ namespace Bowhead.Actors {
             }
         }
 
-        public bool Move(Vector3 moveXZ, float dt) {
+        public bool Move(Vector3 moveXZ) {
             float moveXZLength = moveXZ.magnitude;
             if (moveXZLength > 0) {
                 Vector3 newPosition = position;
@@ -510,15 +510,15 @@ namespace Bowhead.Actors {
                 Vector3 firstClimbDownPos = newPosition + firstCheck + new Vector3(0, -1.05f, 0);
                 Vector3 secondClimbDownPos = newPosition + secondCheck + new Vector3(0, -1.05f, 0);
 
-                if (CanMoveTo(moveXZ, true, dt, ref newPosition)) {
+                if (CanMoveTo(moveXZ, true, ref newPosition)) {
                     SetPosition(newPosition);
                     return true;
                 }
-                else if (CanMoveTo(firstCheck, true, dt, ref newPosition)) {
+                else if (CanMoveTo(firstCheck, true, ref newPosition)) {
                     SetPosition(newPosition);
                     return true;
                 }
-                else if (CanMoveTo(secondCheck, true, dt, ref newPosition)) {
+                else if (CanMoveTo(secondCheck, true, ref newPosition)) {
                     SetPosition(newPosition);
                     return true;
                 }
@@ -784,7 +784,7 @@ namespace Bowhead.Actors {
 
                 if (move.magnitude > 0) {
 
-                    bool isOpen = CanMoveTo(move, true, dt, ref newPosition);
+                    bool isOpen = CanMoveTo(move, true, ref newPosition);
                     if (isOpen) {
                         if (IsClimbPosition(newPosition, -climbingNormal * data.climbWallRange)) {
                             SetPosition(newPosition);
@@ -802,7 +802,7 @@ namespace Bowhead.Actors {
                         else if (move.magnitude > 0 && (move.x != 0 || move.z != 0)) {
                             Vector3 newWallNormal = move.normalized;
                             move += -climbingNormal * data.climbWallRange;
-                            bool isWrapAroundOpen = CanMoveTo(move, true, dt, ref newPosition);
+                            bool isWrapAroundOpen = CanMoveTo(move, true, ref newPosition);
                             if (isWrapAroundOpen && IsClimbPosition(newPosition, -newWallNormal * data.climbWallRange)) {
                                 climbingNormal = newWallNormal;
                                 SetPosition(newPosition, 0.1f);

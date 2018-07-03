@@ -123,7 +123,6 @@ GameObject:
   - component: {fileID: 4042934462503262}
   - component: {fileID: 33128072977361568}
   - component: {fileID: 23996836370528166}
-  - component: {fileID: 65742034957659234}
   m_Layer: 0
   m_Name: Bunny
   m_TagString: Untagged
@@ -233,7 +232,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1615879953855314}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.81104136, y: 61.224915, z: 21.23983}
+  m_LocalPosition: {x: 946.7352, y: 275.02573, z: 17.767382}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4042934462503262}
@@ -568,18 +567,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 2
---- !u!65 &65742034957659234
-BoxCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1870367787799732}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!136 &136915972747572258
 CapsuleCollider:
   m_ObjectHideFlags: 1

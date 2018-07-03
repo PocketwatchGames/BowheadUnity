@@ -115,8 +115,18 @@ namespace Bowhead.Actors {
                     var weapon = PackData.Get("Pack").CreateItem();
                     c.SetInventorySlot(0, weapon);
 
-                }
-                else {
+
+					var wolfData = CritterData.Get("wolf");
+					var wolf = gameMode.SpawnCritter(wolfData, new Vector3(16, 500, 16), gameMode.monsterTeam);
+					var teeth = WeaponData.Get("Teeth").CreateItem();
+					wolf.SetInventorySlot(0, teeth);
+					if (!WorldUtils.GetFirstSolidBlockDown(1000, ref wolf.spawnPosition)) {
+						return;
+					}
+					wolf.SetActive(wolf.spawnPosition);
+
+				}
+				else {
                     return;
                 }
             }
@@ -128,6 +138,22 @@ namespace Bowhead.Actors {
 				if (GameManager.instance.clientWorld.gameState != null) {
 					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMinimapMarker(data.minimapMarker.Load()));
 					// SetPosition will set the position
+				}
+			}
+
+			var head = go.GetChildComponent<MeshRenderer>("Head");
+			if (head != null) {
+				if (stunTimer > 0) {
+					head.material.color = Color.red;
+				}
+				else if (dodgeTimer > 0) {
+					head.material.color = Color.black;
+				}
+				else if (recovering) {
+					head.material.color = Color.yellow;
+				}
+				else {
+					head.material.color = Color.white;
 				}
 			}
         }

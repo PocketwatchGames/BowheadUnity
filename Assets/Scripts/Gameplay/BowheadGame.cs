@@ -155,38 +155,38 @@ public static partial class WorldUtils {
 
 namespace Bowhead.Server {
 
-	public abstract class BowheadGame<T> : GameMode<T> where T: GameState<T>{
+	public abstract class BowheadGame<T> : GameMode<T> where T : GameState<T> {
 		public const WorldStreaming.EGenerator WORLD_GENERATOR_TYPE = WorldStreaming.EGenerator.PROC_V1;
 
 		public BowheadGame(ServerWorld world) : base(world) {
 			data = Resources.Load<WorldData>("DefaultWorld");
 		}
-		
+
 		public WorldData data;
 
 		int numCritters;
-        FastNoise_t noise = FastNoise_t.New();
+		FastNoise_t noise = FastNoise_t.New();
 
-        protected override void PrepareForMatchInProgress() {
+		protected override void PrepareForMatchInProgress() {
 			base.PrepareForMatchInProgress();
 
 			for (int i = 0; i < 100; i++) {
-                WorldItem worldItem = null;
-                var pos = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
-                int itemType = UnityEngine.Random.Range(0, 2);
-                switch (itemType) {
-                    case 0:
-                        worldItem = SpawnWorldItem("Chest", pos);
-                        var money = MoneyData.Get("Money").CreateItem();
-                        worldItem.item = money;
-                        money.count = 100;
-                        break;
-                    case 1:
-                        worldItem = SpawnWorldItem("Map", pos);
-                        worldItem.map = new WorldItem.MapReveal() { position = new Vector2(pos.x,pos.z), radius = 1000 };
-                        break;
-                }
-            }
+				WorldItem worldItem = null;
+				var pos = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
+				int itemType = UnityEngine.Random.Range(0, 2);
+				switch (itemType) {
+					case 0:
+						worldItem = SpawnWorldItem("Chest", pos);
+						var money = MoneyData.Get("Money").CreateItem();
+						worldItem.item = money;
+						money.count = 100;
+						break;
+					case 1:
+						worldItem = SpawnWorldItem("Map", pos);
+						worldItem.map = new WorldItem.MapReveal() { position = new Vector2(pos.x, pos.z), radius = 1000 };
+						break;
+				}
+			}
 
 		}
 
@@ -198,7 +198,7 @@ namespace Bowhead.Server {
 			SpawnDecorations(chunk);
 		}
 
-		protected override void OnChunkUnloaded(World.Streaming.IChunk chunk) {}
+		protected override void OnChunkUnloaded(World.Streaming.IChunk chunk) { }
 
 		void SpawnDecorations(World.Streaming.IChunk chunk) {
 			var decorationCount = chunk.decorationCount;
@@ -218,21 +218,21 @@ namespace Bowhead.Server {
 
 		#region perlin utils
 		public float GetPerlinNormal(int x, int y, int z, float scale) {
-            noise.SetFrequency(scale);
-            var v = noise.GetPerlin(x, y, z);
-            return (v + 1) / 2;
-        }
+			noise.SetFrequency(scale);
+			var v = noise.GetPerlin(x, y, z);
+			return (v + 1) / 2;
+		}
 
-        public float GetPerlinValue(int x, int y, int z, float scale) {
-            noise.SetFrequency(scale);
-            return noise.GetPerlin(x, y, z);
-        }
+		public float GetPerlinValue(int x, int y, int z, float scale) {
+			noise.SetFrequency(scale);
+			return noise.GetPerlin(x, y, z);
+		}
 
-        #endregion
+		#endregion
 
-        #region entity creation
+		#region entity creation
 
-        protected override ServerTeam GetTeamForSpawningPlayer(ServerPlayerController playerController) {
+		protected override ServerTeam GetTeamForSpawningPlayer(ServerPlayerController playerController) {
 			// TODO: base assigns every player to a new team
 			return base.GetTeamForSpawningPlayer(playerController);
 		}
@@ -243,9 +243,9 @@ namespace Bowhead.Server {
 			playerController.PossessPlayerPawn(player);
 
 
-        }
+		}
 
-        Player SpawnPlayer() {
+		Player SpawnPlayer() {
 			var player = world.Spawn<Player>(null, default(SpawnParameters));
 			player.ServerSpawn(new Vector3(16, 500, 16), PlayerData.Get("player"));
 			return player;
@@ -260,7 +260,7 @@ namespace Bowhead.Server {
 			actor.ServerSpawn(pos, data);
 			return actor;
 		}
-				
+
 		public Critter SpawnCritter(string dataName, Vector3 pos, Team team) {
 			var data = CritterData.Get(dataName);
 			if (data == null) {
@@ -286,25 +286,25 @@ namespace Bowhead.Server {
 
 		public void SpawnRandomCritter() {
 
-            // despawn critters
-            foreach (var c in world.GetActorIterator<Critter>()) {
-                if (c.active) {
-                    float closestDist = 1000;
-                    foreach (var p in world.GetActorIterator<Player>()) {
-                        if (p.active) {
-                            var diff = c.position - p.position;
-                            closestDist = Mathf.Min(closestDist, diff.magnitude);
-                        }
-                    }
-                    if (closestDist > 500) {
-                        c.Destroy();
-                    }
-                }
-            }
+			// despawn critters
+			foreach (var c in world.GetActorIterator<Critter>()) {
+				if (c.active) {
+					float closestDist = 1000;
+					foreach (var p in world.GetActorIterator<Player>()) {
+						if (p.active) {
+							var diff = c.position - p.position;
+							closestDist = Mathf.Min(closestDist, diff.magnitude);
+						}
+					}
+					if (closestDist > 500) {
+						c.Destroy();
+					}
+				}
+			}
 
 
 
-            if (numCritters < 50) {
+			if (numCritters < 50) {
 				foreach (var player in world.GetActorIterator<Player>()) {
 					Vector3 pos = player.position;
 					pos.y = 500;
@@ -315,12 +315,13 @@ namespace Bowhead.Server {
 					var wolfData = CritterData.Get("wolf");
 
 					var c = SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos, monsterTeam);
-						
+
 					if (c.data == bunnyData) {
 						var item = LootData.Get("Raw Meat").CreateItem();
 						item.count = 1;
 						c.loot[0] = item;
-					} else if (c.data == wolfData) {
+					}
+					else if (c.data == wolfData) {
 						var weapon = WeaponData.Get("Teeth").CreateItem();
 						c.SetInventorySlot(0, weapon);
 					}
@@ -335,7 +336,7 @@ namespace Bowhead.Server {
 		float GetTimeOfDay() {
 			// world.time is a double so can't use Mathf.Repeat()
 			// see: https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/ for explanation.
-			var rep = world.time - (Math.Floor(world.time/data.SecondsPerDay) * data.SecondsPerDay);
+			var rep = world.time - (Math.Floor(world.time / data.SecondsPerDay) * data.SecondsPerDay);
 			return (float)(rep / data.SecondsPerDay * 24);
 		}
 
@@ -359,11 +360,11 @@ namespace Bowhead.Server {
 			diff += new Vector3(0, 0, 1) * Math.Abs(GetRiver(x, z - 1) - center);
 			diff += new Vector3(0, 0, 1) * Math.Abs(GetRiver(x, z + 1) - center);
 			float currentSpeed = diff.magnitude;
-            if (currentSpeed != 0) {
-                diff /= currentSpeed;
-    			currentSpeed *= 1000 * GetPerlinValue(x, y, z, inverseRegionSize);
-            }
-            return diff * Mathf.Clamp(currentSpeed, -8f, 8f);
+			if (currentSpeed != 0) {
+				diff /= currentSpeed;
+				currentSpeed *= 1000 * GetPerlinValue(x, y, z, inverseRegionSize);
+			}
+			return diff * Mathf.Clamp(currentSpeed, -8f, 8f);
 		}
 
 		public Vector3 GetWind(Vector3 p) {
@@ -384,28 +385,49 @@ namespace Bowhead.Server {
 
 			if (currentSpeed >= data.windSpeedStormy) {
 				currentSpeed = data.windSpeedStormy;
-			} else if (currentSpeed >= data.windSpeedWindy) {
+			}
+			else if (currentSpeed >= data.windSpeedWindy) {
 				currentSpeed = data.windSpeedWindy;
-			} else if (currentSpeed >= data.windSpeedBreezy) {
+			}
+			else if (currentSpeed >= data.windSpeedBreezy) {
 				currentSpeed = data.windSpeedBreezy;
-			} else {
+			}
+			else {
 				currentSpeed = 0;
 			}
 
 			return wind * currentSpeed;
 		}
-        #endregion
+		#endregion
 
-        #region Tick
-        public override void Tick(float dt) {
-            base.Tick(dt);
+		#region Tick
+		public override void Tick(float dt) {
+			base.Tick(dt);
 
-            SpawnRandomCritter();
+			SpawnRandomCritter();
 
-        }
+			foreach (var c1 in world.GetActorIterator<Pawn>()) {
+				if (c1.active) {
+					float c1Radius = 0.5f;
+					foreach (var c2 in world.GetActorIterator<Pawn>()) {
+						if (c2.active && c2 != c1) {
+							float c2Radius = 0.5f;
+							var diff = c1.rigidBody.transform.position - c2.rigidBody.transform.position;
+							float dist = diff.magnitude;
+							float okRange = c1Radius + c2Radius;
+							if (dist < okRange) {
+								var moveDir = diff / dist;
+								c1.Move(moveDir * (okRange - dist) / 2);
+								c2.Move(-moveDir * (okRange - dist) / 2);
+							}
+						}
+					}
+				}
+			}
+		}
+		#endregion
+	}
 
-        #endregion
-    }
 
     public class BowheadGame : BowheadGame<GSBowheadGame> {
 		public BowheadGame(ServerWorld world) : base(world) { }
