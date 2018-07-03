@@ -937,6 +937,7 @@ public partial class World {
 			}
 
 			chunk.chunkData.flags[0] = EChunkFlags.NONE;
+			chunk.chunkData.decorationCount[0] = 0;
 
 			AddChunkToHash(chunk);
 			chunk.refCount = 1;

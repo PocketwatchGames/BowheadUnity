@@ -19,6 +19,7 @@ namespace Bowhead {
 				}
 
 				unsafe {
+					chunk.pinnedDecorationCount[0] = chunk.decorationCount;
 					chunk.pinnedFlags[0] = chunk.flags;
 				}
 			}

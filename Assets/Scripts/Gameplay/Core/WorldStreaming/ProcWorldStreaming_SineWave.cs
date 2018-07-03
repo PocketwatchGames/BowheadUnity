@@ -22,6 +22,7 @@ namespace Bowhead {
 				}
 
 				unsafe {
+					chunk.pinnedDecorationCount[0] = chunk.decorationCount;
 					chunk.pinnedFlags[0] = chunk.flags;
 				}
 			}
@@ -32,7 +33,7 @@ namespace Bowhead {
 				bool solid = false;
 				bool air = false;
 
-				chunk.flags = EChunkFlags.NONE;
+				chunk.flags = EChunkFlags.LAYER_DEFAULT;
 
 				WorldVoxelPos_t pos = ChunkToWorld(cpos);
 				Vector3 v3 = WorldToVec3(pos);

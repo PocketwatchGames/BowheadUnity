@@ -172,6 +172,13 @@ public static class WorldConstantExtensions {
 
 public partial class World {
 
+	public struct Decoration_t {
+		public const int MAX_DECORATIONS_PER_CHUNK = 32;
+		public int type;
+		public int flags;
+		public Vector3 pos;
+	};
+
 	public static readonly int[] ChunkLayers = new int[] {
 		Layers.Terrain,
 		Layers.Water,

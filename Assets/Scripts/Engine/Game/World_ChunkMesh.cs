@@ -15,10 +15,18 @@ using static UnityEngine.Debug;
 public partial class World {
 	public struct PinnedChunkData_t {
 		public ChunkStorageArray1D_t voxeldata;
+		public DecorationStorageArray1D_t decorations;
 		[NativeDisableUnsafePtrRestriction]
 		public unsafe EChunkFlags* pinnedFlags;
+		[NativeDisableUnsafePtrRestriction]
+		public unsafe int* pinnedDecorationCount;
 		public EChunkFlags flags;
+		public int decorationCount;
 		public int valid;
+
+		public void AddDecoration(Decoration_t d) {
+			decorations[decorationCount++] = d;
+		}
 	};
 
 	public unsafe struct ChunkStorageArray1D_t {
@@ -34,6 +42,30 @@ public partial class World {
 		}
 
 		public EVoxelBlockType this[int i] {
+			get {
+				BoundsCheckAndThrow(i, 0, _x);
+				return _arr[i];
+			}
+			set {
+				BoundsCheckAndThrow(i, 0, _x);
+				_arr[i] = value;
+			}
+		}
+	};
+
+	public unsafe struct DecorationStorageArray1D_t {
+		[NativeDisableUnsafePtrRestriction]
+		Decoration_t* _arr;
+		int _x;
+
+		public static DecorationStorageArray1D_t New(Decoration_t* array, int x) {
+			return new DecorationStorageArray1D_t {
+				_arr = array,
+				_x = x
+			};
+		}
+
+		public Decoration_t this[int i] {
 			get {
 				BoundsCheckAndThrow(i, 0, _x);
 				return _arr[i];
@@ -64,17 +96,25 @@ public partial class World {
 
 		public struct ChunkData_t {
 			public ChunkStorageArray1D_t pinnedBlockData;
+			public DecorationStorageArray1D_t pinnedDecorationData;
+			public unsafe int* pinnedDecorationCount;
 			public unsafe EChunkFlags* pinnedFlags;
 			public EVoxelBlockType[] voxeldata;
 			public EChunkFlags[] flags;
+			public Decoration_t[] decorations;
+			public int[] decorationCount;
 
-			GCHandle _pinnedArray;
+			GCHandle _pinnedBlockData;
+			GCHandle _pinnedDecorationData;
+			GCHandle _pinnedDecorationCount;
 			GCHandle _pinnedFlags;
 			int _pinCount;
 
 			public static ChunkData_t New() {
 				return new ChunkData_t {
 					voxeldata = new EVoxelBlockType[VOXELS_PER_CHUNK],
+					decorations = new Decoration_t[Decoration_t.MAX_DECORATIONS_PER_CHUNK],
+					decorationCount = new int[1],
 					flags = new EChunkFlags[1]
 				};
 			}
@@ -83,11 +123,15 @@ public partial class World {
 				++_pinCount;
 
 				if (_pinCount == 1) {
-					Assert(!_pinnedArray.IsAllocated);
-					_pinnedArray = GCHandle.Alloc(voxeldata, GCHandleType.Pinned);
+					Assert(!_pinnedBlockData.IsAllocated);
+					_pinnedBlockData = GCHandle.Alloc(voxeldata, GCHandleType.Pinned);
+					_pinnedDecorationData = GCHandle.Alloc(decorations, GCHandleType.Pinned);
+					_pinnedDecorationCount = GCHandle.Alloc(decorationCount, GCHandleType.Pinned);
 					_pinnedFlags = GCHandle.Alloc(flags, GCHandleType.Pinned);
 					unsafe {
-						pinnedBlockData = ChunkStorageArray1D_t.New((EVoxelBlockType*)_pinnedArray.AddrOfPinnedObject().ToPointer(), voxeldata.Length);
+						pinnedBlockData = ChunkStorageArray1D_t.New((EVoxelBlockType*)_pinnedBlockData.AddrOfPinnedObject().ToPointer(), voxeldata.Length);
+						pinnedDecorationData = DecorationStorageArray1D_t.New((Decoration_t*)_pinnedDecorationData.AddrOfPinnedObject().ToPointer(), decorations.Length);
+						pinnedDecorationCount = (int*)_pinnedDecorationCount.AddrOfPinnedObject().ToPointer();
 						pinnedFlags = (EChunkFlags*)_pinnedFlags.AddrOfPinnedObject().ToPointer();
 					}
 				}
@@ -99,12 +143,17 @@ public partial class World {
 				--_pinCount;
 
 				if (_pinCount == 0) {
-					Assert(_pinnedArray.IsAllocated);
-					_pinnedArray.Free();
+					Assert(_pinnedBlockData.IsAllocated);
+					_pinnedBlockData.Free();
+					_pinnedDecorationData.Free();
+					_pinnedDecorationCount.Free();
 					_pinnedFlags.Free();
 
-					pinnedBlockData = new ChunkStorageArray1D_t();
+					pinnedBlockData = default(ChunkStorageArray1D_t);
+					pinnedDecorationData = default(DecorationStorageArray1D_t);
+
 					unsafe {
+						pinnedDecorationCount = null;
 						pinnedFlags = null;
 					}
 				}
@@ -116,7 +165,10 @@ public partial class World {
 				Assert(chunk.pinnedFlags != null);
 				return new PinnedChunkData_t {
 					voxeldata = chunk.pinnedBlockData,
+					decorations = chunk.pinnedDecorationData,
+					pinnedDecorationCount = chunk.pinnedDecorationCount,
 					pinnedFlags = chunk.pinnedFlags,
+					decorationCount = chunk.decorationCount[0],
 					flags = chunk.flags[0],
 					valid = 1
 				};
