@@ -65,6 +65,8 @@ namespace Bowhead {
 					chunk.flags |= EChunkFlags.AIR;
 				}
 
+				chunk.flags |= EChunkFlags.LAYER_DEFAULT;
+
 				return chunk;
 			}
 

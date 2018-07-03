@@ -235,11 +235,10 @@ namespace Bowhead.Actors {
 
             RaycastHit hit;
             var dir = _position - _lookAt;
-            if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+            if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Layers.TerrainMask)) {
                 _pos = hit.point;
             }
-
-
+			
             _yaw = this._yaw;
             _pitch = this._pitch;
             if (_shakeTime > 0) {

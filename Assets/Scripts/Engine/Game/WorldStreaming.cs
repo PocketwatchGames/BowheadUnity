@@ -448,14 +448,116 @@ public partial class World {
 		}
 
 		void CopyToMesh(ChunkJobData jobData, Chunk chunk) {
-			if ((_terrainRoot != null) && (jobData.jobData.outputVerts.counts[0] > 0)) {
-				if (chunk.goChunk == null) {
-					chunk.goChunk = GameObject.Instantiate(_chunkPrefab, WorldToVec3(ChunkToWorld(chunk.pos)), Quaternion.identity, _terrainRoot.transform);
-				}
+			if (_terrainRoot != null) {
+				var wpos = WorldToVec3(ChunkToWorld(chunk.pos));
+				int baseVertex = 0;
+				int baseIndex = 0;
 
-				ChunkMeshGen.CopyToMesh(ref jobData.jobData, chunk.goChunk.meshFilter.mesh);
-				chunk.goChunk.meshCollider.sharedMesh = chunk.goChunk.meshFilter.mesh;
+				for (int layer = 0; layer < ChunkLayers.Length; ++layer) {
+					if ((chunk.chunkData.flags[0] & ((EChunkFlags)((int)EChunkFlags.LAYER_DEFAULT << layer))) != 0) {
+						CreateChunkMesh(ref jobData.jobData, ref chunk.goChunk, wpos, layer, ref baseIndex, ref baseVertex);
+					}
+				}
 			}
+		}
+
+		static int[] staticIndices = new int[ushort.MaxValue];
+		static Vector3[] staticVec3 = new Vector3[ushort.MaxValue];
+		static Color32[] staticColors = new Color32[ushort.MaxValue];
+
+		static T[] Copy<T>(NativeArray<T> src, int size) where T : struct {
+			var t = new T[size];
+			for (int i = 0; i < size; ++i) {
+				t[i] = src[i];
+			}
+			return t;
+		}
+
+		static T[] Copy<T>(T[] dst, NativeArray<T> src, int ofs, int count) where T: struct {
+			for (int i = 0; i < count; ++i) {
+				dst[i] = src[i+ofs];
+			}
+			return dst;
+		}
+
+		World_ChunkComponent CreateChunkMeshForLayer(ref World_ChunkComponent root, Vector3 pos, int layer) {
+			if (root == null) {
+				root = GameObject.Instantiate(_chunkPrefab, pos, Quaternion.identity, _terrainRoot.transform);
+				root.gameObject.layer = ChunkLayers[layer];
+			}
+			if (layer == 0) {
+				return root;
+			}
+
+			var child = root.GetChildComponent<World_ChunkComponent>(ChunkLayerNames[layer]);
+			if (child != null) {
+				return child;
+			}
+
+			child = GameObject.Instantiate(_chunkPrefab, root.transform, false);
+			child.gameObject.layer = ChunkLayers[layer];
+			return child;
+		}
+
+		void DestroyChunkMeshForLayer(ref World_ChunkComponent root, int layer) {
+			if (root == null) {
+				return;
+			}
+
+			if (layer == 0) {
+				if (root.transform.childCount == 0) {
+					Utils.DestroyGameObject(root.gameObject);
+					root = null;
+				} else {
+					root.Clear();
+				}
+				return;
+			}
+
+			var child = root.GetChildComponent<World_ChunkComponent>(ChunkLayerNames[layer]);
+			if (child != null) {
+				Utils.DestroyGameObject(child.gameObject);
+			}
+
+			if (root.transform.childCount == 0) {
+				Utils.DestroyGameObject(root.gameObject);
+				root = null;
+			}
+		}
+
+		void CreateChunkMesh(ref ChunkMeshGen.JobInputData jobData, ref World_ChunkComponent root, Vector3 pos, int layer, ref int baseIndex, ref int baseVertex) {
+			var outputVerts = jobData.outputVerts;
+
+			var vertCount = outputVerts.counts[layer*3+0];
+			if (vertCount < 1) {
+				return;
+			}
+
+			var component = CreateChunkMeshForLayer(ref root, pos, layer);
+			var mesh = component.mesh;
+
+			MeshCopyHelper.SetMeshVerts(mesh, Copy(staticVec3, outputVerts.positions, baseVertex, vertCount), vertCount);
+			MeshCopyHelper.SetMeshNormals(mesh, Copy(staticVec3, outputVerts.normals, baseVertex, vertCount), vertCount);
+			MeshCopyHelper.SetMeshColors(mesh, Copy(staticColors, outputVerts.colors, baseVertex, vertCount), vertCount);
+
+			int submeshidx = 0;
+			int indexOfs = 0;
+
+			var maxSubmesh = outputVerts.counts[layer*3+2];
+
+			for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
+				int numLayerVerts = outputVerts.submeshes[submesh];
+				if (numLayerVerts > 0) {
+					MeshCopyHelper.SetSubMeshTris(mesh, submeshidx, Copy(staticIndices, outputVerts.indices, indexOfs+baseIndex, numLayerVerts), numLayerVerts, true, indexOfs);
+					indexOfs += numLayerVerts;
+					++submeshidx;
+				}
+			}
+
+			baseVertex += vertCount;
+			baseIndex += indexOfs;
+
+			component.UpdateCollider();
 		}
 
 		public void Dispose() {

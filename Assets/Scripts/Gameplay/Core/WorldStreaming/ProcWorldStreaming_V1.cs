@@ -56,7 +56,7 @@ namespace Bowhead {
 			static PinnedChunkData_t GenerateVoxels(WorldChunkPos_t cpos, PinnedChunkData_t chunk) {
 				FastNoise_t noise = FastNoise_t.New();
 
-				chunk.flags = EChunkFlags.NONE;
+				chunk.flags = EChunkFlags.ALL_LAYERS_FLAGS;
 				bool solid = false;
 				bool air = true;
                 bool fullVoxel = false;

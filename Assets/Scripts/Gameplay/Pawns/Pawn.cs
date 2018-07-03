@@ -178,7 +178,7 @@ namespace Bowhead.Actors {
                 Vector3 headPoint = headPosition(movePosition);
 
                 RaycastHit hit;
-                if (Physics.Raycast(movePosition + new Vector3(0,0.25f,0),Vector3.down,out hit,activity == Activity.OnGround ? 0.5f : 0.25f,Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+                if (Physics.Raycast(movePosition + new Vector3(0,0.25f,0),Vector3.down,out hit,activity == Activity.OnGround ? 0.5f : 0.25f, Layers.TerrainMask)) {
                     move.y = hit.point.y - position.y;
                 }
                 else if (!allowFall) {
@@ -186,9 +186,9 @@ namespace Bowhead.Actors {
                 }
 
                 // Step forward
-                if (!Physics.Raycast(footPosition() + new Vector3(0, 0.25f, 0), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))
-                    && !Physics.Raycast(waistPosition(), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))
-                    && !Physics.Raycast(headPosition(), moveVector.normalized, out hit, moveVector.magnitude, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+                if (!Physics.Raycast(footPosition() + new Vector3(0, 0.25f, 0), moveVector.normalized, out hit, moveVector.magnitude, Layers.TerrainMask)
+                    && !Physics.Raycast(waistPosition(), moveVector.normalized, out hit, moveVector.magnitude, Layers.TerrainMask)
+                    && !Physics.Raycast(headPosition(), moveVector.normalized, out hit, moveVector.magnitude, Layers.TerrainMask)) {
                     position += move;
                     return true;
                 }
@@ -262,7 +262,7 @@ namespace Bowhead.Actors {
             float checkDist = activity == Activity.OnGround ? data.height + 0.25f : data.height;
 
             RaycastHit hit;
-            if (Physics.Raycast(headPosition(), Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+            if (Physics.Raycast(headPosition(), Vector3.down, out hit, checkDist, Layers.TerrainMask)) {
                 floorHeight = hit.point.y;
                 groundNormal = hit.normal;
                 return true;

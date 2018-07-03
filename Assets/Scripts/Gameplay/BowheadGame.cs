@@ -24,7 +24,7 @@ public static partial class WorldUtils {
 
 	public static float GetFirstOpenBlockUp(int checkDist, Vector3 from) {
 		RaycastHit hit;
-		if (Physics.Raycast(new Vector3(from.x, 500, from.z), Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+		if (Physics.Raycast(new Vector3(from.x, 500, from.z), Vector3.down, out hit, checkDist, Layers.TerrainMask)) {
 			return hit.point.y;
 		}
 		return from.y;
@@ -32,7 +32,7 @@ public static partial class WorldUtils {
 
 	public static bool GetFirstSolidBlockDown(int checkDist, ref Vector3 from) {
 		RaycastHit hit;
-		if (Physics.Raycast(from, Vector3.down, out hit, checkDist, Bowhead.Layers.ToLayerMask(Bowhead.ELayers.Terrain))) {
+		if (Physics.Raycast(from, Vector3.down, out hit, checkDist, Layers.TerrainMask)) {
 			from.y = hit.point.y + 1;
 			return true;
 		}

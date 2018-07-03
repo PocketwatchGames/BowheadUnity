@@ -162,6 +162,18 @@ public static class VoxelBlockTypeExtensions {
 
 public partial class World {
 
+	public static readonly int[] ChunkLayers = new int[] {
+		Layers.Terrain,
+		Layers.Water,
+		Layers.Trees
+	};
+
+	public static readonly string[] ChunkLayerNames = new string[] {
+		null,
+		"Water",
+		"Trees"
+	};
+
 	public const int VOXEL_CHUNK_VIS_MAX_XZ = 16;
 	public const int VOXEL_CHUNK_VIS_MAX_Y_UP = 1;
 	public const int VOXEL_CHUNK_VIS_MAX_Y_DOWN = 1;
@@ -189,7 +201,11 @@ public partial class World {
 		NONE = 0,
 		AIR = 0x1,
 		SOLID = 0x2,
-		SOLID_XZ_PLANE = 0x4 // no vertical columns of air
+		SOLID_XZ_PLANE = 0x4, // no vertical columns of air
+		LAYER_DEFAULT = 0x8,
+		LAYER_WATER = 0x10,
+		LAYER_TREES = 0x20,
+		ALL_LAYERS_FLAGS = LAYER_DEFAULT|LAYER_WATER|LAYER_TREES
 	};
 
 	public static int WorldToChunk(int w, int CHUNK_SIZE) {
