@@ -688,6 +688,11 @@ namespace Bowhead {
 			if (_server != null) {
 				_server.FixedUpdate(Time.unscaledDeltaTime);
 			}
+#if !DEDICATED_SERVER
+			if (_client != null) {
+				_client.FixedUpdate(Time.unscaledDeltaTime);
+			}
+#endif
 		}
 
 		void HandleStartupConnect() {

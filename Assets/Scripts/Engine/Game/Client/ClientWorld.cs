@@ -85,6 +85,14 @@ namespace Client {
 			}
 		}
 
+		public void FixedUpdate(float dt) {
+			if (_serverConnection != null) {
+				if (!(isTraveling || _wasTraveling)) {
+					FixedUpdateActors(dt);
+				}
+			}
+		}
+
 		public virtual void LateUpdate() {
 			if (_serverConnection != null) {
 				if (!(isTraveling || _wasTraveling)) {
