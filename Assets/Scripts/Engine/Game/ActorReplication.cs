@@ -409,9 +409,7 @@ public class ActorReplicationChannel : ISerializableObjectSubobjectSerializer, I
 #if !PACKET_COMBINE
 			packet = packet.Flush(connection);
 #endif
-			if (objectRefs.Values.Count > 0) {
-				objectRefs.Remove(actor.netIDHashCode);
-			}
+			objectRefs.Remove(actor.netIDHashCode);
 		}
 
 		ReplicateDependencies(ref packet);
@@ -1479,9 +1477,9 @@ public sealed class ReplicatedObjectFieldSerializerFactory : ISerializableObject
 		} else if (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>))) {
 			var baseType = typeof(SerializableObjectListFieldSerializer<>);
 			var serializerType = baseType.MakeGenericType(type.GetGenericArguments()[0]);
-			return Activator.CreateInstance(serializerType, new object[] { this }) as ISerializableObjectFieldSerializer;
+			return (ISerializableObjectFieldSerializer)Activator.CreateInstance(serializerType, new object[] { this });
 		} else if (!type.IsAbstract && typeof(ISerializableObjectFieldSerializer).IsAssignableFrom(type)) {
-			return Activator.CreateInstance(type, null) as ISerializableObjectFieldSerializer;
+			return (ISerializableObjectFieldSerializer)Activator.CreateInstance(type, null);
 		} else {
 			// type may have a ReplicatedUsing attribute.
 			var replicatedUsing = GetReplicatedUsingAttribute(type);
