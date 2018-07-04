@@ -93,14 +93,6 @@ namespace Client {
 			}
 		}
 
-		public virtual void ClientFixedUpdate(float dt) {
-			if (_serverConnection != null) {
-				if (!(isTraveling || _wasTraveling)) {
-					ClientFixedUpdateActors(dt);
-				}
-			}
-		}
-
 		public new bool Connect(string address, int port) {
 			Assert.IsTrue(_connectionState == EConnectionState.Disconnected);
 			if (base.Connect(address, port)) {

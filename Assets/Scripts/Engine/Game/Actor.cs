@@ -275,7 +275,7 @@ public abstract class Actor : ActorRPCObject {
 		}
 	}
 
-	public virtual void ClientFixedUpdate(float dt) { }
+	public virtual void FixedUpdate(float dt) { }
 
 	public virtual void LateTick() { }
 

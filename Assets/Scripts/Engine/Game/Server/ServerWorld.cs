@@ -59,6 +59,12 @@ namespace Server {
 			}
         }
 
+		public void FixedUpdate(float dt) {
+			if (!isTraveling) {
+				FixedUpdateActors(dt);
+			}
+		}
+
 		public virtual void LateUpdate(float dt, ref NetIOMetrics reliableMetrics, ref NetIOMetrics unreliableMetrics) {
 			if (!isTraveling) {
 				LateTickActors();

@@ -225,14 +225,14 @@ public abstract partial class World : INetDriverCallbacks, IDisposable {
 		Perf.End();
 	}
 
-	protected virtual void ClientFixedUpdateActors(float dt) {
+	protected virtual void FixedUpdateActors(float dt) {
 		Perf.Begin("World.FixedUpdate");
 
 		for (int i = 0; i < _actors.Count; ++i) {
 			var actor = _actors[i];
 
 			if (!actor.pendingKill) {
-				actor.ClientFixedUpdate(dt);
+				actor.FixedUpdate(dt);
 			}
 		}
 

@@ -685,12 +685,9 @@ namespace Bowhead {
 
 		void FixedUpdate() {
 			++fixedUpateCount;
-#if !DEDICATED_SERVER
-			if (_client != null) {
-				_client.ClientFixedUpdate(Time.unscaledDeltaTime);
-
+			if (_server != null) {
+				_server.FixedUpdate(Time.unscaledDeltaTime);
 			}
-#endif
 		}
 
 		void HandleStartupConnect() {
