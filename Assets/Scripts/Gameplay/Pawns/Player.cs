@@ -226,10 +226,7 @@ namespace Bowhead.Actors {
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
 
-			if (cur.lookRight != 0 || cur.lookFwd != 0) {
-				input.look = -forward * (float)cur.lookFwd / 127f + right * (float)cur.lookRight / 127f;
-			}
-			else if (input.movement != Vector3.zero) {
+			if (input.movement != Vector3.zero) {
 				input.look = input.movement.normalized;
 			}
 

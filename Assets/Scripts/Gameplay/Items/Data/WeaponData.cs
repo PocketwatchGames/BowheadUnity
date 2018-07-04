@@ -33,15 +33,18 @@ namespace Bowhead {
             public float attackDamageBackstab;
 			public float moveSpeedDuringCooldown;
 			public float moveSpeedDuringCast;
+			public bool interrupt;
+			public bool canBlock;
 		}
 
 		public GameObject_WRef prefab;
         public Hand hand;
         public float chargeTime;
+		public float parryTime;
 		public float moveSpeedWhileCharging = 1f;
 		public float moveSpeedChargeDelay = 0.2f;
         public Vector3 weaponSize;
-        public AttackData[] attacks;
-        public AttackData[] parries;
+		public AttackData[] attacks;
+		public AttackData parry;
     }
 }
