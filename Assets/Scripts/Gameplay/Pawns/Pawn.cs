@@ -992,7 +992,7 @@ namespace Bowhead.Actors {
             blood.transform.localPosition = waistPosition() - rigidBody.position;
         }
 
-        public void hit(Pawn attacker, Item weapon, WeaponData.AttackData attackData) {
+        public void hit(Pawn attacker, Weapon weapon, WeaponData.AttackData attackData) {
             float remainingStun;
             float remainingDamage;
 
@@ -1018,13 +1018,15 @@ namespace Bowhead.Actors {
                 return;
             }
 
-            // Check if we're blocking with shield
-            foreach (var w in getInventory()) {
-                var shield = w as Weapon;
-                if (shield != null) {
-                    shield.defend(this, attacker, weapon, attackData, ref remainingStun, ref remainingDamage);
-                }
-            }
+			// Check if we're blocking with shield
+			if (attackData.canBlock) {
+				foreach (var w in getInventory()) {
+					var shield = w as Weapon;
+					if (shield != null) {
+						shield.defend(this, attacker, weapon, attackData, ref remainingStun, ref remainingDamage);
+					}
+				}
+			}
 
             if (remainingDamage > 0) {
                 damage(remainingDamage);
@@ -1043,7 +1045,18 @@ namespace Bowhead.Actors {
                 useStamina(attackData.staminaDrain);
                 stun(remainingStun);
             }
-        }
+
+			if (attackData.interrupt) {
+				foreach (var i in getInventory()) {
+					var w = i as Weapon;
+					if (w != null) {
+						if (w.castTime > 0 || w.activeTime > 0 || w.chargeTime > 0) {
+							w.interrupt(this);
+						}
+					}
+				}
+			}
+		}
 
 
         virtual public void LandOnGround() {

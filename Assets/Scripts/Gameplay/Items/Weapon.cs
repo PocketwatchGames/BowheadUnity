@@ -230,7 +230,7 @@ namespace Bowhead {
             return data.attacks[chargeIndex];
         }
 
-        public void defend(Pawn owner, Pawn attacker, Item weapon, WeaponData.AttackData attackData, ref float remainingStun, ref float remainingDamage) {
+        public void defend(Pawn owner, Pawn attacker, Weapon attackerWeapon, WeaponData.AttackData attackData, ref float remainingStun, ref float remainingDamage) {
             if (chargeTime > 0) {
                 var defense = getCurChargeData();
                 if (defense == null) {
@@ -243,10 +243,10 @@ namespace Bowhead {
                 owner.useStamina(defense.defendStaminaUse);
 
                 int chargeLevel = getCurCharge();
-                if (data.parries.Length > chargeLevel) {
-                    var parry = data.parries[chargeLevel];
-                    if (parry != null) {
-                        attacker.hit(owner, this, parry);
+                if (chargeTime < data.parryTime) {
+                    if (data.parry != null) {
+						attackerWeapon.interrupt(attacker);
+						attacker.hit(owner, this, data.parry);
                     }
                 }
             }
