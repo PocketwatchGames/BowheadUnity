@@ -246,9 +246,7 @@ namespace Bowhead.Server {
 		}
 
 		Player SpawnPlayer() {
-			var player = world.Spawn<Player>(null, default(SpawnParameters));
-			player.ServerSpawn(new Vector3(16, 500, 16), PlayerData.Get("player"));
-			return player;
+			return PlayerData.Get("player").SpawnEntity<Player>(world, new Vector3(16, 500, 16), null, null, null);
 		}
 
 		public WorldItem SpawnWorldItem(string dataName, Vector3 pos) {
@@ -256,9 +254,7 @@ namespace Bowhead.Server {
 			if (data == null) {
 				return null;
 			}
-			var actor = world.Spawn<WorldItem>(null, default(SpawnParameters));
-			actor.ServerSpawn(pos, data);
-			return actor;
+			return data.SpawnEntity<WorldItem>(world, pos, null, null, null);
 		}
 
 		public Critter SpawnCritter(string dataName, Vector3 pos, Team team) {
@@ -270,9 +266,7 @@ namespace Bowhead.Server {
 		}
 
 		public Critter SpawnCritter(CritterData data, Vector3 pos, Team team) {
-			var critter = world.Spawn<Critter>(null, default(SpawnParameters));
-			critter.ServerSpawn(pos, data, (ServerTeam)team);
-			return critter;
+			return data.SpawnEntity<Critter>(world, pos, null, null, team);
 		}
 
 		public void CritterSpawned() {

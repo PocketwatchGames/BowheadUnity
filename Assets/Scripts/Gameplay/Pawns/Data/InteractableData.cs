@@ -1,11 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System;
+﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
 namespace Bowhead.Actors {
-
-	public abstract class InteractableData : EntityData {
+	public abstract class InteractableData : SpawnableEntityData {
 		public GameObject_WRef prefab;
 
 		new public static InteractableData Get(string name) {

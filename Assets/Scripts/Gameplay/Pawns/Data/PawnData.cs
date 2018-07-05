@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Bowhead.Actors {
 
-    public class PawnData : EntityData {
+    public abstract class PawnData : SpawnableEntityData {
         [Header("Basic")]
         public float height;
         public float maxHealth;

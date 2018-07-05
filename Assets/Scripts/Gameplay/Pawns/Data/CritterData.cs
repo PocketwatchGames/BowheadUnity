@@ -5,7 +5,7 @@ using System;
 
 namespace Bowhead.Actors {
 
-    [CreateAssetMenuAttribute(menuName = "EntityData/Critter")]
+    [CreateAssetMenu(menuName = "EntityData/Critter")]
     public class CritterData : PawnData<CritterData> {
         [Header("Critter")]
 
@@ -18,8 +18,7 @@ namespace Bowhead.Actors {
         public float waryIncreaseAtMaxAwareness;
         public float waryIncreaseAtMaxAwarenessWhilePanicked;
         public ECritterBehaviorType panicBehavior;
+
+		public override Type spawnClass => typeof(Critter);
     };
-
-    
-
 }

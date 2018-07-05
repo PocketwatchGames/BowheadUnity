@@ -313,10 +313,9 @@ namespace Bowhead.Actors {
 		// Spawning
 		////////////
 
-		public override void ServerSpawn(Vector3 pos, EntityData baseData) {
-			base.ServerSpawn(pos, baseData);
-
-            var gameObject = GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null);
+		public override void Spawn(EntityData d, Vector3 pos, Actor instigator, Actor owner, Team team) {
+			base.Spawn(d, pos, instigator, owner, team);
+			var gameObject = GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null);
             AttachExternalGameObject(gameObject);
 
 			attackTargetPreview = null;

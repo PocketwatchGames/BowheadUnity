@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Bowhead.Actors {
 
-    [CreateAssetMenuAttribute(menuName = "EntityData/Player")]
+    [CreateAssetMenu(menuName = "EntityData/Player")]
     public class PlayerData : PawnData<PlayerData> {
 
         [Header("Player")]
@@ -16,7 +16,9 @@ namespace Bowhead.Actors {
         public float temperatureSleepMaximum;
         public float fallDamageSpeed;
         public float dropTime;
-        public int[] weightClassItemCount = new int[(int)Player.WeightClass.COUNT];
+		public int[] weightClassItemCount;
+
+		public override Type spawnClass => typeof(Player);
     };
 
 }

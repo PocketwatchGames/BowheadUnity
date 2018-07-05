@@ -27,13 +27,13 @@ namespace Bowhead.Actors {
 
 		#region core
 
-		virtual public void ServerSpawn(Vector3 pos, EntityData baseData, Server.Actors.ServerTeam t) {
-			base.ServerSpawn(pos, baseData);
-		    behaviorPanic = CritterBehavior.Create(data.panicBehavior);
+		public override void Spawn(EntityData d, Vector3 pos, Actor instigator, Actor owner, Team team) {
+			base.Spawn(d, pos, instigator, owner, team);
+			behaviorPanic = CritterBehavior.Create(data.panicBehavior);
             spawnPosition = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
-            team = t;
+            this.team = team;
             active = false;
             canClimb = false;
             canClimbWell = false;
@@ -43,7 +43,6 @@ namespace Bowhead.Actors {
             canTurn = true;
             canAttack = true;
             gameMode.CritterSpawned();
-			
 		}
 
         public void SetActive(Vector3 pos) {

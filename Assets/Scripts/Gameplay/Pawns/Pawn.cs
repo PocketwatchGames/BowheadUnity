@@ -26,11 +26,11 @@ namespace Bowhead.Actors {
     }
 
 	public abstract class Pawn<T, D> : Pawn where T : Pawn<T, D> where D : PawnData {
-		public override void ServerSpawn(Vector3 pos, EntityData data) {
-			base.ServerSpawn(pos, data);
+		public override void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
+			base.Spawn(data, pos, instigator, owner, team);
 			this.data = (D)data;
 		}
-
+		
 		new public D data {
 			get;
 			private set;
@@ -144,13 +144,13 @@ namespace Bowhead.Actors {
 			private set;
 		}
 
-		#region getdata
-		virtual public void ServerSpawn(Vector3 pos, EntityData data) {
-			base.ServerSpawn(pos, data);
+		public override void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
+			base.Spawn(data, pos, instigator, owner, team);
 			this.data = (PawnData)data;
 			gameMode = (Server.BowheadGame)((Server.ServerWorld)world).gameMode;
 		}
-
+	
+		#region getdata
 		new public PawnData data {
 			get;
 			private set;

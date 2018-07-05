@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Bowhead {
 
-    [CreateAssetMenuAttribute(menuName = "ItemData/Weapon")]
+    [CreateAssetMenu(menuName = "ItemData/Weapon")]
     public class WeaponData : ItemData<Weapon, WeaponData> {
         public enum Hand {
             LEFT,

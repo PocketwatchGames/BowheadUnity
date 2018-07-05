@@ -26,13 +26,13 @@ namespace Bowhead.Actors {
 
 		public override System.Type clientType => typeof(WorldItem);
 		public override System.Type serverType => typeof(WorldItem);
-		
-        public void ServerSpawn(Vector3 pos, WorldItemData data) {
-			base.ServerSpawn(pos, data);
+
+		public override void Spawn(EntityData d, Vector3 pos, Actor instigator, Actor owner, Team team) {
+			base.Spawn(d, pos, instigator, owner, team);
 			position = pos;
 			AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null));
             go.SetActive(false);
-        }
+		}
 
         public override void Tick() {
 			base.Tick();

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Bowhead {
-    [CreateAssetMenuAttribute(menuName = "ItemData/Loot")]
+    [CreateAssetMenu(menuName = "ItemData/Loot")]
     public class LootData : ItemData<Loot, LootData> {
 		public enum UseType {
 			None,
