@@ -431,7 +431,7 @@ namespace Bowhead.Actors {
                     activity = Activity.Falling;
                 }
             }
-            else if (world.GetBlock(position) == EVoxelBlockType.WATER) {
+            else if (world.GetBlock(position) == EVoxelBlockType.Water) {
                 activity = Activity.Swimming;
             }
             else if (onGround && velocity.y <= 0) {
@@ -699,11 +699,11 @@ namespace Bowhead.Actors {
                 velocity.y = velocity.y - data.swimSinkAcceleration * dt;
             }
             velocity.y += data.gravity * dt;
-            if (world.GetBlock(headPosition()) == EVoxelBlockType.WATER) {
+            if (world.GetBlock(headPosition()) == EVoxelBlockType.Water) {
                 velocity.y += -velocity.y * dt * data.swimDragVertical;
                 velocity.y += data.bouyancy * dt;
             }
-            if (world.GetBlock(position) == EVoxelBlockType.WATER) {
+            if (world.GetBlock(position) == EVoxelBlockType.Water) {
                 velocity.y += -velocity.y * dt * data.swimDragVertical;
                 velocity.y += data.bouyancy * dt;
             }
@@ -834,7 +834,7 @@ namespace Bowhead.Actors {
         }
 
         public bool IsWading() {
-            return activity == Activity.OnGround && world.GetBlock(waistPosition()) == EVoxelBlockType.WATER && world.GetBlock(position) != EVoxelBlockType.WATER;
+            return activity == Activity.OnGround && world.GetBlock(waistPosition()) == EVoxelBlockType.Water && world.GetBlock(position) != EVoxelBlockType.Water;
         }
 
         public float getGroundJumpVelocity() {

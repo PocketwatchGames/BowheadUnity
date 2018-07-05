@@ -15,7 +15,7 @@ public static partial class WorldUtils {
 			return blockType;
 		}
 
-		return EVoxelBlockType.AIR;
+		return EVoxelBlockType.Air;
 	}
 
 	public static EVoxelBlockType GetBlock(this World world, float x, float y, float z) {
@@ -44,30 +44,30 @@ public static partial class WorldUtils {
 
 
 	public static bool IsCapBlock(EVoxelBlockType type) {
-		if (type == EVoxelBlockType.SNOW) return true;
+		if (type == EVoxelBlockType.Snow) return true;
 		return false;
 	}
 
 
 	public static bool IsSolidBlock(EVoxelBlockType type) {
-		if (type == EVoxelBlockType.WATER
-			|| type == EVoxelBlockType.AIR
-			|| type == EVoxelBlockType.SNOW
-			|| type == EVoxelBlockType.FLOWERS1
-			|| type == EVoxelBlockType.FLOWERS2
-			|| type == EVoxelBlockType.FLOWERS3
-			|| type == EVoxelBlockType.FLOWERS4) {
+		if (type == EVoxelBlockType.Water
+			|| type == EVoxelBlockType.Air
+			|| type == EVoxelBlockType.Snow
+			|| type == EVoxelBlockType.Flowers1
+			|| type == EVoxelBlockType.Flowers2
+			|| type == EVoxelBlockType.Flowers3
+			|| type == EVoxelBlockType.Flowers4) {
 			return false;
 		}
 		return true;
 	}
 
 	public static bool IsClimbable(EVoxelBlockType type, bool skilledClimber) {
-		if (type == EVoxelBlockType.LEAVES || type == EVoxelBlockType.NEEDLES || type == EVoxelBlockType.WOOD) {
+		if (type == EVoxelBlockType.Leaves || type == EVoxelBlockType.Needles || type == EVoxelBlockType.Wood) {
 			return true;
 		}
 		if (skilledClimber) {
-			if (type == EVoxelBlockType.DIRT || type == EVoxelBlockType.ROCK || type == EVoxelBlockType.GRASS) {
+			if (type == EVoxelBlockType.Dirt || type == EVoxelBlockType.Rock || type == EVoxelBlockType.Grass) {
 				return true;
 			}
 		}
@@ -75,7 +75,7 @@ public static partial class WorldUtils {
 	}
 
 	public static bool IsHangable(EVoxelBlockType type, bool skilledClimber) {
-		if (type == EVoxelBlockType.DIRT || type == EVoxelBlockType.ROCK || type == EVoxelBlockType.GRASS) {
+		if (type == EVoxelBlockType.Dirt || type == EVoxelBlockType.Rock || type == EVoxelBlockType.Grass) {
 			return true;
 		}
 		return false;
@@ -86,16 +86,16 @@ public static partial class WorldUtils {
 		slideThreshold = 100;
 		slideFriction = 0.5f;
 
-		if (mid == EVoxelBlockType.SNOW) {
+		if (mid == EVoxelBlockType.Snow) {
 			slideThreshold = 4;
 			slideFriction = 0.25f;
-		} else if (foot == EVoxelBlockType.DIRT) {
+		} else if (foot == EVoxelBlockType.Dirt) {
 			slideThreshold = 25;
-		} else if (foot == EVoxelBlockType.GRASS) {
+		} else if (foot == EVoxelBlockType.Grass) {
 			slideThreshold = 25;
-		} else if (foot == EVoxelBlockType.ROCK) {
+		} else if (foot == EVoxelBlockType.Rock) {
 			slideThreshold = 25;
-		} else if (foot == EVoxelBlockType.SAND) {
+		} else if (foot == EVoxelBlockType.Sand) {
 			slideThreshold = 4;
 		}
 	}
@@ -103,16 +103,16 @@ public static partial class WorldUtils {
 	public static float GetWorkModifier(EVoxelBlockType foot, EVoxelBlockType mid, EVoxelBlockType head) {
 		float workModifier = 0;
 
-		if (mid == EVoxelBlockType.SNOW) {
+		if (mid == EVoxelBlockType.Snow) {
 			//workModifier = 1f;
 		}
 		//else if (mid == EVoxelBlockType.LongGrass || foot == EVoxelBlockType.LongGrass || head == EVoxelBlockType.LongGrass)
 		//{
 		//	workModifier = 15f;
 		//}
-		else if (foot == EVoxelBlockType.GRASS) {
+		else if (foot == EVoxelBlockType.Grass) {
 			workModifier = 1f;
-		} else if (foot == EVoxelBlockType.SAND) {
+		} else if (foot == EVoxelBlockType.Sand) {
 			workModifier = 1f;
 		}
 		return workModifier;
@@ -120,32 +120,32 @@ public static partial class WorldUtils {
 	}
 
 	public static float GetFallDamage(EVoxelBlockType type) {
-		if (type == EVoxelBlockType.SNOW)
+		if (type == EVoxelBlockType.Snow)
 			return 0.5f;
-		else if (type == EVoxelBlockType.SAND)
+		else if (type == EVoxelBlockType.Sand)
 			return 0.75f;
-		else if (type == EVoxelBlockType.DIRT || type == EVoxelBlockType.GRASS)
+		else if (type == EVoxelBlockType.Dirt || type == EVoxelBlockType.Grass)
 			return 0.9f;
 		return 1.0f;
 	}
 
 	public static bool IsTransparentBlock(EVoxelBlockType type) {
-		if (type == EVoxelBlockType.AIR
-			|| type == EVoxelBlockType.WATER
-			|| type == EVoxelBlockType.NEEDLES
-			|| type == EVoxelBlockType.FLOWERS1
-			|| type == EVoxelBlockType.FLOWERS2
-			|| type == EVoxelBlockType.FLOWERS3
-			|| type == EVoxelBlockType.FLOWERS4
-			|| type == EVoxelBlockType.LEAVES
-			|| type == EVoxelBlockType.SNOW) {
+		if (type == EVoxelBlockType.Air
+			|| type == EVoxelBlockType.Water
+			|| type == EVoxelBlockType.Needles
+			|| type == EVoxelBlockType.Flowers1
+			|| type == EVoxelBlockType.Flowers2
+			|| type == EVoxelBlockType.Flowers3
+			|| type == EVoxelBlockType.Flowers4
+			|| type == EVoxelBlockType.Leaves
+			|| type == EVoxelBlockType.Snow) {
 			return true;
 		}
 		return false;
 	}
 
 	public static bool IsDiggable(EVoxelBlockType type) {
-		if (type == EVoxelBlockType.WATER) return false;
+		if (type == EVoxelBlockType.Water) return false;
 		return true;
 	}
 
@@ -241,8 +241,6 @@ namespace Bowhead.Server {
 			base.InitPlayerSpawn(playerController);
 			var player = SpawnPlayer();
 			playerController.PossessPlayerPawn(player);
-
-
 		}
 
 		Player SpawnPlayer() {

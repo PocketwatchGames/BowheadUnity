@@ -202,7 +202,7 @@ namespace Bowhead.Client.UI {
 
 		void RenderTile(ChunkTile tile) {
 			if (tile.dirty && tile.solid) {
-                tile.voxelmap.Broadcast(EVoxelBlockType.AIR);
+                tile.voxelmap.Broadcast(EVoxelBlockType.Air);
                 tile.elevationmap.Broadcast(0);
 
                 int numSolid = 0;
@@ -246,7 +246,7 @@ namespace Bowhead.Client.UI {
 					for (int x = 0; x < World.VOXEL_CHUNK_SIZE_XZ; ++x) {
 						var pixOfs = zofs+x;
 
-                        if ((dstVoxels[pixOfs].BlockType() == EVoxelBlockType.AIR) && (srcVoxels[ofs].BlockType() != EVoxelBlockType.AIR)) {
+                        if ((dstVoxels[pixOfs].BlockType() == EVoxelBlockType.Air) && (srcVoxels[ofs].BlockType() != EVoxelBlockType.Air)) {
 							dstVoxels[pixOfs] = srcVoxels[ofs];
 							dstElevations[pixOfs] = elevation;
 

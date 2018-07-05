@@ -704,7 +704,7 @@ public partial class World {
 					blocktype = chunkData.voxeldata[idx].BlockType();
 					return true;
 				}
-				blocktype = EVoxelBlockType.AIR;
+				blocktype = EVoxelBlockType.Air;
 				return false;
 			}
 		};
@@ -901,7 +901,7 @@ public partial class World {
 				return chunk.GetVoxelAt(WorldToLocalVoxel(pos), out blocktype);
 			}
 
-			blocktype = EVoxelBlockType.AIR;
+			blocktype = EVoxelBlockType.Air;
 			return false;
 		}
 		

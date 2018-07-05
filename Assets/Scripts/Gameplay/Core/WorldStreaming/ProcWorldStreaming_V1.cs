@@ -96,24 +96,24 @@ namespace Bowhead {
 								if (ypos < waterLevel) {
 									float temperature = GetTemperature(ref noise, (int)xpos, (int)ypos, zpos);
 									if (IsFrozen(temperature, GetHumidity(ref noise, xpos, zpos))) {
-										bt = EVoxelBlockType.ICE;
+										bt = EVoxelBlockType.Ice;
 									} else {
-										bt = EVoxelBlockType.WATER;
+										bt = EVoxelBlockType.Water;
 									}
 								} else {
-									bt = EVoxelBlockType.AIR;
+									bt = EVoxelBlockType.Air;
 								}
 							}
-							if (bt == EVoxelBlockType.AIR) {
+							if (bt == EVoxelBlockType.Air) {
 								if (y == 0) {
 									isEmptyAtBottom = true;
 								}
 								if (waterDepth > 0 && !isEmptyAtBottom) {
 									float temperature = GetTemperature(ref noise, xpos, (int)ypos, zpos);
 									if (IsFrozen(temperature, GetHumidity(ref noise, xpos, zpos))) {
-										bt = EVoxelBlockType.ICE;
+										bt = EVoxelBlockType.Ice;
 									} else {
-										bt = EVoxelBlockType.WATER;
+										bt = EVoxelBlockType.Water;
 									}
 									waterDepth--;
 									solid = true;
@@ -126,7 +126,7 @@ namespace Bowhead {
                              
                             if (fullVoxel)
                             {
-                                chunk.voxeldata[ofs] = bt | EVoxelBlockType.FULL_VOXEL_FLAG;
+                                chunk.voxeldata[ofs] = bt | EVoxelBlockType.FullVoxelFlag;
                             }
                             else
                             {
@@ -152,8 +152,8 @@ namespace Bowhead {
 								var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 								var ypos = (int)v3.y + y;
 								var bt = (EVoxelBlockType)((byte)chunk.voxeldata[ofs] & BLOCK_TYPE_MASK);
-								if (bt != EVoxelBlockType.AIR) {
-									if (bt == EVoxelBlockType.WATER || bt == EVoxelBlockType.LEAVES || bt == EVoxelBlockType.NEEDLES || bt == EVoxelBlockType.WOOD)
+								if (bt != EVoxelBlockType.Air) {
+									if (bt == EVoxelBlockType.Water || bt == EVoxelBlockType.Leaves || bt == EVoxelBlockType.Needles || bt == EVoxelBlockType.Wood)
 										break;
 
 									float rock = GetRock(ref noise, xpos, ypos, zpos);
@@ -165,7 +165,7 @@ namespace Bowhead {
 										}
 									}
 
-									if (bt == EVoxelBlockType.ICE || bt == EVoxelBlockType.SAND)
+									if (bt == EVoxelBlockType.Ice || bt == EVoxelBlockType.Sand)
 										break;
 
 
@@ -192,7 +192,7 @@ namespace Bowhead {
 										}
 									}
 
-									if (bt == EVoxelBlockType.GRASS || bt == EVoxelBlockType.DIRT) {
+									if (bt == EVoxelBlockType.Grass || bt == EVoxelBlockType.Dirt) {
 										if (y < VOXEL_CHUNK_SIZE_Y - 1) {
 											float flowerPower1 = 0.3f * GetPerlinNormal(ref noise, xpos, zpos, NoiseFloatScale._5)
 												+ 0.2f * GetPerlinNormal(ref noise, xpos + 67435, zpos + 653, NoiseFloatScale._01)
@@ -227,7 +227,7 @@ namespace Bowhead {
 											}
 											if (flowerPower > cutoff) {
 												var ofs2 = x + (z * VOXEL_CHUNK_SIZE_XZ) + ((y + 1) * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-												chunk.voxeldata[ofs2] = (EVoxelBlockType)((int)EVoxelBlockType.FLOWERS1 + flowerType);
+												chunk.voxeldata[ofs2] = (EVoxelBlockType)((int)EVoxelBlockType.Flowers1 + flowerType);
 											}
 										}
 									}
@@ -261,40 +261,40 @@ namespace Bowhead {
 					float temperature = GetTemperature(ref noise, x, y, z);
 					if (IsFrozen(temperature, humidity)) {
 						if (IsSnow(ref noise, x, y, z))
-							return EVoxelBlockType.SNOW;
+							return EVoxelBlockType.Snow;
 						else
-							return EVoxelBlockType.ICE;
+							return EVoxelBlockType.Ice;
 					}
 				}
 
 				if (y == upperGroundHeight && y < waterLevel + 10 * (GetPerlinNormal(ref noise, x, y, z, 0.2f) * GetPerlinNormal(ref noise, x + 452, y + 784, z + 6432, 0.1f))) {
-					return EVoxelBlockType.SAND;
+					return EVoxelBlockType.Sand;
 				}
 
 
 				float rock = GetRock(ref noise, x, y, z);
 				if (y < upperGroundHeight) {
 					if (rock > 0.5f) {
-                        return EVoxelBlockType.ROCK;
+                        return EVoxelBlockType.Rock;
 					}
-					return EVoxelBlockType.DIRT;
+					return EVoxelBlockType.Dirt;
 				}
 				if (isRoad) {
-					return EVoxelBlockType.DIRT;
+					return EVoxelBlockType.Dirt;
 				} else if (humidity < 0.25f) {
-					return EVoxelBlockType.SAND;
+					return EVoxelBlockType.Sand;
 				} else if ((0.95f * GetPerlinNormal(ref noise, x, y, z, 0.01f) + 0.05f * GetPerlinNormal(ref noise, x + 5432, y + 874423, z + 12, 0.1f)) * humidity * Mathf.Pow(rock, 0.25f) < 0.1f) {
                     if (rock > 0.5f)
                     {
                         fullVoxel = GetWhiteNoise(ref noise, x, y, z) > 0.5;
-                        return EVoxelBlockType.ROCK;
+                        return EVoxelBlockType.Rock;
                     } else
                     {
-                        return EVoxelBlockType.DIRT;
+                        return EVoxelBlockType.Dirt;
                     }
                 } else
                 {
-					return EVoxelBlockType.GRASS;
+					return EVoxelBlockType.Grass;
 				}
 
 				//	return EVoxelBlockType.BLOCK_TYPE_DIRT;
@@ -459,7 +459,7 @@ namespace Bowhead {
 							if (i >= 0 && i < VOXEL_CHUNK_SIZE_XZ && j >= 0 && j < VOXEL_CHUNK_SIZE_Y && k >= 0 && k < VOXEL_CHUNK_SIZE_XZ) {
 								var ofs = i + (k * VOXEL_CHUNK_SIZE_XZ) + (j * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 								chunk.flags |= EChunkFlags.SOLID;
-								chunk.voxeldata[ofs] = EVoxelBlockType.ROCK | EVoxelBlockType.FULL_VOXEL_FLAG;
+								chunk.voxeldata[ofs] = EVoxelBlockType.Rock | EVoxelBlockType.FullVoxelFlag;
 							}
 						}
 					}
@@ -478,7 +478,7 @@ namespace Bowhead {
                                 if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
                                     var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
                                     chunk.flags |= EChunkFlags.SOLID;
-                                    chunk.voxeldata[ofs] = EVoxelBlockType.ROCK | EVoxelBlockType.FULL_VOXEL_FLAG;
+                                    chunk.voxeldata[ofs] = EVoxelBlockType.Rock | EVoxelBlockType.FullVoxelFlag;
                                 }
                             }
                         }
@@ -522,7 +522,7 @@ namespace Bowhead {
                                     if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
                                         var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
                                         chunk.flags |= EChunkFlags.SOLID;
-                                        chunk.voxeldata[ofs] = EVoxelBlockType.ROCK | EVoxelBlockType.FULL_VOXEL_FLAG;
+                                        chunk.voxeldata[ofs] = EVoxelBlockType.Rock | EVoxelBlockType.FullVoxelFlag;
                                     }
                                 }
                             }
@@ -543,7 +543,7 @@ namespace Bowhead {
 					for (int i = y; i < y + height && i < VOXEL_CHUNK_SIZE_Y; i++) {
 						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (i * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 						chunk.flags |= EChunkFlags.SOLID;
-						chunk.voxeldata[ofs] = EVoxelBlockType.WOOD;
+						chunk.voxeldata[ofs] = EVoxelBlockType.Wood;
 					}
 				} else if (treeType == 1) {
 					// Trunk
@@ -551,7 +551,7 @@ namespace Bowhead {
 					for (int i = y; i < y + height && i < VOXEL_CHUNK_SIZE_Y; i++) {
 						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (i * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 						chunk.flags |= EChunkFlags.SOLID;
-						chunk.voxeldata[ofs] = EVoxelBlockType.WOOD;
+						chunk.voxeldata[ofs] = EVoxelBlockType.Wood;
 					}
 					int radius = x % 2 + y % 2 + z % 2;
 					if (radius > 0) {
@@ -564,7 +564,7 @@ namespace Bowhead {
 									if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 										var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 										chunk.flags |= EChunkFlags.SOLID;
-										chunk.voxeldata[ofs] = EVoxelBlockType.LEAVES | EVoxelBlockType.FULL_VOXEL_FLAG;
+										chunk.voxeldata[ofs] = EVoxelBlockType.Leaves | EVoxelBlockType.FullVoxelFlag;
 									}
 								}
 							}
@@ -575,7 +575,7 @@ namespace Bowhead {
 					for (int i = y; i < y + height && i < VOXEL_CHUNK_SIZE_Y; i++) {
 						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (i * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 						chunk.flags |= EChunkFlags.SOLID;
-						chunk.voxeldata[ofs] = EVoxelBlockType.WOOD;
+						chunk.voxeldata[ofs] = EVoxelBlockType.Wood;
 					}
 					int radius = 1 + x % 2 + y % 2 + z % 2;
 					if (radius > 0) {
@@ -589,7 +589,7 @@ namespace Bowhead {
                                     if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 										var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 										chunk.flags |= EChunkFlags.SOLID;
-										chunk.voxeldata[ofs] = EVoxelBlockType.NEEDLES;
+										chunk.voxeldata[ofs] = EVoxelBlockType.Needles;
 									}
 
 								}
@@ -601,7 +601,7 @@ namespace Bowhead {
 					for (int i = y; i < y + height && i < VOXEL_CHUNK_SIZE_Y; i++) {
 						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (i * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 						chunk.flags |= EChunkFlags.SOLID;
-						chunk.voxeldata[ofs] = EVoxelBlockType.WOOD;
+						chunk.voxeldata[ofs] = EVoxelBlockType.Wood;
 					}
 					for (int i = 3; i <= height; i++) {
 						int radius = (int)((1.0f - (float)(i - 3) / (height - 3)) * height / 3 + 1) + (x + y + z * z + i * i) % 2;
@@ -625,7 +625,7 @@ namespace Bowhead {
 										if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 											var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 											chunk.flags |= EChunkFlags.SOLID;
-											chunk.voxeldata[ofs] = k == 1 ? EVoxelBlockType.WOOD : (EVoxelBlockType.NEEDLES | EVoxelBlockType.FULL_VOXEL_FLAG);
+											chunk.voxeldata[ofs] = k == 1 ? EVoxelBlockType.Wood : (EVoxelBlockType.Needles | EVoxelBlockType.FullVoxelFlag);
 										}
 										if (k < radius) {
 											lx = x + branchDir.x * k + branchDir.y;
@@ -633,14 +633,14 @@ namespace Bowhead {
 											if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 												var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 												chunk.flags |= EChunkFlags.SOLID;
-												chunk.voxeldata[ofs] = EVoxelBlockType.NEEDLES | EVoxelBlockType.FULL_VOXEL_FLAG;
+												chunk.voxeldata[ofs] = EVoxelBlockType.Needles | EVoxelBlockType.FullVoxelFlag;
 											}
 											lx = x + branchDir.x * k - branchDir.y;
 											lz = z + branchDir.y * k - branchDir.x;
 											if (lx >= 0 && lx < VOXEL_CHUNK_SIZE_XZ && ly >= 0 && ly < VOXEL_CHUNK_SIZE_Y && lz >= 0 && lz < VOXEL_CHUNK_SIZE_XZ) {
 												var ofs = lx + (lz * VOXEL_CHUNK_SIZE_XZ) + (ly * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 												chunk.flags |= EChunkFlags.SOLID;
-												chunk.voxeldata[ofs] = EVoxelBlockType.NEEDLES | EVoxelBlockType.FULL_VOXEL_FLAG;
+												chunk.voxeldata[ofs] = EVoxelBlockType.Needles | EVoxelBlockType.FullVoxelFlag;
 											}
 										}
 									}

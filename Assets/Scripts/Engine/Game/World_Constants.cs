@@ -133,25 +133,25 @@ public struct LocalVoxelPos_t {
 
 [Flags]
 public enum EVoxelBlockType : byte {
-	AIR = 0,
-	DIRT,
-	GRASS,
-	WATER,
-	SAND,
-	SNOW,
-	ROCK,
-	ICE,
-	WOOD,
-	LEAVES,
-	NEEDLES,
-	FLOWERS1,
-	FLOWERS2,
-	FLOWERS3,
-	FLOWERS4,
-	NUM_BLOCK_TYPES,
-	MAX = 0x20-1,
-	FULL_VOXEL_FLAG = 0x80,
-	FLAGS_MASK = FULL_VOXEL_FLAG
+	Air = 0,
+	Dirt,
+	Grass,
+	Water,
+	Sand,
+	Snow,
+	Rock,
+	Ice,
+	Wood,
+	Leaves,
+	Needles,
+	Flowers1,
+	Flowers2,
+	Flowers3,
+	Flowers4,
+	NumBlockTypes,
+	Max = 0x20-1,
+	FullVoxelFlag = 0x80,
+	FlagsMask = FullVoxelFlag
 };
 
 public enum EChunkLayers : int {
@@ -175,7 +175,6 @@ public partial class World {
 	public struct Decoration_t {
 		public const int MAX_DECORATIONS_PER_CHUNK = 32;
 		public int type;
-		public int flags;
 		public Vector3 pos;
 	};
 
@@ -203,7 +202,7 @@ public partial class World {
 	public const int VOXELS_PER_CHUNK = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_Y;
 	public const int VOXELS_PER_CHUNK_XZ = VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ;
 
-	public const byte BLOCK_TYPE_MASK = (byte)~EVoxelBlockType.FLAGS_MASK;
+	public const byte BLOCK_TYPE_MASK = (byte)~EVoxelBlockType.FlagsMask;
 	public const byte BLOCK_TYPE_MAX = 0x20-1;
 	public const uint BLOCK_SMG_WATER = 0x1;
 	public const uint BLOCK_SMG_DIRT_ROCK = 0x2;

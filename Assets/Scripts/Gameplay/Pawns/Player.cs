@@ -799,7 +799,7 @@ namespace Bowhead.Actors {
             }
             else {
                 var block = world.GetBlock(footPosition());
-                if (block == EVoxelBlockType.WATER) {
+                if (block == EVoxelBlockType.Water) {
                     Loot waterItem = null;
                     var waterData = LootData.Get("Water");
                     foreach (var i in getInventory()) {
