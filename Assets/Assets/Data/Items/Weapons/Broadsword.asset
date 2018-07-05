@@ -72,7 +72,7 @@ MonoBehaviour:
     defendInterrupt: 0
     spell: 0
     spellPower: 0
-    waterUse: 0
+    waterUse: 5
   parry:
     castTime: 0
     activeTime: 0

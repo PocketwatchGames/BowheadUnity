@@ -24,22 +24,22 @@ MonoBehaviour:
   weaponSize: {x: 0, y: 0, z: 0}
   attacks:
   - castTime: 0.05
-    activeTime: 0.05
+    activeTime: 0
     cooldown: 0.05
-    attackRange: 1.5
-    attackRadius: 0.75
+    attackRange: 0
+    attackRadius: 0
     knockback: 0
-    attackDamage: 10
+    attackDamage: 0
     defendPower: 0
     defendDamageAbsorb: 0
     defendStaminaUse: 0
     defendAngleRange: 0
-    staminaUse: 5
-    stepDistance: 0.5
+    staminaUse: 0
+    stepDistance: 0
     staminaDrain: 0
-    stunPower: 0.25
-    stunPowerBackstab: 1
-    attackDamageBackstab: 50
+    stunPower: 0
+    stunPowerBackstab: 0
+    attackDamageBackstab: 0
     moveSpeedDuringCooldown: 0
     moveSpeedDuringCast: 0
     interrupt: 0

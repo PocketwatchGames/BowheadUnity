@@ -9,35 +9,35 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c384a6b4c08e5e479f79662660fc81f, type: 3}
-  m_Name: Spear
+  m_Name: Crossbow
   m_EditorClassIdentifier: 
   version: 0
-  _index: 12
+  _index: 6
   prefab:
-    _assetPath: Items/Spear
-    _editorPath: Assets/Assets/Prefabs/Resources/Items/Spear.prefab
-  hand: 2
+    _assetPath: 
+    _editorPath: 
+  hand: 3
   chargeTime: 0.5
   parryTime: 0
-  moveSpeedWhileCharging: 0.75
+  moveSpeedWhileCharging: 0.5
   moveSpeedChargeDelay: 0.2
   weaponSize: {x: 0, y: 0, z: 0}
   attacks:
   - castTime: 0.05
-    activeTime: 0.1
+    activeTime: 0
     cooldown: 0.05
-    attackRange: 2
-    attackRadius: 1.5
+    attackRange: 0
+    attackRadius: 0
     knockback: 0
-    attackDamage: 20
+    attackDamage: 0
     defendPower: 0
     defendDamageAbsorb: 0
     defendStaminaUse: 0
     defendAngleRange: 0
-    staminaUse: 10
-    stepDistance: 2
+    staminaUse: 0
+    stepDistance: 0
     staminaDrain: 0
-    stunPower: 0.1
+    stunPower: 0
     stunPowerBackstab: 0
     attackDamageBackstab: 0
     moveSpeedDuringCooldown: 0
@@ -48,31 +48,6 @@ MonoBehaviour:
     spell: 0
     spellPower: 0
     waterUse: 0
-  - castTime: 0.1
-    activeTime: 0.3
-    cooldown: 0.2
-    attackRange: 0
-    attackRadius: 4
-    knockback: 3
-    attackDamage: 20
-    defendPower: 0
-    defendDamageAbsorb: 0
-    defendStaminaUse: 0
-    defendAngleRange: 0
-    staminaUse: 40
-    stepDistance: 0
-    staminaDrain: 0
-    stunPower: 0.1
-    stunPowerBackstab: 0
-    attackDamageBackstab: 0
-    moveSpeedDuringCooldown: 0
-    moveSpeedDuringCast: 0
-    interrupt: 0
-    unblockable: 0
-    defendInterrupt: 0
-    spell: 0
-    spellPower: 0
-    waterUse: 5
   parry:
     castTime: 0
     activeTime: 0

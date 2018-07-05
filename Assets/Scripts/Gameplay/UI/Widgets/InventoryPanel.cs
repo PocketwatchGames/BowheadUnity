@@ -13,19 +13,17 @@ namespace Bowhead.Client.UI {
         InventoryContainer _inventoryContainerPrefab;
         [SerializeField]
         InventorySlot _inventorySlotPrefab;
-        [SerializeField]
-        ButtonHint _buttonHintDrop;
 
         public int slotMargin = 8;
         private Vector3 slotSize;
 
         public int inventorySelected = 0;
-        public float dropTimer;
-        public float dropTime = 0.5f;
 
-		private float _dpadAxis = 0;
+		private float _dpadXAxis = 0;
+		private float _dpadYAxis = 0;
+		private bool _rearranging;
 
-        private InventoryContainer _mainContainer;
+		private InventoryContainer _mainContainer;
         private List<InventoryContainer> _packContainers = new List<InventoryContainer>();
         private InventorySlot[] _slots = new InventorySlot[Player.MaxInventorySize];
 
@@ -108,7 +106,6 @@ namespace Bowhead.Client.UI {
 
             SelectInventory(inventorySelected);
 
-			_buttonHintDrop.transform.SetAsFirstSibling();
         }
 
         private void Update() {
@@ -119,10 +116,10 @@ namespace Bowhead.Client.UI {
 			//selectRight = Input.GetButtonDown("SelectRight");
 
 			float dpa = Input.GetAxis("DPadX");
-			if (Utils.SignOrZero(dpa) != Utils.SignOrZero(_dpadAxis)) {
-				_dpadAxis = dpa;
-				selectLeft = _dpadAxis < 0;
-				selectRight = _dpadAxis > 0;
+			if (Utils.SignOrZero(dpa) != Utils.SignOrZero(_dpadXAxis)) {
+				_dpadXAxis = dpa;
+				selectLeft = _dpadXAxis < 0;
+				selectRight = _dpadXAxis > 0;
 			}
 
 			if (selectLeft) {
@@ -132,30 +129,37 @@ namespace Bowhead.Client.UI {
 				SelectNextInventory();
 			}
 
+			bool use = false;
+			bool drop = false;
+			//selectLeft = Input.GetButtonDown("SelectLeft");
+			//selectRight = Input.GetButtonDown("SelectRight");
 
-			if (Input.GetButton("Use")) {
-                dropTimer = dropTimer + Time.deltaTime;
-				OnInventorySelected();
-            }
-            else {
-                if (Input.GetButtonUp("Use")) {
-                    var item = _player.GetInventorySlot(inventorySelected);
-                    if (item != null) {
-                        if (dropTimer >= dropTime) {
-                            _player.Drop(item);
-                        }
-                        else {
-                            _player.Use(item);
-                        }
-                    }
-                }
-                dropTimer = 0;
-            }
-        }
+			float dpy = Input.GetAxis("DPadY");
+			if (Utils.SignOrZero(dpy) != Utils.SignOrZero(_dpadYAxis)) {
+				_dpadYAxis = dpy;
+				drop = _dpadYAxis > 0;
+				use = _dpadYAxis < 0;
+			}
+
+			if (drop) {
+				var item = _player.GetInventorySlot(inventorySelected);
+				if (item != null) {
+					_player.Drop(item);
+					Rebuild();
+				}
+			}
+			if (use) {
+				var item = _player.GetInventorySlot(inventorySelected);
+				if (item != null) {
+					_player.Use(item);
+					Rebuild();
+				}
+			}
+		}
 
 
-        void SelectPreviousInventory() {
-            if (dropTimer >= dropTime) {
+		void SelectPreviousInventory() {
+            if (_rearranging) {
                 RearrangeLeft();
             }
             else {
@@ -170,12 +174,11 @@ namespace Bowhead.Client.UI {
                     }
                 }
                 SelectInventory(s);
-                dropTimer = 0;
             }
         }
 
         void SelectNextInventory() {
-            if (dropTimer >= dropTime) {
+            if (_rearranging) {
                 RearrangeRight();
             }
             else {
@@ -190,7 +193,6 @@ namespace Bowhead.Client.UI {
                     }
                 }
                 SelectInventory(s);
-                dropTimer = 0;
             }
         }
 
@@ -207,31 +209,6 @@ namespace Bowhead.Client.UI {
 		}
 
 		void OnInventorySelected() {
-			var selectedItem = _player.GetInventorySlot(inventorySelected);
-			if (selectedItem != null && _slots[inventorySelected] != null) {
-				_buttonHintDrop.gameObject.SetActive(true);
-				_buttonHintDrop.transform.position = _slots[inventorySelected].transform.position + new Vector3(0,30,0);
-				_buttonHintDrop.SetButton("B");
-
-				if (dropTimer >= dropTime) {
-					_buttonHintDrop.SetHint("Drop");
-				}
-				else if (inventorySelected < (int)Player.InventorySlot.PACK) {
-					_buttonHintDrop.SetHint("Unequip");
-				}
-				else if (selectedItem is Clothing || selectedItem is Weapon) {
-					_buttonHintDrop.SetHint("Equip");
-				}
-				else if (selectedItem is Pack) {
-					_buttonHintDrop.SetHint("...");
-				}
-				else {
-					_buttonHintDrop.SetHint("Use");
-				}
-			}
-			else {
-				_buttonHintDrop.gameObject.SetActive(false);
-			}
 
 		}
 

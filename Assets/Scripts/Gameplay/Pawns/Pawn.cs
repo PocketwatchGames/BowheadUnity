@@ -18,8 +18,9 @@ namespace Bowhead.Actors {
         Swap,
         AttackLeft,
 		AttackRight,
-		AttackRanged,
-        Map,
+		AttackRangedLeft,
+		AttackRangedRight,
+		Map,
         Crouch,
 		Look,
 		Count

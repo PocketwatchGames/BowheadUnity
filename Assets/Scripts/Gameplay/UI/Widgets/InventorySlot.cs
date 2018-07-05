@@ -25,8 +25,17 @@ namespace Bowhead.Client.UI {
             }
             else {
                 _button.gameObject.SetActive(true);
-                _button.GetComponentInChildren<Text>().text = i.data.name;
-            }
+
+				string name;
+				Loot loot;
+				if ((loot = i as Loot) != null && loot.data.stackSize > 1) {
+					_button.GetComponentInChildren<Text>().text = i.data.name + " x" + loot.count;
+				}
+				else {
+					_button.GetComponentInChildren<Text>().text = i.data.name;
+				}
+
+			}
         }
 
         public void Deselect() {
