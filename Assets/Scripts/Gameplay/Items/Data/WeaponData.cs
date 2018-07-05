@@ -45,6 +45,9 @@ namespace Bowhead {
 			public Spell spell;
 			public float spellPower;
 			public float waterUse;
+			public Actors.ProjectileData projectile;
+			public float projectileSpeed;
+			public bool canMove;
 		}
 
 		public GameObject_WRef prefab;
@@ -56,5 +59,6 @@ namespace Bowhead {
         public Vector3 weaponSize;
 		public AttackData[] attacks;
 		public AttackData parry;
+
     }
 }

@@ -74,11 +74,6 @@ namespace Bowhead.Actors {
         public float stunTimer;
         public float stunAmount;
 
-        [Header("Rendering")]
-        public Vector3 interpolateFrom;
-        public float interpolateTime;
-        public float interpolateTimeTotal;
-
         [Header("Gameplay")]
         public Pawn.Activity activity;
         public Vector3 climbingNormal;
@@ -98,7 +93,6 @@ namespace Bowhead.Actors {
 
         [Header("Combat")]
         public Pawn attackTarget;
-        public bool lockedToTarget;
 
         [Header("Inventory")]
         [SerializeField]
@@ -345,7 +339,6 @@ namespace Bowhead.Actors {
                 dodgeTimer = Math.Max(0, dodgeTimer - dt);
             }
 
-            interpolateTime = Math.Max(0, interpolateTime - dt);
             if (canTurn) {
                 if (activity == Activity.Climbing) {
                     yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
@@ -828,10 +821,6 @@ namespace Bowhead.Actors {
         }
 
         public virtual void SetPosition(Vector3 p, float interpolateTime = 0) {
-            if (interpolateTime > 0) {
-                interpolateFrom = renderPosition();
-                interpolateTime = interpolateTimeTotal = Math.Max(interpolateTime, interpolateTime);
-            }
             go.GetComponent<Rigidbody>().MovePosition(p);
             position = p;
         }

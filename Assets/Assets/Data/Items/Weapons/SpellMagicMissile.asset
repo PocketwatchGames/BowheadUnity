@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c384a6b4c08e5e479f79662660fc81f, type: 3}
-  m_Name: Crossbow
+  m_Name: SpellMagicMissile
   m_EditorClassIdentifier: 
   version: 0
   _index: 6
@@ -19,13 +19,13 @@ MonoBehaviour:
   hand: 3
   chargeTime: 0.5
   parryTime: 0
-  moveSpeedWhileCharging: 0.5
-  moveSpeedChargeDelay: 0.2
+  moveSpeedWhileCharging: 1
+  moveSpeedChargeDelay: 0
   weaponSize: {x: 0, y: 0, z: 0}
   attacks:
-  - castTime: 0.05
+  - castTime: 0.1
     activeTime: 0
-    cooldown: 0.05
+    cooldown: 0.1
     attackRange: 0
     attackRadius: 0
     knockback: 0
@@ -40,14 +40,17 @@ MonoBehaviour:
     stunPower: 0
     stunPowerBackstab: 0
     attackDamageBackstab: 0
-    moveSpeedDuringCooldown: 0
-    moveSpeedDuringCast: 0
+    moveSpeedDuringCooldown: 1
+    moveSpeedDuringCast: 1
     interrupt: 0
     unblockable: 0
     defendInterrupt: 0
     spell: 0
     spellPower: 0
-    waterUse: 0
+    waterUse: 1
+    projectile: {fileID: 11400000, guid: 3153fb8bcefe50a44af717fe0aa81363, type: 2}
+    projectileSpeed: 20
+    canMove: 1
   parry:
     castTime: 0
     activeTime: 0
@@ -74,3 +77,6 @@ MonoBehaviour:
     spell: 0
     spellPower: 0
     waterUse: 0
+    projectile: {fileID: 0}
+    projectileSpeed: 0
+    canMove: 0

@@ -122,6 +122,10 @@ namespace Bowhead {
 				activeTime = d.activeTime;
 			}
 			
+			if (d.projectile != null) {
+				owner.gameMode.SpawnProjectile(d.projectile, owner.position + new Vector3(0,0.5f,0), new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw)) * d.projectileSpeed, owner.team);
+			}
+
 			if (d.spell != WeaponData.Spell.None) {
 				ActivateSpell(d, owner);
 			}
@@ -141,24 +145,28 @@ namespace Bowhead {
 
             if (cooldown > 0) {
                 cooldown = Mathf.Max(0, cooldown - dt);
-                if (cooldown > 0) {
+                if (!getCurAttackData().canMove) {
 					owner.canMove = false;
 					owner.canTurn = false;
                 }
             }
             if (castTime > 0) {
-				owner.canMove = false;
-				owner.canTurn = false;
 				castTime = Mathf.Max(0, castTime - dt);
                 if (castTime <= 0) {
                     Activate(owner);
                 }
-            }
+				if (!getCurAttackData().canMove) {
+					owner.canMove = false;
+					owner.canTurn = false;
+				}
+			}
 			if (activeTime > 0) {
-				owner.canMove = false;
-				owner.canTurn = false;
 				activeTime = Mathf.Max(0, activeTime - dt);
 				DoActiveTick(owner);
+				if (!getCurAttackData().canMove) {
+					owner.canMove = false;
+					owner.canTurn = false;
+				}
 			}
 
 			if (chargeTime > 0) {

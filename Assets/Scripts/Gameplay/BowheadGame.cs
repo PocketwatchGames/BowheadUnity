@@ -267,6 +267,14 @@ namespace Bowhead.Server {
 			return data.SpawnEntity<Critter>(world, pos, null, null, team);
 		}
 
+		public Projectile SpawnProjectile(ProjectileData data, Vector3 pos, Vector3 velocity, Team team) {
+			var p = data.SpawnEntity<Projectile>(world, pos, null, null, team);
+			if (p != null) {
+				p.velocity = velocity;
+			}
+			return p;
+		}
+
 		public void CritterSpawned() {
 			++numCritters;
 		}

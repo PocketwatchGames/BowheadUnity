@@ -352,8 +352,6 @@ namespace Bowhead.Actors {
             if (shouldLock && attackTarget == null) {
                 attackTarget = attackTargetPreview;
             }
-            lockedToTarget = attackTarget != null;
-
 
 
             base.Simulate(dt, input);
@@ -383,7 +381,7 @@ namespace Bowhead.Actors {
 			PickUp(ItemData.Get("Pack").CreateItem());
 			PickUp(ItemData.Get("Chainmail").CreateItem());
 			PickUp(ItemData.Get("Rapier").CreateItem());
-			PickUp(ItemData.Get("Crossbow").CreateItem());
+			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
 			PickUp(ItemData.Get("SpellHeal").CreateItem());
 			PickUp(ItemData.Get("Broadsword").CreateItem());
 			PickUp(ItemData.Get("Buckler").CreateItem());
