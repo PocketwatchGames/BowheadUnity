@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class DamageIndicator : MonoBehaviourEx {
 
-    float time, totalTime;
+    float time;
     Color color;
     public void Init(float t, float scale) {
         transform.localScale = Vector3.one * scale;
-        time = totalTime = t;
+        time = t;
 
         AddGC(GetComponent<MeshRenderer>().material);
 		color = Color.white * 0.25f;

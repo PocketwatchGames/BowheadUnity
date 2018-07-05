@@ -373,8 +373,8 @@ namespace Bowhead {
 			const float islandRadius = 1000;
 			static float GetRegionElevation(ref FastNoise_t noise, int x, int z) {
 
-				float distToOriginSquared = Mathf.Clamp01(1.0f-(Mathf.Pow(x, 2) + Mathf.Pow(z, 2))/(islandRadius* islandRadius));
-				float distToOrigin = Mathf.Sqrt(distToOriginSquared);
+				//float distToOriginSquared = Mathf.Clamp01(1.0f-(Mathf.Pow(x, 2) + Mathf.Pow(z, 2))/(islandRadius* islandRadius));
+				//float distToOrigin = Mathf.Sqrt(distToOriginSquared);
 
 				float elevation = 0;
 				elevation += GetPerlinNormal(ref noise, x, z, 0.0005f) * 0.05f;

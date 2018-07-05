@@ -13,6 +13,11 @@ namespace Bowhead {
             RANGED
         }
 
+		public enum Spell {
+			None,
+			Heal,
+		}
+
         [System.Serializable]
         public class AttackData {
             public float castTime;
@@ -36,6 +41,10 @@ namespace Bowhead {
 			public float moveSpeedDuringCast;
 			public bool interrupt;
 			public bool unblockable;
+			public bool defendInterrupt;
+			public Spell spell;
+			public float spellPower;
+			public float waterUse;
 		}
 
 		public GameObject_WRef prefab;

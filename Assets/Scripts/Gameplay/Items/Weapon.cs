@@ -58,9 +58,14 @@ namespace Bowhead {
             if (!CanCast()) {
                 return false;
             }
+
 			hitTargets.Clear();
 			attackType = getCurCharge();
             var attackData = getCurAttackData();
+
+			if (attackData.waterUse > owner.water) {
+				return false;
+			}
 
             castTime = attackData.castTime;
             chargeTime = 0;
@@ -116,10 +121,21 @@ namespace Bowhead {
 			else {
 				activeTime = d.activeTime;
 			}
+			
+			if (d.spell != WeaponData.Spell.None) {
+				ActivateSpell(d, owner);
+			}
 
 			owner.useStamina(d.staminaUse);
+			owner.useWater(d.waterUse);
 
         }
+
+		private void ActivateSpell(WeaponData.AttackData d, Pawn owner) {
+			if (d.spell == WeaponData.Spell.Heal) {
+				owner.health = Mathf.Min(owner.maxHealth, owner.health + d.spellPower);
+			}
+		}
 
         override public void Tick(float dt, Pawn owner) {
 
@@ -207,7 +223,7 @@ namespace Bowhead {
 
 		public void interrupt(Pawn owner) {
 
-            if (castTime > 0) {
+            if (activeTime > 0) {
                 owner.moveImpulseTimer = 0;
             }
             chargeTime = 0;
@@ -253,6 +269,10 @@ namespace Bowhead {
                 remainingStun = Mathf.Max(0, remainingStun - defense.defendPower);
 
                 owner.useStamina(defense.defendStaminaUse);
+
+				if (defense.defendInterrupt) {
+					attackerWeapon.interrupt(attacker);
+				}
 
                 int chargeLevel = getCurCharge();
                 if (chargeTime < data.parryTime) {

@@ -17,14 +17,13 @@ namespace Bowhead.Actors {
         Use,
         Swap,
         AttackLeft,
-        AttackRight,
-        SelectLeft,
-        SelectRight,
+		AttackRight,
+		AttackRanged,
         Map,
         Crouch,
 		Look,
-        Count
-    }
+		Count
+	}
 
 	public abstract class Pawn<T, D> : Pawn where T : Pawn<T, D> where D : PawnData {
 		public override void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
@@ -63,7 +62,9 @@ namespace Bowhead.Actors {
         public bool alive = true;
         public float health;
         public float maxHealth;
-        public float stamina;
+		public float water;
+		public float maxWater;
+		public float stamina;
         public float maxStamina;
         public bool recovering;
         public float recoveryTimer;
@@ -939,17 +940,22 @@ namespace Bowhead.Actors {
             //return p + (interpolateFrom - p) * interpolateTime / interpolateTimeTotal;
         }
 
-        public void useStamina(float s) {
-            if (stamina <= 0)
-                return;
-            stamina -= s;
-            recoveryTimer = data.recoveryTime;
-            if (stamina <= 0) {
-                recovering = true;
-            }
-        }
+		public void useStamina(float s) {
+			if (stamina <= 0)
+				return;
+			stamina -= s;
+			recoveryTimer = data.recoveryTime;
+			if (stamina <= 0) {
+				recovering = true;
+			}
+		}
+		public void useWater(float w) {
+			if (water <= 0)
+				return;
+			water = Mathf.Max(0, water - w);
+		}
 
-        void jump(Vector3 dir) {
+		void jump(Vector3 dir) {
             useStamina(data.jumpStaminaUse);
             dodgeTimer = dodgeTimer + data.dodgeTime;
 

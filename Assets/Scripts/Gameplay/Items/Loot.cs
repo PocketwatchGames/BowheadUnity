@@ -28,10 +28,10 @@ namespace Bowhead {
             Player player = owner as Player;
             if (player == null)
                 return false;
-            if (player.thirst >= player.maxThirst) {
+            if (player.water >= player.maxWater) {
                 return false;
             }
-            player.thirst = Mathf.Min(player.thirst + item.data.power, player.maxThirst);
+            player.water = Mathf.Min(player.water + item.data.power, player.maxWater);
             return true;
         }
 

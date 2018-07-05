@@ -21,8 +21,6 @@ namespace Bowhead.Actors {
         public float dropTimer;
 
         [Header("Player Stats")]
-        public float thirst;
-        public float maxThirst;
         public float temperature;
 		#endregion
 
@@ -30,7 +28,8 @@ namespace Bowhead.Actors {
             CLOTHING = 0,
             LEFT_HAND = 1,
             RIGHT_HAND = 2,
-            PACK = 3,
+			RANGED = 3,
+            PACK = 4,
         }
         public enum WeightClass {
             LIGHT,
@@ -76,10 +75,13 @@ namespace Bowhead.Actors {
             if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
                 cmd.buttons |= 1 << (int)InputType.AttackLeft;
             }
-            if (Input.GetButton("AttackRight") || Input.GetAxis("RightTrigger") != 0) {
-                cmd.buttons |= 1 << (int)InputType.AttackRight;
-            }
-            if (Input.GetButton("Interact")) {
+			if (Input.GetButton("AttackRight") || Input.GetAxis("RightTrigger") != 0) {
+				cmd.buttons |= 1 << (int)InputType.AttackRight;
+			}
+			if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
+				cmd.buttons |= 1 << (int)InputType.AttackRanged;
+			}
+			if (Input.GetButton("Interact")) {
                 cmd.buttons |= 1 << (int)InputType.Interact;
             }
 			if (Input.GetButton("Map")) {
@@ -258,8 +260,9 @@ namespace Bowhead.Actors {
 
             bool isCasting = false;
             var itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
-            var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
-            if (canAttack) {
+			var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
+			var itemRanged = GetInventorySlot((int)InventorySlot.RANGED) as Weapon;
+			if (canAttack) {
                 if (itemLeft != null) {
 					if (itemLeft.CanCast()) {
 						if (input.IsPressed(InputType.AttackLeft)) {
@@ -276,7 +279,7 @@ namespace Bowhead.Actors {
                         isCasting = true;
                     }
                 }
-                if (itemRight != null) {
+				if (itemRight != null) {
 					if (itemRight.CanCast()) {
 						if (input.IsPressed(InputType.AttackRight)) {
 							itemRight.Charge(dt);
@@ -288,13 +291,29 @@ namespace Bowhead.Actors {
 							itemRight.chargeTime = 0;
 						}
 					}
-                    if (itemRight.castTime > 0) {
-                        isCasting = true;
-                    }
-                }
-            }
+					if (itemRight.castTime > 0) {
+						isCasting = true;
+					}
+				}
+				if (itemRanged != null) {
+					if (itemRanged.CanCast()) {
+						if (input.IsPressed(InputType.AttackRanged)) {
+							itemRanged.Charge(dt);
+						}
+						else {
+							if (input.inputs[(int)InputType.AttackRanged] == InputState.JustReleased) {
+								itemRanged.Attack(this);
+							}
+							itemRanged.chargeTime = 0;
+						}
+					}
+					if (itemRanged.castTime > 0) {
+						isCasting = true;
+					}
+				}
+			}
 
-            attackTargetPreview = GetAttackTarget(yaw);
+			attackTargetPreview = GetAttackTarget(yaw);
 
             bool shouldLock = false;
             if (input.IsPressed(InputType.AttackLeft) || input.IsPressed(InputType.AttackRight)) {
@@ -335,11 +354,11 @@ namespace Bowhead.Actors {
             SetSpawnPoint(pos);
 
 			PickUp(ItemData.Get("Pack").CreateItem());
-			PickUp(ItemData.Get("Hat").CreateItem());
-			PickUp(ItemData.Get("Helmet").CreateItem());
-			PickUp(ItemData.Get("Sword").CreateItem());
-			PickUp(ItemData.Get("2HSword").CreateItem());
-			PickUp(ItemData.Get("Shield").CreateItem());
+			PickUp(ItemData.Get("Chainmail").CreateItem());
+			PickUp(ItemData.Get("Rapier").CreateItem());
+			PickUp(ItemData.Get("SpellHeal").CreateItem());
+			PickUp(ItemData.Get("Broadsword").CreateItem());
+			PickUp(ItemData.Get("Buckler").CreateItem());
 			PickUp(ItemData.Get("Spear").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
@@ -367,8 +386,8 @@ namespace Bowhead.Actors {
             health = maxHealth;
             maxStamina = data.maxStamina;
             stamina = maxStamina;
-            maxThirst = data.maxThirst;
-            thirst = maxThirst;
+            maxWater = data.maxWater;
+            water = maxWater;
         }
 
         public void SetSpawnPoint(Vector3 sp) {
@@ -473,29 +492,24 @@ namespace Bowhead.Actors {
 
             Weapon weapon;
             if ((weapon = item as Weapon) != null) {
+
                 if (weapon.data.hand == WeaponData.Hand.BOTH && GetInventorySlot((int)InventorySlot.LEFT_HAND) == null && GetInventorySlot((int)InventorySlot.RIGHT_HAND) == null) {
                     SetInventorySlot((int)InventorySlot.RIGHT_HAND, item);
                     return true;
                 }
-                if (weapon.data.hand == WeaponData.Hand.LEFT || weapon.data.hand == WeaponData.Hand.RIGHT) {
-                    int slotPreference1;
-                    int slotPreference2;
-                    if (weapon.data.hand == WeaponData.Hand.LEFT) {
-                        slotPreference1 = (int)InventorySlot.LEFT_HAND;
-                        slotPreference2 = (int)InventorySlot.RIGHT_HAND;
-                    }
-                    else {
-                        slotPreference1 = (int)InventorySlot.RIGHT_HAND;
-                        slotPreference2 = (int)InventorySlot.LEFT_HAND;
-                    }
-                    if (GetInventorySlot(slotPreference1) == null) {
-                        SetInventorySlot(slotPreference1, item);
-                        return true;
-                    }
-                    if (GetInventorySlot(slotPreference2) == null) {
-                        SetInventorySlot(slotPreference2, item);
-                        return true;
-                    }
+				int slot = -1;
+				if (weapon.data.hand == WeaponData.Hand.LEFT) {
+					slot = (int)InventorySlot.LEFT_HAND;
+				}
+				else if (weapon.data.hand == WeaponData.Hand.RIGHT) {
+					slot = (int)InventorySlot.RIGHT_HAND;
+				}
+				else if (weapon.data.hand == WeaponData.Hand.RANGED) { 
+					slot = (int)InventorySlot.RANGED;
+				}
+                if (slot >= 0 && GetInventorySlot(slot) == null) {
+                    SetInventorySlot(slot, item);
+                    return true;
                 }
             }
 
@@ -567,12 +581,14 @@ namespace Bowhead.Actors {
         public bool Equip(Item item) {
             int[] emptyPackSlots = new int[2];
 
+			////////////////
+			// UNEQUIP
             bool inInventory = false;
             int curSlot = -1;
             for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) == item) {
                     // unequip
-                    if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND) {
+                    if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND || i == (int)InventorySlot.RANGED) {
                         if (FindEmptyPackSlots(1, ref emptyPackSlots)) {
                             SetInventorySlot(emptyPackSlots[0], GetInventorySlot(i));
                             return true;
@@ -587,6 +603,8 @@ namespace Bowhead.Actors {
                 }
             }
 
+			//////////////////
+			// EQUIP
             Clothing clothing;
             if ((clothing = item as Clothing) != null) {
                 if (GetInventorySlot((int)InventorySlot.CLOTHING) == null) {
@@ -608,6 +626,20 @@ namespace Bowhead.Actors {
             Weapon weapon;
             if ((weapon = item as Weapon) != null) {
 
+				// ranged
+				if (weapon.data.hand == WeaponData.Hand.RANGED) {
+					var curEquipped = GetInventorySlot((int)InventorySlot.RANGED);
+					if (GetInventorySlot((int)InventorySlot.RANGED) != null) {
+						if (!FindEmptyPackSlots(1, ref emptyPackSlots)) {
+							return false;
+						}
+						SetInventorySlot(emptyPackSlots[0], curEquipped);
+					}
+					SetInventorySlot((int)InventorySlot.RANGED, weapon);
+					return true;
+				}
+
+				// when equipping a two handed weapon, we need to make sure we have pack space to be able to unequip left and right handed weapons
                 if (weapon.data.hand == WeaponData.Hand.BOTH) {
                     int slotsRequired = 0;
                     if (GetInventorySlot((int)InventorySlot.LEFT_HAND) != null) {
@@ -637,22 +669,17 @@ namespace Bowhead.Actors {
                     }
                 }
                 else if (weapon.data.hand == WeaponData.Hand.LEFT || weapon.data.hand == WeaponData.Hand.RIGHT) {
-                    int slotPreference1;
-                    int slotPreference2;
+                    int slot;
                     if (weapon.data.hand == WeaponData.Hand.LEFT) {
-                        slotPreference1 = (int)InventorySlot.LEFT_HAND;
-                        slotPreference2 = (int)InventorySlot.RIGHT_HAND;
+						slot = (int)InventorySlot.LEFT_HAND;
                     }
                     else {
-                        slotPreference1 = (int)InventorySlot.RIGHT_HAND;
-                        slotPreference2 = (int)InventorySlot.LEFT_HAND;
+						slot = (int)InventorySlot.RIGHT_HAND;
                     }
-                    var slot1Weapon = GetInventorySlot(slotPreference1) as Weapon;
-                    var slot2Weapon = GetInventorySlot(slotPreference2) as Weapon;
-                    var slotBothWeapon = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
 
-                    // if the item in our left hand is two-handed, unequip and equip the desired item in preferred hand
-                    if (slotBothWeapon != null && slotBothWeapon.data.hand == WeaponData.Hand.BOTH) {
+					// if the item in our right hand is two-handed, unequip and equip the new item
+					var slotBothWeapon = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
+					if (slotBothWeapon != null && slotBothWeapon.data.hand == WeaponData.Hand.BOTH) {
                         if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
                             SetInventorySlot(emptyPackSlots[0], slotBothWeapon);
                             SetInventorySlot((int)InventorySlot.RIGHT_HAND, weapon);
@@ -660,42 +687,22 @@ namespace Bowhead.Actors {
                         }
                     }
                     else {
-                        // if our preferred slot is empty, equip in that slot
-                        if (slot1Weapon == null) {
-                            SetInventorySlot(slotPreference1, weapon);
-                            return true;
-                        }
-                        // if our preferred slot is full but the secondary slot is empty
-                        else if (slot2Weapon == null) {
-                            // but the secondary slot has an off-hand item, rearrange (eg. move shield to left hand and equip sword in right)
-                            if (slot1Weapon.data.hand != weapon.data.hand) {
-                                SetInventorySlot(slotPreference2, slot1Weapon);
-                                SetInventorySlot(slotPreference1, weapon);
-                            }
-                            // item in our primary hand is of same type, equip in off-hand
-                            else {
-                                SetInventorySlot(slotPreference2, weapon);
-                            }
-                            return true;
-                        }
-                        // if both slots are full
-                        if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
-                            // if our preferred hand has an offhand item in it, unequip that and equip the item in preferred hand
-                            if (slot1Weapon.data.hand != weapon.data.hand || slot2Weapon.data.hand == weapon.data.hand) {
-                                SetInventorySlot(emptyPackSlots[0], slot1Weapon);
-                                SetInventorySlot(slotPreference1, weapon);
 
-                            }
-                            // our preferred hand has an item of the same type, unequip the secondary item and equip in secondary slot
-                            else {
-                                SetInventorySlot(emptyPackSlots[0], slot2Weapon);
-                                SetInventorySlot(slotPreference2, weapon);
-                            }
-                            return true;
-                        }
-                    }
+						// if our slot is full, unequip
+						var slotWeapon = GetInventorySlot(slot) as Weapon;
+						if (slotWeapon != null) {
+							if (!FindEmptyPackSlots(1, ref emptyPackSlots)) {
+								return false;
+							}
+							SetInventorySlot(emptyPackSlots[0], slotWeapon);
+						}
 
-                }
+						// Equip
+						SetInventorySlot(slot, weapon);
+
+					}
+
+				}
             }
             return false;
         }
@@ -762,10 +769,13 @@ namespace Bowhead.Actors {
             else if (slot == (int)InventorySlot.LEFT_HAND) {
                 SetInventorySlot(slot, null);
             }
-            else if (slot == (int)InventorySlot.RIGHT_HAND) {
-                SetInventorySlot(slot, null);
-            }
-            else if (pack != null) {
+			else if (slot == (int)InventorySlot.RIGHT_HAND) {
+				SetInventorySlot(slot, null);
+			}
+			else if (slot == (int)InventorySlot.RANGED) {
+				SetInventorySlot(slot, null);
+			}
+			else if (pack != null) {
                 for (int i = slot; i < MaxInventorySize - packSlots - 1; i++) {
                     SetInventorySlot(i, GetInventorySlot(i + packSlots + 1));
                 }

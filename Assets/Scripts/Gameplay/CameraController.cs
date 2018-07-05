@@ -82,7 +82,7 @@ namespace Bowhead.Actors {
 
             _isLooking = false;
 
-			if (Input.GetButtonUp("Look")) {
+			if (Input.GetButton("ShoulderLeft")) {
 				SetMouseLookActive(!_mouseLookActive);
 			}
 
@@ -120,7 +120,7 @@ namespace Bowhead.Actors {
 				if (isMoving) {
 					Vector3 playerMovement = avgPlayerPosition - _playerPosition;
 					var desiredTargetOffset = playerMovement.normalized * data.lookAtLeadDist;
-					_targetOffsetVelocity = _targetOffsetVelocity + ((desiredTargetOffset - _targetOffsetPosition) - _targetOffsetVelocity) * dt * data.lookAtAcceleration;
+					_targetOffsetVelocity = _targetOffsetVelocity + ((desiredTargetOffset - _targetOffsetPosition) - _targetOffsetVelocity) * dt * 10;
 					_targetOffsetPosition += _targetOffsetVelocity * dt;
 				}
 

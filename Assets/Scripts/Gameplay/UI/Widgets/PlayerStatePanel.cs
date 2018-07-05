@@ -32,7 +32,7 @@ namespace Bowhead.Client.UI {
             }
 
             _health.value = _player.health / _player.maxHealth;
-            _water.value = _player.thirst / _player.maxThirst;
+            _water.value = _player.water / _player.maxWater;
             _stamina.value = _player.stamina / _player.maxStamina;
         }
 

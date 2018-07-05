@@ -33,7 +33,9 @@ namespace Bowhead.Actors {
             spawnPosition = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
-            this.team = team;
+			maxWater = data.maxWater;
+			water = maxWater;
+			this.team = team;
             active = false;
             canClimb = false;
             canClimbWell = false;

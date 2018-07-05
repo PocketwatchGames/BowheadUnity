@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1c384a6b4c08e5e479f79662660fc81f, type: 3}
+  m_Name: Rapier
+  m_EditorClassIdentifier: 
+  version: 0
+  _index: 13
+  prefab:
+    _assetPath: Items/Sword
+    _editorPath: Assets/Assets/Prefabs/Resources/Items/Sword.prefab
+  hand: 1
+  chargeTime: 0.5
+  parryTime: 0
+  moveSpeedWhileCharging: 0.5
+  moveSpeedChargeDelay: 0.2
+  weaponSize: {x: 0, y: 0, z: 0}
+  attacks:
+  - castTime: 0.05
+    activeTime: 0.05
+    cooldown: 0.05
+    attackRange: 1.5
+    attackRadius: 0.75
+    knockback: 0
+    attackDamage: 10
+    defendPower: 0
+    defendDamageAbsorb: 0
+    defendStaminaUse: 0
+    defendAngleRange: 0
+    staminaUse: 5
+    stepDistance: 0.5
+    staminaDrain: 0
+    stunPower: 0.25
+    stunPowerBackstab: 1
+    attackDamageBackstab: 50
+    moveSpeedDuringCooldown: 0
+    moveSpeedDuringCast: 0
+    interrupt: 0
+    unblockable: 0
+    defendInterrupt: 0
+    spell: 0
+    spellPower: 0
+    waterUse: 0
+  - castTime: 0.2
+    activeTime: 0.2
+    cooldown: 0.3
+    attackRange: 2
+    attackRadius: 1.25
+    knockback: 1
+    attackDamage: 30
+    defendPower: 0
+    defendDamageAbsorb: 0
+    defendStaminaUse: 0
+    defendAngleRange: 0
+    staminaUse: 30
+    stepDistance: 0
+    staminaDrain: 0
+    stunPower: 2
+    stunPowerBackstab: 2
+    attackDamageBackstab: 50
+    moveSpeedDuringCooldown: 0
+    moveSpeedDuringCast: 0
+    interrupt: 0
+    unblockable: 0
+    defendInterrupt: 0
+    spell: 0
+    spellPower: 0
+    waterUse: 0
+  parry:
+    castTime: 0
+    activeTime: 0
+    cooldown: 0
+    attackRange: 0
+    attackRadius: 0
+    knockback: 0
+    attackDamage: 0
+    defendPower: 0
+    defendDamageAbsorb: 0
+    defendStaminaUse: 0
+    defendAngleRange: 0
+    staminaUse: 0
+    stepDistance: 0
+    staminaDrain: 0
+    stunPower: 0
+    stunPowerBackstab: 0
+    attackDamageBackstab: 0
+    moveSpeedDuringCooldown: 0
+    moveSpeedDuringCast: 0
+    interrupt: 0
+    unblockable: 0
+    defendInterrupt: 0
+    spell: 0
+    spellPower: 0
+    waterUse: 0

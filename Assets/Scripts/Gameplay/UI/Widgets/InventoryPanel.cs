@@ -23,6 +23,8 @@ namespace Bowhead.Client.UI {
         public float dropTimer;
         public float dropTime = 0.5f;
 
+		private float _dpadAxis = 0;
+
         private InventoryContainer _mainContainer;
         private List<InventoryContainer> _packContainers = new List<InventoryContainer>();
         private InventorySlot[] _slots = new InventorySlot[Player.MaxInventorySize];
@@ -64,7 +66,7 @@ namespace Bowhead.Client.UI {
 
 		private void Rebuild() {
             float x = slotMargin;
-            for (int slot = 0; slot <= (int)Player.InventorySlot.RIGHT_HAND; slot++) {
+            for (int slot = 0; slot <= (int)Player.InventorySlot.PACK-1; slot++) {
                 var s = Instantiate(_inventorySlotPrefab, _mainContainer.transform, false);
                 s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
                 s.Init((Player.InventorySlot)slot);
@@ -110,13 +112,28 @@ namespace Bowhead.Client.UI {
         }
 
         private void Update() {
-            if (Input.GetButtonDown("SelectLeft")) { 
-                SelectPreviousInventory();
-            }
-            else if (Input.GetButtonDown("SelectRight")) {
-                SelectNextInventory();
-            }
-            if (Input.GetButton("Use")) {
+
+			bool selectLeft = false;
+			bool selectRight = false;
+			//selectLeft = Input.GetButtonDown("SelectLeft");
+			//selectRight = Input.GetButtonDown("SelectRight");
+
+			float dpa = Input.GetAxis("DPadX");
+			if (Utils.SignOrZero(dpa) != Utils.SignOrZero(_dpadAxis)) {
+				_dpadAxis = dpa;
+				selectLeft = _dpadAxis < 0;
+				selectRight = _dpadAxis > 0;
+			}
+
+			if (selectLeft) {
+				SelectPreviousInventory();
+			}
+			else if (selectRight) {
+				SelectNextInventory();
+			}
+
+
+			if (Input.GetButton("Use")) {
                 dropTimer = dropTimer + Time.deltaTime;
 				OnInventorySelected();
             }
