@@ -1019,7 +1019,7 @@ namespace Bowhead.Actors {
             }
 
 			// Check if we're blocking with shield
-			if (attackData.canBlock) {
+			if (!attackData.unblockable) {
 				foreach (var w in getInventory()) {
 					var shield = w as Weapon;
 					if (shield != null) {
@@ -1113,6 +1113,7 @@ namespace Bowhead.Actors {
             if (mount != null) {
                 go.transform.parent = mount.go.transform;
                 go.transform.localPosition = mount.headPosition()-mount.position;
+				go.transform.localRotation = Quaternion.identity;
             }
             else {
                 go.transform.parent = null;

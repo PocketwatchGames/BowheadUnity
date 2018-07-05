@@ -156,7 +156,7 @@ public static partial class WorldUtils {
 namespace Bowhead.Server {
 
 	public abstract class BowheadGame<T> : GameMode<T> where T : GameState<T> {
-		public const WorldStreaming.EGenerator WORLD_GENERATOR_TYPE = WorldStreaming.EGenerator.PROC_V1;
+		public const WorldStreaming.EGenerator WORLD_GENERATOR_TYPE = WorldStreaming.EGenerator.PROC_V2;
 
 		public BowheadGame(ServerWorld world) : base(world) {
 			data = Resources.Load<WorldData>("DefaultWorld");
@@ -246,7 +246,7 @@ namespace Bowhead.Server {
 		}
 
 		Player SpawnPlayer() {
-			return PlayerData.Get("player").SpawnEntity<Player>(world, new Vector3(16, 500, 16), null, null, null);
+			return PlayerData.Get("player").SpawnEntity<Player>(world, new Vector3(16, 600, 16), null, null, null);
 		}
 
 		public WorldItem SpawnWorldItem(string dataName, Vector3 pos) {
@@ -287,6 +287,7 @@ namespace Bowhead.Server {
 					foreach (var p in world.GetActorIterator<Player>()) {
 						if (p.active) {
 							var diff = c.position - p.position;
+							diff.y = 0;
 							closestDist = Mathf.Min(closestDist, diff.magnitude);
 						}
 					}
@@ -301,7 +302,7 @@ namespace Bowhead.Server {
 			if (numCritters < 50) {
 				foreach (var player in world.GetActorIterator<Player>()) {
 					Vector3 pos = player.position;
-					pos.y = 500;
+					pos.y = 1000;
 					pos.x += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
 					pos.z += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
 
