@@ -19,7 +19,10 @@ namespace Bowhead.Actors {
         private float _shakePositionMag;
 
         private Vector3 _playerPosition;
-        private Vector3 _cameraVelocity;
+		private Vector3 _targetOffsetPosition;
+		private Vector3 _targetOffsetVelocity;
+
+		private Vector3 _cameraVelocity;
         private Vector3 _lookAtVelocity;
         private Vector3 _lookAt;
 
@@ -40,7 +43,8 @@ namespace Bowhead.Actors {
             float yaw, pitch;
             GetPositionAngles(out pos, out yaw, out pitch);
 
-            _camera.transform.SetPositionAndRotation(pos, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
+
+			_camera.transform.SetPositionAndRotation(pos, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
 
             Debug.DrawLine(_target.headPosition(), _lookAt);
         }
@@ -78,7 +82,11 @@ namespace Bowhead.Actors {
 
             _isLooking = false;
 
-            if (_mouseLookActive) {
+			if (Input.GetButtonUp("Look")) {
+				SetMouseLookActive(!_mouseLookActive);
+			}
+
+			if (_mouseLookActive) {
                 var m = Input.mousePosition;
                 var mouseDelta = m - _oldMousePosition;
 
@@ -107,14 +115,23 @@ namespace Bowhead.Actors {
                 float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (data.maxDistance - data.minDistance) + data.minDistance;
 
                 Vector3 avgPlayerPosition = _target.headPosition(_target.renderPosition());
-                Vector3 lookAtDiff = avgPlayerPosition - _lookAt;
                 bool isMoving = _playerPosition != avgPlayerPosition;
-                Vector3 playerMovement = avgPlayerPosition - _playerPosition;
-                if (_isLooking) {
+
+				if (isMoving) {
+					Vector3 playerMovement = avgPlayerPosition - _playerPosition;
+					var desiredTargetOffset = playerMovement.normalized * data.lookAtLeadDist;
+					_targetOffsetVelocity = _targetOffsetVelocity + ((desiredTargetOffset - _targetOffsetPosition) - _targetOffsetVelocity) * dt * data.lookAtAcceleration;
+					_targetOffsetPosition += _targetOffsetVelocity * dt;
+				}
+
+				Vector3 lookAtDiff = (avgPlayerPosition + _targetOffsetPosition) - _lookAt;
+
+
+				if (_isLooking) {
 
                     _playerPosition = avgPlayerPosition;
                     _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
-                    _lookAtVelocity += (lookAtDiff + playerMovement.normalized * data.lookAtLeadDist) * data.lookAtAcceleration * dt;
+                    _lookAtVelocity += lookAtDiff * data.lookAtAcceleration * dt;
                     _lookAt += _lookAtVelocity * dt;
 
                     Vector3 diff = _position - _lookAt;
@@ -153,7 +170,7 @@ namespace Bowhead.Actors {
                         else {
 
                             _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
-                            _lookAtVelocity += (lookAtDiff + playerMovement.normalized * data.lookAtLeadDist) * data.lookAtAcceleration * dt;
+                            _lookAtVelocity += lookAtDiff * data.lookAtAcceleration * dt;
                         }
                         _lookAt += _lookAtVelocity * dt;
 

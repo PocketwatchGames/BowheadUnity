@@ -13,7 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lookAtFriction: 10
   lookAtAcceleration: 20
-  lookAtLeadDist: 1
+  lookAtLeadDist: 5
   cameraFriction: 10
   minDistance: 10
   maxDistance: 20

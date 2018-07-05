@@ -66,7 +66,7 @@ namespace Bowhead.Actors {
             cmd.right = (sbyte)(move.x * 127);
 
 			Vector2 look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
-			cmd.lookFwd = (sbyte)(look.y * 127);
+			cmd.lookFwd = (sbyte)(-look.y * 127);
 			cmd.lookRight = (sbyte)(look.x * 127);
 
 
@@ -82,11 +82,14 @@ namespace Bowhead.Actors {
             if (Input.GetButton("Interact")) {
                 cmd.buttons |= 1 << (int)InputType.Interact;
             }
-            if (Input.GetButton("Map")) {
-                cmd.buttons |= 1 << (int)InputType.Map;
-            }
+			if (Input.GetButton("Map")) {
+				cmd.buttons |= 1 << (int)InputType.Map;
+			}
+			if (Input.GetButton("Look")) {
+				cmd.buttons |= 1 << (int)InputType.Look;
+			}
 
-            UpdatePlayerCmd(cmd);
+			UpdatePlayerCmd(cmd);
         }
 
 
@@ -218,8 +221,19 @@ namespace Bowhead.Actors {
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
 
-			if (input.movement != Vector3.zero) {
-				input.look = input.movement.normalized;
+			if (GameManager.instance.clientData.isDualAnalogAiming) {
+				if (cur.lookFwd != 0 || cur.lookRight != 0) {
+					input.look += forward * (float)cur.lookFwd / 127f;
+					input.look += right * (float)cur.lookRight / 127f;
+				}
+				else if (input.movement != Vector3.zero) {
+					input.look = input.movement.normalized;
+				}
+			}
+			else {
+				if (input.movement != Vector3.zero) {
+					input.look = input.movement.normalized;
+				}
 			}
 
 			return input;

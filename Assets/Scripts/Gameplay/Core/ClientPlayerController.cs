@@ -16,7 +16,9 @@ namespace Bowhead.Client.Actors {
 		Vector2 _mapMins;
 		Vector2 _mapMaxs;
 		Camera _camera;
-		bool _hideCursor = true;
+
+		static bool IsDualAnalogAiming = true;
+		bool _hideCursor = false;
 		
 		readonly ActorRPC rpc_Server_ClientHasLoaded;
 		readonly ActorRPC<string> rpc_Server_ExecuteCFunc;
@@ -26,6 +28,13 @@ namespace Bowhead.Client.Actors {
 		static ClientPlayerController _localPlayer;
 
 		public ClientPlayerController() {
+			if (GameManager.instance.clientData.isDualAnalogAiming) {
+				_hideCursor = false;
+			}
+			else {
+				_hideCursor = true;
+			}
+
 			rpc_Server_ClientHasLoaded = BindRPC(Server_ClientHasLoaded);
 			rpc_Server_ExecuteCFunc = BindRPC<string>(Server_ExecuteCFunc);
 			rpc_Server_Say = BindRPC<string>(Server_Say);

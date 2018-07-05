@@ -22,6 +22,7 @@ namespace Bowhead.Actors {
         SelectRight,
         Map,
         Crouch,
+		Look,
         Count
     }
 
@@ -1054,6 +1055,7 @@ namespace Bowhead.Actors {
 							w.interrupt(this);
 						}
 					}
+					moveImpulseTimer = 0;
 				}
 			}
 		}

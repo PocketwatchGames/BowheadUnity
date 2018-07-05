@@ -34,6 +34,7 @@ MonoBehaviour:
     type: 2}
   weaponChargePrefab: {fileID: 114941436716662276, guid: 6871fdeecd0cd6942a256764f5cead43,
     type: 2}
+  isDualAnalogAiming: 1
   dialogDarkenCanvasPrefab: {fileID: 0}
   dialogNormalCanvasPrefab: {fileID: 0}
   messageBoxPrefab: {fileID: 0}

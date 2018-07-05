@@ -18,6 +18,7 @@ MonoBehaviour:
     _editorPath: Assets/Assets/Prefabs/Resources/Items/2HSword.prefab
   hand: 2
   chargeTime: 0.9
+  parryTime: 0
   moveSpeedWhileCharging: 0.25
   moveSpeedChargeDelay: 0.2
   weaponSize: {x: 0, y: 0, z: 0}
@@ -32,6 +33,7 @@ MonoBehaviour:
     defendPower: 0
     defendDamageAbsorb: 0
     defendStaminaUse: 0
+    defendAngleRange: 0
     staminaUse: 10
     stepDistance: 0
     staminaDrain: 0
@@ -40,6 +42,8 @@ MonoBehaviour:
     attackDamageBackstab: 0
     moveSpeedDuringCooldown: 0
     moveSpeedDuringCast: 0
+    interrupt: 0
+    unblockable: 0
   - castTime: 0.1
     activeTime: 0.2
     cooldown: 0.3
@@ -50,6 +54,7 @@ MonoBehaviour:
     defendPower: 0
     defendDamageAbsorb: 0
     defendStaminaUse: 0
+    defendAngleRange: 0
     staminaUse: 40
     stepDistance: 2
     staminaDrain: 0
@@ -58,4 +63,27 @@ MonoBehaviour:
     attackDamageBackstab: 0
     moveSpeedDuringCooldown: 0
     moveSpeedDuringCast: 0
-  parries: []
+    interrupt: 0
+    unblockable: 0
+  parry:
+    castTime: 0
+    activeTime: 0
+    cooldown: 0
+    attackRange: 0
+    attackRadius: 0
+    knockback: 0
+    attackDamage: 0
+    defendPower: 0
+    defendDamageAbsorb: 0
+    defendStaminaUse: 0
+    defendAngleRange: 0
+    staminaUse: 0
+    stepDistance: 0
+    staminaDrain: 0
+    stunPower: 0
+    stunPowerBackstab: 0
+    attackDamageBackstab: 0
+    moveSpeedDuringCooldown: 0
+    moveSpeedDuringCast: 0
+    interrupt: 0
+    unblockable: 0
