@@ -8,7 +8,8 @@ namespace Bowhead {
 	public static partial class WorldStreaming {
 		public enum EGenerator {
 			SINEWAVE,
-			PROC_V1
+			PROC_V1,
+			PROC_V2,
 		};
 
 		static WorldStreaming() {
@@ -23,6 +24,8 @@ namespace Bowhead {
 			switch (generator) {
 				case EGenerator.PROC_V1:
 					return new ProcWorldStreaming_V1_Job_t.Streaming();
+				case EGenerator.PROC_V2:
+					return new ProcWorldStreaming_V2_Job_t.Streaming();
 				case EGenerator.SINEWAVE:
 					return new ProcWorldStreaming_SineWave_Job_t.Streaming();
 				default: throw new System.NotImplementedException();

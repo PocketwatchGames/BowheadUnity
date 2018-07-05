@@ -104,26 +104,18 @@ namespace Bowhead.Actors {
             // Hacky initial spawn
             if (!active) {
                 if (WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPoint)) {
-                    spawnPoint += Vector3.up;
+                    spawnPoint += Vector3.up*2;
+					velocity = Vector3.zero;
                     position = spawnPoint;
                     Respawn();
                     active = true;
 
                     var horseData = CritterData.Get("horse");
-                    var c = gameMode.SpawnCritter(horseData, position, team);
-                    c.SetActive(position);
+                    var c = gameMode.SpawnCritter(horseData, position + new Vector3(3,0,0), team);
+                    c.SetActive(position + new Vector3(3, 0, 0));
                     var weapon = PackData.Get("Pack").CreateItem();
                     c.SetInventorySlot(0, weapon);
 
-
-					var wolfData = CritterData.Get("wolf");
-					var wolf = gameMode.SpawnCritter(wolfData, new Vector3(16, 500, 16), gameMode.monsterTeam);
-					var teeth = WeaponData.Get("Teeth").CreateItem();
-					wolf.SetInventorySlot(0, teeth);
-					if (!WorldUtils.GetFirstSolidBlockDown(1000, ref wolf.spawnPosition)) {
-						return;
-					}
-					wolf.SetActive(wolf.spawnPosition);
 
 				}
 				else {
@@ -323,7 +315,7 @@ namespace Bowhead.Actors {
 
 			// JOSEPH: this will be better once this is moved into new Actor framework, for now HACK
 			_worldStreaming = GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);
-			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.z)));
+			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(pos));
 
             spawnPosition = pos;
 

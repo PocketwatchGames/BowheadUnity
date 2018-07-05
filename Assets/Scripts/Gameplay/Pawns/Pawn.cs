@@ -1113,6 +1113,7 @@ namespace Bowhead.Actors {
             if (mount != null) {
                 go.transform.parent = mount.go.transform;
                 go.transform.localPosition = mount.headPosition()-mount.position;
+				go.transform.localRotation = Quaternion.identity;
             }
             else {
                 go.transform.parent = null;
