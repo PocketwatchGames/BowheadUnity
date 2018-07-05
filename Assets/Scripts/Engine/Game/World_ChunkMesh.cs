@@ -31,17 +31,17 @@ public partial class World {
 
 	public unsafe struct ChunkStorageArray1D_t {
 		[NativeDisableUnsafePtrRestriction]
-		EVoxelBlockType* _arr;
+		Voxel_t* _arr;
 		int _x;
 
-		public static ChunkStorageArray1D_t New(EVoxelBlockType* array, int x) {
+		public static ChunkStorageArray1D_t New(Voxel_t* array, int x) {
 			return new ChunkStorageArray1D_t {
 				_arr = array,
 				_x = x
 			};
 		}
 
-		public EVoxelBlockType this[int i] {
+		public Voxel_t this[int i] {
 			get {
 				BoundsCheckAndThrow(i, 0, _x);
 				return _arr[i];
@@ -99,7 +99,7 @@ public partial class World {
 			public DecorationStorageArray1D_t pinnedDecorationData;
 			public unsafe int* pinnedDecorationCount;
 			public unsafe EChunkFlags* pinnedFlags;
-			public EVoxelBlockType[] voxeldata;
+			public Voxel_t[] voxeldata;
 			public EChunkFlags[] flags;
 			public Decoration_t[] decorations;
 			public int[] decorationCount;
@@ -112,7 +112,7 @@ public partial class World {
 
 			public static ChunkData_t New() {
 				return new ChunkData_t {
-					voxeldata = new EVoxelBlockType[VOXELS_PER_CHUNK],
+					voxeldata = new Voxel_t[VOXELS_PER_CHUNK],
 					decorations = new Decoration_t[Decoration_t.MAX_DECORATIONS_PER_CHUNK],
 					decorationCount = new int[1],
 					flags = new EChunkFlags[1]
@@ -129,7 +129,7 @@ public partial class World {
 					_pinnedDecorationCount = GCHandle.Alloc(decorationCount, GCHandleType.Pinned);
 					_pinnedFlags = GCHandle.Alloc(flags, GCHandleType.Pinned);
 					unsafe {
-						pinnedBlockData = ChunkStorageArray1D_t.New((EVoxelBlockType*)_pinnedBlockData.AddrOfPinnedObject().ToPointer(), voxeldata.Length);
+						pinnedBlockData = ChunkStorageArray1D_t.New((Voxel_t*)_pinnedBlockData.AddrOfPinnedObject().ToPointer(), voxeldata.Length);
 						pinnedDecorationData = DecorationStorageArray1D_t.New((Decoration_t*)_pinnedDecorationData.AddrOfPinnedObject().ToPointer(), decorations.Length);
 						pinnedDecorationCount = (int*)_pinnedDecorationCount.AddrOfPinnedObject().ToPointer();
 						pinnedFlags = (EChunkFlags*)_pinnedFlags.AddrOfPinnedObject().ToPointer();
@@ -1157,15 +1157,15 @@ public partial class World {
 			=======================================
 			*/
 
-			void AddVoxel(int x, int y, int z, EVoxelBlockType blocktype) {
-				var voxel = _voxels[_numVoxels++];
+			void AddVoxel(int x, int y, int z, Voxel_t voxel) {
+				var blendVoxel = _voxels[_numVoxels++];
 
-				ZeroInts(voxel->vertexFlags, 8);
-				ZeroInts(voxel->neighbors, 6);
+				ZeroInts(blendVoxel->vertexFlags, 8);
+				ZeroInts(blendVoxel->neighbors, 6);
 				
-				voxel->touched = true;
+				blendVoxel->touched = true;
 
-				if ((blocktype & EVoxelBlockType.FullVoxelFlag) != 0) {
+				if ((voxel.flags & EVoxelBlockFlags.FullVoxel) != 0) {
 					return;
 				}
 
@@ -1208,7 +1208,7 @@ public partial class World {
 									var side = (vi & signbit) != 0 ? 1 : 0;
 									// we can collapse in this direction if the face on the vertex-side of the spanning axis is visible.
 									if (_vn[(spaxis * 2) + (side ^ 1)] == EVoxelBlockType.Air) {
-										voxel->vertexFlags[vi] |= signbit;
+										blendVoxel->vertexFlags[vi] |= signbit;
 									}
 								}
 							}
@@ -1250,14 +1250,14 @@ public partial class World {
 			=======================================
 			*/
 
-			void MatchNeighbors(int index, int x, int y, int z, EVoxelBlockType blocktype) {
-				var voxel = _voxels[index];
+			void MatchNeighbors(int index, int x, int y, int z, Voxel_t voxel) {
+				var smoothVoxel = _voxels[index];
 
-				if (!voxel->touched) {
+				if (!smoothVoxel->touched) {
 					return;
 				}
 
-				voxel->touched = false;
+				smoothVoxel->touched = false;
 
 				for (int i = 0; i < 6; ++i) {
 					if (_vn[i] != EVoxelBlockType.Air) {
@@ -1278,16 +1278,16 @@ public partial class World {
 							var mirrorVert = vi ^ axisbit;
 
 							if (neighborVoxel->vertexFlags[mirrorVert] != 0) {
-								voxel->neighbors[i] = 1;
+								smoothVoxel->neighbors[i] = 1;
 								break;
 							}
 						}
 					} else {
-						voxel->neighbors[i] = -1;
+						smoothVoxel->neighbors[i] = -1;
 					}
 				}
 
-				if ((blocktype & EVoxelBlockType.FullVoxelFlag) != 0) {
+				if ((voxel.flags & EVoxelBlockFlags.FullVoxel) != 0) {
 					return;
 				}
 
@@ -1296,7 +1296,7 @@ public partial class World {
 				ZeroInts(faceCounts, 8);
 
 				for (int i = 0; i < 6; ++i) {
-					if ((_vn[i] == EVoxelBlockType.Air) || (voxel->neighbors[i] != 0)) {
+					if ((_vn[i] == EVoxelBlockType.Air) || (smoothVoxel->neighbors[i] != 0)) {
 						foreach (var vi in _tables.voxelFaces[i]) {
 							++faceCounts[vi];
 						}
@@ -1309,7 +1309,7 @@ public partial class World {
 				ZeroInts(vmask, 8);
 
 				for (int i = 0; i < 6; ++i) {
-					if (voxel->neighbors[i] == 1) {
+					if (smoothVoxel->neighbors[i] == 1) {
 
 						var axis = i / 2;
 						var axisbit = 1 << axis;
@@ -1405,7 +1405,7 @@ public partial class World {
 
 				for (int i = 0; i < 8; ++i) {
 					// mark neighboring voxels as dirty.
-					var changed = ~voxel->vertexFlags[i] & (vflags[i] & ~vmask[i]);
+					var changed = ~smoothVoxel->vertexFlags[i] & (vflags[i] & ~vmask[i]);
 
 					if (changed != 0) {
 						for (int axis = 0; axis < 3; ++axis) {
@@ -1424,7 +1424,7 @@ public partial class World {
 						}
 					}
 
-					voxel->vertexFlags[i] |= vflags[i] & ~vmask[i];
+					smoothVoxel->vertexFlags[i] |= vflags[i] & ~vmask[i];
 				}
 			}
 
@@ -1667,7 +1667,7 @@ public partial class World {
 						int submesh;
 						int layer;
 
-						GetBlockColorAndSmoothing(blocktype & (EVoxelBlockType)BLOCK_TYPE_MASK, out color, out smg, out factor, out submesh, out layer);
+						GetBlockColorAndSmoothing(blocktype, out color, out smg, out factor, out submesh, out layer);
 
 						var v0 = GetVoxelVert(voxel, _tables.voxelFaces[i][0]);
 
@@ -1752,11 +1752,13 @@ public partial class World {
 							var neighbor = _area[chunkIndex];
 
 							if (neighbor.valid != 0) {
-								var blocktype = neighbor.voxeldata[zofs + yofs + xofs];
-								if ((blocktype&~EVoxelBlockType.FullVoxelFlag) == EVoxelBlockType.Air) {
+								var voxel = neighbor.voxeldata[zofs + yofs + xofs];
+								if (voxel.type == EVoxelBlockType.Air) {
 									++_numVoxels;
 									continue;
 								}
+
+								var blocktype = voxel.type;
 
 								// avoid contents-change with neighbor blocks in unloaded-space
 								_vn[0] = blocktype;
@@ -1767,58 +1769,51 @@ public partial class World {
 								_vn[5] = blocktype;
 
 								if (xmin) {
-									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1];
+									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
 									if (_area[NEG_X].valid != 0) {
-										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
+										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1].type;
 									}
 								} else if (xmax) {
 									if (_area[POS_X].valid != 0) {
-										_vn[0] = _area[POS_X].voxeldata[zofs + yofs];
+										_vn[0] = _area[POS_X].voxeldata[zofs + yofs].type;
 									}
-									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1];
+									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
 								} else {
-									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1];
-									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1];
+									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
+									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
 								}
 
 								if (ymin) {
-									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
 									if (_area[NEG_Y].valid != 0) {
-										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs];
+										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs].type;
 									}
 								} else if (ymax) {
 									if (_area[POS_Y].valid != 0) {
-										_vn[2] = _area[POS_Y].voxeldata[zofs + xofs];
+										_vn[2] = _area[POS_Y].voxeldata[zofs + xofs].type;
 									}
-									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
 								} else {
-									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
-									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
+									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
 								}
 
 								if (zmin) {
-									_vn[4] = neighbor.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = neighbor.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs].type;
 									if (_area[NEG_Z].valid != 0) {
-										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs];
+										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs].type;
 									}
 								} else if (zmax) {
 									if (_area[POS_Z].valid != 0) {
-										_vn[4] = _area[POS_Z].voxeldata[yofs + xofs];
+										_vn[4] = _area[POS_Z].voxeldata[yofs + xofs].type;
 									}
-									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
 								} else {
-									_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
-									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs].type;
+									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
 								}
 
-								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[1] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[2] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[3] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[4] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[5] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-
-								AddVoxel(x+BORDER_SIZE, y+BORDER_SIZE, z+BORDER_SIZE, blocktype);
+								AddVoxel(x+BORDER_SIZE, y+BORDER_SIZE, z+BORDER_SIZE, voxel);
 							} else {
 								++_numVoxels;
 							}
@@ -1851,10 +1846,12 @@ public partial class World {
 								var xmin = (x == 0);
 								var xmax = (x == (VOXEL_CHUNK_SIZE_XZ - 1));
 
-								var blocktype = chunk.voxeldata[zofs + yofs + x];
-								if ((blocktype&~EVoxelBlockType.FullVoxelFlag) == EVoxelBlockType.Air) {
+								var voxel = chunk.voxeldata[zofs + yofs + x];
+								if (voxel.type == EVoxelBlockType.Air) {
 									continue;
 								}
+
+								var blocktype = voxel.type;
 
 								// avoid contents-change with neighbor blocks in unloaded-space
 								_vn[0] = blocktype;
@@ -1865,58 +1862,51 @@ public partial class World {
 								_vn[5] = blocktype;
 
 								if (xmin) {
-									_vn[0] = chunk.voxeldata[zofs + yofs + x + 1];
+									_vn[0] = chunk.voxeldata[zofs + yofs + x + 1].type;
 									if (_area[NEG_X].valid != 0) {
-										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
+										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1].type;
 									}
 								} else if (xmax) {
 									if (_area[POS_X].valid != 0) {
-										_vn[0] = _area[POS_X].voxeldata[zofs + yofs];
+										_vn[0] = _area[POS_X].voxeldata[zofs + yofs].type;
 									}
-									_vn[1] = chunk.voxeldata[zofs + yofs + x - 1];
+									_vn[1] = chunk.voxeldata[zofs + yofs + x - 1].type;
 								} else {
-									_vn[0] = chunk.voxeldata[zofs + yofs + x + 1];
-									_vn[1] = chunk.voxeldata[zofs + yofs + x - 1];
+									_vn[0] = chunk.voxeldata[zofs + yofs + x + 1].type;
+									_vn[1] = chunk.voxeldata[zofs + yofs + x - 1].type;
 								}
 
 								if (ymin) {
-									_vn[2] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
+									_vn[2] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x].type;
 									if (_area[NEG_Y].valid != 0) {
-										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + x];
+										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + x].type;
 									}
 								} else if (ymax) {
 									if (_area[POS_Y].valid != 0) {
-										_vn[2] = _area[POS_Y].voxeldata[zofs + x];
+										_vn[2] = _area[POS_Y].voxeldata[zofs + x].type;
 									}
-									_vn[3] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
+									_vn[3] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x].type;
 								} else {
-									_vn[2] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x];
-									_vn[3] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x];
+									_vn[2] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y + 1)) + zofs + x].type;
+									_vn[3] = chunk.voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(y - 1)) + zofs + x].type;
 								}
 
 								if (zmin) {
-									_vn[4] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
+									_vn[4] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x].type;
 									if (_area[NEG_Z].valid != 0) {
-										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + x];
+										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + x].type;
 									}
 								} else if (zmax) {
 									if (_area[POS_Z].valid != 0) {
-										_vn[4] = _area[POS_Z].voxeldata[yofs + x];
+										_vn[4] = _area[POS_Z].voxeldata[yofs + x].type;
 									}
-									_vn[5] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
+									_vn[5] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x].type;
 								} else {
-									_vn[4] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x];
-									_vn[5] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x];
+									_vn[4] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z + 1)) + x].type;
+									_vn[5] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x].type;
 								}
 
-								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[1] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[2] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[3] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[4] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[5] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-
-								MatchNeighbors((x + BORDER_SIZE) + ((z + BORDER_SIZE)*NUM_VOXELS_XZ) + ((y + BORDER_SIZE)*NUM_VOXELS_XZ*NUM_VOXELS_XZ), x + BORDER_SIZE, y + BORDER_SIZE, z + BORDER_SIZE, blocktype);
+								MatchNeighbors((x + BORDER_SIZE) + ((z + BORDER_SIZE)*NUM_VOXELS_XZ) + ((y + BORDER_SIZE)*NUM_VOXELS_XZ*NUM_VOXELS_XZ), x + BORDER_SIZE, y + BORDER_SIZE, z + BORDER_SIZE, voxel);
 							}
 						}
 					}
@@ -1958,10 +1948,12 @@ public partial class World {
 							var neighbor = _area[chunkIndex];
 
 							if (neighbor.valid != 0) {
-								var blocktype = neighbor.voxeldata[zofs + yofs + xofs];
-								if ((blocktype&~EVoxelBlockType.FullVoxelFlag) == EVoxelBlockType.Air) {
+								var voxel = neighbor.voxeldata[zofs + yofs + xofs];
+								if (voxel.type == EVoxelBlockType.Air) {
 									continue;
 								}
+
+								var blocktype = voxel.type;
 
 								// avoid contents-change with neighbor blocks in unloaded-space
 								_vn[0] = blocktype;
@@ -1972,57 +1964,50 @@ public partial class World {
 								_vn[5] = blocktype;
 
 								if (xmin) {
-									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1];
+									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
 									if (_area[NEG_X].valid != 0) {
-										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1];
+										_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1].type;
 									}
 								} else if (xmax) {
 									if (_area[POS_X].valid != 0) {
-										_vn[0] = _area[POS_X].voxeldata[zofs + yofs];
+										_vn[0] = _area[POS_X].voxeldata[zofs + yofs].type;
 									}
-									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1];
+									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
 								} else {
-									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1];
-									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1];
+									_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
+									_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
 								}
 
 								if (ymin) {
-									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
 									if (_area[NEG_Y].valid != 0) {
-										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs];
+										_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs].type;
 									}
 								} else if (ymax) {
 									if (_area[POS_Y].valid != 0) {
-										_vn[2] = _area[POS_Y].voxeldata[zofs + xofs];
+										_vn[2] = _area[POS_Y].voxeldata[zofs + xofs].type;
 									}
-									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
 								} else {
-									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
-									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs];
+									_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
+									_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
 								}
 
 								if (zmin) {
-									_vn[4] = neighbor.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = neighbor.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs].type;
 									if (_area[NEG_Z].valid != 0) {
-										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs];
+										_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs].type;
 									}
 								} else if (zmax) {
 									if (_area[POS_Z].valid != 0) {
-										_vn[4] = _area[POS_Z].voxeldata[yofs + xofs];
+										_vn[4] = _area[POS_Z].voxeldata[yofs + xofs].type;
 									}
-									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
 								} else {
-									_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs];
-									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs];
+									_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs].type;
+									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
 								}
 
-								_vn[0] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[1] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[2] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[3] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[4] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								_vn[5] &= (EVoxelBlockType)BLOCK_TYPE_MASK;
-								
 								var isBorderVoxel = (x < 0) || (x >= VOXEL_CHUNK_SIZE_XZ) || (y < 0) || (y >= VOXEL_CHUNK_SIZE_Y) || (z < 0) || (z >= VOXEL_CHUNK_SIZE_XZ);
 
 								EmitVoxelFaces((x + BORDER_SIZE) + ((z + BORDER_SIZE)*NUM_VOXELS_XZ) + ((y + BORDER_SIZE)*NUM_VOXELS_XZ*NUM_VOXELS_XZ), x + BORDER_SIZE, y + BORDER_SIZE, z + BORDER_SIZE, blocktype, isBorderVoxel);

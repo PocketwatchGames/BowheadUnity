@@ -246,8 +246,8 @@ namespace Bowhead.Client.UI {
 					for (int x = 0; x < World.VOXEL_CHUNK_SIZE_XZ; ++x) {
 						var pixOfs = zofs+x;
 
-                        if ((dstVoxels[pixOfs].BlockType() == EVoxelBlockType.Air) && (srcVoxels[ofs].BlockType() != EVoxelBlockType.Air)) {
-							dstVoxels[pixOfs] = srcVoxels[ofs];
+                        if ((dstVoxels[pixOfs] == EVoxelBlockType.Air) && (srcVoxels[ofs].type != EVoxelBlockType.Air)) {
+							dstVoxels[pixOfs] = srcVoxels[ofs].type;
 							dstElevations[pixOfs] = elevation;
 
                             ++numSolid;
@@ -271,7 +271,7 @@ namespace Bowhead.Client.UI {
 				var zofs = z * World.VOXEL_CHUNK_SIZE_XZ;
 				for (int x = 0; x < World.VOXEL_CHUNK_SIZE_XZ; ++x) {
 					var ofs = zofs+x;
-					var voxel = tile.voxelmap[ofs].BlockType();
+					var voxel = tile.voxelmap[ofs];
 					var color = blockColors[(int)(voxel-1)];
                     const float minElevation = 50;
                     const float maxElevation = 120;

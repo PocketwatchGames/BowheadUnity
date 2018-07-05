@@ -48,7 +48,7 @@ namespace Bowhead {
 							var ypos = v3.y + y;
 
 							if (ypos < ((cs + ss) * (Y_OFS/2))) {
-								chunk.voxeldata[ofs] = EVoxelBlockType.Dirt/*|EVoxelBlockType.FULL_VOXEL_FLAG*/;
+								chunk.voxeldata[ofs] = EVoxelBlockType.Dirt;
 								solid = true;
 							} else {
 								air = true;

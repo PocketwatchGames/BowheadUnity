@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
 using System;
+using System.Diagnostics.Contracts;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -148,10 +149,59 @@ public enum EVoxelBlockType : byte {
 	Flowers2,
 	Flowers3,
 	Flowers4,
-	NumBlockTypes,
-	Max = 0x20-1,
-	FullVoxelFlag = 0x80,
-	FlagsMask = FullVoxelFlag
+	NumBlockTypes // must be here because we require a constant for array initialization in TableStorage
+};
+
+[Flags]
+public enum EVoxelBlockFlags : byte {
+	FullVoxel = 0x80,
+	AllFlags = FullVoxel
+};
+
+public struct Voxel_t {
+	public byte raw;
+
+	public Voxel_t(EVoxelBlockType type) {
+		raw = (byte)type;
+	}
+
+	public Voxel_t(EVoxelBlockType type, EVoxelBlockFlags flags) {
+		raw = (byte)((int)type | (int)flags);
+	}
+
+	public EVoxelBlockType type {
+		get {
+			return (EVoxelBlockType)(raw & (byte)(~EVoxelBlockFlags.AllFlags));
+		}
+		set {
+			raw = (byte)((int)flags | (int)value);
+		}
+	}
+
+	public EVoxelBlockFlags flags {
+		get {
+			return (EVoxelBlockFlags)(raw & (byte)EVoxelBlockFlags.AllFlags);
+		}
+		set {
+			raw = (byte)((int)type | (int)value);
+		}
+	}
+
+	public static Voxel_t operator | (Voxel_t voxel, EVoxelBlockFlags flags) {
+		voxel.flags |= flags;
+		return voxel;
+	}
+
+	public static Voxel_t operator & (Voxel_t voxel, EVoxelBlockFlags flags) {
+		voxel.flags &= flags;
+		return voxel;
+	}
+
+	public static implicit operator Voxel_t (EVoxelBlockType type) {
+		Voxel_t v = default(Voxel_t);
+		v.type = type;
+		return v;
+	}
 };
 
 public enum EChunkLayers : int {
@@ -161,12 +211,12 @@ public enum EChunkLayers : int {
 };
 
 public static class WorldConstantExtensions {
-	public static EVoxelBlockType BlockType(this EVoxelBlockType type) {
-		return (EVoxelBlockType)((byte)type & World.BLOCK_TYPE_MASK);
-	}
-
 	public static int ToIndex(this EChunkLayers layer) {
 		return (int)layer;
+	}
+
+	public static Voxel_t WithFlags(this EVoxelBlockType type, EVoxelBlockFlags flags = 0) {
+		return new Voxel_t(type, flags);
 	}
 };
 
@@ -202,8 +252,6 @@ public partial class World {
 	public const int VOXELS_PER_CHUNK = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_Y;
 	public const int VOXELS_PER_CHUNK_XZ = VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ;
 
-	public const byte BLOCK_TYPE_MASK = (byte)~EVoxelBlockType.FlagsMask;
-	public const byte BLOCK_TYPE_MAX = 0x20-1;
 	public const uint BLOCK_SMG_WATER = 0x1;
 	public const uint BLOCK_SMG_DIRT_ROCK = 0x2;
 	public const uint BLOCK_SMG_GRASS = 0x4;

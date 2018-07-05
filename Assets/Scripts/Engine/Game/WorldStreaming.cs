@@ -641,7 +641,7 @@ public partial class World {
 			bool IChunk.hasTrisData => hasTrisData;
 			bool IChunk.isGenerating => (jobData != null) || ((genCount > 0) && !hasTrisData);
 			WorldChunkPos_t IChunk.chunkPos => pos;
-			EVoxelBlockType[] IChunk.voxeldata => chunkData.voxeldata;
+			Voxel_t[] IChunk.voxeldata => chunkData.voxeldata;
 			EChunkFlags IChunk.flags => chunkData.flags[0];
 			Decoration_t[] IChunk.decorations => chunkData.decorations;
 			int IChunk.decorationCount => chunkData.decorationCount[0];
@@ -698,13 +698,13 @@ public partial class World {
 			}
 #endif
 
-			public bool GetVoxelAt(LocalVoxelPos_t pos, out EVoxelBlockType blocktype) {
+			public bool GetVoxelAt(LocalVoxelPos_t pos, out Voxel_t voxel) {
 				if (hasVoxelData) {
 					var idx = pos.vx + (pos.vz * VOXEL_CHUNK_SIZE_XZ) + (pos.vy * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-					blocktype = chunkData.voxeldata[idx].BlockType();
+					voxel = chunkData.voxeldata[idx];
 					return true;
 				}
-				blocktype = EVoxelBlockType.Air;
+				voxel = default(Voxel_t);
 				return false;
 			}
 		};
@@ -861,13 +861,13 @@ public partial class World {
 		};
 
 		public interface IChunk {
-			bool GetVoxelAt(LocalVoxelPos_t pos, out EVoxelBlockType blocktype);
+			bool GetVoxelAt(LocalVoxelPos_t pos, out Voxel_t voxel);
 			bool hasVoxelData { get; }
 			bool hasTrisData { get; }
 			bool isGenerating { get; }
 			EChunkFlags flags { get; }
 			WorldChunkPos_t chunkPos { get; }
-			EVoxelBlockType[] voxeldata { get; }
+			Voxel_t[] voxeldata { get; }
 			Decoration_t[] decorations { get; }
 			int decorationCount { get; }
 			event ChunkGeneratedDelegate onChunkVoxelsLoaded;
@@ -893,15 +893,15 @@ public partial class World {
 			Release((Chunk)chunk);
 		}
 		
-		public bool GetVoxelAt(WorldVoxelPos_t pos, out EVoxelBlockType blocktype) {
+		public bool GetVoxelAt(WorldVoxelPos_t pos, out Voxel_t voxel) {
 			var cpos = WorldToChunk(pos);
 
 			var chunk = FindChunk(cpos);
 			if (chunk != null) {
-				return chunk.GetVoxelAt(WorldToLocalVoxel(pos), out blocktype);
+				return chunk.GetVoxelAt(WorldToLocalVoxel(pos), out voxel);
 			}
 
-			blocktype = EVoxelBlockType.Air;
+			voxel = default(Voxel_t);
 			return false;
 		}
 		

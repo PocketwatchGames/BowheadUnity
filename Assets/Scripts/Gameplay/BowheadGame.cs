@@ -10,9 +10,9 @@ public static partial class WorldUtils {
 
 	public static EVoxelBlockType GetBlock(this World world, Vector3 pos) {
 		
-		EVoxelBlockType blockType;
-		if (world.worldStreaming.GetVoxelAt(World.Vec3ToWorld(pos), out blockType)) {
-			return blockType;
+		Voxel_t voxel;
+		if (world.worldStreaming.GetVoxelAt(World.Vec3ToWorld(pos), out voxel)) {
+			return voxel.type;
 		}
 
 		return EVoxelBlockType.Air;
