@@ -30,7 +30,7 @@ public sealed class CFunc : Attribute {
 		_isServer = other._isServer;
 	}
 
-	public int PermissionLevel {
+	public int permissionLevel {
 		get {
 			return _permissionLevel;
 		}
@@ -39,7 +39,7 @@ public sealed class CFunc : Attribute {
 		}
 	}
 
-	public bool IsCheat {
+	public bool isCheat {
 		get {
 			return _isCheat;
 		}
@@ -48,7 +48,7 @@ public sealed class CFunc : Attribute {
 		}
 	}
 
-	public bool IsServer {
+	public bool isServer {
 		get {
 			return _isServer;
 		}
@@ -57,7 +57,7 @@ public sealed class CFunc : Attribute {
 		}
 	}
 
-	public string[] Shortcuts {
+	public string[] shortcuts {
 		get {
 			return _names;
 		}
@@ -523,7 +523,7 @@ public class Console : MonoBehaviour {
 								cfuncMethod.cfunc = (CFunc)cvarAttrs[0];
 								cfuncMethod.method = m;
 
-								var nameList = cfuncMethod.cfunc.Shortcuts;
+								var nameList = cfuncMethod.cfunc.shortcuts;
 								if ((nameList != null) && (nameList.Length > 0)) {
 									foreach (var cvarName in nameList) {
 										var name = cvarName.ToLower();
@@ -665,10 +665,10 @@ public class Console : MonoBehaviour {
 	public static string GetFuncPrototype(CFuncMethod cfuncMethod) {
 		var prototype = GetTypeName(cfuncMethod.method.ReturnType) + " ";
 
-		if ((cfuncMethod.cfunc.Shortcuts != null) && (cfuncMethod.cfunc.Shortcuts.Length > 0)) {
+		if ((cfuncMethod.cfunc.shortcuts != null) && (cfuncMethod.cfunc.shortcuts.Length > 0)) {
 			prototype += "[" + cfuncMethod.method.Name.ToLower();
 
-			foreach (var name in cfuncMethod.cfunc.Shortcuts) {
+			foreach (var name in cfuncMethod.cfunc.shortcuts) {
 				prototype += ", " + name;
 			}
 
@@ -707,14 +707,14 @@ public class Console : MonoBehaviour {
 		}
 	}
 
-	[CFunc(Shortcuts = new[] { "cls" })]
+	[CFunc(shortcuts = new[] { "cls" })]
 	public static void ClearScreen() {
 		if (instance != null) {
 			instance.ClearHistory();
 		}
 	}
 
-	[CFunc(Shortcuts = new[] { "cch" })]
+	[CFunc(shortcuts = new[] { "cch" })]
 	public static void ClearCommandHistory() {
 		if (instance != null) {
 			instance.commandHistory.Clear();

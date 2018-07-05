@@ -169,7 +169,7 @@ namespace Bowhead.Client.Actors {
 		}
 
 		public void ExecuteServerCFunc(CFuncMethod cfuncMethod, string command) {
-			if (cfuncMethod.cfunc.IsServer) {
+			if (cfuncMethod.cfunc.isServer) {
 				rpc_Server_ExecuteCFunc.Invoke(command);
 			}
 		}
@@ -200,14 +200,14 @@ namespace Bowhead.Client.Actors {
 			rpc_Server_SayTeam.Invoke(text);
 		}
 
-		[CFunc(Shortcuts = new[] { "lp" })]
+		[CFunc(shortcuts = new[] { "lp" })]
 		void ListPlayers() {
 			foreach (var player in world.GetActorIterator<PlayerState>()) {
 				Debug.LogWarning(player.playerName + " = " + player.netID);
 			}
 		}
 
-		[CFunc(Shortcuts = new[] { "pl" } )]
+		[CFunc(shortcuts = new[] { "pl" } )]
 		void ShowPermissionLevel() {
 			Debug.LogWarning("Your permission level is " + playerState.permissionLevel + ".");
 		}

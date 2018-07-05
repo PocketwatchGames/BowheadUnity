@@ -148,7 +148,7 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Any)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Any)]
 		void SVFPS() {
 			if (_lastFpsCounterTime < 0f) {
 				_lastFpsCounterTime = 1f;
@@ -157,7 +157,7 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Any)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Any)]
 		void SVMEM() {
 			if (_lastMemCounterTime < 0f) {
 				_lastMemCounterTime = 1f;
@@ -166,7 +166,7 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Any)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Any)]
 		void SVGC() {
 			Resources.UnloadUnusedAssets();
 			System.GC.Collect();
@@ -216,9 +216,9 @@ namespace Bowhead.Server.Actors {
 				string[] args;
 				var cfuncMethod = GameManager.instance.ParseConsoleCommand(command, out args);
 				if (cfuncMethod != null) {
-					if (cfuncMethod.cfunc.IsServer) {
-						if (cfuncMethod.cfunc.PermissionLevel < playerState.permissionLevel) {
-							ConsolePrint(LogType.Error, "You do not have permission to execute this function. Required permission level: " + cfuncMethod.cfunc.PermissionLevel + ". Your permission level: " + playerState.permissionLevel + ".");
+					if (cfuncMethod.cfunc.isServer) {
+						if (cfuncMethod.cfunc.permissionLevel < playerState.permissionLevel) {
+							ConsolePrint(LogType.Error, "You do not have permission to execute this function. Required permission level: " + cfuncMethod.cfunc.permissionLevel + ". Your permission level: " + playerState.permissionLevel + ".");
 						} else {
 							GameManager.instance.InvokeConsoleCommand(cfuncMethod, args, command, this);
 						}
@@ -256,7 +256,7 @@ namespace Bowhead.Server.Actors {
 		}
 
 #if !(BACKEND_SERVER || LOGIN_SERVER)
-		[CFunc(IsServer = true, Shortcuts = new[] { "ka" })]
+		[CFunc(isServer = true, shortcuts = new[] { "ka" })]
 		void KillAll() {
 			// kill all non-friendly units...
 			//foreach (var u in world.GetActorIterator<Unit>()) {
@@ -266,7 +266,7 @@ namespace Bowhead.Server.Actors {
 			//}
 		}
 
-		[CFunc(IsServer = true, Shortcuts = new[] { "sp" })]
+		[CFunc(isServer = true, shortcuts = new[] { "sp" })]
 		void SetPermissionLevel(int playerID, int level) {
 			var player = world.GetObjectByNetID(playerID) as ServerPlayerState;
 			if (player != null) {
@@ -295,7 +295,7 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Any, Shortcuts = new[] { "cp" })]
+		[CFunc(isServer = true, permissionLevel = CFunc.Any, shortcuts = new[] { "cp" })]
 		void ShowCommandPermissionLevel(string command) {
 			CFuncMethod cfuncMethod = null;
 
@@ -304,8 +304,8 @@ namespace Bowhead.Server.Actors {
 			}
 
 			if (cfuncMethod != null) {
-				if (cfuncMethod.cfunc.IsServer) {
-					ConsolePrint(LogType.Warning, command + " requires permission level " + cfuncMethod.cfunc.PermissionLevel + ".");
+				if (cfuncMethod.cfunc.isServer) {
+					ConsolePrint(LogType.Warning, command + " requires permission level " + cfuncMethod.cfunc.permissionLevel + ".");
 				} else {
 					ConsolePrint(LogType.Warning, command + " is not subject to any permission level restrictions.");
 				}
@@ -314,7 +314,7 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Admin, Shortcuts = new[] { "scp" })]
+		[CFunc(isServer = true, permissionLevel = CFunc.Admin, shortcuts = new[] { "scp" })]
 		void SetCommandPermissionLevel(string command, int level) {
 			CFuncMethod cfuncMethod = null;
 
@@ -323,13 +323,13 @@ namespace Bowhead.Server.Actors {
 			}
 
 			if (cfuncMethod != null) {
-				if (cfuncMethod.cfunc.PermissionLevel == level) {
+				if (cfuncMethod.cfunc.permissionLevel == level) {
 					ConsolePrint(LogType.Error, command + " is already set to permission level " + level + ".");
 				} else if (level < 0) {
 					ConsolePrint(LogType.Error, "Permission levels must be >= 0.");
 				} else {
 					cfuncMethod.cfunc = new CFunc(cfuncMethod.cfunc);
-					cfuncMethod.cfunc.PermissionLevel = level;
+					cfuncMethod.cfunc.permissionLevel = level;
 					ConsolePrint(LogType.Warning, command + " permission level is now " + level + ".");
 					BroadcastConsolePrint(LogType.Warning, playerState.playerName + " changed " + command + " command permission level to " + level + ".", playerState);
 				}
@@ -338,7 +338,7 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Officer)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Officer)]
 		void Map(string level, params object[] args) {
 
 			Type gmType;
@@ -376,7 +376,7 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Officer, Shortcuts = new[] {"rs"})]
+		[CFunc(isServer = true, permissionLevel = CFunc.Officer, shortcuts = new[] {"rs"})]
 		void Restart() {
 			if (GameManager.instance.travelLevel == null) {
 				GameManager.instance.SetPendingLevel(svWorld.currentLevel, svWorld.gameMode.GetType());
@@ -385,7 +385,7 @@ namespace Bowhead.Server.Actors {
 			}
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Moderator)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Moderator)]
 		void MatchTime(params object[] args) {
 			if (args.Length == 1) {
 				GameManager.instance.matchTime = int.Parse((string)args[0]);
@@ -393,7 +393,7 @@ namespace Bowhead.Server.Actors {
 			BroadcastConsolePrint(LogType.Warning, "Match time is " + GameManager.instance.matchTime + " second(s).");
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Moderator)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Moderator)]
 		void Overtime(params object[] args) {
 			if (args.Length == 1) {
 				GameManager.instance.matchOvertime = int.Parse((string)args[0]);
@@ -401,7 +401,7 @@ namespace Bowhead.Server.Actors {
 			BroadcastConsolePrint(LogType.Warning, "Overtime time is " + GameManager.instance.matchOvertime + " second(s).");
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Moderator)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Moderator)]
 		void NumPlayers(params object[] args) {
 			if (args.Length == 1) {
 				var numPlayers = int.Parse((string)args[0]);
@@ -414,14 +414,14 @@ namespace Bowhead.Server.Actors {
 			BroadcastConsolePrint(LogType.Warning, "Number of player is " + GameManager.instance.numPlayers);
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Any, Shortcuts = new[] { "gm" })]
+		[CFunc(isServer = true, permissionLevel = CFunc.Any, shortcuts = new[] { "gm" })]
 		void GodMode() {
 			godMode = !godMode;
 			BroadcastConsolePrint(LogType.Warning, "God mode is " + (godMode ? "on" : "off"));
 		}
 #endif
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Any)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Any)]
 		void NumNPCUnits() {
 			int num = 0;
 			//foreach (var u in world.GetActorIterator<Unit>()) {
@@ -432,7 +432,7 @@ namespace Bowhead.Server.Actors {
 			BroadcastConsolePrint(LogType.Warning, "There are " + num + " npc unit(s) spawned.");
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Any)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Any)]
 		void NumPlayerUnits() {
 			int num = 0;
 			//foreach (var u in world.GetActorIterator<Unit>()) {
@@ -443,7 +443,7 @@ namespace Bowhead.Server.Actors {
 			BroadcastConsolePrint(LogType.Warning, "There are " + num + " player unit(s) spawned.");
 		}
 
-		[CFunc(IsServer = true, PermissionLevel = CFunc.Any)]
+		[CFunc(isServer = true, permissionLevel = CFunc.Any)]
 		void NumUnits() {
 			int num = 0;
 			//foreach (var u in world.GetActorIterator<Unit>()) {

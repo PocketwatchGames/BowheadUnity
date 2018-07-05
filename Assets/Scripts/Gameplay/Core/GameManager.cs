@@ -1550,7 +1550,7 @@ namespace Bowhead {
 						}
 					}
 				}
-				var shortcuts = cfuncMethod.cfunc.Shortcuts;
+				var shortcuts = cfuncMethod.cfunc.shortcuts;
 				if (shortcuts != null) {
 					foreach (var s in shortcuts) {
 						var lower = s.ToLower();
@@ -1582,9 +1582,9 @@ namespace Bowhead {
 
 			object retVal = null;
 
-			if (cfuncMethod.method.IsStatic && ((serverWorld != null) || !cfuncMethod.cfunc.IsServer)) {
+			if (cfuncMethod.method.IsStatic && ((serverWorld != null) || !cfuncMethod.cfunc.isServer)) {
 				retVal = cfuncMethod.method.Invoke(null, parms);
-			} else if (cfuncMethod.cfunc.IsServer) {
+			} else if (cfuncMethod.cfunc.isServer) {
 				if (serverPlayer != null) {
 					object context = null;
 
@@ -1686,7 +1686,7 @@ namespace Bowhead {
 			Screen.SetResolution(w, h, Screen.fullScreen);
 		}
 
-		[CFunc(Shortcuts = new[] { "vm" })]
+		[CFunc(shortcuts = new[] { "vm" })]
 		static void SetVidMode(params object[] args) {
 			if (args.Length > 0) {
 #if UNITY_EDITOR
@@ -1706,7 +1706,7 @@ namespace Bowhead {
 			}
 		}
 
-		[CFunc(Shortcuts = new[] { "fullscreen" })]
+		[CFunc(shortcuts = new[] { "fullscreen" })]
 		static void SetFullscreen(params object[] args) {
 			if (args.Length > 0) {
 #if UNITY_EDITOR
@@ -2258,7 +2258,7 @@ namespace Bowhead {
 			private set;
 		}
 
-		[CFunc(Shortcuts = new[] { "ddai" })]
+		[CFunc(shortcuts = new[] { "ddai" })]
 		static void DebugDrawUnitClustering() {
 			instance.debugDrawAI = !instance.debugDrawAI;
 			if (instance.debugDrawAI) {
