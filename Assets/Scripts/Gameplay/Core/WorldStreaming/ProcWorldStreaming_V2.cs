@@ -146,13 +146,16 @@ namespace Bowhead {
 					float depth = 0;
 					if (power > 0.5f - range && power < 0.5f + range) {
 						for (int i=elevation-2;i<=elevation;i++) {
-							float temperature = GetTemperature(ref noise, x, i, z);
-							int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + ((int)(i-v3.y) * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-							if (IsFrozen(temperature, GetHumidity(ref noise, x, z))) {
-								chunk.voxeldata[ofs] = EVoxelBlockType.ICE;
-							}
-							else {
-								chunk.voxeldata[ofs] = EVoxelBlockType.WATER;
+							int cy = (int)(i - v3.y);
+							if (cy >= 0 && cy < VOXEL_CHUNK_SIZE_Y) {
+								float temperature = GetTemperature(ref noise, x, i, z);
+								int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + ((int)(i - v3.y) * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+								if (IsFrozen(temperature, GetHumidity(ref noise, x, z))) {
+									chunk.voxeldata[ofs] = EVoxelBlockType.ICE;
+								}
+								else {
+									chunk.voxeldata[ofs] = EVoxelBlockType.WATER;
+								}
 							}
 						}
 					}

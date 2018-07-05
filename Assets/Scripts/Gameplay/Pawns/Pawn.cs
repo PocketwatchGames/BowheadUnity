@@ -1019,7 +1019,7 @@ namespace Bowhead.Actors {
             }
 
 			// Check if we're blocking with shield
-			if (attackData.canBlock) {
+			if (!attackData.unblockable) {
 				foreach (var w in getInventory()) {
 					var shield = w as Weapon;
 					if (shield != null) {

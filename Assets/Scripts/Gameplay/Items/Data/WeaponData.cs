@@ -34,7 +34,7 @@ namespace Bowhead {
 			public float moveSpeedDuringCooldown;
 			public float moveSpeedDuringCast;
 			public bool interrupt;
-			public bool canBlock;
+			public bool unblockable;
 		}
 
 		public GameObject_WRef prefab;
