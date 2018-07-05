@@ -58,10 +58,16 @@ namespace Bowhead.Client.UI {
 
             Entity target;
             string interaction;
-            localPlayer.playerPawn.GetInteractTarget(out target, out interaction);
+			Vector3? targetPos;
+            localPlayer.playerPawn.GetInteractTarget(out target, out targetPos, out interaction);
 
-            _interactHint.SetTarget(target);
-            _interactHint.SetButton("X");
+			if (targetPos.HasValue) {
+				_interactHint.SetTarget(targetPos.Value);
+			}
+			else {
+				_interactHint.SetTarget(target);
+			}
+			_interactHint.SetButton("X");
             _interactHint.SetHint(interaction);
         }
 

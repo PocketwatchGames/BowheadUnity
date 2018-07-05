@@ -64,4 +64,4 @@ MonoBehaviour:
   temperatureSleepMaximum: 100
   fallDamageSpeed: 30
   dropTime: 0.5
-  weightClassItemCount: 00000000050000000a0000000f00000014000000
+  weightClassItemCount: 00000000060000000b0000001000000015000000

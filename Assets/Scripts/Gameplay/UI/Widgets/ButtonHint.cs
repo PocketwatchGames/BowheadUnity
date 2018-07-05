@@ -6,6 +6,8 @@ namespace Bowhead.Client.UI {
     public class ButtonHint : MonoBehaviour {
 
         private Bowhead.Actors.Entity _target;
+		private Vector3 _targetPosition;
+		private bool _active;
 
         public UnityEngine.UI.Text buttonText;
         public UnityEngine.UI.Text hintText;
@@ -25,21 +27,26 @@ namespace Bowhead.Client.UI {
             }
         }
 
-        public void SetTarget(Bowhead.Actors.Entity target) {
-            if (target == _target) {
-                return;
-            }
-            if (target == null) {
-                gameObject.SetActive(false);
-            }
-            else if (_target == null) {
-                gameObject.SetActive(true);
-            }
+		public void SetTarget(Bowhead.Actors.Entity target) {
+			if (target == _target) {
+				return;
+			}
 
-            _target = target;
-        }
+			_target = target;
+			_active = _target != null;
+			gameObject.SetActive(_active);
+		}
+		public void SetTarget(Vector3 pos) {
+			if (_active && pos == _targetPosition && _target == null) {
+				return;
+			}
 
-        public void SetButton(string b) {
+			_targetPosition = pos;
+			_active = true;
+			gameObject.SetActive(_active);
+		}
+
+		public void SetButton(string b) {
             buttonText.text = b;
         }
         public void SetHint(string h) {

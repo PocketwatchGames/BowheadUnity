@@ -255,6 +255,12 @@ namespace Bowhead.Actors {
                 Interact();
             }
 
+			if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
+				if (mount != null) {
+					SetMount(null);
+				}
+			}
+
             if (input.IsPressed(InputType.Swap)) {
             }
 
@@ -806,7 +812,8 @@ namespace Bowhead.Actors {
         void Interact() {
             Entity target;
             string interaction;
-            GetInteractTarget(out target, out interaction);
+			Vector3? targetPos;
+            GetInteractTarget(out target, out targetPos, out interaction);
 
             WorldItem worldItem;
             Critter critter;
@@ -814,15 +821,12 @@ namespace Bowhead.Actors {
                 worldItem.Interact(this);
             }
             else if ((critter = target as Critter) != null) {
-                if (mount == critter) {
-                    SetMount(null);
-                }
-                else {
+                if (mount != critter) {
                     SetMount(critter);
                 }
             }
-            else {
-                var block = world.GetBlock(footPosition());
+            else if (targetPos.HasValue) {
+                var block = world.GetBlock(targetPos.Value);
                 if (block == EVoxelBlockType.Water) {
                     Loot waterItem = null;
                     var waterData = LootData.Get("Water");
@@ -894,12 +898,7 @@ namespace Bowhead.Actors {
         }
 
 
-        public void GetInteractTarget(out Entity target, out string interactionType) {
-            if (mount != null) {
-                target = mount;
-                interactionType = "Dismount";
-                return;
-            }
+        public void GetInteractTarget(out Entity target, out Vector3? targetPos, out string interactionType) {
 
             interactionType = null;
 
@@ -915,15 +914,28 @@ namespace Bowhead.Actors {
             }
             foreach (var i in world.GetActorIterator<Critter>()) {
                 if (i.team == team && i.active) {
-                    float dist = (i.rigidBody.position - rigidBody.position).magnitude;
-                    if (dist < closestDist) {
-                        closestDist = dist;
-                        closestItem = i;
-                        interactionType = "Mount";
-                    }
+					if (mount != i) {
+						float dist = (i.rigidBody.position - rigidBody.position).magnitude;
+						if (dist < closestDist) {
+							closestDist = dist;
+							closestItem = i;
+							interactionType = "Mount";
+						}
+					}
                 }
             }
-            target = closestItem;
+
+			target = closestItem;
+			targetPos = null;
+			if (closestItem == null) {
+				var pos = footPosition() + Vector3.down;
+				var block = world.GetBlock(pos);
+				if (block == EVoxelBlockType.Water) {
+					targetPos = pos;
+					interactionType = "Collect";
+				}
+			}
+
 
         }
 
