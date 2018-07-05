@@ -1043,7 +1043,6 @@ public partial class World {
 
 		public unsafe struct BlendedVoxel_t {
 			public fixed int vertexFlags[8];
-			public fixed int blendFlags[8];
 			public fixed int neighbors[6];
 			public bool touched;
 		};
@@ -1162,7 +1161,6 @@ public partial class World {
 				var voxel = _voxels[_numVoxels++];
 
 				ZeroInts(voxel->vertexFlags, 8);
-				ZeroInts(voxel->blendFlags, 8);
 				ZeroInts(voxel->neighbors, 6);
 				
 				voxel->touched = true;
@@ -1223,7 +1221,7 @@ public partial class World {
 				for (int i = 0; i < 3; ++i) {
 					var axis = (i == 0) ? 1 : (i == 1) ? 2 : 0;
 					var signbit = 1 << axis;
-					var flags = (voxel->vertexFlags[vi] | voxel->blendFlags[vi]);
+					var flags = voxel->vertexFlags[vi];
 
 					if ((flags&signbit) != 0) {
 						// we want to collapse on this axis
@@ -1231,7 +1229,7 @@ public partial class World {
 						// is if there is no (-)->(+)
 						var other = vi ^ signbit;
 						if (vi > other) {
-							if (((voxel->vertexFlags[other] | voxel->blendFlags[other]) & signbit) != 0) {
+							if ((voxel->vertexFlags[other] & signbit) != 0) {
 								continue; // other side will fold onto us.
 							}
 						}
@@ -1359,12 +1357,12 @@ public partial class World {
 
 												// check the (-)->(+) collapse order to get the right vertex
 												if (boundMirrorAxisVert < boundMirrorVert) {
-													if (((spanningNeighborVoxel->vertexFlags[boundMirrorAxisVert] | spanningNeighborVoxel->blendFlags[boundMirrorAxisVert]) & checkAxisBit) != 0) {
+													if ((spanningNeighborVoxel->vertexFlags[boundMirrorAxisVert] & checkAxisBit) != 0) {
 														continue;
 													}
 												}
 
-												if (((spanningNeighborVoxel->vertexFlags[boundMirrorVert] | spanningNeighborVoxel->blendFlags[boundMirrorVert]) & checkAxisBit) != 0) {
+												if ((spanningNeighborVoxel->vertexFlags[boundMirrorVert] & checkAxisBit) != 0) {
 													exposed = true;
 													break;
 												}
@@ -1381,7 +1379,7 @@ public partial class World {
 
 												// check the (-)->(+) collapse order to get the right vertex
 												if (mirrorAxisVert < mirrorVert) {
-													if (((neighborVoxel->vertexFlags[mirrorAxisVert] | neighborVoxel->blendFlags[mirrorAxisVert]) & checkAxisBit) != 0) {
+													if ((neighborVoxel->vertexFlags[mirrorAxisVert] & checkAxisBit) != 0) {
 														continue;
 													}
 												}
