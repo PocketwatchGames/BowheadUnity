@@ -237,7 +237,19 @@ namespace Bowhead {
                     return;
                 }
 
-                remainingDamage = Mathf.Max(0, remainingDamage - defense.defendDamageAbsorb);
+				var dirToEnemy = (attacker.rigidBody.position - owner.rigidBody.position);
+				if (dirToEnemy == Vector3.zero) {
+					dirToEnemy.x = 1;
+				}
+				else {
+					dirToEnemy.Normalize();
+				}
+				float angleToEnemy = Mathf.Repeat(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) - owner.yaw, Mathf.PI * 2);
+				if (angleToEnemy > defense.defendAngleRange*Mathf.Deg2Rad && Mathf.PI * 2 - angleToEnemy > defense.defendAngleRange * Mathf.Deg2Rad) {
+					return;
+				}
+
+				remainingDamage = Mathf.Max(0, remainingDamage - defense.defendDamageAbsorb);
                 remainingStun = Mathf.Max(0, remainingStun - defense.defendPower);
 
                 owner.useStamina(defense.defendStaminaUse);
@@ -245,7 +257,6 @@ namespace Bowhead {
                 int chargeLevel = getCurCharge();
                 if (chargeTime < data.parryTime) {
                     if (data.parry != null) {
-						attackerWeapon.interrupt(attacker);
 						attacker.hit(owner, this, data.parry);
                     }
                 }

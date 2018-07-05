@@ -25,6 +25,7 @@ namespace Bowhead {
             public float defendPower;
             public float defendDamageAbsorb;
             public float defendStaminaUse;
+			public float defendAngleRange;
             public float staminaUse;
             public float stepDistance;
             public float staminaDrain;

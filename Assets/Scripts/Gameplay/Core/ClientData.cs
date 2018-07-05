@@ -109,8 +109,9 @@ namespace Bowhead {
         public DamageIndicator damageIndicatorPrefab;
 		public PawnHUD critterHudPrefab;
 		public WeaponChargeHUD weaponChargePrefab;
+		public bool isDualAnalogAiming;
 
-        public Canvas dialogDarkenCanvasPrefab;
+		public Canvas dialogDarkenCanvasPrefab;
 		public Canvas dialogNormalCanvasPrefab;
 		public Client.UI.MessageBox messageBoxPrefab;
 		public Client.UI.LineEditDialog defaultLineEditorDialogPrefab;
