@@ -885,20 +885,6 @@ namespace Bowhead.Actors {
         public float getGroundMaxSpeed() {
 			float modifier = 1;
 			float maxSpeed = data.groundMaxSpeed;
-			for (int i=0;i<MaxInventorySize;i++) {
-				var item = GetInventorySlot(i) as Weapon;
-				if (item!= null) {
-					if (item.cooldown > 0) {
-						modifier = Mathf.Min(modifier, item.data.attacks[item.attackType].moveSpeedDuringCooldown);
-					}
-					else if (item.chargeTime > 0 && item.castTime >= item.data.moveSpeedChargeDelay) {
-						modifier = Mathf.Min(modifier, item.data.attacks[item.attackType].moveSpeedDuringCast);
-					}
-					else if (item.chargeTime > 0 && item.chargeTime >= item.data.moveSpeedChargeDelay) {
-						modifier = Mathf.Min(modifier, item.data.moveSpeedWhileCharging);
-					}
-				}
-			}
 
 			if (canRun) {
 				if (modifier == 1) {
@@ -1052,8 +1038,8 @@ namespace Bowhead.Actors {
             else {
                 dirToEnemy.Normalize();
             }
-            float angleToEnemy = Mathf.Repeat(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) - yaw, Mathf.PI * 2);
-            if (attackData.attackDamageBackstab > 0 && Math.Abs(angleToEnemy) < data.backStabAngle) {
+            float angleToEnemysBack = Mathf.Repeat(Mathf.Atan2(-dirToEnemy.x, -dirToEnemy.z) - yaw, Mathf.PI * 2);
+            if (attackData.attackDamageBackstab > 0 && angleToEnemysBack < data.backStabAngle*Mathf.Deg2Rad || angleToEnemysBack > Math.PI*2-data.backStabAngle * Mathf.Deg2Rad) {
                 remainingStun = attackData.stunPowerBackstab;
                 remainingDamage = attackData.attackDamageBackstab;
             }

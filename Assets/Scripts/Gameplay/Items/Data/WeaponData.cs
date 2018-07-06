@@ -37,8 +37,9 @@ namespace Bowhead {
             public float stunPower;
             public float stunPowerBackstab;
             public float attackDamageBackstab;
-			public float moveSpeedDuringCooldown;
-			public float moveSpeedDuringCast;
+			public bool canMoveDuringCooldown;
+			public bool canMoveDuringCast;
+			public bool canMoveDuringActive;
 			public bool interrupt;
 			public bool unblockable;
 			public bool defendInterrupt;
@@ -47,14 +48,13 @@ namespace Bowhead {
 			public float waterUse;
 			public Actors.ProjectileData projectile;
 			public float projectileSpeed;
-			public bool canMove;
 		}
 
 		public GameObject_WRef prefab;
         public Hand hand;
         public float chargeTime;
 		public float parryTime;
-		public float moveSpeedWhileCharging = 1f;
+		public bool canRunWhileCharging;
 		public float moveSpeedChargeDelay = 0.2f;
         public Vector3 weaponSize;
 		public AttackData[] attacks;

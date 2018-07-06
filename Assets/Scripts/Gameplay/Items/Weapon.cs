@@ -145,7 +145,7 @@ namespace Bowhead {
 
             if (cooldown > 0) {
                 cooldown = Mathf.Max(0, cooldown - dt);
-                if (!getCurAttackData().canMove) {
+                if (!getCurAttackData().canMoveDuringCooldown) {
 					owner.canMove = false;
 					owner.canTurn = false;
                 }
@@ -155,7 +155,7 @@ namespace Bowhead {
                 if (castTime <= 0) {
                     Activate(owner);
                 }
-				if (!getCurAttackData().canMove) {
+				if (!getCurAttackData().canMoveDuringCast) {
 					owner.canMove = false;
 					owner.canTurn = false;
 				}
@@ -163,13 +163,13 @@ namespace Bowhead {
 			if (activeTime > 0) {
 				activeTime = Mathf.Max(0, activeTime - dt);
 				DoActiveTick(owner);
-				if (!getCurAttackData().canMove) {
+				if (!getCurAttackData().canMoveDuringActive) {
 					owner.canMove = false;
 					owner.canTurn = false;
 				}
 			}
 
-			if (chargeTime > 0 && data.chargeTime > 0) {
+			if (chargeTime > data.moveSpeedChargeDelay && !data.canRunWhileCharging) {
 				owner.canRun = false;
             }
 
