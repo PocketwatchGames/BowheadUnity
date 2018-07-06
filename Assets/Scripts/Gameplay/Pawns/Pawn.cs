@@ -141,8 +141,8 @@ namespace Bowhead.Actors {
 			private set;
 		}
 
-		public override void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			base.Spawn(data, pos, instigator, owner, team);
+		public virtual void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
+			base.ConstructEntity(data);
 			this.data = (PawnData)data;
 			gameMode = (Server.BowheadGame)((Server.ServerWorld)world).gameMode;
 		}

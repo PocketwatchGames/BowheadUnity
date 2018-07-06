@@ -21,7 +21,6 @@ GameObject:
   - component: {fileID: 224539828892135764}
   - component: {fileID: 222371208836611396}
   - component: {fileID: 114790518168383052}
-  - component: {fileID: 114427071265273576}
   m_Layer: 5
   m_Name: MinimapExampleMarker
   m_TagString: Untagged
@@ -29,17 +28,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &114427071265273576
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1953719483150920}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 294d7aca9e251464c95a680a958b9922, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114790518168383052
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -16,8 +16,6 @@ namespace Bowhead.Actors {
         public float fallDamageSpeed;
         public float dropTime;
 		public int[] weightClassItemCount;
-
-		public override Type spawnClass => typeof(Player);
     };
 
 }

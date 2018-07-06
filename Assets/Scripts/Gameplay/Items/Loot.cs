@@ -9,7 +9,7 @@ namespace Bowhead {
 
         #region State
 
-        public int count;
+        public int count = 1;
 
         #endregion
 

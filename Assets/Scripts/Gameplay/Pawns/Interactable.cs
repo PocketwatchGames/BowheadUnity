@@ -11,12 +11,12 @@ namespace Bowhead.Actors {
 		}
 
 		#region getdata
-		public override void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			base.Spawn(data, pos, instigator, owner, team);
+		protected override void ConstructEntity(EntityData data) {
+			base.ConstructEntity(data);
 			this.data = (InteractableData)data;
 			gameMode = (Server.BowheadGame)((Server.ServerWorld)world).gameMode;
 		}
-
+			
 		new public InteractableData data {
 			get;
 			private set;
@@ -25,8 +25,9 @@ namespace Bowhead.Actors {
 	}
 
 	public abstract class Interactable<T, D> : Interactable where T : Interactable<T, D> where D : InteractableData {
-		public override void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			base.Spawn(data, pos, instigator, owner, team);
+
+		protected override void ConstructEntity(EntityData data) {
+			base.ConstructEntity(data);
 			this.data = (D)data;
 		}
 

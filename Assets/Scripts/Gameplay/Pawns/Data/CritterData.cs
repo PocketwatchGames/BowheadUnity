@@ -18,7 +18,6 @@ namespace Bowhead.Actors {
         public float waryIncreaseAtMaxAwareness;
         public float waryIncreaseAtMaxAwarenessWhilePanicked;
         public ECritterBehaviorType panicBehavior;
-
-		public override Type spawnClass => typeof(Critter);
+		public ItemLoadoutData defaultLoadout;
     };
 }

@@ -7,7 +7,6 @@ namespace Bowhead.Actors {
 
     [CreateAssetMenu(menuName = "EntityData/WorldItem")]
     public class WorldItemData : InteractableData<WorldItemData> {
-		public override Type spawnClass => typeof(WorldItem);
 	}
 
 }

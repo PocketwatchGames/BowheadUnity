@@ -27,8 +27,8 @@ namespace Bowhead.Actors {
 		public override System.Type clientType => typeof(WorldItem);
 		public override System.Type serverType => typeof(WorldItem);
 
-		public override void Spawn(EntityData d, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			base.Spawn(d, pos, instigator, owner, team);
+		public void Spawn(EntityData d, Vector3 pos, Actor instigator, Actor owner, Team team) {
+			base.ConstructEntity(d);
 			position = pos;
 			AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null));
             go.SetActive(false);

@@ -158,6 +158,9 @@ namespace Bowhead.Server {
 	public abstract class BowheadGame<T> : GameMode<T> where T : GameState<T> {
 		public const WorldStreaming.EGenerator WORLD_GENERATOR_TYPE = WorldStreaming.EGenerator.PROC_V2;
 
+		static SpawnPointData[] _monsterSpawns = SpawnPointData.GetAllSpawnTypes(ESpawnPointTeam.Monster);
+		static SpawnPointData[] _npcSpawns = SpawnPointData.GetAllSpawnTypes(ESpawnPointTeam.NPC);
+
 		public BowheadGame(ServerWorld world) : base(world) {
 			data = Resources.Load<WorldData>("DefaultWorld");
 		}
@@ -213,7 +216,20 @@ namespace Bowhead.Server {
 		}
 
 		void SpawnDecoration(World.Streaming.IChunk chunk, Vector3 chunkWorldPos, World.Decoration_t decoration) {
-			// TODO: Andy things
+			SpawnPointData spawnPoint;
+
+			switch (decoration.type) {
+				default:
+					return;
+				case EDecorationType.MonsterSpawn:
+					if (_monsterSpawns.Length < 1) {
+						return;
+					}
+					spawnPoint = _monsterSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+				break;
+			}
+
+
 		}
 
 		#region perlin utils
@@ -244,7 +260,9 @@ namespace Bowhead.Server {
 		}
 
 		Player SpawnPlayer() {
-			return PlayerData.Get("player").SpawnEntity<Player>(world, new Vector3(16, 600, 16), null, null, null);
+			var player = world.Spawn<Player>(null, default(SpawnParameters));
+			player.Spawn(PlayerData.Get("player"), new Vector3(16, 600, 16), null, null, null);
+			return player;
 		}
 
 		public WorldItem SpawnWorldItem(string dataName, Vector3 pos) {
@@ -252,7 +270,9 @@ namespace Bowhead.Server {
 			if (data == null) {
 				return null;
 			}
-			return data.SpawnEntity<WorldItem>(world, pos, null, null, null);
+			var item = world.Spawn<WorldItem>(null, default(SpawnParameters));
+			item.Spawn(data, pos, null, null, null);
+			return item;
 		}
 
 		public Critter SpawnCritter(string dataName, Vector3 pos, Team team) {
@@ -264,14 +284,30 @@ namespace Bowhead.Server {
 		}
 
 		public Critter SpawnCritter(CritterData data, Vector3 pos, Team team) {
-			return data.SpawnEntity<Critter>(world, pos, null, null, team);
+			var critter = world.Spawn<Critter>(null, default(SpawnParameters));
+			critter.Spawn(data, pos, null, null, team);
+			if (data.defaultLoadout != null) {
+				var loot = data.defaultLoadout.loot;
+				if ((loot != null) && (loot.Length > 0)) {
+					for (int i = 0; i < loot.Length; ++i) {
+						var item = loot[i].CreateItem();
+						critter.loot[i] = item;
+					}
+				}
+				var inventory = data.defaultLoadout.inventory;
+				if ((inventory != null) && (inventory.Length > 0)) {
+					for (int i = 0; i < inventory.Length; ++i) {
+						var item = inventory[i].CreateItem();
+						critter.SetInventorySlot(i, item);
+					}
+				}
+			}
+			return critter;
 		}
 
 		public Projectile SpawnProjectile(ProjectileData data, Vector3 pos, Vector3 velocity, Team team) {
-			var p = data.SpawnEntity<Projectile>(world, pos, null, null, team);
-			if (p != null) {
-				p.velocity = velocity;
-			}
+			var p = world.Spawn<Projectile>(null, default(SpawnParameters));
+			p.Spawn(data, pos, velocity, null, null, team);
 			return p;
 		}
 
@@ -306,26 +342,15 @@ namespace Bowhead.Server {
 
 
 			if (numCritters < 50) {
+				var bunnyData = CritterData.Get("bunny");
+				var wolfData = CritterData.Get("wolf");
 				foreach (var player in world.GetActorIterator<Player>()) {
 					Vector3 pos = player.position;
 					pos.y = 1000;
 					pos.x += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
 					pos.z += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
 
-					var bunnyData = CritterData.Get("bunny");
-					var wolfData = CritterData.Get("wolf");
-
-					var c = SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos, monsterTeam);
-
-					if (c.data == bunnyData) {
-						var item = LootData.Get("Raw Meat").CreateItem();
-						item.count = 1;
-						c.loot[0] = item;
-					}
-					else if (c.data == wolfData) {
-						var weapon = WeaponData.Get("Teeth").CreateItem();
-						c.SetInventorySlot(0, weapon);
-					}
+					SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos, monsterTeam);
 					break;
 				}
 			}

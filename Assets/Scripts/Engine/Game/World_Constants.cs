@@ -210,6 +210,10 @@ public enum EChunkLayers : int {
 	Trees
 };
 
+public enum EDecorationType : int {
+	MonsterSpawn
+};
+
 public static class WorldConstantExtensions {
 	public static int ToIndex(this EChunkLayers layer) {
 		return (int)layer;
@@ -224,7 +228,7 @@ public partial class World {
 
 	public struct Decoration_t {
 		public const int MAX_DECORATIONS_PER_CHUNK = 32;
-		public int type;
+		public EDecorationType type;
 		public Vector3 pos;
 	};
 

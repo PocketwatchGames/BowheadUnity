@@ -14,15 +14,15 @@ namespace Bowhead.Actors {
 			private set;
 		}
 		        
-		public virtual void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
+		protected virtual void ConstructEntity(EntityData data) {
 			this.data = data;
         }
     }
 
 	public abstract class Entity<T, D> : Entity where T : Entity<T, D> where D : EntityData {
 
-		public override void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			base.Spawn(data, pos, instigator, owner, team);
+		protected override void ConstructEntity(EntityData data) {
+			base.ConstructEntity(data);
 			this.data = (D)data;
 		}
 

@@ -9,13 +9,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 20b7cacce8e11b348a6038eb11e97760, type: 3}
-  m_Name: Bunny
+  m_Name: Wolf
   m_EditorClassIdentifier: 
   version: 0
-  _index: 0
+  _index: 2
   height: 1
-  maxHealth: 30
-  maxStamina: 20
+  maxHealth: 100
+  maxWater: 0
+  maxStamina: 50
   recoveryTime: 1
   staminaRechargeTime: 3
   dodgeTime: 0
@@ -33,7 +34,7 @@ MonoBehaviour:
   walkSpeed: 1
   walkStartTime: 0
   walkStopTime: 0
-  groundMaxSpeed: 10
+  groundMaxSpeed: 8
   groundWindDrag: 0.01
   slideThresholdSlope: 4
   slideThresholdFlat: 15
@@ -54,8 +55,8 @@ MonoBehaviour:
   swimDragVertical: 5
   swimDragHorizontal: 0.25
   prefab:
-    _assetPath: Actors/Bunny
-    _editorPath: Assets/Assets/Prefabs/Resources/Actors/Bunny.prefab
+    _assetPath: Actors/Wolf
+    _editorPath: Assets/Assets/Prefabs/Resources/Actors/Wolf.prefab
   visionWeight: 2
   smellWeight: 1
   hearingWeight: 2
@@ -63,4 +64,5 @@ MonoBehaviour:
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
-  panicBehavior: 0
+  panicBehavior: 1
+  defaultLoadout: {fileID: 11400000, guid: aed3b51089462144abc792f1413f0c29, type: 2}
