@@ -286,13 +286,14 @@ namespace Bowhead.Actors {
             }
 
             if (active) {
-                float dt = world.deltaTime;
 
-                PreSimulate(dt);
+				float dt = world.deltaTime;
 
-                Input_t input = GetInput(dt);
+				PreSimulate(dt);
 
-                Simulate(dt, input);
+				Input_t input = GetInput(dt);
+
+				Simulate(dt, input);
             }
         }
 
@@ -711,7 +712,7 @@ namespace Bowhead.Actors {
             Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
             maxHorizontalSpeed = horizontalVel.magnitude;
 
-			if (sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
+			if (data.sprintTime > 0 && sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
 				useStamina(data.sprintStaminaUse * dt);
 			}
         }
@@ -901,7 +902,7 @@ namespace Bowhead.Actors {
 
 			if (canRun) {
 				if (modifier == 1) {
-					if (sprintTimer > 0) {
+					if (sprintTimer > 0 && data.sprintTime > 0) {
 						maxSpeed = data.sprintSpeed;
 					}
 				}

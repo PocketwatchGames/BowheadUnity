@@ -251,9 +251,6 @@ namespace Bowhead.Actors {
                 return;
             }
 
-            if (mount != null) {
-                mount.Simulate(dt, input);
-            }
 
             if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
                 Interact();
