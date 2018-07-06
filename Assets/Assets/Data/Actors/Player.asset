@@ -26,7 +26,7 @@ MonoBehaviour:
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
   jumpSpeed: 16
-  dodgeSpeed: 10.5
+  dodgeSpeed: 12
   jumpStaminaUse: 10
   groundAcceleration: 2
   crouchSpeed: 3.5
@@ -34,8 +34,8 @@ MonoBehaviour:
   walkStartTime: 0.1
   walkStopTime: 0.1
   sprintTime: 0.25
-  sprintSpeed: 10.5
-  sprintStaminaUse: 25
+  sprintSpeed: 12
+  sprintStaminaUse: 50
   sprintGracePeriodTime: 0.4
   groundMaxSpeed: 7
   groundWindDrag: 0.01
