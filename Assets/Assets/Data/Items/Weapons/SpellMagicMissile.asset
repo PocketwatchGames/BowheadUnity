@@ -17,7 +17,7 @@ MonoBehaviour:
     _assetPath: 
     _editorPath: 
   hand: 3
-  chargeTime: 0.5
+  chargeTime: 0
   parryTime: 0
   moveSpeedWhileCharging: 1
   moveSpeedChargeDelay: 0

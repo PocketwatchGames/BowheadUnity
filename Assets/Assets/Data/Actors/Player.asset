@@ -15,7 +15,7 @@ MonoBehaviour:
   _index: 1
   height: 2
   maxHealth: 200
-  maxWater: 0
+  maxWater: 100
   maxStamina: 100
   recoveryTime: 2
   staminaRechargeTime: 1
@@ -25,17 +25,18 @@ MonoBehaviour:
   backStabAngle: 45
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
-  jumpSpeed: 12
-  dodgeSpeed: 8
+  jumpSpeed: 16
+  dodgeSpeed: 10.5
   jumpStaminaUse: 10
   groundAcceleration: 2
-  crouchSpeed: 4
-  walkSpeed: 4
+  crouchSpeed: 3.5
+  walkSpeed: 3.5
   walkStartTime: 0.1
   walkStopTime: 0.1
   sprintTime: 0.25
-  sprintSpeed: 12
-  sprintStaminaUse: 20
+  sprintSpeed: 10.5
+  sprintStaminaUse: 25
+  sprintGracePeriodTime: 0.4
   groundMaxSpeed: 7
   groundWindDrag: 0.01
   slideThresholdSlope: 4

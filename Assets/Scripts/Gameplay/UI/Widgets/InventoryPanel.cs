@@ -53,16 +53,6 @@ namespace Bowhead.Client.UI {
         }
 
         private void OnInventoryChange() {
-            foreach (var s in _slots) {
-                if (s != null) {
-                    GameObject.Destroy(s.gameObject);
-                }
-            }
-            foreach (var p in _packContainers) {
-                GameObject.Destroy(p.gameObject);
-            }
-            _packContainers.Clear();
-            System.Array.Clear(_slots, 0, _slots.Length);
             Rebuild();
 
             while (_player.GetInventorySlot(inventorySelected) == null) {
@@ -77,7 +67,20 @@ namespace Bowhead.Client.UI {
 		}
 
 		private void Rebuild() {
-            float x = slotMargin;
+
+			foreach (var s in _slots) {
+				if (s != null) {
+					GameObject.Destroy(s.gameObject);
+				}
+			}
+			foreach (var p in _packContainers) {
+				GameObject.Destroy(p.gameObject);
+			}
+			_packContainers.Clear();
+			System.Array.Clear(_slots, 0, _slots.Length);
+
+
+			float x = slotMargin;
             for (int slot = 0; slot <= (int)Player.InventorySlot.PACK-1; slot++) {
                 var s = Instantiate(_inventorySlotPrefab, _mainContainer.transform, false);
                 s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
