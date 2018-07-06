@@ -170,7 +170,7 @@ namespace Bowhead {
 				}
 			}
 
-			if (chargeTime > 0) {
+			if (chargeTime > 0 && data.chargeTime > 0) {
 				owner.canRun = false;
             }
 

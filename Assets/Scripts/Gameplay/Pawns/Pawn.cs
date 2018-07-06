@@ -369,6 +369,7 @@ namespace Bowhead.Actors {
                 UpdateFalling(dt, input);
             }
 
+
             if (!canMove) {
                 velocity = Vector3.zero;
             }
@@ -529,17 +530,27 @@ namespace Bowhead.Actors {
         private void UpdateFalling(float dt, Input_t input) {
             if (fallJumpTimer > 0) {
                 fallJumpTimer = Math.Max(0, fallJumpTimer - dt);
-                if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
+
+				if (input.IsPressed(InputType.Jump)) {
+					sprintTimer = sprintTimer += dt;
+				}
+				else if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
                     if (canJump) {
                         var jumpDir = input.movement * data.dodgeSpeed;
                         jumpDir.y += getGroundJumpVelocity();
                         jump(jumpDir);
                     }
                     fallJumpTimer = 0;
+					sprintTimer = 0;
+					sprintGracePeriodTime = 0;
                 }
             }
+			else {
+				sprintTimer = 0;
+				sprintGracePeriodTime = 0;
+			}
 
-            velocity.y += data.gravity * dt;
+			velocity.y += data.gravity * dt;
 
             if (input.movement != Vector3.zero) {
                 float acceleration = data.fallAcceleration;
@@ -570,27 +581,34 @@ namespace Bowhead.Actors {
         private void UpdateGround(float dt, Input_t input) {
 
 			bool jumped = false;
-			if (input.IsPressed(InputType.Jump)) {
-				sprintTimer = sprintTimer += dt;
-				if (sprintTimer > data.sprintTime) {
-					sprintGracePeriodTime = data.sprintGracePeriodTime;
+			if (canJump && canRun) {
+				if (input.IsPressed(InputType.Jump)) {
+					sprintTimer = sprintTimer += dt;
+					if (sprintTimer > data.sprintTime) {
+						sprintGracePeriodTime = data.sprintGracePeriodTime;
+					}
+					if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+						dodgeTimer = dodgeTimer + data.dodgeTime;
+					}
 				}
-				if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
-					dodgeTimer = dodgeTimer + data.dodgeTime;
+				else {
+					if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
+						if (canJump) {
+							var jumpDir = input.movement * data.dodgeSpeed;
+							jumpDir.y += getGroundJumpVelocity();
+							jump(jumpDir);
+							jumped = true;
+						}
+						fallJumpTimer = 0;
+					}
+					sprintTimer = 0;
+					sprintGracePeriodTime = Mathf.Max(0, sprintGracePeriodTime - dt);
 				}
 			}
 			else {
-				if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
-					if (canJump) {
-						var jumpDir = input.movement * data.dodgeSpeed;
-						jumpDir.y += getGroundJumpVelocity();
-						jump(jumpDir);
-						jumped = true;
-					}
-					fallJumpTimer = 0;
-				}
 				sprintTimer = 0;
-				sprintGracePeriodTime = Mathf.Max(0, sprintGracePeriodTime - dt);
+				sprintGracePeriodTime = 0;
+				dodgeTimer = 0;
 			}
 			if (!jumped) {
 				fallJumpTimer = data.fallJumpTime;
@@ -699,7 +717,12 @@ namespace Bowhead.Actors {
         }
 
         private void UpdateSwimming(float dt, Input_t input) {
-            if (input.inputs[(int)InputType.Jump] == InputState.Pressed) {
+
+			sprintTimer = 0;
+			sprintGracePeriodTime = 0;
+
+
+			if (input.inputs[(int)InputType.Jump] == InputState.Pressed) {
                 if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
                     if (canJump) {
                         var jumpDir = input.movement * data.dodgeSpeed;
@@ -745,7 +768,10 @@ namespace Bowhead.Actors {
 
         private void UpdateClimbing(float dt, Input_t input) {
 
-            maxHorizontalSpeed = data.groundMaxSpeed;
+            maxHorizontalSpeed = data.sprintSpeed;
+
+			sprintTimer = 0;
+			sprintGracePeriodTime = 0;
 
             if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
                 activity = Activity.Falling;
@@ -864,10 +890,10 @@ namespace Bowhead.Actors {
 					if (item.cooldown > 0) {
 						modifier = Mathf.Min(modifier, item.data.attacks[item.attackType].moveSpeedDuringCooldown);
 					}
-					else if (item.castTime >= item.data.moveSpeedChargeDelay) {
+					else if (item.chargeTime > 0 && item.castTime >= item.data.moveSpeedChargeDelay) {
 						modifier = Mathf.Min(modifier, item.data.attacks[item.attackType].moveSpeedDuringCast);
 					}
-					else if (item.chargeTime >= item.data.moveSpeedChargeDelay) {
+					else if (item.chargeTime > 0 && item.chargeTime >= item.data.moveSpeedChargeDelay) {
 						modifier = Mathf.Min(modifier, item.data.moveSpeedWhileCharging);
 					}
 				}
@@ -977,6 +1003,7 @@ namespace Bowhead.Actors {
 
 			if (sprintGracePeriodTime > 0 && newSpeedXZ > 0) {
 				newSpeedXZ = data.sprintSpeed;
+				maxHorizontalSpeed = data.sprintSpeed;
 			}
 
             if (newSpeedXZ > data.dodgeSpeed) {

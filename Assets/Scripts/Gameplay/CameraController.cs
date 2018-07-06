@@ -82,7 +82,7 @@ namespace Bowhead.Actors {
 
             _isLooking = false;
 
-			if (Input.GetButton("ShoulderLeft")) {
+			if (Input.GetButton("Look")) {
 				SetMouseLookActive(!_mouseLookActive);
 			}
 
