@@ -172,6 +172,8 @@ namespace Bowhead.Server {
 		protected override void PrepareForMatchInProgress() {
 			base.PrepareForMatchInProgress();
 
+			return;
+
 			for (int i = 0; i < 100; i++) {
 				WorldItem worldItem = null;
 				var pos = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);

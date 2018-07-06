@@ -49,8 +49,9 @@ namespace Bowhead.Actors {
         [Header("Input")]
         public PlayerCmd_t cur;
         public PlayerCmd_t last;
+		public float sprintTimer;
 
-        [Header("Physics")]
+		[Header("Physics")]
         public Vector3 spawnPosition;
         public Rigidbody rigidBody;
         public Vector3 velocity;
@@ -527,7 +528,7 @@ namespace Bowhead.Actors {
         private void UpdateFalling(float dt, Input_t input) {
             if (fallJumpTimer > 0) {
                 fallJumpTimer = Math.Max(0, fallJumpTimer - dt);
-                if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+                if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
                     if (canJump) {
                         var jumpDir = input.movement * data.dodgeSpeed;
                         jumpDir.y += getGroundJumpVelocity();
@@ -536,11 +537,7 @@ namespace Bowhead.Actors {
                     fallJumpTimer = 0;
                 }
             }
-            if (input.IsPressed(InputType.Jump)) {
-                if (velocity.y >= 0) {
-                    velocity.y += data.jumpBoostAcceleration * dt;
-                }
-            }
+
             velocity.y += data.gravity * dt;
 
             if (input.movement != Vector3.zero) {
@@ -570,18 +567,29 @@ namespace Bowhead.Actors {
         }
 
         private void UpdateGround(float dt, Input_t input) {
-            if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
-                if (canJump) {
-                    var jumpDir = input.movement * data.dodgeSpeed;
-                    jumpDir.y += getGroundJumpVelocity();
-                    jump(jumpDir);
-                }
-                fallJumpTimer = 0;
-            }
-            else {
-                fallJumpTimer = data.fallJumpTime;
-            }
-            var block = world.GetBlock(footPosition());
+
+			bool jumped = false;
+			if (input.IsPressed(InputType.Jump)) {
+				sprintTimer = sprintTimer += dt;
+			}
+			else {
+				if (sprintTimer < 0.25f) {
+					if (canJump) {
+						var jumpDir = input.movement * data.dodgeSpeed;
+						jumpDir.y += getGroundJumpVelocity();
+						jump(jumpDir);
+						jumped = true;
+					}
+					fallJumpTimer = 0;
+				}
+				sprintTimer = 0;
+			}
+			if (!jumped) {
+				fallJumpTimer = data.fallJumpTime;
+			}
+
+
+			var block = world.GetBlock(footPosition());
             var midblock = world.GetBlock(waistPosition());
             var topblock = world.GetBlock(headPosition());
             float slideFriction, slideThreshold;
@@ -837,12 +845,9 @@ namespace Bowhead.Actors {
             //	v -= (getWeight() - data.BodyWeight) / 50f;
             return v;
         }
-        public float getJumpBoostAcceleration() {
-            float v = data.jumpBoostAcceleration;
-            return v;
-        }
         public float getGroundMaxSpeed() {
 			float modifier = 1;
+			float maxSpeed = data.groundMaxSpeed;
 			for (int i=0;i<MaxInventorySize;i++) {
 				var item = GetInventorySlot(i) as Weapon;
 				if (item!= null) {
@@ -857,13 +862,18 @@ namespace Bowhead.Actors {
 					}
 				}
 			}
-			float maxSpeed = data.groundMaxSpeed * modifier;
 
 			if (canRun) {
-                return maxSpeed;
+				if (modifier == 1) {
+					if (sprintTimer > 0.25f) {
+						maxSpeed *= 1.5f;
+					}
+				}
+
+				return maxSpeed * modifier;
             }
             else {
-                return Mathf.Min(maxSpeed, data.crouchSpeed);
+                return Mathf.Min(maxSpeed, data.crouchSpeed) * modifier;
             }
         }
         public float getGroundAcceleration() {

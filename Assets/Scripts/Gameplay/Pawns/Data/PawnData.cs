@@ -20,7 +20,6 @@ namespace Bowhead.Actors {
         [Header("Ground")]
         public float jumpSpeed;
         public float dodgeSpeed;
-        public float jumpBoostAcceleration;
         public float jumpStaminaUse;
         public float groundAcceleration; // accel = veldiff * groundAccel * dt
         public float crouchSpeed;
