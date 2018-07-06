@@ -43,13 +43,13 @@ namespace Bowhead.Actors {
 				if (target != null) {
 					if (target.team != team) {
 						target.damage(data.damage);
-						GameObject.Destroy(go);
+						Destroy();
 						return;
 					}
 				}
 				else {
 					// hit the terrain
-					GameObject.Destroy(go);
+					Destroy();
 					return;
 				}
 			}
