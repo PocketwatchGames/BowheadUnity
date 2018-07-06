@@ -13,6 +13,8 @@ namespace Bowhead.Client.UI {
         InventoryContainer _inventoryContainerPrefab;
         [SerializeField]
         InventorySlot _inventorySlotPrefab;
+		[SerializeField]
+		Transform _inventoryItems;
 
         public int slotMargin = 8;
         private Vector3 slotSize;
@@ -27,6 +29,11 @@ namespace Bowhead.Client.UI {
         private List<InventoryContainer> _packContainers = new List<InventoryContainer>();
         private InventorySlot[] _slots = new InventorySlot[Player.MaxInventorySize];
 
+		[SerializeField] MonoBehaviour _buttonHints;
+		[SerializeField] ButtonHint _buttonHintUp;
+		[SerializeField] ButtonHint _buttonHintDown;
+		[SerializeField] ButtonHint _buttonHintLeftRight;
+
         public void Init(Player player) {
             _player = player;
             var r = _inventorySlotPrefab.GetComponent<RectTransform>().rect;
@@ -34,8 +41,15 @@ namespace Bowhead.Client.UI {
 
             _player.OnInventoryChange += OnInventoryChange;
 
-            _mainContainer = Instantiate(_inventoryContainerPrefab, transform, false);
+            _mainContainer = Instantiate(_inventoryContainerPrefab, _inventoryItems, false);
             Rebuild();
+
+			_buttonHintUp.SetButton("^");
+			_buttonHintUp.SetHint("Drop/Rearrange");
+			_buttonHintDown.SetButton("v");
+			_buttonHintDown.SetHint("Use");
+			_buttonHintLeftRight.SetButton("< >");
+			_buttonHintLeftRight.SetHint("Select");
         }
 
         private void OnInventoryChange() {
@@ -90,7 +104,7 @@ namespace Bowhead.Client.UI {
                         break;
                     }
                     packSlotsRemaining = p.data.slots + 1;
-                    curPackContainer = Instantiate(_inventoryContainerPrefab, transform, false);
+                    curPackContainer = Instantiate(_inventoryContainerPrefab, _inventoryItems, false);
                     curPackContainer.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, 0);
                     _packContainers.Add(curPackContainer);
                     x = slotMargin;
@@ -110,6 +124,7 @@ namespace Bowhead.Client.UI {
             }
 
             SelectInventory(inventorySelected);
+
 
         }
 

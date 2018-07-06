@@ -14,6 +14,7 @@ namespace Bowhead.Actors {
         [Header("Player")]
         public Vector3 spawnPoint;
         public Vector2 mapPos;
+		public float jumpTimer;
 
         [Header("Inventory")]
         public int money;
