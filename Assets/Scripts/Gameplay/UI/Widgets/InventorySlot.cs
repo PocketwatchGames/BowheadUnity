@@ -7,16 +7,30 @@ namespace Bowhead.Client.UI {
 	using Player = Bowhead.Actors.Player;
     public class InventorySlot : MonoBehaviour {
 
+		[SerializeField]
+		private ButtonImage _buttonHint;
+
         private Item _item;
         private Button _button;
         private Image _background;
-        public Sprite[] _slotBackgrounds;
+
+		public Sprite[] _slotBackgrounds;
+
 
         public void Init(Player.InventorySlot slot) {
             _button = transform.GetAnyChildComponent<Button>("Button");
             _background = transform.GetAnyChildComponent<Image>("Background");
-            _background.sprite = _slotBackgrounds[Mathf.Min((int)slot, _slotBackgrounds.Length-1)];            
+            _background.sprite = _slotBackgrounds[Mathf.Min((int)slot, _slotBackgrounds.Length-1)];
+			_button.gameObject.SetActive(false);
+			_buttonHint.gameObject.SetActive(false);
         }
+
+		public void SetButton(string b) {
+			_buttonHint.gameObject.SetActive(b != null);
+			if (b != null) {
+				_buttonHint.SetButton(b);
+			}
+		}
 
         public void SetItem(Item i) {
             _item = i;

@@ -9,7 +9,7 @@ namespace Bowhead.Client.UI {
 		private Vector3 _targetPosition;
 		private bool _active;
 
-        public UnityEngine.UI.Text buttonText;
+        public ButtonImage buttonImage;
         public UnityEngine.UI.Text hintText;
 
         // Use this for initialization
@@ -47,7 +47,7 @@ namespace Bowhead.Client.UI {
 		}
 
 		public void SetButton(string b) {
-            buttonText.text = b;
+            buttonImage.SetButton(b);
         }
         public void SetHint(string h) {
             hintText.text = h;

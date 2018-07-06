@@ -75,7 +75,12 @@ namespace Bowhead.Client.UI {
             x += slotMargin;
             _mainContainer.GetComponent<RectTransform>().sizeDelta = new Vector2(x, 54);
 
-            int packSlotsRemaining = 0;
+			_slots[1].SetButton("LT");
+			_slots[2].SetButton("RT");
+			_slots[3].SetButton("LB");
+			_slots[4].SetButton("RB");
+
+			int packSlotsRemaining = 0;
             InventoryContainer curPackContainer = null;
             for (int slot = (int)Player.InventorySlot.PACK; slot < Player.MaxInventorySize; slot++) {
                 var item = _player.GetInventorySlot(slot);
