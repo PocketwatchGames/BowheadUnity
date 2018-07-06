@@ -274,7 +274,7 @@ namespace Bowhead.Client.UI {
 					var voxel = tile.voxelmap[ofs];
 					var color = blockColors[(int)(voxel-1)];
                     const float minElevation = 50;
-                    const float maxElevation = 120;
+                    const float maxElevation = 600;
                     float elevation =(float)(tile.elevationmap[ofs] - minElevation)/(maxElevation-minElevation);
                     Color32 elevationColor = Color32.Lerp(new Color(elevation, elevation, elevation,1f), color, 0.5f);
                     _pixels[ofs] = elevationColor;
