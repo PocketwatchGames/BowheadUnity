@@ -15,6 +15,7 @@ MonoBehaviour:
   _index: 3
   height: 1
   maxHealth: 100
+  maxWater: 0
   maxStamina: 50
   recoveryTime: 1
   staminaRechargeTime: 3
@@ -53,6 +54,8 @@ MonoBehaviour:
   swimMaxSpeed: 10
   swimDragVertical: 5
   swimDragHorizontal: 0.25
+  _critterClass: Bowhead.Actors.Critter, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
   prefab:
     _assetPath: Actors/Horse
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Horse.prefab
@@ -64,3 +67,4 @@ MonoBehaviour:
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
   panicBehavior: 1
+  defaultLoadout: {fileID: 0}

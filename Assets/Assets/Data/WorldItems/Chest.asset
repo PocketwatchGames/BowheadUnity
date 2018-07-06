@@ -16,3 +16,5 @@ MonoBehaviour:
   prefab:
     _assetPath: TreasureChest
     _editorPath: Assets/Assets/Prefabs/Resources/TreasureChest.prefab
+  _itemClass: Bowhead.Actors.WorldItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null

@@ -6,7 +6,7 @@ using System;
 namespace Bowhead.Actors {
 
 	[CreateAssetMenu(menuName = "EntityData/Critter")]
-	public class CritterData : PawnData<CritterData> {
+	public class CritterData : PawnData<CritterData>, ISpawnPointSupport {
 		[Header("Critter"), ClassDropdown(typeof(Critter)), SerializeField]
 		string _critterClass;
 
@@ -58,6 +58,10 @@ namespace Bowhead.Actors {
 
 			return critter;
 
+		}
+
+		public Actor Spawn(World world, Vector3 pos, Team team) {
+			return Spawn<Critter>(world, pos, null, null, team);
 		}
 
 	};

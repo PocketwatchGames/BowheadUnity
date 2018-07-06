@@ -6,7 +6,7 @@ using System;
 namespace Bowhead.Actors {
 
     [CreateAssetMenu(menuName = "EntityData/WorldItem")]
-    public class WorldItemData : InteractableData<WorldItemData> {
+    public class WorldItemData : InteractableData<WorldItemData>, ISpawnPointSupport {
 		[ClassDropdown(typeof(WorldItem)), SerializeField]
 		string _itemClass;
 
@@ -26,6 +26,10 @@ namespace Bowhead.Actors {
 			var item = (T)world.Spawn(itemClass, null, default(SpawnParameters));
 			item.Spawn(this, pos, instigator, owner, team);
 			return item;
+		}
+
+		public Actor Spawn(World world, Vector3 pos, Team team) {
+			return Spawn<WorldItem>(world, pos, null, null, team);
 		}
 	}
 

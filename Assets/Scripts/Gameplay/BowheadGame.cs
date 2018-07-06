@@ -158,8 +158,7 @@ namespace Bowhead.Server {
 	public abstract class BowheadGame<T> : GameMode<T> where T : GameState<T> {
 		public const WorldStreaming.EGenerator WORLD_GENERATOR_TYPE = WorldStreaming.EGenerator.PROC_V2;
 
-		static SpawnPointData[] _monsterSpawns = SpawnPointData.GetAllSpawnTypes(ESpawnPointTeam.Monster);
-		static SpawnPointData[] _npcSpawns = SpawnPointData.GetAllSpawnTypes(ESpawnPointTeam.NPC);
+		static SpawnPointData[] _monsterSpawns = SpawnPointData.GetAllSpawnTypes<Critter>(ESpawnPointType.Monster);
 
 		public BowheadGame(ServerWorld world) : base(world) {
 			data = Resources.Load<WorldData>("DefaultWorld");
@@ -185,8 +184,7 @@ namespace Bowhead.Server {
 						money.count = 100;
 						break;
 					case 1:
-						worldItem = WorldItemData.Get("Map").Spawn<WorldItem>(world, pos, null, null, null);
-						worldItem.map = new WorldItem.MapReveal() { position = new Vector2(pos.x, pos.z), radius = 1000 };
+						WorldItemData.Get("Map").Spawn<WorldItem>(world, pos, null, null, null);
 						break;
 				}
 			}
@@ -229,7 +227,7 @@ namespace Bowhead.Server {
 				break;
 			}
 
-			
+			spawnPoint.Spawn<Actor>(this, decoration.pos);
 		}
 
 		#region perlin utils
@@ -279,23 +277,6 @@ namespace Bowhead.Server {
 
 
 		public void SpawnRandomCritter() {
-
-			// despawn critters
-			foreach (var c in world.GetActorIterator<Critter>()) {
-				if (c.active) {
-					float closestDist = 1000;
-					foreach (var p in world.GetActorIterator<Player>()) {
-						if (p.active) {
-							var diff = c.position - p.position;
-							diff.y = 0;
-							closestDist = Mathf.Min(closestDist, diff.magnitude);
-						}
-					}
-					if (closestDist > 500) {
-						c.Destroy();
-					}
-				}
-			}
 
 			if (numCritters < 50) {
 				var bunnyData = CritterData.Get("bunny");

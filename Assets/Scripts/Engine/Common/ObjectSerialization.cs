@@ -223,6 +223,7 @@ public abstract class SerializableObject {
 		if ((t != obj.serverType) && (t != obj.clientType)) {
 			// unrelated class types!
 			t = null;
+			throw new InvalidReplicatedObjectClassException("Replication error in class " + typeName + ": The Server and Client types are not correct, did you intend for this type be marked abstract?");
 		} else if ((obj.serverType != obj.clientType) && (obj.serverType.BaseType == obj.clientType.BaseType)) {
 			t = t.BaseType;
 		} else if (obj.serverType.BaseType == obj.clientType) {
@@ -234,7 +235,7 @@ public abstract class SerializableObject {
 		}
 		
 		if (t == null) {
-			throw new InvalidReplicatedObjectClassException("Server and Client specialized object classes must derive from a common SerializableObject class, however they cannot derive directly from SerializableObject: The common base class is used to generate the static type class for replication. Error in class " + typeName);
+			throw new InvalidReplicatedObjectClassException("Replication error in class " + typeName + ": Server and Client specialized object classes must derive from a common base class which derrives from SerializableObject.");
 		}
 
 		id = t.AssemblyQualifiedName.GetHashCode();

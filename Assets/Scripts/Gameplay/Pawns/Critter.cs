@@ -80,9 +80,7 @@ namespace Bowhead.Actors {
             }
 
         }
-
-
-
+		
         public override void PreSimulate(float dt) {
 
             canClimb = false;
@@ -122,8 +120,23 @@ namespace Bowhead.Actors {
                 SetActive(spawnPosition);
             }
 
-
+			// TODO: this doesn't need to be done *every* frame
+			CheckDespawn(500);
         }
+
+		void CheckDespawn(float maxDist) {
+			float closestDist = 1000;
+			foreach (var p in world.GetActorIterator<Player>()) {
+				if (p.active) {
+					var diff = position - p.position;
+					diff.y = 0;
+					closestDist = Mathf.Min(closestDist, diff.magnitude);
+				}
+			}
+			if (closestDist > maxDist) {
+				Destroy();
+			}
+		}
 
 
         public override void Simulate(float dt, Input_t input) {
