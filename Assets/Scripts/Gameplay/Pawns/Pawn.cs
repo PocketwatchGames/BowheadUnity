@@ -49,7 +49,6 @@ namespace Bowhead.Actors {
         [Header("Input")]
         public PlayerCmd_t cur;
         public PlayerCmd_t last;
-		public float sprintTimer;
 
 		[Header("Physics")]
         public Vector3 spawnPosition;
@@ -77,7 +76,9 @@ namespace Bowhead.Actors {
 
         [Header("Gameplay")]
         public Pawn.Activity activity;
-        public Vector3 climbingNormal;
+		public float sprintTimer;
+		public float sprintGracePeriodTime;
+		public Vector3 climbingNormal;
         public float fallJumpTimer;
         public float maxHorizontalSpeed;
         public bool sliding;
@@ -571,9 +572,15 @@ namespace Bowhead.Actors {
 			bool jumped = false;
 			if (input.IsPressed(InputType.Jump)) {
 				sprintTimer = sprintTimer += dt;
+				if (sprintTimer > data.sprintTime) {
+					sprintGracePeriodTime = data.sprintGracePeriodTime;
+				}
+				if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+					dodgeTimer = dodgeTimer + data.dodgeTime;
+				}
 			}
 			else {
-				if (sprintTimer < 0.25f) {
+				if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
 					if (canJump) {
 						var jumpDir = input.movement * data.dodgeSpeed;
 						jumpDir.y += getGroundJumpVelocity();
@@ -583,6 +590,7 @@ namespace Bowhead.Actors {
 					fallJumpTimer = 0;
 				}
 				sprintTimer = 0;
+				sprintGracePeriodTime = Mathf.Max(0, sprintGracePeriodTime - dt);
 			}
 			if (!jumped) {
 				fallJumpTimer = data.fallJumpTime;
@@ -685,7 +693,9 @@ namespace Bowhead.Actors {
             Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
             maxHorizontalSpeed = horizontalVel.magnitude;
 
-
+			if (sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
+				useStamina(data.sprintStaminaUse * dt);
+			}
         }
 
         private void UpdateSwimming(float dt, Input_t input) {
@@ -746,14 +756,14 @@ namespace Bowhead.Actors {
                     Vector3 jumpDir = Vector3.zero;
                     if (climbingInput.y < 0) {
                         // Push away from wall
-                        jumpDir += input.movement * data.groundMaxSpeed;
+                        jumpDir += input.movement * Mathf.Max(data.groundMaxSpeed, data.sprintSpeed);
                         jumpDir.y += data.jumpSpeed;
                     }
                     else {
                         if (climbingInput.y > 0) {
                             // jumping up jumps away from the wall slightly so we don't reattach right away
                             jumpDir += climbingInput * data.jumpSpeed;
-                            jumpDir += climbingNormal * data.jumpSpeed / 2;
+                            jumpDir += climbingNormal * data.jumpSpeed / 4;
                         }
                         else if (climbingInput.y >= 0) {
                             // left right jumps get a vertical boost
@@ -865,8 +875,8 @@ namespace Bowhead.Actors {
 
 			if (canRun) {
 				if (modifier == 1) {
-					if (sprintTimer > 0.25f) {
-						maxSpeed *= 1.5f;
+					if (sprintTimer > 0) {
+						maxSpeed = data.sprintSpeed;
 					}
 				}
 
@@ -957,7 +967,6 @@ namespace Bowhead.Actors {
 
 		void jump(Vector3 dir) {
             useStamina(data.jumpStaminaUse);
-            dodgeTimer = dodgeTimer + data.dodgeTime;
 
             float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 
@@ -965,8 +974,13 @@ namespace Bowhead.Actors {
 
             float velY = velocity.y;
             float newSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-            if (newSpeedXZ > data.groundMaxSpeed) {
-                newSpeedXZ = Mathf.Min(curSpeedXZ, data.groundMaxSpeed);
+
+			if (sprintGracePeriodTime > 0 && newSpeedXZ > 0) {
+				newSpeedXZ = data.sprintSpeed;
+			}
+
+            if (newSpeedXZ > data.dodgeSpeed) {
+                newSpeedXZ = Mathf.Min(curSpeedXZ, data.dodgeSpeed);
                 velocity = velocity.normalized * newSpeedXZ;
                 velocity.y = velY;
             }

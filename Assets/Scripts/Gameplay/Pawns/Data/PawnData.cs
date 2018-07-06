@@ -26,7 +26,11 @@ namespace Bowhead.Actors {
         public float walkSpeed;
         public float walkStartTime;
         public float walkStopTime;
-        public float groundMaxSpeed;
+		public float sprintTime;
+		public float sprintSpeed;
+		public float sprintStaminaUse;
+		public float sprintGracePeriodTime;
+		public float groundMaxSpeed;
         public float groundWindDrag;
         public float slideThresholdSlope;
         public float slideThresholdFlat;
