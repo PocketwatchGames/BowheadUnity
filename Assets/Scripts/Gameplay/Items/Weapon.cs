@@ -123,8 +123,7 @@ namespace Bowhead {
 			}
 			
 			if (d.projectile != null) {
-				var p = owner.world.Spawn<Actors.Projectile>(null, default(SpawnParameters));
-				p.Spawn(data, owner.position + new Vector3(0, 0.5f, 0), new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw)) * d.projectileSpeed, null, null, owner.team);
+				d.projectile.SpawnAndFireProjectile<Actors.Projectile>(owner.world, owner.position + new Vector3(0, 0.5f, 0), new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw)) * d.projectileSpeed, null, null, owner.team);
 			}
 
 			if (d.spell != WeaponData.Spell.None) {
