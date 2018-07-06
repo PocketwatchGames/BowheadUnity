@@ -47,23 +47,23 @@ public static class ClassDropDownHelper {
 
 			foreach (var t in types) {
 				if (typeof(SerializableObject).IsAssignableFrom(t)) {
-					var ctor = t.GetConstructor(System.Type.EmptyTypes);
+					var ctor = t.GetConstructor(Type.EmptyTypes);
 					if (ctor != null) {
 						var obj = ctor.Invoke(null) as SerializableObject;
 						if (obj.serverType != obj.clientType) {
-							var typeName = t.BaseType.FullName;
+							var typeName = t.BaseType.AssemblyQualifiedName;
 							if (!classTypes.ContainsKey(typeName)) {
 								classTypes[typeName] = t;
 								classShortNames[typeName] = t.BaseType.Name;
 							}
 						} else {
-							var typeName = t.FullName;
+							var typeName = t.AssemblyQualifiedName;
 							classTypes[typeName] = t;
 							classShortNames[typeName] = t.Name;
 						}
 					}
 				} else {
-					var typeName = t.FullName;
+					var typeName = t.AssemblyQualifiedName;
 					classTypes[typeName] = t;
 					classShortNames[typeName] = t.Name;
 				}
@@ -101,7 +101,7 @@ public static class ClassDropDownHelper {
 
 		string classTag = "";
 		for (int i = 0; i < types.Length; ++i) {
-			classTag += types[i].FullName;
+			classTag += types[i].AssemblyQualifiedName;
 		}
 
 		ClassData classData;
@@ -152,7 +152,7 @@ public static class ClassDropDownHelper {
 
 		string classTag = "";
 		for (int i = 0; i < types.Length; ++i) {
-			classTag += types[i].FullName;
+			classTag += types[i].AssemblyQualifiedName;
 		}
 
 		ClassData classData;

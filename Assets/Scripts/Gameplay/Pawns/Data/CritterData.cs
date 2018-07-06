@@ -5,19 +5,60 @@ using System;
 
 namespace Bowhead.Actors {
 
-    [CreateAssetMenu(menuName = "EntityData/Critter")]
-    public class CritterData : PawnData<CritterData> {
-        [Header("Critter")]
+	[CreateAssetMenu(menuName = "EntityData/Critter")]
+	public class CritterData : PawnData<CritterData> {
+		[Header("Critter"), ClassDropdown(typeof(Critter)), SerializeField]
+		string _critterClass;
 
-        public GameObject_WRef prefab;
-        public float visionWeight;
-        public float smellWeight;
-        public float hearingWeight;
-        public float waryCooldownTime;
-        public float panicCooldownTime;
-        public float waryIncreaseAtMaxAwareness;
-        public float waryIncreaseAtMaxAwarenessWhilePanicked;
-        public ECritterBehaviorType panicBehavior;
+		public GameObject_WRef prefab;
+		public float visionWeight;
+		public float smellWeight;
+		public float hearingWeight;
+		public float waryCooldownTime;
+		public float panicCooldownTime;
+		public float waryIncreaseAtMaxAwareness;
+		public float waryIncreaseAtMaxAwarenessWhilePanicked;
+		public ECritterBehaviorType panicBehavior;
 		public ItemLoadoutData defaultLoadout;
-    };
+
+		public Type critterClass { get; private set; }
+
+		public override void OnAfterDeserialize() {
+			base.OnAfterDeserialize();
+
+			if (string.IsNullOrEmpty(_critterClass)) {
+				critterClass = null;
+			} else {
+				critterClass = Type.GetType(_critterClass);
+			}
+		}
+
+		public T Spawn<T>(World world, Vector3 pos, Actor instigator, Actor owner, Team team) where T: Critter {
+
+			var critter = (T)world.Spawn(critterClass, null, default(SpawnParameters));
+			critter.Spawn(this, pos, instigator, owner, team);
+
+			if (defaultLoadout != null) {
+				var loot = defaultLoadout.loot;
+				if ((loot != null) && (loot.Length > 0)) {
+					for (int i = 0; i<loot.Length; ++i) {
+						var item = loot[i].CreateItem();
+						critter.loot[i] = item;
+					}
+				}
+
+				var inventory = defaultLoadout.inventory;
+				if ((inventory != null) && (inventory.Length > 0)) {
+					for (int i = 0; i<inventory.Length; ++i) {
+						var item = inventory[i].CreateItem();
+						critter.SetInventorySlot(i, item);
+					}
+				}
+			}
+
+			return critter;
+
+		}
+
+	};
 }

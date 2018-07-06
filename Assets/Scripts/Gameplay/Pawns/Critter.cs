@@ -73,7 +73,7 @@ namespace Bowhead.Actors {
             decayTime = 5;
             foreach (var i in loot) {
                 if (i != null) {
-                    var worldItem = gameMode.SpawnWorldItem("Chest", position);
+                    var worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, position, this, null, team);
 					worldItem.item = i;
                     worldItem.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
                 }

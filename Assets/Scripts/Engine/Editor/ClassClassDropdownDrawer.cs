@@ -15,7 +15,7 @@ public class ClassDropdownDrawer : PropertyDrawer {
 
 		if (attr.Readonly) {
 			GUI.enabled = false;
-			property.stringValue = attr.types[0].FullName;
+			property.stringValue = attr.types[0].AssemblyQualifiedName;
 		}
 
 		ClassDropDownHelper.ShowClassDropDown(position, attr.types, property.displayName, property);

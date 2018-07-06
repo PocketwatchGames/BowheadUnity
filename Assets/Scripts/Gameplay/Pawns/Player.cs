@@ -834,7 +834,7 @@ namespace Bowhead.Actors {
 
         public void Drop(Item item) {
             RemoveFromInventory(item);
-			var worldItem = gameMode.SpawnWorldItem("chest", handPosition());
+			var worldItem = WorldItemData.Get("chest").Spawn<WorldItem>(world, handPosition(), this, this, team);
             worldItem.item = item;
         }
 

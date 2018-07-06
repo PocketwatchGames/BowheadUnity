@@ -1,11 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 namespace Bowhead.Actors {
 
     public abstract class PawnData : EntityData {
-        [Header("Basic")]
+		[Header("Basic")]
         public float height;
         public float maxHealth;
 		public float maxWater;
@@ -61,6 +60,7 @@ namespace Bowhead.Actors {
     }
 
 	public abstract class PawnData<T> : PawnData where T : PawnData<T> {
+
 		new public static T Get(string name) {
 			return DataManager.GetData<T>(name);
 		}

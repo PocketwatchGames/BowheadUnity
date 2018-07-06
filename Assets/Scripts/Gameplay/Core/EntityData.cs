@@ -5,9 +5,14 @@ namespace Bowhead {
 	using Entity = Actors.Entity;
 	using Team = Actors.Team;
 
-    public abstract class EntityData : StaticVersionedAsset {
+    public abstract class EntityData : StaticVersionedAssetWithSerializationCallback {
+		
 		public static EntityData Get(string name) {
 			return DataManager.GetData<EntityData>(name);
+		}
+
+		protected override void InitVersion() {
+			base.InitVersion();
 		}
 	}
 

@@ -179,13 +179,13 @@ namespace Bowhead.Server {
 				int itemType = UnityEngine.Random.Range(0, 2);
 				switch (itemType) {
 					case 0:
-						worldItem = SpawnWorldItem("Chest", pos);
+						worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
 						var money = MoneyData.Get("Money").CreateItem();
 						worldItem.item = money;
 						money.count = 100;
 						break;
 					case 1:
-						worldItem = SpawnWorldItem("Map", pos);
+						worldItem = WorldItemData.Get("Map").Spawn<WorldItem>(world, pos, null, null, null);
 						worldItem.map = new WorldItem.MapReveal() { position = new Vector2(pos.x, pos.z), radius = 1000 };
 						break;
 				}
@@ -229,7 +229,7 @@ namespace Bowhead.Server {
 				break;
 			}
 
-
+			
 		}
 
 		#region perlin utils
@@ -260,55 +260,13 @@ namespace Bowhead.Server {
 		}
 
 		Player SpawnPlayer() {
-			var player = world.Spawn<Player>(null, default(SpawnParameters));
-			player.Spawn(PlayerData.Get("player"), new Vector3(16, 600, 16), null, null, null);
-			return player;
-		}
-
-		public WorldItem SpawnWorldItem(string dataName, Vector3 pos) {
-			var data = WorldItemData.Get(dataName);
-			if (data == null) {
-				return null;
-			}
-			var item = world.Spawn<WorldItem>(null, default(SpawnParameters));
-			item.Spawn(data, pos, null, null, null);
-			return item;
-		}
-
-		public Critter SpawnCritter(string dataName, Vector3 pos, Team team) {
-			var data = CritterData.Get(dataName);
-			if (data == null) {
-				return null;
-			}
-			return SpawnCritter(data, pos, team);
+			return PlayerData.Get("player").Spawn<Player>(world, new Vector3(16, 600, 16), null, null, null);
 		}
 
 		public Critter SpawnCritter(CritterData data, Vector3 pos, Team team) {
-			var critter = world.Spawn<Critter>(null, default(SpawnParameters));
-			critter.Spawn(data, pos, null, null, team);
-			if (data.defaultLoadout != null) {
-				var loot = data.defaultLoadout.loot;
-				if ((loot != null) && (loot.Length > 0)) {
-					for (int i = 0; i < loot.Length; ++i) {
-						var item = loot[i].CreateItem();
-						critter.loot[i] = item;
-					}
-				}
-				var inventory = data.defaultLoadout.inventory;
-				if ((inventory != null) && (inventory.Length > 0)) {
-					for (int i = 0; i < inventory.Length; ++i) {
-						var item = inventory[i].CreateItem();
-						critter.SetInventorySlot(i, item);
-					}
-				}
-			}
+			var critter = data.Spawn<Critter>(world, pos, null, null, team);
+			
 			return critter;
-		}
-
-		public Projectile SpawnProjectile(ProjectileData data, Vector3 pos, Vector3 velocity, Team team) {
-			var p = world.Spawn<Projectile>(null, default(SpawnParameters));
-			p.Spawn(data, pos, velocity, null, null, team);
-			return p;
 		}
 
 		public void CritterSpawned() {
@@ -338,8 +296,6 @@ namespace Bowhead.Server {
 					}
 				}
 			}
-
-
 
 			if (numCritters < 50) {
 				var bunnyData = CritterData.Get("bunny");
