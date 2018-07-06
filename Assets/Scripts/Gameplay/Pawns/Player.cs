@@ -881,6 +881,7 @@ namespace Bowhead.Actors {
                     if (waterItem != null) {
                         waterItem.count = waterData.stackSize;
                     }
+					water = maxWater;
                 }
             }
         }
