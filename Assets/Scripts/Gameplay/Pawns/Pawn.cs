@@ -555,8 +555,7 @@ namespace Bowhead.Actors {
 
             if (input.movement != Vector3.zero) {
                 float acceleration = data.fallAcceleration;
-                float maxSpeed = getGroundMaxSpeed();
-                maxSpeed = Mathf.Clamp(maxSpeed, data.fallMaxHorizontalSpeed, Math.Max(maxHorizontalSpeed, data.fallMaxHorizontalSpeed));
+                float maxSpeed = Math.Max(maxHorizontalSpeed, data.fallMaxHorizontalSpeed);
 
                 var normalizedVelocity = velocity / maxSpeed;
                 normalizedVelocity.y = 0;
@@ -710,7 +709,13 @@ namespace Bowhead.Actors {
             velocity += velChange;
 
             Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
-            maxHorizontalSpeed = horizontalVel.magnitude;
+
+			if (sprintGracePeriodTime > 0) {
+				maxHorizontalSpeed = Mathf.Max(maxHorizontalSpeed, horizontalVel.magnitude);
+			}
+			else {
+				maxHorizontalSpeed = horizontalVel.magnitude;
+			}
 
 			if (data.sprintTime > 0 && sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
 				useStamina(data.sprintStaminaUse * dt);
@@ -785,6 +790,7 @@ namespace Bowhead.Actors {
                         // Push away from wall
                         jumpDir += input.movement * Mathf.Max(data.groundMaxSpeed, data.sprintSpeed);
                         jumpDir.y += data.jumpSpeed;
+						maxHorizontalSpeed = data.sprintSpeed;
                     }
                     else {
                         if (climbingInput.y > 0) {
@@ -981,23 +987,24 @@ namespace Bowhead.Actors {
 		void jump(Vector3 dir) {
             useStamina(data.jumpStaminaUse);
 
-            float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-
-            velocity += dir;
-
-            float velY = velocity.y;
-            float newSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-
-			if (sprintGracePeriodTime > 0 && newSpeedXZ > 0) {
-				newSpeedXZ = data.sprintSpeed;
-				maxHorizontalSpeed = data.sprintSpeed;
+			float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+			float launchSpeedXZ;
+			if (sprintGracePeriodTime > 0) {
+				launchSpeedXZ = data.sprintSpeed;
+			}
+			else {
+				launchSpeedXZ = curSpeedXZ;
 			}
 
-            if (newSpeedXZ > data.dodgeSpeed) {
-                newSpeedXZ = Mathf.Min(curSpeedXZ, data.dodgeSpeed);
-                velocity = velocity.normalized * newSpeedXZ;
-                velocity.y = velY;
-            }
+			float jumpSpeedXZ = Mathf.Sqrt(dir.x * dir.x + dir.z * dir.z);
+			velocity += dir;
+			float combinedSpeedXZ =curSpeedXZ + jumpSpeedXZ;
+
+
+			float velY = velocity.y;
+            float newSpeedXZ = Mathf.Min(launchSpeedXZ, combinedSpeedXZ);
+            velocity = velocity.normalized * newSpeedXZ;
+            velocity.y = velY;
         }
 
         public void stun(float s) {

@@ -19,7 +19,7 @@ MonoBehaviour:
   hand: 2
   chargeTime: 0.5
   parryTime: 0
-  moveSpeedWhileCharging: 0.75
+  canRunWhileCharging: 0
   moveSpeedChargeDelay: 0.2
   weaponSize: {x: 0, y: 0, z: 0}
   attacks:
@@ -40,14 +40,17 @@ MonoBehaviour:
     stunPower: 0.1
     stunPowerBackstab: 0
     attackDamageBackstab: 0
-    moveSpeedDuringCooldown: 0
-    moveSpeedDuringCast: 0
+    canMoveDuringCooldown: 1
+    canMoveDuringCast: 1
+    canMoveDuringActive: 0
     interrupt: 0
     unblockable: 0
     defendInterrupt: 0
     spell: 0
     spellPower: 0
     waterUse: 0
+    projectile: {fileID: 0}
+    projectileSpeed: 0
   - castTime: 0.1
     activeTime: 0.3
     cooldown: 0.2
@@ -65,14 +68,17 @@ MonoBehaviour:
     stunPower: 0.1
     stunPowerBackstab: 0
     attackDamageBackstab: 0
-    moveSpeedDuringCooldown: 0
-    moveSpeedDuringCast: 0
+    canMoveDuringCooldown: 1
+    canMoveDuringCast: 1
+    canMoveDuringActive: 0
     interrupt: 0
     unblockable: 0
     defendInterrupt: 0
     spell: 0
     spellPower: 0
     waterUse: 5
+    projectile: {fileID: 0}
+    projectileSpeed: 0
   parry:
     castTime: 0
     activeTime: 0
@@ -91,11 +97,14 @@ MonoBehaviour:
     stunPower: 0
     stunPowerBackstab: 0
     attackDamageBackstab: 0
-    moveSpeedDuringCooldown: 0
-    moveSpeedDuringCast: 0
+    canMoveDuringCooldown: 0
+    canMoveDuringCast: 0
+    canMoveDuringActive: 0
     interrupt: 0
     unblockable: 0
     defendInterrupt: 0
     spell: 0
     spellPower: 0
     waterUse: 0
+    projectile: {fileID: 0}
+    projectileSpeed: 0
