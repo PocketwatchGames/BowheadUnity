@@ -45,14 +45,14 @@ namespace Bowhead.Client.UI {
             Rebuild();
 
 			_buttonHintUp.SetButton("^");
-			_buttonHintUp.SetHint("Drop/Rearrange");
 			_buttonHintDown.SetButton("v");
-			_buttonHintDown.SetHint("Use");
 			_buttonHintLeftRight.SetButton("< >");
-			_buttonHintLeftRight.SetHint("Select");
-        }
 
-        private void OnInventoryChange() {
+			SetRearranging(false);
+
+		}
+
+		private void OnInventoryChange() {
             Rebuild();
 
             while (_player.GetInventorySlot(inventorySelected) == null) {
@@ -62,6 +62,7 @@ namespace Bowhead.Client.UI {
                     break;
                 }
             }
+			SelectInventory(inventorySelected);
 			OnInventorySelected();
 
 		}
@@ -108,13 +109,13 @@ namespace Bowhead.Client.UI {
                     }
                     packSlotsRemaining = p.data.slots + 1;
                     curPackContainer = Instantiate(_inventoryContainerPrefab, _inventoryItems, false);
-                    curPackContainer.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, 0);
+                    curPackContainer.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, (_rearranging && slot == inventorySelected) ? 15 : 0);
                     _packContainers.Add(curPackContainer);
                     x = slotMargin;
                 }
 
                 var s = Instantiate(_inventorySlotPrefab, curPackContainer.transform, false);
-                s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
+                s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, (_rearranging && slot == inventorySelected) ? 15 : 0);
                 s.Init((Player.InventorySlot)slot);
                 s.SetItem(_player.GetInventorySlot(slot));
                 _slots[slot] = s;
@@ -130,6 +131,20 @@ namespace Bowhead.Client.UI {
 
 
         }
+
+		private void SetRearranging(bool r) {
+			_rearranging = r;
+			if (_rearranging) {
+				_buttonHintLeftRight.SetHint("Move Item");
+				_buttonHintDown.SetHint("Cancel");
+				_buttonHintUp.SetHint("Confirm Drop");
+			}
+			else {
+				_buttonHintLeftRight.SetHint("Select");
+				_buttonHintDown.SetHint("Use");
+				_buttonHintUp.SetHint("Drop");
+			}
+		}
 
         private void Update() {
 
@@ -167,14 +182,25 @@ namespace Bowhead.Client.UI {
 			if (drop) {
 				var item = _player.GetInventorySlot(inventorySelected);
 				if (item != null) {
-					_player.Drop(item);
+					if (_rearranging) {
+						_player.Drop(item);
+						SetRearranging(false);
+					}
+					else {
+						SetRearranging(true);
+					}
 					Rebuild();
 				}
 			}
 			if (use) {
 				var item = _player.GetInventorySlot(inventorySelected);
 				if (item != null) {
-					_player.Use(item);
+					if (_rearranging) {
+						SetRearranging(false);
+					}
+					else {
+						_player.Use(item);
+					}
 					Rebuild();
 				}
 			}
@@ -261,29 +287,30 @@ namespace Bowhead.Client.UI {
                         foreach (var i in newInventory) {
                             _player.SetInventorySlot(index++, i);
                         }
-                        inventorySelected = newSlot;
+						SelectInventory(newSlot);
                     }
                 }
                 else {
                     int newSlot = inventorySelected - 1;
                     for (; newSlot > (int)Player.InventorySlot.PACK; newSlot--) {
                         var itemInNewSlot = _player.GetInventorySlot(newSlot);
-                        Pack p2;
                         if (itemInNewSlot is Pack) {
                             continue;
                         }
                         _player.SetInventorySlot(inventorySelected, itemInNewSlot);
                         _player.SetInventorySlot(newSlot, curItem);
-                        inventorySelected = newSlot;
-                        return;
+						SelectInventory(newSlot);
+						Rebuild();
+						return;
 
                     }
                 }
             }
+			Rebuild();
 
-        }
+		}
 
-        private void RearrangeRight() {
+		private void RearrangeRight() {
             var curItem = _player.GetInventorySlot(inventorySelected);
             if (curItem != null) {
                 Pack pack;
@@ -311,9 +338,10 @@ namespace Bowhead.Client.UI {
                         foreach (var i in newInventory) {
                             _player.SetInventorySlot(index++, i);
                         }
-                        inventorySelected = newSlot;
-                    }
-                }
+						SelectInventory(newSlot);
+						Rebuild();
+					}
+				}
                 else {
                     int lastPackSlot;
                     int curPackSlotsRemaining = 0;
@@ -355,11 +383,11 @@ namespace Bowhead.Client.UI {
                             _player.SetInventorySlot(lastEmptySlot, _player.GetInventorySlot(curSlot));
                             lastEmptySlot = curSlot;
                         }
-                        inventorySelected = (int)Player.InventorySlot.PACK + 1;
-                        _player.SetInventorySlot((int)Player.InventorySlot.PACK + 1, curItem);
+						SelectInventory((int)Player.InventorySlot.PACK + 1);
+						_player.SetInventorySlot((int)Player.InventorySlot.PACK + 1, curItem);
                         _player.SetInventorySlot(oldSlot, null);
-                    }
-                    else {
+					}
+					else {
                         for (; newSlot <= lastPackSlot; newSlot++) {
                             var itemInNewSlot = _player.GetInventorySlot(newSlot);
                             if (itemInNewSlot is Pack) {
@@ -367,15 +395,17 @@ namespace Bowhead.Client.UI {
                             }
                             _player.SetInventorySlot(oldSlot, itemInNewSlot);
                             _player.SetInventorySlot(newSlot, curItem);
-                            inventorySelected = newSlot;
-                            return;
+							SelectInventory(newSlot);
+							Rebuild();
+							return;
 
                         }
                     }
-
+					
                 }
-            }
+				Rebuild();
+			}
 
-        }
+		}
     }
 }
