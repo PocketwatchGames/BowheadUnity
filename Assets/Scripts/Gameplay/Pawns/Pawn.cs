@@ -85,8 +85,9 @@ namespace Bowhead.Actors {
         public bool canMove;
         public bool canRun;
         public bool canJump;
-        public bool canClimb;
-        public bool canClimbWell;
+		public bool canClimb;
+		public bool canSprint;
+		public bool canClimbWell;
         public bool canSwim;
         public bool canTurn;
         public bool canAttack;
@@ -581,7 +582,7 @@ namespace Bowhead.Actors {
         private void UpdateGround(float dt, Input_t input) {
 
 			bool jumped = false;
-			if (canJump && canRun) {
+			if (canJump) {
 				if (input.IsPressed(InputType.Jump)) {
 					sprintTimer = sprintTimer += dt;
 					if (sprintTimer > data.sprintTime) {
@@ -889,20 +890,19 @@ namespace Bowhead.Actors {
             return v;
         }
         public float getGroundMaxSpeed() {
-			float modifier = 1;
 			float maxSpeed = data.groundMaxSpeed;
 
 			if (canRun) {
-				if (modifier == 1) {
+				if (canSprint) {
 					if (sprintTimer > 0 && data.sprintTime > 0) {
 						maxSpeed = data.sprintSpeed;
 					}
 				}
 
-				return maxSpeed * modifier;
+				return maxSpeed;
             }
             else {
-                return Mathf.Min(maxSpeed, data.crouchSpeed) * modifier;
+                return Mathf.Min(maxSpeed, data.crouchSpeed);
             }
         }
         public float getGroundAcceleration() {

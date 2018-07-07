@@ -164,22 +164,25 @@ namespace Bowhead.Actors {
             canMove = weight < WeightClass.IMMOBILE && !stunned;
             canAttack = weight < WeightClass.IMMOBILE;
             canRun = weight < WeightClass.ENCUMBERED;
-            canJump = weight < WeightClass.ENCUMBERED;
-            canClimb = weight < WeightClass.HEAVY;
-            canSwim = weight < WeightClass.HEAVY;
+			canJump = weight < WeightClass.ENCUMBERED;
+			canSprint = weight < WeightClass.HEAVY;
+			canClimb = weight < WeightClass.HEAVY;
+			canSwim = weight < WeightClass.HEAVY;
             canClimbWell = weight < WeightClass.MEDIUM;
             canTurn = true;
 
             if (recovering) {
-                canRun = false;
-                canJump = false;
+				canRun = false;
+				canSprint = false;
+				canJump = false;
                 canClimb = false;
                 canClimbWell = false;
                 canAttack = false;
             }
             if (stunned) {
-                canRun = false;
-                canJump = false;
+				canRun = false;
+				canSprint = false;
+				canJump = false;
                 canClimb = false;
                 canClimbWell = false;
                 canAttack = false;
@@ -375,6 +378,8 @@ namespace Bowhead.Actors {
 
             SetSpawnPoint(pos);
 
+			PickUp(ItemData.Get("Pack").CreateItem());
+			PickUp(ItemData.Get("Pack").CreateItem());
 			PickUp(ItemData.Get("Pack").CreateItem());
 			PickUp(ItemData.Get("Chainmail").CreateItem());
 			PickUp(ItemData.Get("Rapier").CreateItem());

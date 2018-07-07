@@ -307,7 +307,8 @@ namespace Bowhead {
 				}
 
 				if (noise.GetWhiteNoise(chunkPos.x, chunkPos.y, chunkPos.z) > 0.98f) {
-					ConstructTower(8, 0, 8, chunk);
+					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x, chunkPos.y, chunkPos.z) * 72 + 8);
+					ConstructTower(ref noise, 8, 0, 8, towerHeight, chunk);
 				}
 			}
 
@@ -510,8 +511,7 @@ namespace Bowhead {
 				}
 			}
 
-            static void ConstructTower(int x, int y, int z, PinnedChunkData_t chunk) {
-                    int towerHeight = 120;
+            static void ConstructTower(ref FastNoise_t noise, int x, int y, int z, int towerHeight, PinnedChunkData_t chunk) {
 
                     for (int i = -1; i <= 1; i++) {
                         for (int j = -1; j <= 1; j++) {

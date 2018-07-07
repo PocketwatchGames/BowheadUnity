@@ -171,7 +171,8 @@ namespace Bowhead {
 
 			if (chargeTime > data.moveSpeedChargeDelay && !data.canRunWhileCharging) {
 				owner.canRun = false;
-            }
+				owner.canSprint = false;
+			}
 
 			UpdateAnimation();
 
