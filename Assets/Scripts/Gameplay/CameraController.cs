@@ -9,6 +9,7 @@ namespace Bowhead.Actors {
 
         private float _yaw;
         private float _pitch;
+		private Vector2 _angleCorrectionVelocity;
         private Player _target;
         private Vector3 _position;
         private bool _isLooking;
@@ -82,7 +83,7 @@ namespace Bowhead.Actors {
 
             _isLooking = false;
 
-			if (Input.GetButton("Look")) {
+			if (Input.GetButtonDown("Look")) {
 				SetMouseLookActive(!_mouseLookActive);
 			}
 
@@ -110,6 +111,18 @@ namespace Bowhead.Actors {
         }
 
         void Tick(float dt) {
+
+			if (!_mouseLookActive) {
+				var curAngles = new Vector2(_yaw, _pitch);
+				var desiredAngles = new Vector2(_yaw, Mathf.Deg2Rad * 45);
+				float angleCorrectionAcceleration = 2;
+				float angleCorrectionTime = 2;
+				var desiredVelocity = (desiredAngles - curAngles) / angleCorrectionTime;
+				_angleCorrectionVelocity += (desiredVelocity - _angleCorrectionVelocity) * dt * angleCorrectionAcceleration;
+				curAngles += _angleCorrectionVelocity * dt;
+				_yaw = curAngles.x;
+				_pitch = curAngles.y;
+			}
             if (_target != null) {
 
                 float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (data.maxDistance - data.minDistance) + data.minDistance;
@@ -152,54 +165,54 @@ namespace Bowhead.Actors {
                 else {
 
 
-                    if (lookAtDiff.magnitude > 100) {
-                        _lookAt = avgPlayerPosition;
-                        _lookAtVelocity = Vector3.zero;
-                        _cameraVelocity = Vector3.zero;
-                        _position = _lookAt;
-                    }
-                    else {
+					if (lookAtDiff.magnitude > 100) {
+						_lookAt = avgPlayerPosition;
+						_lookAtVelocity = Vector3.zero;
+						_cameraVelocity = Vector3.zero;
+						_position = _lookAt;
+					}
+					else {
 
-                        float cameraFriction = 10f;
+						float cameraFriction = 10f;
 
-                        _playerPosition = avgPlayerPosition;
+						_playerPosition = avgPlayerPosition;
 
-                        if (!isMoving) {
-                            _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
-                        }
-                        else {
+						if (!isMoving) {
+							_lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
+						}
+						else {
 
-                            _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
-                            _lookAtVelocity += lookAtDiff * data.lookAtAcceleration * dt;
-                        }
-                        _lookAt += _lookAtVelocity * dt;
+							_lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
+							_lookAtVelocity += lookAtDiff * data.lookAtAcceleration * dt;
+						}
+						_lookAt += _lookAtVelocity * dt;
 
-                        Vector3 diff = _position - _lookAt;
-                        diff.y = 0;
-                        if (diff == Vector3.zero)
-                            diff.x = 1;
-                        diff.Normalize();
-                        diff *= minDist;
+						Vector3 diff = _position - _lookAt;
+						diff.y = 0;
+						if (diff == Vector3.zero)
+							diff.x = 1;
+						diff.Normalize();
+						diff *= minDist;
 
-                        var desiredCameraMove = (_lookAt + diff) - _position;
+						var desiredCameraMove = (_lookAt + diff) - _position;
 
-                        _cameraVelocity -= _cameraVelocity * cameraFriction * dt;
-                        _cameraVelocity += desiredCameraMove * dt;
+						_cameraVelocity -= _cameraVelocity * cameraFriction * dt;
+						_cameraVelocity += desiredCameraMove * dt;
 
-                        _position += _cameraVelocity * dt;
-                        _position = new Vector3(_position.x, Mathf.Max(_position.y, avgPlayerPosition.y), _position.z);
+						_position += _cameraVelocity * dt;
+						_position = new Vector3(_position.x, Mathf.Max(_position.y, avgPlayerPosition.y), _position.z);
 
-                        diff = _position - _lookAt;
-                        diff.y = 0;
-                        if (diff.magnitude < 0.1f)
-                            diff.x = 1;
-                        diff.Normalize();
-                        diff *= minDist;
+						//diff = _position - _lookAt;
+						//diff.y = 0;
+						//if (diff.magnitude < 0.1f)
+						//	diff.x = 1;
+						//diff.Normalize();
+						//diff *= minDist;
 
-                        _yaw = Mathf.Atan2(-diff.x, -diff.z);
+						//_yaw = Mathf.Atan2(-diff.x, -diff.z);
 
-                    }
-                }
+					}
+				}
 
                 float horizDist = Mathf.Cos(_pitch);
                 Vector3 cameraOffset = new Vector3(-Mathf.Sin(_yaw) * horizDist, Mathf.Sin(_pitch), -Mathf.Cos(_yaw) * horizDist);
