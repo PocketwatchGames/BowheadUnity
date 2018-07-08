@@ -88,12 +88,14 @@ namespace Bowhead.Actors {
             canMove = true;
             canJump = true;
 			canRun = true;
+			canSprint = true;
 			canTurn = true;
             canAttack = true;
 
             if (stunned) {
                 canRun = false;
-                canJump = false;
+				canSprint = false;
+				canJump = false;
                 canClimb = false;
                 canClimbWell = false;
                 canAttack = false;

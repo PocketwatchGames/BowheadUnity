@@ -33,10 +33,10 @@ MonoBehaviour:
   walkSpeed: 3.5
   walkStartTime: 0.1
   walkStopTime: 0.1
-  sprintTime: 0
-  sprintSpeed: 0
-  sprintStaminaUse: 0
-  sprintGracePeriodTime: 0
+  sprintTime: 0.25
+  sprintSpeed: 14
+  sprintStaminaUse: 50
+  sprintGracePeriodTime: 0.4
   groundMaxSpeed: 10
   groundWindDrag: 0.01
   slideThresholdSlope: 4

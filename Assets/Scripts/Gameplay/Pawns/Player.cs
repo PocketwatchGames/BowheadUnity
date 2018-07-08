@@ -69,7 +69,7 @@ namespace Bowhead.Actors {
 			cmd.lookRight = (sbyte)(look.x * 127);
 
 
-			if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
+			if (Input.GetButton("Jump")) {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
             if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
@@ -78,7 +78,7 @@ namespace Bowhead.Actors {
 			if (Input.GetButton("AttackRight") || Input.GetAxis("RightTrigger") != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
 			}
-			if (Input.GetButton("ShoulderLeft") || Input.GetAxis("ShoulderLeft") != 0) {
+			if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRanged;
 			}
 			//if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
@@ -255,17 +255,14 @@ namespace Bowhead.Actors {
 				Interact();
 			}
 			if (input.inputs[(int)InputType.Look] == InputState.JustPressed) {
+				if (mount != null) {
+					SetMount(null);
+				}
 				if (stance == Stance.Combat) {
 					stance = Stance.Explore;
 				}
 				else {
 					stance = Stance.Combat;
-				}
-			}
-
-			if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
-				if (mount != null) {
-					SetMount(null);
 				}
 			}
 
@@ -326,7 +323,7 @@ namespace Bowhead.Actors {
 			}
 
 			attackTargetPreview = GetAttackTarget(yaw);
-			if (isCasting) {
+			if (isCasting && mount == null) {
 				stance = Stance.Combat;
 			}
 

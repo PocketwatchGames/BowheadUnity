@@ -1152,6 +1152,7 @@ namespace Bowhead.Actors {
 
             if (mount != null) {
                 mount.driver = this;
+				stance = Stance.Explore;
             }
 
             if (mount != null) {

@@ -95,7 +95,7 @@ namespace Bowhead.Client.UI {
 
 			_slots[1].SetButton("LT");
 			_slots[2].SetButton("RT");
-			_slots[3].SetButton("LB");
+			_slots[3].SetButton("RB");
 
 			int packSlotsRemaining = 0;
             InventoryContainer curPackContainer = null;
@@ -136,11 +136,13 @@ namespace Bowhead.Client.UI {
 			if (_rearranging) {
 				_buttonHintLeftRight.SetHint("Move Item");
 				_buttonHintDown.SetHint("Cancel");
+				_buttonHintDown.SetButton("v");
 				_buttonHintUp.SetHint("Confirm Drop");
 			}
 			else {
 				_buttonHintLeftRight.SetHint("Select");
 				_buttonHintDown.SetHint("Use");
+				_buttonHintDown.SetButton("Y");
 				_buttonHintUp.SetHint("Drop");
 			}
 		}
@@ -166,7 +168,7 @@ namespace Bowhead.Client.UI {
 				SelectNextInventory();
 			}
 
-			bool use = false;
+			bool cancel = false;
 			bool drop = false;
 			//selectLeft = Input.GetButtonDown("SelectLeft");
 			//selectRight = Input.GetButtonDown("SelectRight");
@@ -175,8 +177,10 @@ namespace Bowhead.Client.UI {
 			if (Utils.SignOrZero(dpy) != Utils.SignOrZero(_dpadYAxis)) {
 				_dpadYAxis = dpy;
 				drop = _dpadYAxis > 0;
-				use = _dpadYAxis < 0;
+				cancel = _dpadYAxis < 0;
 			}
+
+			bool use = Input.GetButtonDown("Use");
 
 			if (drop) {
 				var item = _player.GetInventorySlot(inventorySelected);
@@ -191,15 +195,20 @@ namespace Bowhead.Client.UI {
 					Rebuild();
 				}
 			}
-			if (use) {
-				var item = _player.GetInventorySlot(inventorySelected);
-				if (item != null) {
-					if (_rearranging) {
-						SetRearranging(false);
-					}
-					else {
+
+			if (!_rearranging) {
+				if (use) {
+					var item = _player.GetInventorySlot(inventorySelected);
+					if (item != null) {
 						_player.Use(item);
+						Rebuild();
 					}
+				}
+
+			}
+			else {
+				if (cancel) {
+					SetRearranging(false);
 					Rebuild();
 				}
 			}
