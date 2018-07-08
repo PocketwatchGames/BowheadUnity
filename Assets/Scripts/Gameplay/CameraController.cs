@@ -54,10 +54,6 @@ namespace Bowhead.Actors {
             return _yaw;
         }
 
-        public void SetMouseLookActive(bool a) {
-            _mouseLookActive = a;
-        }
-
         public void SetTarget(Player player) {
             if (_target != null) {
                 _target.OnLand -= OnLand;
@@ -83,9 +79,6 @@ namespace Bowhead.Actors {
 
             _isLooking = false;
 
-			if (Input.GetButtonDown("Look")) {
-				SetMouseLookActive(!_mouseLookActive);
-			}
 
 			if (_mouseLookActive) {
                 var m = Input.mousePosition;
@@ -111,6 +104,16 @@ namespace Bowhead.Actors {
         }
 
         void Tick(float dt) {
+
+			if (_mouseLookActive != (_target.stance == Pawn.Stance.Explore)) { 
+				_mouseLookActive = !_mouseLookActive;
+
+				if (_mouseLookActive) {
+					_pitch = 30 * Mathf.Deg2Rad;
+				}
+			}
+
+
 
 			if (!_mouseLookActive) {
 				var curAngles = new Vector2(_yaw, _pitch);

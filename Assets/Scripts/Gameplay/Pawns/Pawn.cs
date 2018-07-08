@@ -15,13 +15,9 @@ namespace Bowhead.Actors {
         Jump,
         Interact,
         Use,
-        Swap,
         AttackLeft,
 		AttackRight,
-		AttackRangedLeft,
-		AttackRangedRight,
-		Map,
-        Crouch,
+		AttackRanged,
 		Look,
 		Count
 	}
@@ -74,8 +70,9 @@ namespace Bowhead.Actors {
         public float stunTimer;
         public float stunAmount;
 
-        [Header("Gameplay")]
-        public Pawn.Activity activity;
+		[Header("Gameplay")]
+		public Stance stance;
+        public Activity activity;
 		public float sprintTimer;
 		public float sprintGracePeriodTime;
 		public Vector3 climbingNormal;
@@ -108,14 +105,19 @@ namespace Bowhead.Actors {
         
         public const int MaxInventorySize = 32;
 
-        public enum Activity {
-            Falling,
-            Swimming,
-            Climbing,
-            OnGround,
-        }
+		public enum Activity {
+			Falling,
+			Swimming,
+			Climbing,
+			OnGround,
+		}
 
-        public struct PlayerCmd_t {
+		public enum Stance {
+			Combat,
+			Explore,
+		}
+
+		public struct PlayerCmd_t {
             public int serverTime;
             public int buttons;
             public sbyte fwd, right, up;
@@ -739,9 +741,6 @@ namespace Bowhead.Actors {
                 }
                 velocity.y = Math.Min(velocity.y + data.swimMaxSpeed * dt, data.swimJumpSpeed);
             }
-            if (input.inputs[(int)InputType.Crouch] == InputState.Pressed) {
-                velocity.y = velocity.y - data.swimSinkAcceleration * dt;
-            }
             velocity.y += data.gravity * dt;
             if (world.GetBlock(headPosition()) == EVoxelBlockType.Water) {
                 velocity.y += -velocity.y * dt * data.swimDragVertical;
@@ -810,7 +809,7 @@ namespace Bowhead.Actors {
             }
 
 
-            if (!input.IsPressed(InputType.Crouch) || input.IsPressed(InputType.Jump)) {
+            if (input.IsPressed(InputType.Jump)) {
                 var climbingInput = getClimbingVector(input.movement, climbingNormal);
                 velocity = climbingInput * data.climbSpeed;
             }
@@ -827,7 +826,9 @@ namespace Bowhead.Actors {
                 position = new Vector3(position.x, floorPosition, position.z);
             }
             else {
-                Vector3 move = velocity * dt;
+				Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
+				velocity = climbingInput * data.climbSpeed;
+				Vector3 move = velocity * dt;
                 Vector3 newPosition = position + move;
 
                 if (move.magnitude > 0) {

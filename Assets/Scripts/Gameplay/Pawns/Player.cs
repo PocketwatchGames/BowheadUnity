@@ -28,9 +28,8 @@ namespace Bowhead.Actors {
             CLOTHING = 0,
             LEFT_HAND = 1,
             RIGHT_HAND = 2,
-			LEFT_RANGED = 3,
-			RIGHT_RANGED = 4,
-			PACK = 5,
+			RANGED = 3,
+			PACK = 4,
         }
         public enum WeightClass {
             LIGHT,
@@ -70,7 +69,7 @@ namespace Bowhead.Actors {
 			cmd.lookRight = (sbyte)(look.x * 127);
 
 
-			if (Input.GetButton("Jump")) {
+			if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
             if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
@@ -80,17 +79,14 @@ namespace Bowhead.Actors {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
 			}
 			if (Input.GetButton("ShoulderLeft") || Input.GetAxis("ShoulderLeft") != 0) {
-				cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
+				cmd.buttons |= 1 << (int)InputType.AttackRanged;
 			}
-			if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
-				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
-			}
+			//if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
+			//	cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
+			//}
 			if (Input.GetButton("Interact")) {
                 cmd.buttons |= 1 << (int)InputType.Interact;
             }
-			if (Input.GetButton("Map")) {
-				cmd.buttons |= 1 << (int)InputType.Map;
-			}
 			if (Input.GetButton("Look")) {
 				cmd.buttons |= 1 << (int)InputType.Look;
 			}
@@ -230,7 +226,7 @@ namespace Bowhead.Actors {
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
 
-			if (GameManager.instance.clientData.isDualAnalogAiming) {
+			if (stance == Stance.Combat && !input.IsPressed(InputType.Jump)) {
 				if (cur.lookFwd != 0 || cur.lookRight != 0) {
 					input.look += forward * (float)cur.lookFwd / 127f;
 					input.look += right * (float)cur.lookRight / 127f;
@@ -255,9 +251,17 @@ namespace Bowhead.Actors {
             }
 
 
-            if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
-                Interact();
-            }
+			if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
+				Interact();
+			}
+			if (input.inputs[(int)InputType.Look] == InputState.JustPressed) {
+				if (stance == Stance.Combat) {
+					stance = Stance.Explore;
+				}
+				else {
+					stance = Stance.Combat;
+				}
+			}
 
 			if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
 				if (mount != null) {
@@ -265,14 +269,11 @@ namespace Bowhead.Actors {
 				}
 			}
 
-            if (input.IsPressed(InputType.Swap)) {
-            }
 
             bool isCasting = false;
             var itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
 			var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
-			var itemRangedLeft = GetInventorySlot((int)InventorySlot.LEFT_RANGED) as Weapon;
-			var itemRangedRight = GetInventorySlot((int)InventorySlot.RIGHT_RANGED) as Weapon;
+			var itemRanged = GetInventorySlot((int)InventorySlot.RANGED) as Weapon;
 			if (canAttack) {
                 if (itemLeft != null) {
 					if (itemLeft.CanCast()) {
@@ -306,52 +307,28 @@ namespace Bowhead.Actors {
 						isCasting = true;
 					}
 				}
-				if (itemRangedLeft != null) {
-					if (itemRangedLeft.CanCast()) {
-						if (input.IsPressed(InputType.AttackRangedLeft)) {
-							itemRangedLeft.Charge(dt);
+				if (itemRanged != null) {
+					if (itemRanged.CanCast()) {
+						if (input.IsPressed(InputType.AttackRanged)) {
+							itemRanged.Charge(dt);
 						}
 						else {
-							if (input.inputs[(int)InputType.AttackRangedLeft] == InputState.JustReleased) {
-								itemRangedLeft.Attack(this);
+							if (input.inputs[(int)InputType.AttackRanged] == InputState.JustReleased) {
+								itemRanged.Attack(this);
 							}
-							itemRangedLeft.chargeTime = 0;
+							itemRanged.chargeTime = 0;
 						}
 					}
-					if (itemRangedLeft.castTime > 0) {
-						isCasting = true;
-					}
-				}
-				if (itemRangedRight != null) {
-					if (itemRangedRight.CanCast()) {
-						if (input.IsPressed(InputType.AttackRangedRight)) {
-							itemRangedRight.Charge(dt);
-						}
-						else {
-							if (input.inputs[(int)InputType.AttackRangedRight] == InputState.JustReleased) {
-								itemRangedRight.Attack(this);
-							}
-							itemRangedRight.chargeTime = 0;
-						}
-					}
-					if (itemRangedRight.castTime > 0) {
+					if (itemRanged.castTime > 0) {
 						isCasting = true;
 					}
 				}
 			}
 
 			attackTargetPreview = GetAttackTarget(yaw);
-
-            bool shouldLock = false;
-            if (input.IsPressed(InputType.AttackLeft) || input.IsPressed(InputType.AttackRight)) {
-                shouldLock = true;
-            }
-            if ((!shouldLock && !isCasting) || !IsValidAttackTarget(attackTarget)) {
-                attackTarget = null;
-            }
-            if (shouldLock && attackTarget == null) {
-                attackTarget = attackTargetPreview;
-            }
+			if (isCasting) {
+				stance = Stance.Combat;
+			}
 
 
             base.Simulate(dt, input);
@@ -533,12 +510,7 @@ namespace Bowhead.Actors {
 					slot = (int)InventorySlot.RIGHT_HAND;
 				}
 				else if (weapon.data.hand == WeaponData.Hand.RANGED) { 
-					if (GetInventorySlot((int)InventorySlot.RIGHT_RANGED) == null) {
-						slot = (int)InventorySlot.RIGHT_RANGED;
-					}
-					else {
-						slot = (int)InventorySlot.LEFT_RANGED;
-					}
+					slot = (int)InventorySlot.RANGED;
 				}
                 if (slot >= 0 && GetInventorySlot(slot) == null) {
                     SetInventorySlot(slot, item);
@@ -621,7 +593,7 @@ namespace Bowhead.Actors {
             for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) == item) {
                     // unequip
-                    if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND || i == (int)InventorySlot.LEFT_RANGED || i == (int)InventorySlot.RIGHT_RANGED) {
+                    if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND || i == (int)InventorySlot.RANGED) {
                         if (FindEmptyPackSlots(1, ref emptyPackSlots)) {
                             SetInventorySlot(emptyPackSlots[0], GetInventorySlot(i));
                             return true;
@@ -661,25 +633,24 @@ namespace Bowhead.Actors {
 
 				// ranged
 				if (weapon.data.hand == WeaponData.Hand.RANGED) {
-					var equippedLeft = GetInventorySlot((int)InventorySlot.LEFT_RANGED);
-					var equippedRight = GetInventorySlot((int)InventorySlot.RIGHT_RANGED);
-					if (equippedLeft != null && equippedRight != null) {
-						if (!FindEmptyPackSlots(1, ref emptyPackSlots)) {
-							return false;
-						}
-						SetInventorySlot(emptyPackSlots[0], equippedLeft);
-					}
-					if (equippedRight == null) {
-						SetInventorySlot((int)InventorySlot.RIGHT_RANGED, weapon);
+					if (GetInventorySlot((int)InventorySlot.RANGED) == null) {
+						SetInventorySlot((int)InventorySlot.RANGED, item);
+						return true;
 					}
 					else {
-						SetInventorySlot((int)InventorySlot.LEFT_RANGED, weapon);
+						if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
+							if (GetInventorySlot((int)InventorySlot.RANGED) != null) {
+								SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.RANGED));
+							}
+							SetInventorySlot((int)InventorySlot.RANGED, item);
+							return true;
+						}
 					}
-					return true;
+					return false;
 				}
 
 				// when equipping a two handed weapon, we need to make sure we have pack space to be able to unequip left and right handed weapons
-                if (weapon.data.hand == WeaponData.Hand.BOTH) {
+				if (weapon.data.hand == WeaponData.Hand.BOTH) {
                     int slotsRequired = 0;
                     if (GetInventorySlot((int)InventorySlot.LEFT_HAND) != null) {
                         slotsRequired++;
@@ -811,10 +782,7 @@ namespace Bowhead.Actors {
 			else if (slot == (int)InventorySlot.RIGHT_HAND) {
 				SetInventorySlot(slot, null);
 			}
-			else if (slot == (int)InventorySlot.LEFT_RANGED) {
-				SetInventorySlot(slot, null);
-			}
-			else if (slot == (int)InventorySlot.RIGHT_RANGED) {
+			else if (slot == (int)InventorySlot.RANGED) {
 				SetInventorySlot(slot, null);
 			}
 			else if (pack != null) {

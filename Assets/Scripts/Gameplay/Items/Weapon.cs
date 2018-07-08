@@ -44,7 +44,7 @@ namespace Bowhead {
                 if (newSlot == (int)Player.InventorySlot.LEFT_HAND || newSlot == (int)Player.InventorySlot.RIGHT_HAND) {
                     var prefab = data.prefab.Load();
                     _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
-					UpdateAnimation();
+					UpdateAnimation(owner);
                 }
             }
         }
@@ -174,7 +174,7 @@ namespace Bowhead {
 				owner.canSprint = false;
 			}
 
-			UpdateAnimation();
+			UpdateAnimation(owner);
 
         }
 
@@ -197,8 +197,14 @@ namespace Bowhead {
 
 		}
 
-		private void UpdateAnimation() {
+		private void UpdateAnimation(Pawn owner) {
 			if (_mesh == null) {
+				return;
+			}
+
+			if (owner.stance == Pawn.Stance.Explore) {
+				_mesh.transform.localRotation = Quaternion.Euler(0, 0, 45);
+				_mesh.transform.localPosition = new Vector3(0,1f,-0.75f);
 				return;
 			}
 

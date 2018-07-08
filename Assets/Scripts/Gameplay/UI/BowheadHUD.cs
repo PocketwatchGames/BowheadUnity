@@ -67,7 +67,7 @@ namespace Bowhead.Client.UI {
 			else {
 				_interactHint.SetTarget(target);
 			}
-			_interactHint.SetButton("X");
+			_interactHint.SetButton("A");
             _interactHint.SetHint(interaction);
         }
 
