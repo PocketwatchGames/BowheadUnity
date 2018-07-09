@@ -140,7 +140,7 @@ namespace Bowhead.Client.UI {
 
 			_markers.localPosition = _markersOrigin + Vector3.Scale(_markers.localScale, new Vector3(_chunkX * World.VOXEL_CHUNK_SIZE_XZ, _chunkZ * World.VOXEL_CHUNK_SIZE_XZ, 0));
 
-			RevealArea(new Vector2(0, 0), 1000);
+			//RevealArea(new Vector2(0, 0), 1000);
 		}
 
 		public void RevealArea(Vector2 pos, float radius) {

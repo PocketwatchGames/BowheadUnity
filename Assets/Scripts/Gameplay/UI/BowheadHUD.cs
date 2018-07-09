@@ -35,9 +35,10 @@ namespace Bowhead.Client.UI {
             _compass.Init(Camera.main, player);
 
 			_minimap.SetStreaming(player.world.worldStreaming);
-			_minimap.SetOrigin(0, 0);
+			player.OnExplore += OnExplore;
 
-            player.OnExplore += OnExplore;
+			// for now, minimap reveal still kinda broke ass.
+			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 1000);
 
 			_weaponChargeLeft.SetTarget(player, 1);
 			_weaponChargeRight.SetTarget(player, 2);
@@ -49,8 +50,9 @@ namespace Bowhead.Client.UI {
 		}
 
 		private void OnExplore(Vector2 pos, float radius) {
-            _minimap.RevealArea(new Vector2(pos.x, pos.y), radius);
-            _minimap.SetOrigin((int)(pos.x/32), (int)(pos.y/32));
+			var chunkPos = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.y)));
+            _minimap.SetOrigin(chunkPos.cx, chunkPos.cz);
+            _minimap.RevealArea(new Vector2(pos.x, pos.y), radius);			
         }
 
         public override void Tick(float dt) {

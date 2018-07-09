@@ -12,7 +12,7 @@ namespace Bowhead.Actors {
 			base.Spawn(d, pos, instigator, owner, team);
 			map = new MapReveal() {
 				position = new Vector2(pos.x, pos.z),
-				radius = 1000 // TODO: make this data
+				radius = 75 // TODO: make this data
 			};
 		}
 	}
