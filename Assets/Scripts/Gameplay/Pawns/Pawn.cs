@@ -203,11 +203,11 @@ namespace Bowhead.Actors {
             var handHoldPos = p + wallDirection.normalized * data.climbWallRange;
             if (!IsOpen(p))
                 return false;
-            var handblock = world.GetBlock(handPosition(handHoldPos));
-            bool isClimbable = WorldUtils.IsClimbable(handblock, canClimbWell);
+            var handblock = gameMode.GetTerrainData(handPosition(handHoldPos));
+            bool isClimbable = canClimbWell ? handblock.canClimbLight : handblock.canClimbMedium;
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
-                if (isHangPosition && WorldUtils.IsHangable(handblock, canClimbWell) && !WorldUtils.IsSolidBlock(world.GetBlock(p)) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(p))) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
+				if (isHangPosition && handblock.canHang && !WorldUtils.IsSolidBlock(world.GetBlock(p)) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(p))) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -222,13 +222,13 @@ namespace Bowhead.Actors {
             var handHoldPos = handPosition(p) + checkDir.normalized * data.climbWallRange;
             if (!IsOpen(p))
                 return false;
-            var handblock = world.GetBlock(handHoldPos);
-            bool isClimbable = WorldUtils.IsClimbable(handblock, canClimbWell);
-            if (!isClimbable) {
+			var handblock = gameMode.GetTerrainData(handPosition(handHoldPos));
+			bool isClimbable = canClimbWell ? handblock.canClimbLight : handblock.canClimbMedium;
+			if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
                 if (isHangPosition
-                    && WorldUtils.IsHangable(handblock, canClimbWell)
-                    && !WorldUtils.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
+                    && handblock.canHang
+					&& !WorldUtils.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -621,13 +621,12 @@ namespace Bowhead.Actors {
 			}
 
 
-			var block = world.GetBlock(footPosition());
-            var midblock = world.GetBlock(waistPosition());
-            var topblock = world.GetBlock(headPosition());
-            float slideFriction, slideThreshold;
-			WorldUtils.GetSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
-            float workModifier = WorldUtils.GetWorkModifier(block, midblock, topblock);
-            if (IsWading()) {
+			var block = gameMode.GetTerrainData(position + new Vector3(0, -0.1f, 0));
+            var midblock = gameMode.GetTerrainData(position + new Vector3(0,0.9f,0));
+
+			float slideThreshold = block.slideThreshold;
+			float workModifier = Mathf.Max(block.workModifier, midblock.workModifier);
+			if (IsWading()) {
                 workModifier += data.swimDragHorizontal;
             }
 
@@ -697,7 +696,7 @@ namespace Bowhead.Actors {
             // Sliding
             if (sliding) {
                 // Reduce our movement impulse (reduce control while sliding)
-                velChange *= slideFriction;
+                velChange *= block.slideFriction;
 
                 // Slide down any hills
                 float slopeDot = Vector3.Dot(groundNormal, Vector3.up);
@@ -705,7 +704,7 @@ namespace Bowhead.Actors {
                 slideDir.y = 0;
                 if (slideDir != Vector3.zero) {
                     slideDir = slideDir.normalized;
-                    velChange += (1.0f - slopeDot) * dt * -data.gravity * slideDir * (1f - slideFriction);
+                    velChange += (1.0f - slopeDot) * dt * -data.gravity * slideDir * (1f - block.slideFriction);
                 }
             }
 

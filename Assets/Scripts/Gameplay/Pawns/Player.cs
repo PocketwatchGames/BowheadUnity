@@ -442,7 +442,7 @@ namespace Bowhead.Actors {
             float d = 0;
             float fallSpeed = -velocity.y;
             if (fallSpeed > data.fallDamageSpeed) {
-                d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * WorldUtils.GetFallDamage(block) * data.maxHealth;
+                d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * gameMode.GetTerrainData(position).fallDamage * data.maxHealth;
                 if (d > 0) {
                     damage(d);
                     useStamina((float)d);
