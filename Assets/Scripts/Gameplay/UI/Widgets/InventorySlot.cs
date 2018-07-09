@@ -9,6 +9,8 @@ namespace Bowhead.Client.UI {
 
 		[SerializeField]
 		private ButtonImage _buttonHint;
+		[SerializeField]
+		private Image _useTimer;
 
         private Item _item;
         private Button _button;
@@ -32,7 +34,19 @@ namespace Bowhead.Client.UI {
 			}
 		}
 
-        public void SetItem(Item i) {
+		public void SetTimer(float t) {
+			if (t == 0) {
+				_useTimer.gameObject.SetActive(false);
+			}
+			else {
+				_useTimer.gameObject.SetActive(true);
+				_useTimer.rectTransform.localScale = new Vector3(1, t, 1);
+			}
+		}
+
+
+
+		public void SetItem(Item i) {
             _item = i;
             if (i == null) {
                 _button.gameObject.SetActive(false);

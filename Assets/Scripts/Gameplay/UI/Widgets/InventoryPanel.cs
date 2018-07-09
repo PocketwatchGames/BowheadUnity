@@ -21,6 +21,7 @@ namespace Bowhead.Client.UI {
 
         public int inventorySelected = 0;
 
+		const float _useTime  = 0.5f;
 		private float _dpadXAxis = 0;
 		private float _dpadYAxis = 0;
 		private bool _rearranging;
@@ -167,21 +168,16 @@ namespace Bowhead.Client.UI {
 				SelectNextInventory();
 			}
 
-			bool use = false;
-			bool drop = false;
-			//selectLeft = Input.GetButtonDown("SelectLeft");
-			//selectRight = Input.GetButtonDown("SelectRight");
-
 			float dpy = Input.GetAxis("DPadY");
-            bool useDown = _dpadYAxis < 0;
 
-            if (Utils.SignOrZero(dpy) != Utils.SignOrZero(_dpadYAxis)) {
-				_dpadYAxis = dpy;
-				drop = _dpadYAxis > 0;
-				use = useDown;
-			}
+			bool usePressed = dpy < 0;
+			bool useDown = usePressed && !(_dpadYAxis < 0);
+			bool dropPressed = dpy > 0;
+			bool dropReleased = !dropPressed && (_dpadYAxis > 0);
+			_dpadYAxis = dpy;
 
-			if (drop) {
+
+			if (dropReleased) {
 				var item = _player.GetInventorySlot(inventorySelected);
 				if (item != null) {
 					if (_rearranging) {
@@ -194,23 +190,38 @@ namespace Bowhead.Client.UI {
 					Rebuild();
 				}
 			}
-			if (useDown) {
+			if (usePressed) {
 				var item = _player.GetInventorySlot(inventorySelected);
 				if (item != null) {
 					if (_rearranging) {
-                        if (use)
+                        if (usePressed)
                         {
                             SetRearranging(false);
                             Rebuild();
                         }
                     }
                     else {
-                        _useTimer += Time.deltaTime;
-                        if (_useTimer > 0.5f)
-                        {
-                            _player.Use(item);
-                        }
+						if (_useTimer > 0 || useDown) {
+							_useTimer += Time.deltaTime;
+							if (_useTimer > _useTime) {
+								_player.Use(item);
+								_useTimer = 0;
+								Rebuild();
+							}
+						}
 					}
+				}
+			}
+
+			for (int i=0;i<_slots.Length;i++) {
+				if (_slots[i] == null) {
+					continue;
+				}
+				if (inventorySelected == i) {
+					_slots[i].SetTimer(_useTimer / _useTime);
+				}
+				else {
+					_slots[i].SetTimer(0);
 				}
 			}
 		}
