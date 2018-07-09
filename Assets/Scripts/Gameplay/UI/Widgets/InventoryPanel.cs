@@ -24,6 +24,7 @@ namespace Bowhead.Client.UI {
 		private float _dpadXAxis = 0;
 		private float _dpadYAxis = 0;
 		private bool _rearranging;
+        private float _useTimer;
 
 		private InventoryContainer _mainContainer;
         private List<InventoryContainer> _packContainers = new List<InventoryContainer>();
@@ -136,13 +137,11 @@ namespace Bowhead.Client.UI {
 			if (_rearranging) {
 				_buttonHintLeftRight.SetHint("Move Item");
 				_buttonHintDown.SetHint("Cancel");
-				_buttonHintDown.SetButton("v");
 				_buttonHintUp.SetHint("Confirm Drop");
 			}
 			else {
 				_buttonHintLeftRight.SetHint("Select");
 				_buttonHintDown.SetHint("Use");
-				_buttonHintDown.SetButton("Y");
 				_buttonHintUp.SetHint("Drop");
 			}
 		}
@@ -168,19 +167,19 @@ namespace Bowhead.Client.UI {
 				SelectNextInventory();
 			}
 
-			bool cancel = false;
+			bool use = false;
 			bool drop = false;
 			//selectLeft = Input.GetButtonDown("SelectLeft");
 			//selectRight = Input.GetButtonDown("SelectRight");
 
 			float dpy = Input.GetAxis("DPadY");
-			if (Utils.SignOrZero(dpy) != Utils.SignOrZero(_dpadYAxis)) {
+            bool useDown = _dpadYAxis < 0;
+
+            if (Utils.SignOrZero(dpy) != Utils.SignOrZero(_dpadYAxis)) {
 				_dpadYAxis = dpy;
 				drop = _dpadYAxis > 0;
-				cancel = _dpadYAxis < 0;
+				use = useDown;
 			}
-
-			bool use = Input.GetButtonDown("Use");
 
 			if (drop) {
 				var item = _player.GetInventorySlot(inventorySelected);
@@ -195,21 +194,23 @@ namespace Bowhead.Client.UI {
 					Rebuild();
 				}
 			}
-
-			if (!_rearranging) {
-				if (use) {
-					var item = _player.GetInventorySlot(inventorySelected);
-					if (item != null) {
-						_player.Use(item);
-						Rebuild();
+			if (useDown) {
+				var item = _player.GetInventorySlot(inventorySelected);
+				if (item != null) {
+					if (_rearranging) {
+                        if (use)
+                        {
+                            SetRearranging(false);
+                            Rebuild();
+                        }
+                    }
+                    else {
+                        _useTimer += Time.deltaTime;
+                        if (_useTimer > 0.5f)
+                        {
+                            _player.Use(item);
+                        }
 					}
-				}
-
-			}
-			else {
-				if (cancel) {
-					SetRearranging(false);
-					Rebuild();
 				}
 			}
 		}
