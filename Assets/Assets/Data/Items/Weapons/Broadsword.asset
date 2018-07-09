@@ -13,6 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 10
+  description: Two handed sword
   prefab:
     _assetPath: Items/2HSword
     _editorPath: Assets/Assets/Prefabs/Resources/Items/2HSword.prefab
