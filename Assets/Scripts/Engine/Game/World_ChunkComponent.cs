@@ -13,6 +13,10 @@ public class World_ChunkComponent : MonoBehaviour {
 
 	public Mesh mesh => _meshFilter.mesh;
 
+	void Awake() {
+		_meshCollider = GetComponent<MeshCollider>();
+	}
+
 	public void UpdateCollider() {
 		if (_meshCollider != null) {
 			Utils.DestroyComponent(_meshCollider);
