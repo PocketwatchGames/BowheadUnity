@@ -151,6 +151,12 @@ public enum EVoxelBlockType : byte {
 	NumBlockTypes // must be here because we require a constant for array initialization in TableStorage
 };
 
+public enum EVoxelBlockContents : int {
+	None,
+	Water,
+	Solid
+};
+
 [Flags]
 public enum EVoxelBlockFlags : byte {
 	FullVoxel = 0x80,

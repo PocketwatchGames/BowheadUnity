@@ -336,6 +336,32 @@ public partial class World {
 			}
 		};
 
+		public unsafe struct ConstVoxelBlockContentsArray1D_t {
+			[NativeDisableUnsafePtrRestriction]
+			EVoxelBlockContents* _arr;
+			int _x;
+			
+			public static ConstVoxelBlockContentsArray1D_t New(EVoxelBlockContents* array, int x) {
+				return new ConstVoxelBlockContentsArray1D_t {
+					_arr = array,
+					_x = x
+				};
+			}
+
+			public EVoxelBlockContents this[int i] {
+				get {
+					BoundsCheckAndThrow(i, 0, _x);
+					return _arr[i];
+				}
+			}
+
+			public int length {
+				get {
+					return _x;
+				}
+			}
+		};
+
 		public unsafe struct ConstUIntArray1D_t {
 			[NativeDisableUnsafePtrRestriction]
 			uint* _arr;
@@ -417,6 +443,7 @@ public partial class World {
 			public ConstUIntArray1D_t blockSmoothingGroups;
 			public ConstColor32Array1D_t blockColors;
 			public ConstFloatArray1D_t blockSmoothingFactors;
+			public ConstVoxelBlockContentsArray1D_t blockContents;
 
 			int[,] _voxelVerts;
 			int[,] _voxelFaces;
@@ -426,6 +453,7 @@ public partial class World {
 			uint[] _blockSmoothingGroups;
 			Color32[] _blockColors;
 			float[] _blockSmoothingFactors;
+			EVoxelBlockContents[] _blockContents;
 
 			GCHandle _pinnedVoxelVerts;
 			GCHandle _pinnedVoxelFaces;
@@ -435,6 +463,7 @@ public partial class World {
 			GCHandle _pinnedBlockSmoothingGroups;
 			GCHandle _pinnedBlockColors;
 			GCHandle _pinnedBlockSmoothingFactors;
+			GCHandle _pinnedBlockContents;
 
 			public static TableStorage New() {
 				var t = new TableStorage();
@@ -536,6 +565,32 @@ public partial class World {
 					spanningAxis = ConstIntArray2D_t.New((int*)_pinnedSpanningAxis.AddrOfPinnedObject().ToPointer(), 3, 2);
 				}
 
+				// Block contents
+
+				_blockContents = new EVoxelBlockContents[(int)EVoxelBlockType.NumBlockTypes] {
+					EVoxelBlockContents.None,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Water,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid
+				};
+
+				_pinnedBlockContents = GCHandle.Alloc(_blockContents, GCHandleType.Pinned);
+
+				unsafe {
+					blockContents = ConstVoxelBlockContentsArray1D_t.New((EVoxelBlockContents*)_pinnedBlockContents.AddrOfPinnedObject().ToPointer(), (int)EVoxelBlockType.NumBlockTypes);
+				}
+
 				// Block colors
 
 				_blockColors = new Color32[(int)EVoxelBlockType.NumBlockTypes - 1] {
@@ -633,6 +688,7 @@ public partial class World {
 			public ConstColor32Array1D_t blockColors;
 			public ConstUIntArray1D_t blockSmoothingGroups;
 			public ConstFloatArray1D_t blockSmoothingFactors;
+			public ConstVoxelBlockContentsArray1D_t blockContents;
 
 			public static Tables New(TableStorage storage) {
 				return new Tables {
@@ -643,7 +699,8 @@ public partial class World {
 					spanningAxis = storage.spanningAxis,
 					blockColors = storage.blockColors,
 					blockSmoothingGroups = storage.blockSmoothingGroups,
-					blockSmoothingFactors = storage.blockSmoothingFactors
+					blockSmoothingFactors = storage.blockSmoothingFactors,
+					blockContents = storage.blockContents
 				};
 			}
 		};
@@ -1121,6 +1178,25 @@ public partial class World {
 			}
 		};
 
+		unsafe struct VoxelNeighborContents_t {
+			fixed byte _arr[6];
+
+			public EVoxelBlockContents this[int i] {
+				get {
+					Assert((i >= 0) && (i < 6));
+					fixed (byte* p = _arr) {
+						return (EVoxelBlockContents)p[i];
+					}
+				}
+				set {
+					Assert((i >= 0) && (i < 6));
+					fixed (byte* p = _arr) {
+						p[i] = (byte)value;
+					}
+				}
+			}
+		};
+
 		unsafe struct GenerateChunkVerts_t : IJob {
 			SmoothingVertsOut_t _smoothVerts;
 			VoxelArray1D _voxels;
@@ -1128,6 +1204,7 @@ public partial class World {
 			NativeArray<PinnedChunkData_t> _area;
 
 			VoxelNeighbors_t _vn;
+			VoxelNeighborContents_t _vnc;
 
 			int _numVoxels;
 			int _numTouched;
@@ -1172,8 +1249,10 @@ public partial class World {
 				var faceCounts = stackalloc int[8];
 				ZeroInts(faceCounts, 8);
 
+				var contents = _tables.blockContents[(int)voxel.type];
+
 				for (int i = 0; i < 6; ++i) {
-					if (_vn[i] == EVoxelBlockType.Air) {
+					if (_vnc[i] < contents) {
 						foreach (var vi in _tables.voxelFaces[i]) {
 							++faceCounts[vi];
 						}
@@ -1181,7 +1260,7 @@ public partial class World {
 				}
 
 				for (int i = 0; i < 6; ++i) {
-					if ((_vn[i] == EVoxelBlockType.Air) && (_vn[i ^ 1] != EVoxelBlockType.Air)) { // we can only collapse faces whose opposite face is hidden.
+					if ((_vnc[i] < contents) && (_vnc[i ^ 1] >= contents)) { // we can only collapse faces whose opposite face is hidden.
 
 						int numOver2 = 0;
 
@@ -1207,7 +1286,7 @@ public partial class World {
 									var signbit = 1 << spaxis;
 									var side = (vi & signbit) != 0 ? 1 : 0;
 									// we can collapse in this direction if the face on the vertex-side of the spanning axis is visible.
-									if (_vn[(spaxis * 2) + (side ^ 1)] == EVoxelBlockType.Air) {
+									if (_vnc[(spaxis * 2) + (side ^ 1)] < contents) {
 										blendVoxel->vertexFlags[vi] |= signbit;
 									}
 								}
@@ -1260,7 +1339,7 @@ public partial class World {
 				smoothVoxel->touched = false;
 
 				for (int i = 0; i < 6; ++i) {
-					if (_vn[i] != EVoxelBlockType.Air) {
+					if (_vnc[i] != EVoxelBlockContents.None) {
 						// flag any neighboring voxels if they have vertex shifts.
 
 						var axis = i / 2;
@@ -1295,8 +1374,10 @@ public partial class World {
 				var faceCounts = stackalloc int[8];
 				ZeroInts(faceCounts, 8);
 
+				var contents = _tables.blockContents[(int)voxel.type];
+
 				for (int i = 0; i < 6; ++i) {
-					if ((_vn[i] == EVoxelBlockType.Air) || (smoothVoxel->neighbors[i] != 0)) {
+					if ((_vnc[i] < contents) || (smoothVoxel->neighbors[i] != 0)) {
 						foreach (var vi in _tables.voxelFaces[i]) {
 							++faceCounts[vi];
 						}
@@ -1335,7 +1416,7 @@ public partial class World {
 									bool set = false;
 									bool exposed = true;
 
-									if (_vn[(spaxis * 2) + (side ^ 1)] != 0) {
+									if (_vnc[(spaxis * 2) + (side ^ 1)] >= contents) {
 										exposed = false;
 
 										// a vertex collapse may have exposed this vertex...
@@ -1588,6 +1669,7 @@ public partial class World {
 
 			void EmitVoxelFaces(int index, int x, int y, int z, EVoxelBlockType blocktype, bool isBorderVoxel) {
 				var voxel = _voxels[index];
+				var contents = _tables.blockContents[(int)blocktype];
 				
 				// emit cube tris that are not degenerate from collapse
 				for (int i = 0; i < 6; ++i) {
@@ -1660,7 +1742,7 @@ public partial class World {
 							}
 						}
 
-					} else if (_vn[i] == EVoxelBlockType.Air) {
+					} else if (_vnc[i] < contents) {
 						Color32 color;
 						uint smg;
 						float factor;
@@ -1753,7 +1835,7 @@ public partial class World {
 
 							if (neighbor.valid != 0) {
 								var voxel = neighbor.voxeldata[zofs + yofs + xofs];
-								if (voxel.type == EVoxelBlockType.Air) {
+								if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
 									++_numVoxels;
 									continue;
 								}
@@ -1813,6 +1895,10 @@ public partial class World {
 									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
 								}
 
+								for (int i = 0; i < 6; ++i) {
+									_vnc[i] = _tables.blockContents[(int)_vn[i]];
+								}
+
 								AddVoxel(x+BORDER_SIZE, y+BORDER_SIZE, z+BORDER_SIZE, voxel);
 							} else {
 								++_numVoxels;
@@ -1847,7 +1933,7 @@ public partial class World {
 								var xmax = (x == (VOXEL_CHUNK_SIZE_XZ - 1));
 
 								var voxel = chunk.voxeldata[zofs + yofs + x];
-								if (voxel.type == EVoxelBlockType.Air) {
+								if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
 									continue;
 								}
 
@@ -1906,6 +1992,10 @@ public partial class World {
 									_vn[5] = chunk.voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(z - 1)) + x].type;
 								}
 
+								for (int i = 0; i < 6; ++i) {
+									_vnc[i] = _tables.blockContents[(int)_vn[i]];
+								}
+
 								MatchNeighbors((x + BORDER_SIZE) + ((z + BORDER_SIZE)*NUM_VOXELS_XZ) + ((y + BORDER_SIZE)*NUM_VOXELS_XZ*NUM_VOXELS_XZ), x + BORDER_SIZE, y + BORDER_SIZE, z + BORDER_SIZE, voxel);
 							}
 						}
@@ -1949,7 +2039,7 @@ public partial class World {
 
 							if (neighbor.valid != 0) {
 								var voxel = neighbor.voxeldata[zofs + yofs + xofs];
-								if (voxel.type == EVoxelBlockType.Air) {
+								if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
 									continue;
 								}
 
@@ -2006,6 +2096,10 @@ public partial class World {
 								} else {
 									_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs].type;
 									_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
+								}
+
+								for (int i = 0; i < 6; ++i) {
+									_vnc[i] = _tables.blockContents[(int)_vn[i]];
 								}
 
 								var isBorderVoxel = (x < 0) || (x >= VOXEL_CHUNK_SIZE_XZ) || (y < 0) || (y >= VOXEL_CHUNK_SIZE_Y) || (z < 0) || (z >= VOXEL_CHUNK_SIZE_XZ);
