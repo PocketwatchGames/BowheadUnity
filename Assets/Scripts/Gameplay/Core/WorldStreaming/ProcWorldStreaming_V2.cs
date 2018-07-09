@@ -308,7 +308,7 @@ namespace Bowhead {
 				}
 
 				if (noise.GetWhiteNoise(chunkPos.x, chunkPos.y, chunkPos.z) > 0.98f) {
-					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x, chunkPos.y, chunkPos.z) * 72 + 8);
+					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x, chunkPos.y, chunkPos.z) * 32 + 8);
 					ConstructTower(ref noise, chunkPos, 8, 0, 8, towerHeight, ref chunk);
 				}
 			}
@@ -523,7 +523,7 @@ namespace Bowhead {
                             if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
                                 var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
                                 chunk.flags |= EChunkFlags.SOLID;
-								chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
+								chunk.voxeldata[ofs] = EVoxelBlockType.Rock;
                             }
                         }
                     }
@@ -562,12 +562,19 @@ namespace Bowhead {
                                         stepIndex = 6;
                                     }
                                 }
-                                if ((k + stepIndex) % 7 < 2) {
+								int modElevation = (k + stepIndex) % 7;
+
+								if (modElevation < 3) {
 									pos.y = k + y;
 									if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
 										var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+										if (i == -3 || i == 3 || j==-3 || j == 3 || k == towerHeight) {
+											chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
+										}
+										else {
+											chunk.voxeldata[ofs] = EVoxelBlockType.Rock;
+										}
 										chunk.flags |= EChunkFlags.SOLID;
-										chunk.voxeldata[ofs] = EVoxelBlockType.Rock;//.WithFlags(EVoxelBlockFlags.FullVoxel);
 									}
 								}
 							}

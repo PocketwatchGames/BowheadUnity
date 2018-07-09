@@ -36,7 +36,10 @@ namespace Bowhead.Client.UI {
 		[SerializeField] ButtonHint _buttonHintDown;
 		[SerializeField] ButtonHint _buttonHintLeftRight;
 
-        public void Init(Player player) {
+		[SerializeField] ItemInfoPanel _itemInfo;
+
+
+		public void Init(Player player) {
             _player = player;
             var r = _inventorySlotPrefab.GetComponent<RectTransform>().rect;
             slotSize = new Vector3(r.width, r.height, 0);
@@ -138,12 +141,15 @@ namespace Bowhead.Client.UI {
 			if (_rearranging) {
 				_buttonHintLeftRight.SetHint("Move Item");
 				_buttonHintDown.SetHint("Cancel");
-				_buttonHintUp.SetHint("Confirm Drop");
+				_buttonHintUp.SetHint("Drop");
+				_itemInfo.gameObject.SetActive(true);
+				_itemInfo.SetItem(_player.GetInventorySlot(inventorySelected));
 			}
 			else {
 				_buttonHintLeftRight.SetHint("Select");
 				_buttonHintDown.SetHint("Use");
-				_buttonHintUp.SetHint("Drop");
+				_buttonHintUp.SetHint("Info");
+				_itemInfo.gameObject.SetActive(false);
 			}
 		}
 

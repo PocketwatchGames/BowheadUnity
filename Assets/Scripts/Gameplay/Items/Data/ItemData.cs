@@ -2,6 +2,12 @@
 
 namespace Bowhead {
 	public abstract class ItemData : EntityData {
+
+		public string description;
+
+
+
+
 		public Item CreateItem() {
 			return _CreateItem();
 		}

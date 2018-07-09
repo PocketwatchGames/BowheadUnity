@@ -26,7 +26,6 @@ namespace Bowhead.Actors {
 		private Vector3 _cameraVelocity;
         private Vector3 _lookAtVelocity;
         private Vector3 _lookAt;
-        private float _mouseLookClickTimer;
 
 		Camera _camera;
 
@@ -80,31 +79,6 @@ namespace Bowhead.Actors {
 
             _isLooking = false;
 
-            bool mouseLookDown = Input.GetButton("Look");
-            if (mouseLookDown)
-            {
-                _mouseLookClickTimer += dt;
-            }
-            else
-            {
-                _mouseLookClickTimer = 0;
-            }
-            var newMouseLook = _target.mount != null || mouseLookDown;
-            if (_mouseLookActive != newMouseLook)
-            {
-                _mouseLookActive = !_mouseLookActive;
-
-                if (!_mouseLookActive)
-                {
-                    if (_mouseLookClickTimer < 0.25f)
-                    {
-                        _pitch = 30 * Mathf.Deg2Rad;
-                        _yaw = _target.yaw;
-                    }
-                }
-            }
-
-
 
             if (_mouseLookActive) {
                 var m = Input.mousePosition;
@@ -131,7 +105,6 @@ namespace Bowhead.Actors {
 
         void Tick(float dt) {
 
-
 			if (!_mouseLookActive) {
 				var curAngles = new Vector2(_yaw, _pitch);
 				var desiredAngles = new Vector2(_yaw, Mathf.Deg2Rad * 45);
@@ -144,8 +117,9 @@ namespace Bowhead.Actors {
 				_pitch = curAngles.y;
 			}
             if (_target != null) {
+				_mouseLookActive = _target.stance == Player.Stance.Explore;
 
-                float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (data.maxDistance - data.minDistance) + data.minDistance;
+				float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (data.maxDistance - data.minDistance) + data.minDistance;
 
                 Vector3 avgPlayerPosition = _target.headPosition(_target.renderPosition());
                 bool isMoving = _playerPosition != avgPlayerPosition;
@@ -222,15 +196,19 @@ namespace Bowhead.Actors {
 						_position += _cameraVelocity * dt;
 						_position = new Vector3(_position.x, Mathf.Max(_position.y, avgPlayerPosition.y), _position.z);
 
-						//diff = _position - _lookAt;
-						//diff.y = 0;
-						//if (diff.magnitude < 0.1f)
-						//	diff.x = 1;
-						//diff.Normalize();
-						//diff *= minDist;
 
-						//_yaw = Mathf.Atan2(-diff.x, -diff.z);
+						// Mario style leash camera
+						if (_mouseLookActive) {
+							diff = _position - _lookAt;
+							diff.y = 0;
+							if (diff.magnitude < 0.1f)
+								diff.x = 1;
+							diff.Normalize();
+							diff *= minDist;
 
+							_yaw = Mathf.Atan2(-diff.x, -diff.z);
+						}
+						// end leash camera
 					}
 				}
 

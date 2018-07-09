@@ -467,63 +467,70 @@ namespace Bowhead {
 			}
 
             static void ConstructTower(int x, int y, int z, PinnedChunkData_t chunk) {
-                    int towerHeight = 120;
+                int towerHeight = 120;
 
-                    for (int i = -1; i <= 1; i++) {
-                        for (int j = -1; j <= 1; j++) {
-                            Vector3Int pos = new Vector3Int(x + i, 0, z + j);
-                            int groundHeight = 0;
-                            for (int k = towerHeight; k >= groundHeight; k--) {
-                                pos.y = k + y;
-                                if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
-                                    var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-                                    chunk.flags |= EChunkFlags.SOLID;
-                                    chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
-                                }
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        Vector3Int pos = new Vector3Int(x + i, 0, z + j);
+                        int groundHeight = 0;
+                        for (int k = towerHeight; k >= groundHeight; k--) {
+                            pos.y = k + y;
+                            if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
+                                var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+                                chunk.flags |= EChunkFlags.SOLID;
+                                chunk.voxeldata[ofs] = EVoxelBlockType.Rock;
                             }
                         }
                     }
-                    for (int i = -3; i <= 3; i++) {
-                        for (int j = -3; j <= 3; j++) {
-                            if (i > 1 || i < -1 || j > 1 || j < -1) {
-                                Vector3Int pos = new Vector3Int(x + i, 0, z + j);
-                                int groundHeight = 0;
-                                for (int k = towerHeight; k >= groundHeight; k--) {
-                                    int stepIndex = 0;
-                                    if (j < -1) {
-                                        if (i < -1)
-                                            stepIndex = 0;
-                                        else if (i < 2)
-                                            stepIndex = 1;
-                                        else
-                                            stepIndex = 2;
-                                    }
-                                    else if (j < 2) {
-                                        if (i > 1) {
-                                            stepIndex = 3;
-                                        }
-                                        else {
-                                            stepIndex = 7;
-                                        }
+                }
+                for (int i = -3; i <= 3; i++) {
+                    for (int j = -3; j <= 3; j++) {
+                        if (i > 1 || i < -1 || j > 1 || j < -1) {
+                            Vector3Int pos = new Vector3Int(x + i, 0, z + j);
+                            int groundHeight = 0;
+                            for (int k = towerHeight; k >= groundHeight; k--) {
+                                int stepIndex = 0;
+                                if (j < -1) {
+                                    if (i < -1)
+                                        stepIndex = 0;
+                                    else if (i < 2)
+                                        stepIndex = 1;
+                                    else
+                                        stepIndex = 2;
+                                }
+                                else if (j < 2) {
+                                    if (i > 1) {
+                                        stepIndex = 3;
                                     }
                                     else {
-                                        if (i > 1) {
-                                            stepIndex = 4;
-                                        }
-                                        else if (i > -2) {
-                                            stepIndex = 5;
-                                        }
-                                        else {
-                                            stepIndex = 6;
-                                        }
+                                        stepIndex = 7;
                                     }
-                                    if ((k + stepIndex) % 7 < 2) {
+                                }
+                                else {
+                                    if (i > 1) {
+                                        stepIndex = 4;
+                                    }
+                                    else if (i > -2) {
+                                        stepIndex = 5;
+                                    }
+                                    else {
+                                        stepIndex = 6;
+                                    }
+                                }
+								int modElevation = (k + stepIndex) % 7;
+
+								if (modElevation < 2) {
                                     pos.y = k + y;
                                     if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
                                         var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
                                         chunk.flags |= EChunkFlags.SOLID;
-                                        chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
-                                    }
+										if (modElevation == 0 && i != 3 && i != 3 && j != -3 && j != 3 && k != towerHeight) {
+											chunk.voxeldata[ofs] = EVoxelBlockType.Rock;
+										}
+										else {
+											chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
+										}
+									}
                                 }
                             }
                         }
