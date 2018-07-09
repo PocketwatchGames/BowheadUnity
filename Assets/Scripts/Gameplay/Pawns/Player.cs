@@ -414,6 +414,11 @@ namespace Bowhead.Actors {
 			}
 		}
 
+		protected override void MountMoved() {
+			base.MountMoved();
+			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(mount.position));
+		}
+
 		override public void LandOnGround() {
             // Land on ground
             var block = world.GetBlock(position);

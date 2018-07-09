@@ -491,10 +491,13 @@ namespace Bowhead.Actors {
                 Die();
             }
 
-            if (mount == null) {
-                go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
-            }
+			if (mount == null) {
+				go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
+				driver?.MountMoved();
+			}
         }
+
+		protected virtual void MountMoved() { }
 
         public bool Move(Vector3 moveXZ) {
             float moveXZLength = moveXZ.magnitude;
