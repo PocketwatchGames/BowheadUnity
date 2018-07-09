@@ -40,6 +40,7 @@ namespace Bowhead.Actors {
             canClimb = false;
             canClimbWell = false;
             canMove = true;
+            canStrafe = true;
             canJump = true;
             canRun = true;
             canTurn = true;
@@ -86,6 +87,7 @@ namespace Bowhead.Actors {
             canClimb = false;
             canClimbWell = false;
             canMove = true;
+            canStrafe = true;
             canJump = true;
 			canRun = true;
 			canSprint = true;
@@ -101,6 +103,7 @@ namespace Bowhead.Actors {
                 canAttack = false;
                 canMove = false;
             }
+
 
 			base.PreSimulate(dt);
 

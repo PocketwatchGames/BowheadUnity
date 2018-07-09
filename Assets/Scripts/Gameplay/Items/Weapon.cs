@@ -202,7 +202,7 @@ namespace Bowhead {
 				return;
 			}
 
-			if (owner.stance == Pawn.Stance.Explore) {
+			if (owner.activity == Pawn.Activity.Climbing) {
 				_mesh.transform.localRotation = Quaternion.Euler(0, 0, 45);
 				_mesh.transform.localPosition = new Vector3(0,1f,-0.75f);
 				return;

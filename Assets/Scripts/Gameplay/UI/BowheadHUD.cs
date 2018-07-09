@@ -70,7 +70,6 @@ namespace Bowhead.Client.UI {
 			_interactHint.SetButton("X");
             _interactHint.SetHint(interaction);
 
-			_minimap.gameObject.SetActive(localPlayer.playerPawn.stance == Pawn.Stance.Explore);
         }
 
 		public override T CreateMinimapMarker<T>(T prefab) {

@@ -26,6 +26,7 @@ namespace Bowhead.Actors {
 		private Vector3 _cameraVelocity;
         private Vector3 _lookAtVelocity;
         private Vector3 _lookAt;
+        private float _mouseLookClickTimer;
 
 		Camera _camera;
 
@@ -79,8 +80,33 @@ namespace Bowhead.Actors {
 
             _isLooking = false;
 
+            bool mouseLookDown = Input.GetButton("Look");
+            if (mouseLookDown)
+            {
+                _mouseLookClickTimer += dt;
+            }
+            else
+            {
+                _mouseLookClickTimer = 0;
+            }
+            var newMouseLook = _target.mount != null || mouseLookDown;
+            if (_mouseLookActive != newMouseLook)
+            {
+                _mouseLookActive = !_mouseLookActive;
 
-			if (_mouseLookActive) {
+                if (!_mouseLookActive)
+                {
+                    if (_mouseLookClickTimer < 0.25f)
+                    {
+                        _pitch = 30 * Mathf.Deg2Rad;
+                        _yaw = _target.yaw;
+                    }
+                }
+            }
+
+
+
+            if (_mouseLookActive) {
                 var m = Input.mousePosition;
                 var mouseDelta = m - _oldMousePosition;
 
@@ -104,15 +130,6 @@ namespace Bowhead.Actors {
         }
 
         void Tick(float dt) {
-
-			if (_mouseLookActive != (_target.stance == Pawn.Stance.Explore)) { 
-				_mouseLookActive = !_mouseLookActive;
-
-				if (_mouseLookActive) {
-					_pitch = 30 * Mathf.Deg2Rad;
-				}
-			}
-
 
 
 			if (!_mouseLookActive) {

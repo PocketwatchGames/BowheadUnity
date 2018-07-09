@@ -71,7 +71,6 @@ namespace Bowhead.Actors {
         public float stunAmount;
 
 		[Header("Gameplay")]
-		public Stance stance;
         public Activity activity;
 		public float sprintTimer;
 		public float sprintGracePeriodTime;
@@ -79,6 +78,7 @@ namespace Bowhead.Actors {
         public float fallJumpTimer;
         public float maxHorizontalSpeed;
         public bool sliding;
+        public bool canStrafe;
         public bool canMove;
         public bool canRun;
         public bool canJump;
@@ -1152,7 +1152,6 @@ namespace Bowhead.Actors {
 
             if (mount != null) {
                 mount.driver = this;
-				stance = Stance.Explore;
             }
 
             if (mount != null) {

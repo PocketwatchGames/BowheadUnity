@@ -64,8 +64,15 @@ namespace Bowhead.Actors {
             cmd.fwd = (sbyte)(move.y * 127);
             cmd.right = (sbyte)(move.x * 127);
 
-			Vector2 look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
-			cmd.lookFwd = (sbyte)(-look.y * 127);
+            Vector2 look;
+            if (Input.GetJoystickNames().Length == 0)
+            {
+                look = new Vector2(Input.GetAxis("MouseAxis1"), Input.GetAxis("MouseAxis2"));
+            }
+            else {
+                look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+            }
+            cmd.lookFwd = (sbyte)(-look.y * 127);
 			cmd.lookRight = (sbyte)(look.x * 127);
 
 
@@ -166,6 +173,7 @@ namespace Bowhead.Actors {
 			canSwim = weight < WeightClass.HEAVY;
             canClimbWell = weight < WeightClass.MEDIUM;
             canTurn = true;
+            canStrafe = mount == null;
 
             if (recovering) {
 				canRun = false;
@@ -226,12 +234,12 @@ namespace Bowhead.Actors {
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
 
-			if (stance == Stance.Combat && !input.IsPressed(InputType.Jump)) {
+			if (canStrafe && !input.IsPressed(InputType.Jump)) {
 				if (cur.lookFwd != 0 || cur.lookRight != 0) {
 					input.look += forward * (float)cur.lookFwd / 127f;
 					input.look += right * (float)cur.lookRight / 127f;
 				}
-				else if (input.movement != Vector3.zero) {
+				else if (input.movement != Vector3.zero && Input.GetJoystickNames().Length > 0) {
 					input.look = input.movement.normalized;
 				}
 			}
@@ -241,7 +249,7 @@ namespace Bowhead.Actors {
 				}
 			}
 
-			return input;
+            return input;
         }
 
         override public void Simulate(float dt, Input_t input) {
@@ -253,17 +261,6 @@ namespace Bowhead.Actors {
 
 			if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
 				Interact();
-			}
-			if (input.inputs[(int)InputType.Look] == InputState.JustPressed) {
-				if (mount != null) {
-					SetMount(null);
-				}
-				if (stance == Stance.Combat) {
-					stance = Stance.Explore;
-				}
-				else {
-					stance = Stance.Combat;
-				}
 			}
 
 
@@ -323,9 +320,6 @@ namespace Bowhead.Actors {
 			}
 
 			attackTargetPreview = GetAttackTarget(yaw);
-			if (isCasting && mount == null) {
-				stance = Stance.Combat;
-			}
 
 
             base.Simulate(dt, input);
@@ -811,6 +805,7 @@ namespace Bowhead.Actors {
         #region World Interaction
 
         void Interact() {
+
             Entity target;
             string interaction;
 			Vector3? targetPos;
@@ -824,6 +819,10 @@ namespace Bowhead.Actors {
             else if ((critter = target as Critter) != null) {
                 if (mount != critter) {
                     SetMount(critter);
+                }
+                else
+                {
+                    SetMount(null);
                 }
             }
             else if (targetPos.HasValue) {
@@ -903,6 +902,15 @@ namespace Bowhead.Actors {
         public void GetInteractTarget(out Entity target, out Vector3? targetPos, out string interactionType) {
 
             interactionType = null;
+
+            if (mount != null)
+            {
+                target = mount;
+                targetPos = null;
+                interactionType = "Dismount";
+                return;
+            }
+
 
             float closestDist = 2;
             Entity closestItem = null;
