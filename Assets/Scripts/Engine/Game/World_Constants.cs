@@ -132,7 +132,6 @@ public struct LocalVoxelPos_t {
 	}
 };
 
-[Flags]
 public enum EVoxelBlockType : byte {
 	Air = 0,
 	Dirt,
