@@ -111,3 +111,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _meshFilter: {fileID: 33775271890215504}
+  _water: {fileID: 2100000, guid: a42887ae7d1a1b540a40ab5e91eade23, type: 2}

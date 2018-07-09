@@ -8,6 +8,8 @@ using UnityEngine;
 public class World_ChunkComponent : MonoBehaviour {
 	[SerializeField]
 	MeshFilter _meshFilter;
+	[SerializeField]
+	Material _water;
 	
 	MeshCollider _meshCollider;
 
@@ -23,6 +25,10 @@ public class World_ChunkComponent : MonoBehaviour {
 		}
 		_meshCollider = gameObject.AddComponent<MeshCollider>();
 		_meshCollider.sharedMesh = mesh;
+
+		if (gameObject.layer == Layers.Water) {
+			GetComponent<MeshRenderer>().sharedMaterial = _water;
+		}
 	}
 
 	public void Clear() {
