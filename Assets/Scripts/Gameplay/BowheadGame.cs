@@ -158,7 +158,9 @@ namespace Bowhead.Server {
 	public abstract class BowheadGame<T> : GameMode<T> where T : GameState<T> {
 		public const WorldStreaming.EGenerator WORLD_GENERATOR_TYPE = WorldStreaming.EGenerator.PROC_V2;
 
-		static SpawnPointData[] _monsterSpawns = SpawnPointData.GetAllSpawnTypes<Critter>(ESpawnPointType.Monster);
+		static SpawnPointData[] _monsterSpawns = SpawnPointData.GetAllSpawnTypes<CritterData>(ESpawnPointType.Monster);
+		static SpawnPointData[] _chestSpawns = SpawnPointData.GetAllSpawnTypes<WorldItemData>(ESpawnPointType.Chest);
+		static SpawnPointData[] _mapRevealSpawns = SpawnPointData.GetAllSpawnTypes<WorldItemData>(ESpawnPointType.MapReveal);
 
 		public BowheadGame(ServerWorld world) : base(world) {
 			data = Resources.Load<WorldData>("DefaultWorld");
@@ -226,6 +228,18 @@ namespace Bowhead.Server {
 						return;
 					}
 					spawnPoint = _monsterSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+				break;
+				case EDecorationType.Chest:
+					if (_chestSpawns.Length < 1) {
+						return;
+					}
+					spawnPoint = _chestSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+				break;
+				case EDecorationType.MapReveal:
+					if (_mapRevealSpawns.Length < 1) {
+						return;
+					}
+					spawnPoint = _mapRevealSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
 				break;
 			}
 

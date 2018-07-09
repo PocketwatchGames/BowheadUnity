@@ -7,7 +7,8 @@ namespace Bowhead.Actors {
 
 	public enum ESpawnPointType {
 		Monster,
-		MapFragment
+		Chest,
+		MapReveal
 	};
 
 	public interface ISpawnPointSupport {

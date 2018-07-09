@@ -211,7 +211,9 @@ public enum EChunkLayers : int {
 };
 
 public enum EDecorationType : int {
-	MonsterSpawn
+	MonsterSpawn,
+	Chest,
+	MapReveal
 };
 
 public static class WorldConstantExtensions {
