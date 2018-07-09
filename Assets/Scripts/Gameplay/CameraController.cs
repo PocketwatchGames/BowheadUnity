@@ -222,15 +222,19 @@ namespace Bowhead.Actors {
 						_position += _cameraVelocity * dt;
 						_position = new Vector3(_position.x, Mathf.Max(_position.y, avgPlayerPosition.y), _position.z);
 
-						//diff = _position - _lookAt;
-						//diff.y = 0;
-						//if (diff.magnitude < 0.1f)
-						//	diff.x = 1;
-						//diff.Normalize();
-						//diff *= minDist;
 
-						//_yaw = Mathf.Atan2(-diff.x, -diff.z);
+						// Mario style leash camera
+						if (_mouseLookActive) {
+							diff = _position - _lookAt;
+							diff.y = 0;
+							if (diff.magnitude < 0.1f)
+								diff.x = 1;
+							diff.Normalize();
+							diff *= minDist;
 
+							_yaw = Mathf.Atan2(-diff.x, -diff.z);
+						}
+						// end leash camera
 					}
 				}
 
