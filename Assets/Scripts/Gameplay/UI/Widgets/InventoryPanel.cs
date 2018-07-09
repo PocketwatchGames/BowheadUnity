@@ -218,6 +218,9 @@ namespace Bowhead.Client.UI {
 					}
 				}
 			}
+			else {
+				_useTimer = 0;
+			}
 
 			for (int i=0;i<_slots.Length;i++) {
 				if (_slots[i] == null) {

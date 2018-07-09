@@ -7,22 +7,36 @@ namespace Bowhead.Client.UI {
 	using Player = Bowhead.Actors.Player;
     public class PlayerStatePanel : MonoBehaviour {
 
-        [SerializeField]
+		[SerializeField]
+		ButtonHint _buttonHintJump;
+
+		[SerializeField]
+		ButtonHint _buttonHintStance;
+
+		[SerializeField]
+		UnityEngine.UI.Text _money;
+		[SerializeField]
+		UnityEngine.UI.Text _weight;
+
+		[SerializeField]
         Player _player;
 
-        Slider _health;
-        Slider _water;
-        Slider _stamina;
-        MoneyPanel _money;
+		[SerializeField]
+		Slider _health;
+		[SerializeField]
+		Slider _water;
+		[SerializeField]
+		Slider _stamina;
 
 
 
         // Use this for initialization
         void Start() {
-            _health = transform.GetAnyChildComponent<Slider>("Health");
-            _water = transform.GetAnyChildComponent<Slider>("Water");
-            _stamina = transform.GetAnyChildComponent<Slider>("Stamina");
-            _money = transform.GetAnyChildComponent<MoneyPanel>("Money");
+
+			_buttonHintJump.SetButton("A");
+			_buttonHintJump.SetHint("Jump/Sprint");
+			_buttonHintStance.SetButton("B");
+			_buttonHintStance.SetHint("Sheathe Weapons");
         }
 
         // Update is called once per frame
@@ -34,7 +48,14 @@ namespace Bowhead.Client.UI {
             _health.value = _player.health / _player.maxHealth;
             _water.value = _player.water / _player.maxWater;
             _stamina.value = _player.stamina / _player.maxStamina;
-        }
+
+			if (_player.stance == Player.Stance.Combat) {
+				_buttonHintStance.SetHint("Sheathe Weapons");
+			}
+			else {
+				_buttonHintStance.SetHint("Unsheathe Weapons");
+			}
+		}
 
         public void Init(Player player) {
             _player = player;
@@ -43,10 +64,10 @@ namespace Bowhead.Client.UI {
         }
 
         private void onMoneyChange() {
-            _money.SetMoney(_player.money.ToString());
+			_money.text = _player.money.ToString();
         }
         private void OnInventoryChange() {
-            _money.SetWeightClass(_player.weight.ToString());
+			_weight.text = _player.weight.ToString();
         }
     }
 }

@@ -368,6 +368,7 @@ namespace Bowhead.Actors {
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
 			PickUp(ItemData.Get("Buckler").CreateItem());
 			PickUp(ItemData.Get("Spear").CreateItem());
+			PickUp(ItemData.Get("Broadsword").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
