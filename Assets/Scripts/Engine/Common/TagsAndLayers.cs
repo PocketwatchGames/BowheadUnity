@@ -41,7 +41,7 @@ public static class Layers {
 
 	public const int CameraTraceMask = TerrainMask;
 
-	public const int PawnCollisionMask = TerrainMask|WaterMask|TreesMask;
+	public const int PawnCollisionMask = TerrainMask|TreesMask;
 
 	public static int ToLayerMask(this ELayers layers) {
 		int mask = 0;
