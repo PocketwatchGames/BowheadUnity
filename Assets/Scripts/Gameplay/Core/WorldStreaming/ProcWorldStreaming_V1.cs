@@ -478,7 +478,7 @@ namespace Bowhead {
                                 if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
                                     var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
                                     chunk.flags |= EChunkFlags.SOLID;
-                                    chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
+                                    chunk.voxeldata[ofs] = EVoxelBlockType.Rock;
                                 }
                             }
                         }
@@ -522,8 +522,13 @@ namespace Bowhead {
                                     if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
                                         var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
                                         chunk.flags |= EChunkFlags.SOLID;
-                                        chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
-                                    }
+										if (i != 3 && i != 3 && j != -3 && j != 3 && k != towerHeight) {
+											chunk.voxeldata[ofs] = EVoxelBlockType.Rock;
+										}
+										else {
+											chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
+										}
+									}
                                 }
                             }
                         }
