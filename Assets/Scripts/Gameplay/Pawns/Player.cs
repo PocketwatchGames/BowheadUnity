@@ -364,13 +364,8 @@ namespace Bowhead.Actors {
             SetSpawnPoint(pos);
 
 			PickUp(ItemData.Get("Pack").CreateItem());
-			PickUp(ItemData.Get("Pack").CreateItem());
-			PickUp(ItemData.Get("Pack").CreateItem());
-			PickUp(ItemData.Get("Chainmail").CreateItem());
 			PickUp(ItemData.Get("Rapier").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
-			PickUp(ItemData.Get("SpellHeal").CreateItem());
-			PickUp(ItemData.Get("Broadsword").CreateItem());
 			PickUp(ItemData.Get("Buckler").CreateItem());
 			PickUp(ItemData.Get("Spear").CreateItem());
 

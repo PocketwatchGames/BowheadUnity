@@ -543,7 +543,7 @@ namespace Bowhead.Actors {
 				}
 				else if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
                     if (canJump) {
-                        var jumpDir = input.movement * data.dodgeSpeed;
+                        var jumpDir = input.movement * data.sprintSpeed;
                         jumpDir.y += getGroundJumpVelocity();
                         jump(jumpDir);
                     }
@@ -600,7 +600,7 @@ namespace Bowhead.Actors {
 				else {
 					if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
 						if (canJump) {
-							var jumpDir = input.movement * data.dodgeSpeed;
+							var jumpDir = input.movement * data.sprintSpeed;
 							jumpDir.y += getGroundJumpVelocity();
 							jump(jumpDir);
 							jumped = true;
@@ -737,7 +737,7 @@ namespace Bowhead.Actors {
 			if (input.inputs[(int)InputType.Jump] == InputState.Pressed) {
                 if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
                     if (canJump) {
-                        var jumpDir = input.movement * data.dodgeSpeed;
+                        var jumpDir = input.movement * data.sprintSpeed;
                         jumpDir.y += data.swimJumpBoostAcceleration;
                         jump(jumpDir);
                     }
@@ -794,7 +794,9 @@ namespace Bowhead.Actors {
                         jumpDir += input.movement * Mathf.Max(data.groundMaxSpeed, data.sprintSpeed);
                         jumpDir.y += data.jumpSpeed;
 						maxHorizontalSpeed = data.sprintSpeed;
-                    }
+						sprintGracePeriodTime = 0.1f;
+
+					}
                     else {
                         if (climbingInput.y > 0) {
                             // jumping up jumps away from the wall slightly so we don't reattach right away
@@ -802,10 +804,13 @@ namespace Bowhead.Actors {
                             jumpDir += climbingNormal * data.jumpSpeed / 4;
                         }
                         else if (climbingInput.y >= 0) {
-                            // left right jumps get a vertical boost
-                            jumpDir.y = data.jumpSpeed;
-                        }
-                    }
+							// left right jumps get a vertical boost
+							jumpDir += input.movement * data.groundMaxSpeed;
+							jumpDir.y = data.jumpSpeed;
+							maxHorizontalSpeed = data.sprintSpeed;
+							sprintGracePeriodTime = 0.1f;
+						}
+					}
                     jump(jumpDir);
                     return;
                 }

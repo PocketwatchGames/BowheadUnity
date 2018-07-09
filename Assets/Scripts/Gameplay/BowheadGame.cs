@@ -174,24 +174,35 @@ namespace Bowhead.Server {
 		protected override void PrepareForMatchInProgress() {
 			base.PrepareForMatchInProgress();
 
-			return;
-
-			for (int i = 0; i < 100; i++) {
-				WorldItem worldItem = null;
-				var pos = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
-				int itemType = UnityEngine.Random.Range(0, 2);
-				switch (itemType) {
-					case 0:
-						worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
-						var money = MoneyData.Get("Money").CreateItem();
-						worldItem.item = money;
-						money.count = 100;
-						break;
-					case 1:
-						WorldItemData.Get("Map").Spawn<WorldItem>(world, pos, null, null, null);
-						break;
-				}
-			}
+			//for (int i = 0; i < 100; i++) {
+			//	WorldItem worldItem = null;
+			//	var pos = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
+			//	int itemType = UnityEngine.Random.Range(0, 4);
+			//	switch (itemType) {
+			//		case 0: {
+			//			worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
+			//			var money = MoneyData.Get("Money").CreateItem();
+			//			worldItem.item = money;
+			//			money.count = 100;
+			//			break;
+			//		} case 1: {
+			//			worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
+			//			var item = ClothingData.Get("Chainmail").CreateItem();
+			//			worldItem.item = item;
+			//			break;
+			//		} case 2: {
+			//			worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
+			//			var item = WeaponData.Get("2HSword").CreateItem();
+			//			worldItem.item = item;
+			//			break;
+			//		} case 3: {
+			//			worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
+			//			var item = WeaponData.Get("SpellHeal").CreateItem();
+			//			worldItem.item = item;
+			//			break;
+			//		}
+			//	}
+			//}
 
 		}
 
