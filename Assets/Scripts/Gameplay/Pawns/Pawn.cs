@@ -1162,7 +1162,12 @@ namespace Bowhead.Actors {
                 mount.driver = this;
             }
 
-            if (mount != null) {
+			if (this is Player) {
+				(this as Player).stance = Player.Stance.Explore;
+			}
+
+
+			if (mount != null) {
                 go.transform.parent = mount.go.transform;
                 go.transform.localPosition = mount.headPosition()-mount.position;
 				go.transform.localRotation = Quaternion.identity;
