@@ -10,10 +10,16 @@ namespace Bowhead.Actors {
 		public override Type serverType => typeof(Player);
 		public override Type clientType => typeof(Player);
 
+		public enum Stance {
+			Combat,
+			Explore
+		}
+
         #region State
         [Header("Player")]
         public Vector3 spawnPoint;
         public Vector2 mapPos;
+		public Stance stance;
 
         [Header("Inventory")]
         public int money;
@@ -173,7 +179,7 @@ namespace Bowhead.Actors {
 			canSwim = weight < WeightClass.HEAVY;
             canClimbWell = weight < WeightClass.MEDIUM;
             canTurn = true;
-            canStrafe = mount == null;
+            canStrafe = stance == Stance.Combat;
 
             if (recovering) {
 				canRun = false;
@@ -234,7 +240,7 @@ namespace Bowhead.Actors {
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
 
-			if (canStrafe && !input.IsPressed(InputType.Jump)) {
+			if (canStrafe) {
 				if (cur.lookFwd != 0 || cur.lookRight != 0) {
 					input.look += forward * (float)cur.lookFwd / 127f;
 					input.look += right * (float)cur.lookRight / 127f;
@@ -263,8 +269,16 @@ namespace Bowhead.Actors {
 				Interact();
 			}
 
+			if (input.inputs[(int)InputType.Look] == InputState.JustPressed) {
+				if (stance == Stance.Combat) {
+					stance = Stance.Explore;
+				}
+				else {
+					stance = Stance.Combat;
+				}
+			}
 
-            bool isCasting = false;
+			bool isCasting = false;
             var itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
 			var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
 			var itemRanged = GetInventorySlot((int)InventorySlot.RANGED) as Weapon;
@@ -321,6 +335,9 @@ namespace Bowhead.Actors {
 
 			attackTargetPreview = GetAttackTarget(yaw);
 
+			if (isCasting) {
+				stance = Stance.Combat;
+			}
 
             base.Simulate(dt, input);
             UpdateStats(dt);
