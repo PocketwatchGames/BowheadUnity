@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87a24991911795642b690a0998a0e73f, type: 3}
+  m_Name: RandomTreasureChest
+  m_EditorClassIdentifier: 
+  version: 0
+  _index: 16
+  prefab:
+    _assetPath: TreasureChest
+    _editorPath: Assets/Assets/Prefabs/Resources/TreasureChest.prefab
+  _itemClass: Bowhead.Actors.WorldItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  minimapMarker:
+    _assetPath: MinimapTreasureMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MinimapTreasureMarker.prefab
+  minimapMarkerStyle: 0
+  _items:
+  - itemClass: {fileID: 11400000, guid: 3471146c30911b549b389996ec6ea3ec, type: 2}
+    count:
+      x: 25
+      y: 100
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 3cb8976245727274a9669f3751ec78f2, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 1966101ed621fdc4589312e9eb8da18e, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 0be75761387f19e4c97f4a0160e7f2cd, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1

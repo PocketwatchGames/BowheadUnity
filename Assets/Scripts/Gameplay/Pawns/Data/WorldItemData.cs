@@ -27,14 +27,24 @@ namespace Bowhead.Actors {
 
 		public T Spawn<T>(World world, Vector3 pos, Actor instigator, Actor owner, Team team) where T: WorldItem {
 			var item = (T)world.Spawn(itemClass, null, default(SpawnParameters));
-			item.Spawn(this, pos, instigator, owner, team);
+			Spawn(item, pos, instigator, owner, team);
 			return item;
 		}
 
 		public Actor Spawn(World world, Vector3 pos, Team team) {
 			return Spawn<WorldItem>(world, pos, null, null, team);
 		}
+
+		protected virtual void Spawn(WorldItem item, Vector3 pos, Actor instigator, Actor owner, Team team) {
+			item.Spawn(this, pos, instigator, owner, team);
+		}
 	}
 
+	// subclass support
+	public abstract class WorldItemData<T> : WorldItemData where T : WorldItemData<T> {
+		new public static T Get(string name) {
+			return DataManager.GetData<T>(name);
+		}
+	}
 }
 

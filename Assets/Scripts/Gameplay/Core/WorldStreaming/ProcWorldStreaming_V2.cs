@@ -307,9 +307,20 @@ namespace Bowhead {
 					}
 				}
 
-				if (noise.GetWhiteNoise(chunkPos.x, chunkPos.y, chunkPos.z) > 0.98f) {
+				var whitenoise = noise.GetWhiteNoise(chunkPos.x, chunkPos.y, chunkPos.z);
+
+				if (whitenoise > 0.98f) {
 					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x, chunkPos.y, chunkPos.z) * 40 + 8);
 					ConstructTower(ref noise, chunkPos, 8, 0, 8, towerHeight, ref chunk);
+				}
+
+				if (whitenoise < -0.98f) {
+					chunk.AddDecoration(
+						new Decoration_t() {
+							pos = chunkPos + new Vector3(VOXEL_CHUNK_SIZE_XZ / 2, VOXEL_CHUNK_SIZE_Y - 1, VOXEL_CHUNK_SIZE_XZ / 2),
+							type = EDecorationType.Chest
+						}
+					);
 				}
 			}
 
