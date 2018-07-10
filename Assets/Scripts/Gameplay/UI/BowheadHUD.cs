@@ -35,10 +35,11 @@ namespace Bowhead.Client.UI {
             _compass.Init(Camera.main, player);
 
 			_minimap.SetStreaming(player.world.worldStreaming);
+            //_minimap.SetOrigin(0, 0);
 			player.OnExplore += OnExplore;
 
 			// for now, minimap reveal still kinda broke ass.
-			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 1000);
+			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 64);
 
 			_weaponChargeLeft.SetTarget(player, 1);
 			_weaponChargeRight.SetTarget(player, 2);
@@ -72,6 +73,10 @@ namespace Bowhead.Client.UI {
 			_interactHint.SetButton("X");
             _interactHint.SetHint(interaction);
 
+			if (localPlayer.playerPawn.active) {
+				var pos = World.WorldToChunk(World.Vec3ToWorld(localPlayer.playerPawn.go.transform.position));
+				_minimap.SetOrigin(pos.cx, pos.cz);
+			}
         }
 
 		public override T CreateMinimapMarker<T>(T prefab) {

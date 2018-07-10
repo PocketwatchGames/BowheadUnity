@@ -133,8 +133,6 @@ namespace Bowhead.Actors {
                     c.SetActive(position + new Vector3(3, 0, 0));
                     var weapon = PackData.Get("Pack").CreateItem();
                     c.SetInventorySlot(0, weapon);
-
-
 				}
 				else {
                     return;
@@ -148,6 +146,7 @@ namespace Bowhead.Actors {
 				if (GameManager.instance.clientWorld.gameState != null) {
 					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMinimapMarker(data.minimapMarker.Load()));
 					// SetPosition will set the position
+					_marker.transform.localPosition = new Vector2(position.x, position.z);
 				}
 			}
 

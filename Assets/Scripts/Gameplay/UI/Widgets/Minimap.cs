@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,6 +22,11 @@ namespace Bowhead.Client.UI {
 			public bool dirty;
 		};
 
+		struct Reveal_t {
+			public Vector2 pos;
+			public float radius;
+		};
+
 		const uint HASH_SIZE_XZ = World.VOXEL_CHUNK_SIZE_XZ;
 		const uint HASH_SIZE = HASH_SIZE_XZ * HASH_SIZE_XZ;
 
@@ -29,6 +35,8 @@ namespace Bowhead.Client.UI {
 
 		ChunkTile[] _tiles;
 		int _numTiles;
+
+		List<Reveal_t> _reveals = new List<Reveal_t>();
 
 		[SerializeField]
 		int _chunkMinY;
@@ -82,7 +90,7 @@ namespace Bowhead.Client.UI {
 			_maskTexture.useMipMap = false;
 			_maskTexture.Create();
 			Graphics.Blit(_blackTexture, _maskTexture);
-									
+
 			_image = GetComponent<RawImage>();
 			_image.texture = _mainTexture;
 
@@ -138,16 +146,23 @@ namespace Bowhead.Client.UI {
 			AddBoundedTiles();
 			FullUpdate();
 
-			_markers.localPosition = _markersOrigin + Vector3.Scale(_markers.localScale, new Vector3(_chunkX * World.VOXEL_CHUNK_SIZE_XZ, _chunkZ * World.VOXEL_CHUNK_SIZE_XZ, 0));
-
-			//RevealArea(new Vector2(0, 0), 1000);
+			_markers.localPosition = _markersOrigin - Vector3.Scale(_markers.localScale, new Vector3(_chunkX * World.VOXEL_CHUNK_SIZE_XZ, _chunkZ * World.VOXEL_CHUNK_SIZE_XZ, 0));
 		}
 
 		public void RevealArea(Vector2 pos, float radius) {
-			var mapBottomLeft = World.ChunkToWorld(new WorldChunkPos_t(_chunkMinX, 0, _chunkMinZ));
+			_reveals.Add(new Reveal_t() {
+				pos = pos,
+				radius = radius
+			});
+			Graphics.Blit(_blackTexture, _maskTexture);
+			Reveal(pos, radius);
+		}
+
+		void Reveal(Vector2 pos, float radius) {
+			var mapBottomLeft = World.ChunkToWorld(new WorldChunkPos_t(_chunkMinX, 0, _chunkMinZ)) - new WorldVoxelPos_t(World.VOXEL_CHUNK_SIZE_XZ/2, 0, World.VOXEL_CHUNK_SIZE_XZ/2);
 			var mapExtent = World.MaxVoxelChunkLine(_chunkXZSize) * World.VOXEL_CHUNK_SIZE_XZ;
 			var relativePos = World.Vec3ToWorld(new Vector3(pos.x, 0, pos.y)) - mapBottomLeft;
-						
+
 			GL.sRGBWrite = false;
 			Graphics.SetRenderTarget(_maskTexture);
 			GL.PushMatrix();
@@ -166,6 +181,12 @@ namespace Bowhead.Client.UI {
 
 			for (int i = 0; i < _numTiles; ++i) {
 				RenderTile(_tiles[i]);
+			}
+
+			Graphics.Blit(_blackTexture, _maskTexture);
+
+			foreach (var reveal in _reveals) {
+				Reveal(reveal.pos, reveal.radius);
 			}
 		}
 
