@@ -270,7 +270,10 @@ namespace Bowhead.Actors {
 			}
 
 			if (input.inputs[(int)InputType.Look] == InputState.JustPressed) {
-				if (stance == Stance.Combat) {
+				if (mount != null) {
+					SetMount(null);
+				}
+				else if (stance == Stance.Combat) {
 					stance = Stance.Explore;
 				}
 				else {
@@ -336,6 +339,7 @@ namespace Bowhead.Actors {
 			attackTargetPreview = GetAttackTarget(yaw);
 
 			if (isCasting) {
+				SetMount(null);
 				stance = Stance.Combat;
 			}
 
@@ -838,10 +842,6 @@ namespace Bowhead.Actors {
                 if (mount != critter) {
                     SetMount(critter);
                 }
-                else
-                {
-                    SetMount(null);
-                }
             }
             else if (targetPos.HasValue) {
                 var block = world.GetBlock(targetPos.Value);
@@ -920,15 +920,6 @@ namespace Bowhead.Actors {
         public void GetInteractTarget(out Entity target, out Vector3? targetPos, out string interactionType) {
 
             interactionType = null;
-
-            if (mount != null)
-            {
-                target = mount;
-                targetPos = null;
-                interactionType = "Dismount";
-                return;
-            }
-
 
             float closestDist = 2;
             Entity closestItem = null;
