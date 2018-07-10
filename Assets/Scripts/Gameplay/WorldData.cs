@@ -3,6 +3,25 @@ using UnityEngine;
 
 [CreateAssetMenuAttribute(menuName = "WorldData")]
 public class WorldData : ScriptableObject {
+
+
+	[System.Serializable]
+	public class TerrainType {
+		public string name;
+		public float drag = 0;
+		public float speedModifier = 1;
+		public float accelerationModifier = 1;
+		public float slideThreshold = 100;
+		public float slideFriction = 0.5f;
+		public float fallDamage = 1;
+		public bool solid;
+		public bool canClimbLight;
+		public bool canClimbMedium;
+		public bool canHang;
+	}
+
+	public TerrainType[] terrainTypes;
+
     public float windSpeedStormy;
     public float windSpeedWindy;
     public float windSpeedBreezy;
@@ -12,4 +31,6 @@ public class WorldData : ScriptableObject {
 
     public float SecondsPerDay { get { return 24 * secondsPerHour; } }
     public float DaysPerSecond { get { return 1.0f / SecondsPerDay; } }
+
+
 }

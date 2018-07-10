@@ -203,11 +203,11 @@ namespace Bowhead.Actors {
             var handHoldPos = p + wallDirection.normalized * data.climbWallRange;
             if (!IsOpen(p))
                 return false;
-            var handblock = world.GetBlock(handPosition(handHoldPos));
-            bool isClimbable = WorldUtils.IsClimbable(handblock, canClimbWell);
+            var handblock = gameMode.GetTerrainData(handPosition(handHoldPos));
+            bool isClimbable = canClimbWell ? handblock.canClimbLight : handblock.canClimbMedium;
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
-                if (isHangPosition && WorldUtils.IsHangable(handblock, canClimbWell) && !WorldUtils.IsSolidBlock(world.GetBlock(p)) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(p))) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
+				if (isHangPosition && handblock.canHang && !WorldUtils.IsSolidBlock(world.GetBlock(p)) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(p))) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -222,13 +222,13 @@ namespace Bowhead.Actors {
             var handHoldPos = handPosition(p) + checkDir.normalized * data.climbWallRange;
             if (!IsOpen(p))
                 return false;
-            var handblock = world.GetBlock(handHoldPos);
-            bool isClimbable = WorldUtils.IsClimbable(handblock, canClimbWell);
-            if (!isClimbable) {
+			var handblock = gameMode.GetTerrainData(handPosition(handHoldPos));
+			bool isClimbable = canClimbWell ? handblock.canClimbLight : handblock.canClimbMedium;
+			if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
                 if (isHangPosition
-                    && WorldUtils.IsHangable(handblock, canClimbWell)
-                    && !WorldUtils.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
+                    && handblock.canHang
+					&& !WorldUtils.IsSolidBlock(world.GetBlock(handHoldPos + Vector3.up))) {
                     isClimbable = true;
                 }
             }
@@ -543,7 +543,7 @@ namespace Bowhead.Actors {
 				}
 				else if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
                     if (canJump) {
-                        var jumpDir = input.movement * data.dodgeSpeed;
+                        var jumpDir = input.movement * data.sprintSpeed;
                         jumpDir.y += getGroundJumpVelocity();
                         jump(jumpDir);
                     }
@@ -600,7 +600,7 @@ namespace Bowhead.Actors {
 				else {
 					if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
 						if (canJump) {
-							var jumpDir = input.movement * data.dodgeSpeed;
+							var jumpDir = input.movement * data.sprintSpeed;
 							jumpDir.y += getGroundJumpVelocity();
 							jump(jumpDir);
 							jumped = true;
@@ -621,24 +621,22 @@ namespace Bowhead.Actors {
 			}
 
 
-			var block = world.GetBlock(footPosition());
-            var midblock = world.GetBlock(waistPosition());
-            var topblock = world.GetBlock(headPosition());
-            float slideFriction, slideThreshold;
-			WorldUtils.GetSlideThreshold(block, midblock, topblock, out slideFriction, out slideThreshold);
-            float workModifier = WorldUtils.GetWorkModifier(block, midblock, topblock);
-            if (IsWading()) {
-                workModifier += data.swimDragHorizontal;
+			var block = gameMode.GetTerrainData(position + new Vector3(0, -0.1f, 0));
+            var midblock = gameMode.GetTerrainData(position + new Vector3(0,0.9f,0));
+
+			float drag = Mathf.Max(block.drag, midblock.drag);
+			if (IsWading()) {
+                drag += data.swimDragHorizontal;
             }
 
 
             float curVel = velocity.magnitude;
             Vector3 velChange = Vector3.zero;
 
-            if (input.movement == Vector3.zero && curVel < data.walkSpeed && !sliding) {
+            if (input.movement == Vector3.zero && curVel < data.walkSpeed*block.speedModifier && !sliding) {
                 if (curVel > 0) {
                     // Stopping (only when not sliding)
-                    float stopAccel = dt * data.walkSpeed / data.walkStopTime;
+                    float stopAccel = dt * data.walkSpeed * block.speedModifier / data.walkStopTime;
                     if (curVel < stopAccel)
                         velChange = -velocity;
                     else
@@ -646,43 +644,52 @@ namespace Bowhead.Actors {
                 }
             }
             else {
-                float maxSpeed = getGroundMaxSpeed();
-                float acceleration = getGroundAcceleration();
+                float maxSpeed = getGroundMaxSpeed() * block.speedModifier;
+                float acceleration = getGroundAcceleration() * block.accelerationModifier;
+				float slideThreshold = block.slideThreshold * (1.0f - Vector3.Dot(groundNormal, Vector3.up));
 
-                if (input.movement != Vector3.zero) {
+				if (input.movement != Vector3.zero) {
                     var normalizedInput = input.movement.normalized;
                     float slopeDot = Vector3.Dot(groundNormal, normalizedInput);
                     maxSpeed *= 1f + slopeDot;
-
-                    slideThreshold *= Vector3.Dot(groundNormal, normalizedInput) + 1f;
-
                 }
 
                 {
                     var desiredVel = input.movement * maxSpeed;
                     var velDiff = desiredVel - velocity;
                     velDiff.y = 0;
+
+
                     if (velDiff != Vector3.zero) {
+						// acceleration scales with our difference from our maxspeed
                         acceleration *= velDiff.magnitude;
                         velDiff = velDiff.normalized;
 
-                        var walkChange = data.walkSpeed / data.walkStartTime;
-                        if (walkChange > acceleration) {
-                            acceleration = Math.Max(acceleration, Math.Min(walkChange, slideThreshold));
-                        }
-                        velChange = velDiff * acceleration * dt;
+						if (velocity.magnitude < data.walkSpeed) {
+							// walk acceleration is linear
+							var walkAcceleration = data.walkSpeed * block.accelerationModifier / data.walkStartTime;
+							// if walking would cause us to slide, limit our acceleration to the sliding threshold
+							walkAcceleration = Math.Min(walkAcceleration, slideThreshold);
+
+							// If our linear acceleration is higher than our run accel, use it
+							if (walkAcceleration > acceleration) {
+								acceleration = walkAcceleration;
+							}
+						}
+
+						velChange = velDiff * acceleration * dt;
                     }
                     else {
                         acceleration = 0;
                     }
 
-                    if (acceleration > slideThreshold) {
-                        sliding = true;
-                    }
-                    else {
-                        sliding = false;
-                    }
-                }
+					if (acceleration > slideThreshold) {
+						sliding = true;
+					}
+					else {
+						sliding = false;
+					}
+				}
                 {
                     // Wind blowing you while running or skidding
                     var wind = gameMode.GetWind(position);
@@ -697,7 +704,7 @@ namespace Bowhead.Actors {
             // Sliding
             if (sliding) {
                 // Reduce our movement impulse (reduce control while sliding)
-                velChange *= slideFriction;
+                velChange *= block.slideFriction;
 
                 // Slide down any hills
                 float slopeDot = Vector3.Dot(groundNormal, Vector3.up);
@@ -705,12 +712,12 @@ namespace Bowhead.Actors {
                 slideDir.y = 0;
                 if (slideDir != Vector3.zero) {
                     slideDir = slideDir.normalized;
-                    velChange += (1.0f - slopeDot) * dt * -data.gravity * slideDir * (1f - slideFriction);
+                    velChange += (1.0f - slopeDot) * dt * -data.gravity * slideDir * (1f - block.slideFriction);
                 }
             }
 
             // Apply friction for travelling through snow/sand/water
-            velChange += -velocity * dt * workModifier;
+            velChange += -velocity * dt * drag;
 
             velocity += velChange;
 
@@ -737,7 +744,7 @@ namespace Bowhead.Actors {
 			if (input.inputs[(int)InputType.Jump] == InputState.Pressed) {
                 if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
                     if (canJump) {
-                        var jumpDir = input.movement * data.dodgeSpeed;
+                        var jumpDir = input.movement * data.sprintSpeed;
                         jumpDir.y += data.swimJumpBoostAcceleration;
                         jump(jumpDir);
                     }
@@ -794,7 +801,9 @@ namespace Bowhead.Actors {
                         jumpDir += input.movement * Mathf.Max(data.groundMaxSpeed, data.sprintSpeed);
                         jumpDir.y += data.jumpSpeed;
 						maxHorizontalSpeed = data.sprintSpeed;
-                    }
+						sprintGracePeriodTime = 0.1f;
+
+					}
                     else {
                         if (climbingInput.y > 0) {
                             // jumping up jumps away from the wall slightly so we don't reattach right away
@@ -802,10 +811,13 @@ namespace Bowhead.Actors {
                             jumpDir += climbingNormal * data.jumpSpeed / 4;
                         }
                         else if (climbingInput.y >= 0) {
-                            // left right jumps get a vertical boost
-                            jumpDir.y = data.jumpSpeed;
-                        }
-                    }
+							// left right jumps get a vertical boost
+							jumpDir += input.movement * data.groundMaxSpeed;
+							jumpDir.y = data.jumpSpeed;
+							maxHorizontalSpeed = data.sprintSpeed;
+							sprintGracePeriodTime = 0.1f;
+						}
+					}
                     jump(jumpDir);
                     return;
                 }
@@ -1157,7 +1169,12 @@ namespace Bowhead.Actors {
                 mount.driver = this;
             }
 
-            if (mount != null) {
+			if (this is Player) {
+				(this as Player).stance = Player.Stance.Explore;
+			}
+
+
+			if (mount != null) {
                 go.transform.parent = mount.go.transform;
                 go.transform.localPosition = mount.headPosition()-mount.position;
 				go.transform.localRotation = Quaternion.identity;

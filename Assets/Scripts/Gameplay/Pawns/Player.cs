@@ -364,15 +364,11 @@ namespace Bowhead.Actors {
             SetSpawnPoint(pos);
 
 			PickUp(ItemData.Get("Pack").CreateItem());
-			PickUp(ItemData.Get("Pack").CreateItem());
-			PickUp(ItemData.Get("Pack").CreateItem());
-			PickUp(ItemData.Get("Chainmail").CreateItem());
 			PickUp(ItemData.Get("Rapier").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
-			PickUp(ItemData.Get("SpellHeal").CreateItem());
-			PickUp(ItemData.Get("Broadsword").CreateItem());
 			PickUp(ItemData.Get("Buckler").CreateItem());
 			PickUp(ItemData.Get("Spear").CreateItem());
+			PickUp(ItemData.Get("Broadsword").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
@@ -446,7 +442,7 @@ namespace Bowhead.Actors {
             float d = 0;
             float fallSpeed = -velocity.y;
             if (fallSpeed > data.fallDamageSpeed) {
-                d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * WorldUtils.GetFallDamage(block) * data.maxHealth;
+                d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * gameMode.GetTerrainData(position).fallDamage * data.maxHealth;
                 if (d > 0) {
                     damage(d);
                     useStamina((float)d);

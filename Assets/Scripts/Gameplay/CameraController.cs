@@ -9,7 +9,10 @@ namespace Bowhead.Actors {
 
         private float _yaw;
         private float _pitch;
+
 		private Vector2 _angleCorrectionVelocity;
+		private float _desiredFOV, _fovVelocity, _fovAcceleration;
+
         private Player _target;
         private Vector3 _position;
         private bool _isLooking;
@@ -105,6 +108,8 @@ namespace Bowhead.Actors {
 
         void Tick(float dt) {
 
+			
+
 			if (!_mouseLookActive) {
 				var curAngles = new Vector2(_yaw, _pitch);
 				var desiredAngles = new Vector2(_yaw, Mathf.Deg2Rad * 45);
@@ -115,6 +120,10 @@ namespace Bowhead.Actors {
 				curAngles += _angleCorrectionVelocity * dt;
 				_yaw = curAngles.x;
 				_pitch = curAngles.y;
+				_desiredFOV = 55;
+			}
+			else {
+				_desiredFOV = 65;
 			}
             if (_target != null) {
 				_mouseLookActive = _target.stance == Player.Stance.Explore;
@@ -240,7 +249,11 @@ namespace Bowhead.Actors {
 
             }
 
-            _shakeTime = Mathf.Max(0, _shakeTime - dt);
+			_fovVelocity += ((_desiredFOV - _camera.fieldOfView) - _fovVelocity) * _fovAcceleration * dt;
+			_camera.fieldOfView += _fovVelocity * dt;
+
+
+			_shakeTime = Mathf.Max(0, _shakeTime - dt);
         }
 
 
@@ -249,7 +262,11 @@ namespace Bowhead.Actors {
 
             _yaw = 0f;
             _pitch = 45f * Mathf.Deg2Rad;
-        }
+
+			_desiredFOV = 55;
+			_fovVelocity = 0;
+			_fovAcceleration = 10;
+		}
 
 
         public void Shake(float time, float pos, float angle) {

@@ -4,6 +4,7 @@ using UnityEngine;
 using Bowhead.Server.Actors;
 using Bowhead.Actors;
 using System;
+using System.Collections.Generic;
 
 public static partial class WorldUtils {
 	#region get block
@@ -42,7 +43,6 @@ public static partial class WorldUtils {
 
 	#region static block properties
 
-
 	public static bool IsCapBlock(EVoxelBlockType type) {
 		if (type == EVoxelBlockType.Snow) return true;
 		return false;
@@ -62,72 +62,6 @@ public static partial class WorldUtils {
 		return true;
 	}
 
-	public static bool IsClimbable(EVoxelBlockType type, bool skilledClimber) {
-		if (type == EVoxelBlockType.Leaves || type == EVoxelBlockType.Needles || type == EVoxelBlockType.Wood) {
-			return true;
-		}
-		if (skilledClimber) {
-			if (type == EVoxelBlockType.Dirt || type == EVoxelBlockType.Rock || type == EVoxelBlockType.Grass) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static bool IsHangable(EVoxelBlockType type, bool skilledClimber) {
-		if (type == EVoxelBlockType.Dirt || type == EVoxelBlockType.Rock || type == EVoxelBlockType.Grass) {
-			return true;
-		}
-		return false;
-	}
-
-
-	public static void GetSlideThreshold(EVoxelBlockType foot, EVoxelBlockType mid, EVoxelBlockType head, out float slideFriction, out float slideThreshold) {
-		slideThreshold = 100;
-		slideFriction = 0.5f;
-
-		if (mid == EVoxelBlockType.Snow) {
-			slideThreshold = 4;
-			slideFriction = 0.25f;
-		} else if (foot == EVoxelBlockType.Dirt) {
-			slideThreshold = 25;
-		} else if (foot == EVoxelBlockType.Grass) {
-			slideThreshold = 25;
-		} else if (foot == EVoxelBlockType.Rock) {
-			slideThreshold = 25;
-		} else if (foot == EVoxelBlockType.Sand) {
-			slideThreshold = 4;
-		}
-	}
-
-	public static float GetWorkModifier(EVoxelBlockType foot, EVoxelBlockType mid, EVoxelBlockType head) {
-		float workModifier = 0;
-
-		if (mid == EVoxelBlockType.Snow) {
-			//workModifier = 1f;
-		}
-		//else if (mid == EVoxelBlockType.LongGrass || foot == EVoxelBlockType.LongGrass || head == EVoxelBlockType.LongGrass)
-		//{
-		//	workModifier = 15f;
-		//}
-		else if (foot == EVoxelBlockType.Grass) {
-			workModifier = 1f;
-		} else if (foot == EVoxelBlockType.Sand) {
-			workModifier = 1f;
-		}
-		return workModifier;
-
-	}
-
-	public static float GetFallDamage(EVoxelBlockType type) {
-		if (type == EVoxelBlockType.Snow)
-			return 0.5f;
-		else if (type == EVoxelBlockType.Sand)
-			return 0.75f;
-		else if (type == EVoxelBlockType.Dirt || type == EVoxelBlockType.Grass)
-			return 0.9f;
-		return 1.0f;
-	}
 
 	public static bool IsTransparentBlock(EVoxelBlockType type) {
 		if (type == EVoxelBlockType.Air
@@ -174,24 +108,35 @@ namespace Bowhead.Server {
 		protected override void PrepareForMatchInProgress() {
 			base.PrepareForMatchInProgress();
 
-			return;
-
-			for (int i = 0; i < 100; i++) {
-				WorldItem worldItem = null;
-				var pos = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
-				int itemType = UnityEngine.Random.Range(0, 2);
-				switch (itemType) {
-					case 0:
-						worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
-						var money = MoneyData.Get("Money").CreateItem();
-						worldItem.item = money;
-						money.count = 100;
-						break;
-					case 1:
-						WorldItemData.Get("Map").Spawn<WorldItem>(world, pos, null, null, null);
-						break;
-				}
-			}
+			//for (int i = 0; i < 100; i++) {
+			//	WorldItem worldItem = null;
+			//	var pos = new Vector3(UnityEngine.Random.Range(-500f, 500f) + 0.5f, 500f, UnityEngine.Random.Range(-500f, 500f) + 0.5f);
+			//	int itemType = UnityEngine.Random.Range(0, 4);
+			//	switch (itemType) {
+			//		case 0: {
+			//			worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
+			//			var money = MoneyData.Get("Money").CreateItem();
+			//			worldItem.item = money;
+			//			money.count = 100;
+			//			break;
+			//		} case 1: {
+			//			worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
+			//			var item = ClothingData.Get("Chainmail").CreateItem();
+			//			worldItem.item = item;
+			//			break;
+			//		} case 2: {
+			//			worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
+			//			var item = WeaponData.Get("2HSword").CreateItem();
+			//			worldItem.item = item;
+			//			break;
+			//		} case 3: {
+			//			worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, pos, null, null, null);
+			//			var item = WeaponData.Get("SpellHeal").CreateItem();
+			//			worldItem.item = item;
+			//			break;
+			//		}
+			//	}
+			//}
 
 		}
 
@@ -377,6 +322,35 @@ namespace Bowhead.Server {
 
 			return wind * currentSpeed;
 		}
+
+		new Dictionary<EVoxelBlockType, int> blockMapping = new Dictionary<EVoxelBlockType, int>() {
+				{ EVoxelBlockType.Air, 5 },
+				{ EVoxelBlockType.Dirt, 0},
+				{ EVoxelBlockType.Flowers1, 1},
+				{ EVoxelBlockType.Flowers2, 1},
+				{ EVoxelBlockType.Flowers3, 1},
+				{ EVoxelBlockType.Flowers4, 1},
+				{ EVoxelBlockType.Grass, 0},
+				{ EVoxelBlockType.Ice, 3},
+				{ EVoxelBlockType.Leaves, 2},
+				{ EVoxelBlockType.Needles, 2},
+				{ EVoxelBlockType.Rock, 0},
+				{ EVoxelBlockType.Sand, 1},
+				{ EVoxelBlockType.Snow, 1},
+				{ EVoxelBlockType.Water, 6},
+				{ EVoxelBlockType.Wood, 2},
+			};
+
+		public WorldData.TerrainType GetTerrainData(Vector3 pos) {
+			var block = world.GetBlock(pos);
+			return data.terrainTypes[blockMapping[block]];
+		}
+
+		public WorldData.TerrainType GetTerrainData(EVoxelBlockType block) {
+			return data.terrainTypes[blockMapping[block]];
+		}
+
+
 		#endregion
 
 		#region Tick

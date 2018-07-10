@@ -11,6 +11,84 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c89e950dd6a51540a59f1ec19222a35, type: 3}
   m_Name: DefaultWorld
   m_EditorClassIdentifier: 
+  terrainTypes:
+  - name: standard
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 1
+    slideThreshold: 25
+    slideFriction: 0.5
+    fallDamage: 1
+    solid: 1
+    canClimbLight: 1
+    canClimbMedium: 0
+    canHang: 1
+  - name: sand or snow
+    drag: 0.5
+    speedModifier: 0.75
+    accelerationModifier: 0.5
+    slideThreshold: 10
+    slideFriction: 0.5
+    fallDamage: 1
+    solid: 1
+    canClimbLight: 0
+    canClimbMedium: 0
+    canHang: 0
+  - name: foliage
+    drag: 0
+    speedModifier: 0.8
+    accelerationModifier: 0.8
+    slideThreshold: 25
+    slideFriction: 0.5
+    fallDamage: 1
+    solid: 1
+    canClimbLight: 1
+    canClimbMedium: 1
+    canHang: 1
+  - name: ice
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 0.5
+    slideThreshold: 10
+    slideFriction: 0.25
+    fallDamage: 1
+    solid: 1
+    canClimbLight: 0
+    canClimbMedium: 0
+    canHang: 0
+  - name: flowers
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 1
+    slideThreshold: 10
+    slideFriction: 0.1
+    fallDamage: 1
+    solid: 0
+    canClimbLight: 0
+    canClimbMedium: 0
+    canHang: 0
+  - name: air
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 1
+    slideThreshold: 0
+    slideFriction: 0
+    fallDamage: 1
+    solid: 0
+    canClimbLight: 0
+    canClimbMedium: 0
+    canHang: 0
+  - name: water
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 1
+    slideThreshold: 0
+    slideFriction: 0
+    fallDamage: 1
+    solid: 0
+    canClimbLight: 0
+    canClimbMedium: 0
+    canHang: 0
   windSpeedStormy: 24
   windSpeedWindy: 16
   windSpeedBreezy: 8
