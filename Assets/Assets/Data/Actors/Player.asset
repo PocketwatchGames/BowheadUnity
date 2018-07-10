@@ -27,16 +27,16 @@ MonoBehaviour:
     type: 2}
   jumpSpeed: 16
   jumpStaminaUse: 10
-  groundAcceleration: 2
-  crouchSpeed: 3.5
-  walkSpeed: 3.5
+  groundAcceleration: 6
+  crouchSpeed: 4
+  walkSpeed: 4
   walkStartTime: 0.1
   walkStopTime: 0.1
   sprintTime: 0.25
   sprintSpeed: 12
   sprintStaminaUse: 50
   sprintGracePeriodTime: 0.4
-  groundMaxSpeed: 7
+  groundMaxSpeed: 8
   groundWindDrag: 0.01
   slideThresholdSlope: 4
   slideThresholdFlat: 15

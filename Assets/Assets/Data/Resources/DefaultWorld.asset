@@ -13,7 +13,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terrainTypes:
   - name: standard
-    workModifier: 1
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 1
     slideThreshold: 25
     slideFriction: 0.5
     fallDamage: 1
@@ -22,8 +24,10 @@ MonoBehaviour:
     canClimbMedium: 0
     canHang: 1
   - name: sand or snow
-    workModifier: 5
-    slideThreshold: 25
+    drag: 0.5
+    speedModifier: 0.75
+    accelerationModifier: 0.5
+    slideThreshold: 10
     slideFriction: 0.5
     fallDamage: 1
     solid: 1
@@ -31,7 +35,9 @@ MonoBehaviour:
     canClimbMedium: 0
     canHang: 0
   - name: foliage
-    workModifier: 5
+    drag: 0
+    speedModifier: 0.8
+    accelerationModifier: 0.8
     slideThreshold: 25
     slideFriction: 0.5
     fallDamage: 1
@@ -40,16 +46,20 @@ MonoBehaviour:
     canClimbMedium: 1
     canHang: 1
   - name: ice
-    workModifier: 0
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 0.5
     slideThreshold: 10
-    slideFriction: 0.1
+    slideFriction: 0.25
     fallDamage: 1
     solid: 1
     canClimbLight: 0
     canClimbMedium: 0
     canHang: 0
   - name: flowers
-    workModifier: 0
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 1
     slideThreshold: 10
     slideFriction: 0.1
     fallDamage: 1
@@ -58,7 +68,9 @@ MonoBehaviour:
     canClimbMedium: 0
     canHang: 0
   - name: air
-    workModifier: 0
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 1
     slideThreshold: 0
     slideFriction: 0
     fallDamage: 1
@@ -67,7 +79,9 @@ MonoBehaviour:
     canClimbMedium: 0
     canHang: 0
   - name: water
-    workModifier: 0
+    drag: 0
+    speedModifier: 1
+    accelerationModifier: 1
     slideThreshold: 0
     slideFriction: 0
     fallDamage: 1

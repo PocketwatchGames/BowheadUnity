@@ -624,20 +624,19 @@ namespace Bowhead.Actors {
 			var block = gameMode.GetTerrainData(position + new Vector3(0, -0.1f, 0));
             var midblock = gameMode.GetTerrainData(position + new Vector3(0,0.9f,0));
 
-			float slideThreshold = block.slideThreshold;
-			float friction = Mathf.Max(block.friction, midblock.friction);
+			float drag = Mathf.Max(block.drag, midblock.drag);
 			if (IsWading()) {
-                friction += data.swimDragHorizontal;
+                drag += data.swimDragHorizontal;
             }
 
 
             float curVel = velocity.magnitude;
             Vector3 velChange = Vector3.zero;
 
-            if (input.movement == Vector3.zero && curVel < data.walkSpeed*block.maxSpeed && !sliding) {
+            if (input.movement == Vector3.zero && curVel < data.walkSpeed*block.speedModifier && !sliding) {
                 if (curVel > 0) {
                     // Stopping (only when not sliding)
-                    float stopAccel = dt * data.walkSpeed * block.maxSpeed / data.walkStopTime;
+                    float stopAccel = dt * data.walkSpeed * block.speedModifier / data.walkStopTime;
                     if (curVel < stopAccel)
                         velChange = -velocity;
                     else
@@ -645,43 +644,52 @@ namespace Bowhead.Actors {
                 }
             }
             else {
-                float maxSpeed = getGroundMaxSpeed() * block.maxSpeed;
-                float acceleration = getGroundAcceleration() * block.maxSpeed;
+                float maxSpeed = getGroundMaxSpeed() * block.speedModifier;
+                float acceleration = getGroundAcceleration() * block.accelerationModifier;
+				float slideThreshold = block.slideThreshold * (1.0f - Vector3.Dot(groundNormal, Vector3.up));
 
-                if (input.movement != Vector3.zero) {
+				if (input.movement != Vector3.zero) {
                     var normalizedInput = input.movement.normalized;
                     float slopeDot = Vector3.Dot(groundNormal, normalizedInput);
                     maxSpeed *= 1f + slopeDot;
-
-                    slideThreshold *= Vector3.Dot(groundNormal, normalizedInput) + 1f;
-
                 }
 
                 {
                     var desiredVel = input.movement * maxSpeed;
                     var velDiff = desiredVel - velocity;
                     velDiff.y = 0;
+
+
                     if (velDiff != Vector3.zero) {
+						// acceleration scales with our difference from our maxspeed
                         acceleration *= velDiff.magnitude;
                         velDiff = velDiff.normalized;
 
-                        var walkChange = data.walkSpeed * block.maxSpeed / data.walkStartTime;
-                        if (walkChange > acceleration) {
-                            acceleration = Math.Max(acceleration, Math.Min(walkChange, slideThreshold));
-                        }
-                        velChange = velDiff * acceleration * dt;
+						if (velocity.magnitude < data.walkSpeed) {
+							// walk acceleration is linear
+							var walkAcceleration = data.walkSpeed * block.accelerationModifier / data.walkStartTime;
+							// if walking would cause us to slide, limit our acceleration to the sliding threshold
+							walkAcceleration = Math.Min(walkAcceleration, slideThreshold);
+
+							// If our linear acceleration is higher than our run accel, use it
+							if (walkAcceleration > acceleration) {
+								acceleration = walkAcceleration;
+							}
+						}
+
+						velChange = velDiff * acceleration * dt;
                     }
                     else {
                         acceleration = 0;
                     }
 
-                    if (acceleration > slideThreshold) {
-                        sliding = true;
-                    }
-                    else {
-                        sliding = false;
-                    }
-                }
+					if (acceleration > slideThreshold) {
+						sliding = true;
+					}
+					else {
+						sliding = false;
+					}
+				}
                 {
                     // Wind blowing you while running or skidding
                     var wind = gameMode.GetWind(position);
@@ -709,7 +717,7 @@ namespace Bowhead.Actors {
             }
 
             // Apply friction for travelling through snow/sand/water
-            velChange += -velocity * dt * friction;
+            velChange += -velocity * dt * drag;
 
             velocity += velChange;
 
