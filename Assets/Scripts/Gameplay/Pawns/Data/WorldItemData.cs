@@ -10,6 +10,9 @@ namespace Bowhead.Actors {
 		[ClassDropdown(typeof(WorldItem)), SerializeField]
 		string _itemClass;
 
+		public GameObject_WRef minimapMarker;
+		public Client.UI.EMinimapMarkerStyle minimapMarkerStyle;
+
 		public Type itemClass { get; private set; }
 
 		public override void OnAfterDeserialize() {

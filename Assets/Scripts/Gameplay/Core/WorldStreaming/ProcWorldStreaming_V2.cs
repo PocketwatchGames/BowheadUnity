@@ -308,7 +308,7 @@ namespace Bowhead {
 				}
 
 				if (noise.GetWhiteNoise(chunkPos.x, chunkPos.y, chunkPos.z) > 0.98f) {
-					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x, chunkPos.y, chunkPos.z) * 60 + 8);
+					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x, chunkPos.y, chunkPos.z) * 40 + 8);
 					ConstructTower(ref noise, chunkPos, 8, 0, 8, towerHeight, ref chunk);
 				}
 			}

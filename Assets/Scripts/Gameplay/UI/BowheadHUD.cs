@@ -79,8 +79,8 @@ namespace Bowhead.Client.UI {
 			}
         }
 
-		public override T CreateMinimapMarker<T>(T prefab) {
-			return _minimap.CreateMarker(prefab);
+		public override T CreateMinimapMarker<T>(T prefab, EMinimapMarkerStyle style) {
+			return _minimap.CreateMarker(prefab, style);
 		}
     }
 }

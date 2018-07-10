@@ -52,6 +52,8 @@ namespace Bowhead.Client.UI {
 		RawImage _maskImage;
 		[SerializeField]
 		Transform _markers;
+		[SerializeField]
+		Transform _alwaysVisibleMarkers;
 
 		int _chunkX;
 		int _chunkZ;
@@ -110,6 +112,7 @@ namespace Bowhead.Client.UI {
 
 			_markersOrigin = _markers.localPosition;
 			_markers.localScale = new Vector3(scale.x, scale.y, 1);
+			_alwaysVisibleMarkers.localScale = _markers.localScale;
 		}
 
 		void Update() {
@@ -147,6 +150,7 @@ namespace Bowhead.Client.UI {
 			FullUpdate();
 
 			_markers.localPosition = _markersOrigin - Vector3.Scale(_markers.localScale, new Vector3(_chunkX * World.VOXEL_CHUNK_SIZE_XZ, _chunkZ * World.VOXEL_CHUNK_SIZE_XZ, 0));
+			_alwaysVisibleMarkers.localPosition = _markers.localPosition;
 		}
 
 		public void RevealArea(Vector2 pos, float radius) {
@@ -154,7 +158,6 @@ namespace Bowhead.Client.UI {
 				pos = pos,
 				radius = radius
 			});
-			Graphics.Blit(_blackTexture, _maskTexture);
 			Reveal(pos, radius);
 		}
 
@@ -172,8 +175,8 @@ namespace Bowhead.Client.UI {
 			Graphics.SetRenderTarget(null);
 		}
 
-		public T CreateMarker<T>(T prefab) where T: UnityEngine.Object {
-			return Instantiate(prefab, _markers.transform, false);
+		public T CreateMarker<T>(T prefab, EMinimapMarkerStyle style) where T: UnityEngine.Object {
+			return Instantiate(prefab, (style == EMinimapMarkerStyle.Normal) ? _markers.transform : _alwaysVisibleMarkers.transform, false);
 		}
 
 		void FullUpdate() {

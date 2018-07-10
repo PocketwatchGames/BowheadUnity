@@ -18,3 +18,7 @@ MonoBehaviour:
     _editorPath: Assets/Assets/Prefabs/Resources/Map.prefab
   _itemClass: Bowhead.Actors.WorldItemMapReveal, Assembly-CSharp, Version=0.0.0.0,
     Culture=neutral, PublicKeyToken=null
+  minimapMarker:
+    _assetPath: MinimapTowerMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MinimapTowerMarker.prefab
+  minimapMarkerStyle: 1
