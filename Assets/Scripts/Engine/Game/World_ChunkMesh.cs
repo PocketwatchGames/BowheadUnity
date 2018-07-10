@@ -85,6 +85,10 @@ public partial class World {
 #endif
 	}
 
+	public static EVoxelBlockContents GetBlockContents(EVoxelBlockType type) {
+		return ChunkMeshGen.tableStorage.blockContents[(int)type];
+	}
+
 	static partial class ChunkMeshGen {
 		const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
 		const int BANK_SIZE = 16;
@@ -2113,8 +2117,6 @@ public partial class World {
 				_smoothVerts.Finish();
 			}
 		};
-
-		
 
 		public static TableStorage tableStorage;
 

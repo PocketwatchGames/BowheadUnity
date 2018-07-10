@@ -192,6 +192,12 @@ public struct Voxel_t {
 		}
 	}
 
+	public EVoxelBlockContents contents {
+		get {
+			return World.GetBlockContents(type);
+		}
+	}
+
 	public static Voxel_t operator | (Voxel_t voxel, EVoxelBlockFlags flags) {
 		voxel.flags |= flags;
 		return voxel;
