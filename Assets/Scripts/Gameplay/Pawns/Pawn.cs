@@ -77,7 +77,7 @@ namespace Bowhead.Actors {
 		public Vector3 climbingNormal;
         public float fallJumpTimer;
         public float maxHorizontalSpeed;
-        public bool sliding;
+        public bool skidding;
         public bool canStrafe;
         public bool canMove;
         public bool canRun;
@@ -388,7 +388,6 @@ namespace Bowhead.Actors {
 
             // Collide feet
             float floorPosition;
-            Vector3 groundNormal;
             bool onGround = CheckFloor(position, out floorPosition, out groundNormal);
             if (onGround) {
                 if (velocity.y <= 0) {
@@ -396,9 +395,12 @@ namespace Bowhead.Actors {
                     if (activity != Activity.OnGround) {
                         LandOnGround();
                         if (velocity.y < 0) {
-                            float slopeAccel = 1f + Vector3.Dot(velocity.normalized, -groundNormal);
-                            if (slopeAccel < 1f) {
-                                velocity += velocity * slopeAccel;
+                            float slopeAccel = Vector3.Dot(velocity.normalized, -groundNormal);
+                            if (slopeAccel > 0) {
+								var slopeRight = Vector3.Cross(velocity.normalized, groundNormal);
+								var slopeDown = Vector3.Cross(groundNormal, slopeRight);
+								velocity = slopeDown * slopeAccel * velocity.magnitude;
+								skidding = true;
                             }
                         }
                     }
@@ -629,11 +631,11 @@ namespace Bowhead.Actors {
                 drag += data.swimDragHorizontal;
             }
 
-
             float curVel = velocity.magnitude;
             Vector3 velChange = Vector3.zero;
+			bool shouldSkid = false;
 
-            if (input.movement == Vector3.zero && curVel < data.walkSpeed*block.speedModifier && !sliding) {
+            if (input.movement == Vector3.zero && curVel < data.walkSpeed*block.speedModifier && !skidding) {
                 if (curVel > 0) {
                     // Stopping (only when not sliding)
                     float stopAccel = dt * data.walkSpeed * block.speedModifier / data.walkStopTime;
@@ -646,13 +648,16 @@ namespace Bowhead.Actors {
             else {
                 float maxSpeed = getGroundMaxSpeed() * block.speedModifier;
                 float acceleration = getGroundAcceleration() * block.accelerationModifier;
-				float slideThreshold = block.slideThreshold * (1.0f - Vector3.Dot(groundNormal, Vector3.up));
+				float slideThreshold = block.slideThreshold;
 
 				if (input.movement != Vector3.zero) {
                     var normalizedInput = input.movement.normalized;
                     float slopeDot = Vector3.Dot(groundNormal, normalizedInput);
                     maxSpeed *= 1f + slopeDot;
-                }
+
+					slideThreshold *= Mathf.Min(1.0f, 1.0f - slopeDot);
+
+				}
 
                 {
                     var desiredVel = input.movement * maxSpeed;
@@ -665,14 +670,14 @@ namespace Bowhead.Actors {
                         acceleration *= velDiff.magnitude;
                         velDiff = velDiff.normalized;
 
-						if (velocity.magnitude < data.walkSpeed) {
+						if (velocity.magnitude <= data.groundMaxSpeed * block.speedModifier) {
 							// walk acceleration is linear
 							var walkAcceleration = data.walkSpeed * block.accelerationModifier / data.walkStartTime;
 							// if walking would cause us to slide, limit our acceleration to the sliding threshold
 							walkAcceleration = Math.Min(walkAcceleration, slideThreshold);
 
-							// If our linear acceleration is higher than our run accel, use it
-							if (walkAcceleration > acceleration) {
+							// if running would cause us to slide, use our linear walk acceleration
+							if (acceleration > slideThreshold) {
 								acceleration = walkAcceleration;
 							}
 						}
@@ -684,10 +689,7 @@ namespace Bowhead.Actors {
                     }
 
 					if (acceleration > slideThreshold) {
-						sliding = true;
-					}
-					else {
-						sliding = false;
+						shouldSkid = true;
 					}
 				}
                 {
@@ -701,8 +703,17 @@ namespace Bowhead.Actors {
                 }
             }
 
-            // Sliding
-            if (sliding) {
+			if (shouldSkid) {
+				skidding = true;
+			}
+			else {
+				if (groundNormal == Vector3.up) {
+					skidding = false;
+				}
+			}
+
+			// Sliding
+			if (skidding) {
                 // Reduce our movement impulse (reduce control while sliding)
                 velChange *= block.slideFriction;
 
@@ -714,10 +725,13 @@ namespace Bowhead.Actors {
                     slideDir = slideDir.normalized;
                     velChange += (1.0f - slopeDot) * dt * -data.gravity * slideDir * (1f - block.slideFriction);
                 }
-            }
 
-            // Apply friction for travelling through snow/sand/water
-            velChange += -velocity * dt * drag;
+
+
+			}
+
+			// Apply friction for travelling through snow/sand/water
+			velChange += -velocity * dt * drag;
 
             velocity += velChange;
 
