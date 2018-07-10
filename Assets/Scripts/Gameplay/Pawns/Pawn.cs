@@ -625,19 +625,19 @@ namespace Bowhead.Actors {
             var midblock = gameMode.GetTerrainData(position + new Vector3(0,0.9f,0));
 
 			float slideThreshold = block.slideThreshold;
-			float workModifier = Mathf.Max(block.workModifier, midblock.workModifier);
+			float friction = Mathf.Max(block.friction, midblock.friction);
 			if (IsWading()) {
-                workModifier += data.swimDragHorizontal;
+                friction += data.swimDragHorizontal;
             }
 
 
             float curVel = velocity.magnitude;
             Vector3 velChange = Vector3.zero;
 
-            if (input.movement == Vector3.zero && curVel < data.walkSpeed && !sliding) {
+            if (input.movement == Vector3.zero && curVel < data.walkSpeed*block.maxSpeed && !sliding) {
                 if (curVel > 0) {
                     // Stopping (only when not sliding)
-                    float stopAccel = dt * data.walkSpeed / data.walkStopTime;
+                    float stopAccel = dt * data.walkSpeed * block.maxSpeed / data.walkStopTime;
                     if (curVel < stopAccel)
                         velChange = -velocity;
                     else
@@ -645,8 +645,8 @@ namespace Bowhead.Actors {
                 }
             }
             else {
-                float maxSpeed = getGroundMaxSpeed();
-                float acceleration = getGroundAcceleration();
+                float maxSpeed = getGroundMaxSpeed() * block.maxSpeed;
+                float acceleration = getGroundAcceleration() * block.maxSpeed;
 
                 if (input.movement != Vector3.zero) {
                     var normalizedInput = input.movement.normalized;
@@ -665,7 +665,7 @@ namespace Bowhead.Actors {
                         acceleration *= velDiff.magnitude;
                         velDiff = velDiff.normalized;
 
-                        var walkChange = data.walkSpeed / data.walkStartTime;
+                        var walkChange = data.walkSpeed * block.maxSpeed / data.walkStartTime;
                         if (walkChange > acceleration) {
                             acceleration = Math.Max(acceleration, Math.Min(walkChange, slideThreshold));
                         }
@@ -709,7 +709,7 @@ namespace Bowhead.Actors {
             }
 
             // Apply friction for travelling through snow/sand/water
-            velChange += -velocity * dt * workModifier;
+            velChange += -velocity * dt * friction;
 
             velocity += velChange;
 
