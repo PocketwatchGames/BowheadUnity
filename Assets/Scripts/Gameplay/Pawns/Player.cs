@@ -159,6 +159,9 @@ namespace Bowhead.Actors {
 				else if (dodgeTimer > 0) {
 					head.material.color = Color.black;
 				}
+				else if (skidding) {
+					head.material.color = Color.cyan;
+				}
 				else if (recovering) {
 					head.material.color = Color.yellow;
 				}
