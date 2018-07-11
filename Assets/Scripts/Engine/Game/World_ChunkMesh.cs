@@ -1256,7 +1256,7 @@ public partial class World {
 				var contents = _tables.blockContents[(int)voxel.type];
 
 				for (int i = 0; i < 6; ++i) {
-					if (_vnc[i] < contents) {
+					if (_vnc[i] != EVoxelBlockContents.None) {
 						foreach (var vi in _tables.voxelFaces[i]) {
 							++faceCounts[vi];
 						}
@@ -1264,7 +1264,7 @@ public partial class World {
 				}
 
 				for (int i = 0; i < 6; ++i) {
-					if ((_vnc[i] < contents) && (_vnc[i ^ 1] >= contents)) { // we can only collapse faces whose opposite face is hidden.
+					if ((_vnc[i] == EVoxelBlockContents.None) && (_vnc[i ^ 1] != EVoxelBlockContents.None)) { // we can only collapse faces whose opposite face is hidden.
 
 						int numOver2 = 0;
 
@@ -1290,7 +1290,7 @@ public partial class World {
 									var signbit = 1 << spaxis;
 									var side = (vi & signbit) != 0 ? 1 : 0;
 									// we can collapse in this direction if the face on the vertex-side of the spanning axis is visible.
-									if (_vnc[(spaxis * 2) + (side ^ 1)] < contents) {
+									if (_vnc[(spaxis * 2) + (side ^ 1)] == EVoxelBlockContents.None) {
 										blendVoxel->vertexFlags[vi] |= signbit;
 									}
 								}
@@ -1381,7 +1381,7 @@ public partial class World {
 				var contents = _tables.blockContents[(int)voxel.type];
 
 				for (int i = 0; i < 6; ++i) {
-					if ((_vnc[i] < contents) || (smoothVoxel->neighbors[i] != 0)) {
+					if ((_vnc[i] == EVoxelBlockContents.None) || (smoothVoxel->neighbors[i] != 0)) {
 						foreach (var vi in _tables.voxelFaces[i]) {
 							++faceCounts[vi];
 						}
