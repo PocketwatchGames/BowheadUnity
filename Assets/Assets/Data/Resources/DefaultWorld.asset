@@ -16,7 +16,7 @@ MonoBehaviour:
     drag: 0
     speedModifier: 1
     accelerationModifier: 1
-    slideThreshold: 25
+    slideThreshold: 30
     slideFriction: 0.5
     fallDamage: 1
     solid: 1
@@ -24,12 +24,12 @@ MonoBehaviour:
     canClimbMedium: 0
     canHang: 1
   - name: sand or snow
-    drag: 0.5
-    speedModifier: 0.75
+    drag: 0
+    speedModifier: 0.8
     accelerationModifier: 0.5
-    slideThreshold: 10
+    slideThreshold: 15
     slideFriction: 0.5
-    fallDamage: 1
+    fallDamage: 0.5
     solid: 1
     canClimbLight: 0
     canClimbMedium: 0
@@ -37,10 +37,10 @@ MonoBehaviour:
   - name: foliage
     drag: 0
     speedModifier: 0.8
-    accelerationModifier: 0.8
-    slideThreshold: 25
+    accelerationModifier: 0.5
+    slideThreshold: 15
     slideFriction: 0.5
-    fallDamage: 1
+    fallDamage: 0.5
     solid: 1
     canClimbLight: 1
     canClimbMedium: 1

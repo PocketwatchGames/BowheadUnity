@@ -31,8 +31,6 @@ namespace Bowhead.Actors {
 		public float sprintGracePeriodTime;
 		public float groundMaxSpeed;
         public float groundWindDrag;
-        public float slideThresholdSlope;
-        public float slideThresholdFlat;
 
         [Header("Falling")]
         public float gravity;
