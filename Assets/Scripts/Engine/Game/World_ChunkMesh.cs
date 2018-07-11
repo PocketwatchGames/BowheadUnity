@@ -1256,7 +1256,7 @@ public partial class World {
 				var contents = _tables.blockContents[(int)voxel.type];
 
 				for (int i = 0; i < 6; ++i) {
-					if (_vnc[i] != EVoxelBlockContents.None) {
+					if (_vnc[i] == EVoxelBlockContents.None) {
 						foreach (var vi in _tables.voxelFaces[i]) {
 							++faceCounts[vi];
 						}
