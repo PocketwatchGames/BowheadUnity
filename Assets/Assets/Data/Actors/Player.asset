@@ -25,7 +25,7 @@ MonoBehaviour:
   backStabAngle: 45
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
-  jumpSpeed: 16
+  jumpSpeed: 13
   jumpStaminaUse: 10
   groundAcceleration: 6
   crouchSpeed: 3.5
@@ -38,7 +38,7 @@ MonoBehaviour:
   sprintGracePeriodTime: 0.4
   groundMaxSpeed: 7
   groundWindDrag: 0.01
-  gravity: -50
+  gravity: -40
   fallJumpTime: 0.25
   fallAcceleration: 30
   fallDragHorizontal: 0.05
@@ -53,7 +53,7 @@ MonoBehaviour:
   swimJumpBoostAcceleration: 12
   swimAcceleration: 15
   swimMaxSpeed: 6
-  swimDragVertical: 5
+  swimDragVertical: 2
   swimDragHorizontal: 0.25
   _playerClass: Bowhead.Actors.Player, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null

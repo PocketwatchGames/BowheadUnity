@@ -762,26 +762,30 @@ namespace Bowhead.Actors {
 
 
 			if (input.inputs[(int)InputType.Jump] == InputState.Pressed) {
-                if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
-                    if (canJump) {
-                        var jumpDir = input.movement * data.sprintSpeed;
-                        jumpDir.y += data.swimJumpBoostAcceleration;
-                        jump(jumpDir);
-                    }
-                }
-                velocity.y = Math.Min(velocity.y + data.swimMaxSpeed * dt, data.swimJumpSpeed);
+//                velocity.y = Math.Min(velocity.y + data.swimMaxSpeed * dt, data.swimJumpSpeed);
             }
-            velocity.y += data.gravity * dt;
+			else if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
+				if (canJump) {
+					var jumpDir = input.movement * data.sprintSpeed;
+					jumpDir.y += data.swimJumpBoostAcceleration;
+					jump(jumpDir);
+				}
+			}
+			velocity.y += data.gravity * dt;
             if (world.GetBlock(headPosition()) == EVoxelBlockType.Water) {
                 velocity.y += -velocity.y * dt * data.swimDragVertical;
                 velocity.y += data.bouyancy * dt;
             }
-            if (world.GetBlock(position) == EVoxelBlockType.Water) {
-                velocity.y += -velocity.y * dt * data.swimDragVertical;
-                velocity.y += data.bouyancy * dt;
-            }
+			if (world.GetBlock(waistPosition()) == EVoxelBlockType.Water) {
+				velocity.y += -velocity.y * dt * data.swimDragVertical;
+				velocity.y += data.bouyancy * dt;
+			}
+			if (world.GetBlock(footPosition()) == EVoxelBlockType.Water) {
+				velocity.y += -velocity.y * dt * data.swimDragVertical;
+				velocity.y += data.bouyancy * dt;
+			}
 
-            var current = gameMode.GetCurrent((int)position.x, (int)position.y, (int)position.z);
+			var current = gameMode.GetCurrent((int)position.x, (int)position.y, (int)position.z);
             var velDiff = (current - new Vector3(velocity.x, 0, velocity.z));
             velDiff *= velDiff.magnitude; // drag is exponential, thanks zeno!
             velocity += velDiff * dt * data.swimDragHorizontal;
