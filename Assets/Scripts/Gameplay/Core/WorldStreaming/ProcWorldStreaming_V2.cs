@@ -544,8 +544,8 @@ namespace Bowhead {
                         }
                     }
                 }
-                for (int i = -3; i <= 3; i++) {
-                    for (int j = -3; j <= 3; j++) {
+                for (int i = -4; i <= 4; i++) {
+                    for (int j = -4; j <= 4; j++) {
                         if (i > 1 || i < -1 || j > 1 || j < -1) {
                             Vector3Int pos = new Vector3Int(x + i, 0, z + j);
                             int groundHeight = 0;
@@ -584,7 +584,7 @@ namespace Bowhead {
 									pos.y = k + y;
 									if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
 										var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-										if (i == -3 || i == 3 || j==-3 || j == 3) {
+										if (i == -4 || i == 4 || j==-4 || j == 4) {
 											chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
 										} else {
 											if (modElevation == 2) {

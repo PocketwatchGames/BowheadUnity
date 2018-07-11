@@ -646,7 +646,7 @@ namespace Bowhead.Actors {
 				if (input.movement != Vector3.zero) {
 					var normalizedInput = input.movement.normalized;
 					float slopeDot = Vector3.Dot(groundNormal, normalizedInput);
-					maxSpeed *= 1f + slopeDot;
+					maxSpeed *= 1f + slopeDot * Mathf.Abs(slopeDot);
 					//slideThreshold *= Mathf.Min(1.0f, 1.0f - slopeDot);
 				}
 
