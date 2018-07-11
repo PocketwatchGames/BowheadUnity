@@ -45,6 +45,8 @@ namespace Bowhead.Client.UI {
 		[SerializeField]
 		int _chunkXZSize;
 		[SerializeField]
+		float _iconScale;
+		[SerializeField]
 		Material _maskBlitMaterial;
 		[SerializeField]
 		Texture2D _revealTexture;
@@ -176,7 +178,9 @@ namespace Bowhead.Client.UI {
 		}
 
 		public T CreateMarker<T>(T prefab, EMapMarkerStyle style) where T: UnityEngine.Object {
-			return Instantiate(prefab, (style == EMapMarkerStyle.Normal) ? _markers.transform : _alwaysVisibleMarkers.transform, false);
+			var marker = Instantiate(prefab, (style == EMapMarkerStyle.Normal) ? _markers.transform : _alwaysVisibleMarkers.transform, false);
+			marker.GetGameObject().transform.localScale = new Vector3(_iconScale, _iconScale, 1);
+			return marker;
 		}
 
 		void FullUpdate() {

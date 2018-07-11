@@ -1,5 +1,6 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
+using System;
 using UnityEngine;
 using Bowhead.Actors;
 
@@ -9,21 +10,55 @@ namespace Bowhead.Client.UI {
 		PlayerStatePanel _playerState;
         ButtonHint _interactHint;
 		Map _minimap;
+		Map _worldmap;
         Compass _compass;
 
 		GameObject _pawnHUDs;
 		WeaponChargeHUD _weaponChargeLeft, _weaponChargeRight;
+
+		class MapMarker : IMapMarker, IDisposable {
+			public Transform mmMarker;
+			public Transform wmMarker;
+
+			public void SetAsFirstSibling() {
+				mmMarker.SetAsFirstSibling();
+				wmMarker.SetAsFirstSibling();
+			}
+
+			public Vector2 worldPosition {
+				get {
+					return mmMarker.localPosition;
+				}
+				set {
+					mmMarker.localPosition = value;
+					wmMarker.localPosition = value;
+				}
+			}
+
+			public void Dispose() {
+				if (mmMarker != null) {
+					Utils.DestroyGameObject(mmMarker.gameObject);
+				}
+				if (wmMarker != null) {
+					Utils.DestroyGameObject(wmMarker.gameObject);
+				}
+			}
+		};
 
 		public BowheadHUD(ClientWorld world, GameState gameState) : base(world, gameState) {
 			_inventory = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPanelPrefab, hudCanvas.transform, false);
 			_playerState = GameObject.Instantiate(GameManager.instance.clientData.hudPlayerStatePanelPrefab, hudCanvas.transform, false);
             _interactHint = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, hudCanvas.transform, false);
             _minimap = GameObject.Instantiate(GameManager.instance.clientData.minimapPrefab, hudCanvas.transform, false);
+            _worldmap = GameObject.Instantiate(GameManager.instance.clientData.worldMapPrefab, hudCanvas.transform, false);
 			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
 			_weaponChargeLeft = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
 			_weaponChargeRight = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
 			_pawnHUDs = new GameObject();
 			_pawnHUDs.transform.parent = hudCanvas.transform;
+
+			_worldmap.transform.SetAsLastSibling(); // keep world-map on top of everything.
+			_worldmap.gameObject.SetActive(false);
 
 			world.CritterActiveEvent += OnCritterActive;
         }
@@ -35,6 +70,9 @@ namespace Bowhead.Client.UI {
             _compass.Init(Camera.main, player);
 
 			_minimap.SetStreaming(player.world.worldStreaming);
+			_worldmap.SetStreaming(player.world.worldStreaming);
+			_worldmap.SetOrigin(0, 0);
+
             //_minimap.SetOrigin(0, 0);
 			player.OnExplore += OnExplore;
 
@@ -53,7 +91,8 @@ namespace Bowhead.Client.UI {
 		private void OnExplore(Vector2 pos, float radius) {
 			var chunkPos = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.y)));
             _minimap.SetOrigin(chunkPos.cx, chunkPos.cz);
-            _minimap.RevealArea(new Vector2(pos.x, pos.y), radius);			
+            _minimap.RevealArea(new Vector2(pos.x, pos.y), radius);
+			_worldmap.RevealArea(new Vector2(pos.x, pos.y), radius);
         }
 
         public override void Tick(float dt) {
@@ -77,10 +116,30 @@ namespace Bowhead.Client.UI {
 				var pos = World.WorldToChunk(World.Vec3ToWorld(localPlayer.playerPawn.go.transform.position));
 				_minimap.SetOrigin(pos.cx, pos.cz);
 			}
+
+			if (Input.GetButtonDown("Start")) {
+				ShowWorldMap(!worldMapVisible);
+			}
         }
 
-		public override T CreateMapMarker<T>(T prefab, EMapMarkerStyle style) {
-			return _minimap.CreateMarker(prefab, style);
+		public override IMapMarker CreateMapMarker<T>(T prefab, EMapMarkerStyle style) {
+			var mmMarker = _minimap.CreateMarker(prefab, style);
+			var wmMarker = _worldmap.CreateMarker(prefab, style);
+
+			return new MapMarker() {
+				mmMarker = mmMarker.GetGameObject().transform,
+				wmMarker = wmMarker.GetGameObject().transform
+			};
 		}
-    }
+
+		public override void ShowWorldMap(bool show) {
+			_worldmap.gameObject.SetActive(show);
+		}
+
+		public override bool worldMapVisible {
+			get {
+				return _worldmap.gameObject.activeSelf;
+			}
+		}
+	}
 }

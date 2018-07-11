@@ -13,6 +13,11 @@ namespace Bowhead.Client.UI {
 		AlwaysVisible
 	};
 
+	public interface IMapMarker {
+		void SetAsFirstSibling();
+		Vector2 worldPosition { get; set; }
+	};
+
 	public abstract class HUD : System.IDisposable {
 		GameState _gameState;
 		ClientWorld _world;
@@ -98,7 +103,11 @@ namespace Bowhead.Client.UI {
 
 		public virtual void Fade(Color src, Color dst, float time) { }
 
-		public abstract T CreateMapMarker<T>(T prefab, EMapMarkerStyle style) where T: UnityEngine.Object;
+		public abstract IMapMarker CreateMapMarker<T>(T prefab, EMapMarkerStyle style) where T: UnityEngine.Object;
+
+		public abstract void ShowWorldMap(bool show);
+
+		public abstract bool worldMapVisible { get; }
 		
 		protected virtual GameObject hudPrefab {
 			get {

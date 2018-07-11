@@ -49,7 +49,7 @@ namespace Bowhead.Actors {
 		World.Streaming.IVolume _worldStreaming;
 
         Pawn attackTargetPreview;
-		GameObject _marker;
+		Client.UI.IMapMarker _marker;
 
         public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
@@ -146,7 +146,7 @@ namespace Bowhead.Actors {
 				if (GameManager.instance.clientWorld.gameState != null) {
 					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMapMarker(data.mapMarker.Load(), Client.UI.EMapMarkerStyle.AlwaysVisible));
 					// SetPosition will set the position
-					_marker.transform.localPosition = new Vector2(position.x, position.z);
+					_marker.worldPosition = new Vector2(position.x, position.z);
 				}
 			}
 
@@ -429,7 +429,7 @@ namespace Bowhead.Actors {
 			base.SetPosition(p, interpolateTime);
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(p));
 			if (_marker != null) {
-				_marker.transform.localPosition = new Vector2(p.x, p.z);
+				_marker.worldPosition = new Vector2(p.x, p.z);
 			}
 		}
 
@@ -437,7 +437,7 @@ namespace Bowhead.Actors {
 			base.MountMoved();
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(mount.position));
 			if (_marker != null) {
-				_marker.transform.localPosition = new Vector2(mount.position.x, mount.position.z);
+				_marker.worldPosition = new Vector2(mount.position.x, mount.position.z);
 			}
 		}
 

@@ -17,6 +17,8 @@ MonoBehaviour:
   loadingCanvasPrefab: {fileID: 0}
   minimapPrefab: {fileID: 114427837530928932, guid: 05eb4574dd4d3c44ab6619125ff2d8a4,
     type: 2}
+  worldMapPrefab: {fileID: 114427837530928932, guid: 1030da55241158a41a0f54e186a963fa,
+    type: 2}
   compassPrefab: {fileID: 114267661481615012, guid: 6206ef7d78563e94f89d16c47914e1b5,
     type: 2}
   hudCanvasPrefab: {fileID: 223527955372744662, guid: ce7146563d8c545458785b03160612eb,

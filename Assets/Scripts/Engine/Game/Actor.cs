@@ -67,7 +67,7 @@ public abstract class Actor : ActorRPCObject {
 	bool _disposed;
 	bool _ownerOnly;
 	bool _netTornOff;
-	List<UnityEngine.Object> _destroyList;
+	List<object> _destroyList;
 
 	[SerializeField]
 	bool _pendingKill;
@@ -330,15 +330,24 @@ public abstract class Actor : ActorRPCObject {
 		return GetVectorTo(other).magnitude;
 	}
 
-	protected T AddGC<T>(T obj) where T : UnityEngine.Object {
+	public T AddGC<T>(T obj) {
 		if (_destroyList == null) {
-			_destroyList = new List<UnityEngine.Object>();
+			_destroyList = new List<object>();
 		}
-		_destroyList.Add(obj);
+
+		// do this so we get a cast exception if we don't pass in a unity object OR an IDisposable
+
+		var disposable = obj as IDisposable;
+		if (disposable != null) {
+			_destroyList.Add(disposable);
+		} else {
+			_destroyList.Add((UnityEngine.Object)(object)obj);
+		}
+		
 		return obj;
 	}
 
-	protected void RemoveGC(UnityEngine.Object obj) {
+	public void RemoveGC(object obj) {
 		if (_destroyList != null) {
 			_destroyList.Remove(obj);
 		}
@@ -349,7 +358,12 @@ public abstract class Actor : ActorRPCObject {
 			for (int i = 0; i < _destroyList.Count; ++i) {
 				var gc = _destroyList[i];
 				if (gc != null) {
-					UnityEngine.Object.Destroy(gc);
+					var disposable = gc as IDisposable;
+					if (disposable != null) {
+						disposable.Dispose();
+					} else {
+						UnityEngine.Object.Destroy((UnityEngine.Object)gc);
+					}
 				}
 			}
 			_destroyList.Clear();

@@ -23,7 +23,7 @@ namespace Bowhead.Actors {
 		#endregion
 
 		bool _hackDidFindGround;
-		GameObject _marker;
+		Client.UI.IMapMarker _marker;
 
 		public override System.Type clientType => typeof(WorldItem);
 		public override System.Type serverType => typeof(WorldItem);
@@ -119,11 +119,11 @@ namespace Bowhead.Actors {
 				// but this is all server code... so fuck it dude let's go bowling.
 				if (GameManager.instance.clientWorld.gameState != null) {
 					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMapMarker(data.mapMarker.Load(), data.mapMarkerStyle));
-					_marker.transform.SetAsFirstSibling(); // always sort last.
+					_marker.SetAsFirstSibling(); // always sort last.
 				}
 			}
 			if (_marker != null) {
-				_marker.transform.localPosition = new Vector2(position.x, position.z);
+				_marker.worldPosition = new Vector2(position.x, position.z);
 			}
 		}
 

@@ -18,14 +18,11 @@ namespace Bowhead {
 
 		#endregion
 
-		private DamageIndicator _damageIndicator;
+		DamageIndicator _damageIndicator;
         private GameObject _mesh;
 
 		public override void Init(ItemData data) {
 			base.Init(data);
-
-			_damageIndicator = GameObject.Instantiate<DamageIndicator>(GameManager.instance.clientData.damageIndicatorPrefab);
-
 		}
 
 		public bool CanCast() {
@@ -113,6 +110,7 @@ namespace Bowhead {
 
 			castTime = 0;
             cooldown = d.cooldown;
+			_damageIndicator = GameObject.Instantiate(GameManager.instance.clientData.damageIndicatorPrefab);
 			_damageIndicator.Init(d.activeTime > 0 ? d.activeTime : 0.05f, d.attackRadius);
 
 			if (d.activeTime == 0) {
@@ -193,8 +191,9 @@ namespace Bowhead {
 				}
 			}
 
-			_damageIndicator.Tick(attackPos, hit);
-
+			if (_damageIndicator != null) {
+				_damageIndicator.Tick(attackPos, hit);
+			}
 		}
 
 		private void UpdateAnimation(Pawn owner) {

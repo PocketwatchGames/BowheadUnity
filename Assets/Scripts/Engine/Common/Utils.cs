@@ -86,6 +86,14 @@ public static class Utils {
 		return arr.GetAtIndexSubRangeZeroToOne(0, arr.Length-1, zeroToOne);
 	}
 
+	public static GameObject GetGameObject(this UnityEngine.Object obj) {
+		var comp = obj as Component;
+		if (comp != null) {
+			return comp.gameObject;
+		}
+		return (GameObject)obj;
+	}
+
 	public static string activeSceneName {
 		get {
 			return SceneManager.GetActiveScene().name;

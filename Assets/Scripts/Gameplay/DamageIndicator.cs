@@ -4,16 +4,13 @@ using UnityEngine;
 
 public class DamageIndicator : MonoBehaviourEx {
 
-    float time;
     Color color;
     public void Init(float t, float scale) {
         transform.localScale = Vector3.one * scale;
-        time = t;
 
         AddGC(GetComponent<MeshRenderer>().material);
 		color = Color.white * 0.25f;
-		gameObject.SetActive(true);
-
+		Destroy(gameObject, t);
 	}
 
 	public void Tick(Vector3 position, bool hit) {
@@ -22,18 +19,5 @@ public class DamageIndicator : MonoBehaviourEx {
 		}
 		GetComponent<MeshRenderer>().material.color = color;
 		transform.position = position;
-	}
-
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        time -= Time.deltaTime;
-		if (time <= 0) {
-			gameObject.SetActive(false);
-		}
 	}
 }

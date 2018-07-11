@@ -18,10 +18,10 @@ MonoBehaviour:
     _editorPath: Assets/Assets/Prefabs/Resources/TreasureChest.prefab
   _itemClass: Bowhead.Actors.WorldItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
-  minimapMarker:
-    _assetPath: MinimapTreasureMarker
-    _editorPath: Assets/Assets/Prefabs/Resources/MinimapTreasureMarker.prefab
-  minimapMarkerStyle: 0
+  mapMarker:
+    _assetPath: MapTreasureMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MapTreasureMarker.prefab
+  mapMarkerStyle: 0
   _items:
   - itemClass: {fileID: 11400000, guid: 3471146c30911b549b389996ec6ea3ec, type: 2}
     count:
