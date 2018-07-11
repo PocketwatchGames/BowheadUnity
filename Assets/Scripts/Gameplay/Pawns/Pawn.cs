@@ -76,6 +76,7 @@ namespace Bowhead.Actors {
 		public float sprintGracePeriodTime;
 		public Vector3 climbingNormal;
 		public Vector3 climbingAttachPoint;
+		public float climbingAttachCooldown;
         public float fallJumpTimer;
         public float maxHorizontalSpeed;
         public bool skidding;
@@ -220,10 +221,11 @@ namespace Bowhead.Actors {
 
         bool CanClimb(Vector3 checkDir, Vector3 checkPos) {
             var p = checkPos;
-            var handHoldPos = handPosition(p) + checkDir.normalized * data.climbWallRange;
+            var handHoldPos = handPosition(p) + checkDir * data.climbWallRange;
             if (!IsOpen(p))
                 return false;
-			var handblock = gameMode.GetTerrainData(handPosition(handHoldPos));
+			var handblock = gameMode.GetTerrainData(handHoldPos);
+			Debug.Log(handblock.name);
 			bool isClimbable = canClimbWell ? handblock.canClimbLight : handblock.canClimbMedium;
 			if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
@@ -233,10 +235,13 @@ namespace Bowhead.Actors {
                     isClimbable = true;
                 }
             }
-            if (velocity.y > data.climbGrabMinZVel && isClimbable) {
-                return true;
-            }
-            return false;
+
+			if (isClimbable) {
+				if (velocity.y > data.climbGrabMinZVel) {
+					return true;
+				}
+			}
+			return false;
         }
 
         Vector3 getClimbingVector(Vector3 i, Vector3 surfaceNormal) {
@@ -346,6 +351,11 @@ namespace Bowhead.Actors {
                 dodgeTimer = Math.Max(0, dodgeTimer - dt);
             }
 
+
+			if (climbingAttachCooldown > 0) {
+				climbingAttachCooldown = Mathf.Max(0, climbingAttachCooldown-dt);
+			}
+
             if (canTurn) {
                 if (activity == Activity.Climbing) {
                     yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
@@ -421,18 +431,21 @@ namespace Bowhead.Actors {
 
             Vector3 firstCheck, secondCheck;
             if (Math.Abs(input.movement.x) > Math.Abs(input.movement.z)) {
-                firstCheck = new Vector3(input.movement.x, 0, 0);
-                secondCheck = new Vector3(0, 0, input.movement.z);
+                firstCheck = new Vector3(Utils.SignOrZero(input.movement.x), 0, 0);
+                secondCheck = new Vector3(0, 0, Utils.SignOrZero(input.movement.z));
             }
             else {
-                firstCheck = new Vector3(0, 0, input.movement.z);
-                secondCheck = new Vector3(input.movement.x, 0, 0);
+                firstCheck = new Vector3(0, 0, Utils.SignOrZero(input.movement.z));
+                secondCheck = new Vector3(Utils.SignOrZero(input.movement.x), 0, 0);
             }
             if (activity == Activity.Climbing) {
                 if (!canClimb) {
-                    activity = Activity.Falling;
-                }
-            }
+					if (activity != Activity.Falling) {
+						climbingAttachCooldown = data.climbAttachCooldown;
+					}
+					activity = Activity.Falling;
+				}
+			}
             else if (world.GetBlock(position) == EVoxelBlockType.Water) {
                 activity = Activity.Swimming;
             }
@@ -469,18 +482,21 @@ namespace Bowhead.Actors {
 
             }
             else {
-                activity = Activity.Falling;
+				if (activity != Activity.Falling) {
+					climbingAttachCooldown = data.climbAttachCooldown;
+				}
+				activity = Activity.Falling;
 
-                if (canClimb) {
+				if (canClimb && climbingAttachCooldown <= 0) {
                     if (firstCheck.magnitude > 0 && CanClimb(firstCheck, position)) {
 						climbingAttachPoint = position;
-						climbingNormal = -new Vector3(Utils.SignOrZero(firstCheck.x), 0, Utils.SignOrZero(firstCheck.z));
+						climbingNormal = -firstCheck;
                         velocity = Vector3.zero;
                         activity = Activity.Climbing;
                     }
                     else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, position)) {
 						climbingAttachPoint = position;
-						climbingNormal = -new Vector3(Utils.SignOrZero(secondCheck.x), 0, Utils.SignOrZero(secondCheck.z));
+						climbingNormal = -secondCheck;
                         velocity = Vector3.zero;
                         activity = Activity.Climbing;
                     }
@@ -795,10 +811,12 @@ namespace Bowhead.Actors {
 			skidding = false;
 
             if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
-                activity = Activity.Falling;
+				if (activity != Activity.Falling) {
+					climbingAttachCooldown = data.climbAttachCooldown;
+				}
+				activity = Activity.Falling;
 
-
-                Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
+				Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
                 if (canJump) {
                     Vector3 jumpDir = Vector3.zero;
                     if (climbingInput.y < 0) {
@@ -896,10 +914,13 @@ namespace Bowhead.Actors {
 			}
 
 			if (!IsClimbPosition(climbingAttachPoint, -climbingNormal * data.climbWallRange)) {
-                activity = Activity.Falling;
-            }
+				if (activity != Activity.Falling) {
+					climbingAttachCooldown = data.climbAttachCooldown;
+				}
+				activity = Activity.Falling;
+			}
 
-        }
+		}
 
         public virtual void SetPosition(Vector3 p) {
             go.GetComponent<Rigidbody>().MovePosition(p);

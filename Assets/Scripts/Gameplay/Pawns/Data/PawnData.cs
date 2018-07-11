@@ -43,6 +43,7 @@ namespace Bowhead.Actors {
         public float climbWallRange;
         public float climbGrabMinZVel;
         public float climbSpeed;
+		public float climbAttachCooldown;
 
         [Header("Swimming")]
         public float bouyancy;
