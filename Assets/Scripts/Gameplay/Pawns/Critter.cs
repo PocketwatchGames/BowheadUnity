@@ -30,6 +30,8 @@ namespace Bowhead.Actors {
 		public override void Spawn(EntityData d, Vector3 pos, Actor instigator, Actor owner, Team team) {
 			base.Spawn(d, pos, instigator, owner, team);
 			behaviorPanic = CritterBehavior.Create(data.panicBehavior);
+            AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
+            position = pos;
             spawnPosition = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
@@ -49,16 +51,15 @@ namespace Bowhead.Actors {
 		}
 
         public void SetActive(Vector3 pos) {
-            AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
-            position = pos;
             active = true;
 		}
 
-		protected override void OnGameObjectAttached() {
-			base.OnGameObjectAttached();
-
+		public override void PostNetConstruct() {
+			base.PostNetConstruct();
 			if (GameManager.instance.clientWorld.gameState != null) {
-				GameManager.instance.clientWorld.OnCritterActive(this);
+				// hack get server instance of this critter
+				var critter = (Critter)GameManager.instance.serverWorld.GetObjectByNetID(netID);
+				GameManager.instance.clientWorld.OnCritterActive(critter);
 			}
 		}
 
@@ -117,6 +118,13 @@ namespace Bowhead.Actors {
 				return;
 			}
 
+			// TODO: this doesn't need to be done *every* frame
+			CheckDespawn(500);
+
+			if (pendingKill) {
+				return;
+			}
+
             // hacky spawn
             if (!active) {
                 if (!WorldUtils.GetFirstSolidBlockDown(1000, ref spawnPosition)) {
@@ -125,8 +133,6 @@ namespace Bowhead.Actors {
                 SetActive(spawnPosition);
             }
 
-			// TODO: this doesn't need to be done *every* frame
-			CheckDespawn(500);
         }
 
 		void CheckDespawn(float maxDist) {
