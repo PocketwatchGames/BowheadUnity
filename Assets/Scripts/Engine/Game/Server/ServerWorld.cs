@@ -152,7 +152,7 @@ namespace Server {
 				if (channel.owningPlayer != null) {
 					OnPlayerDisconnected(channel.owningPlayer, null, 0, null);
 				}
-				Debug.Log("Client  disconnected (" + connection.address + ").");
+				Debug.Log("Client disconnected (" + connection.address + ").");
 			}
 		}
 
@@ -164,9 +164,9 @@ namespace Server {
 					OnPlayerDisconnected(channel.owningPlayer, e, reason, message);
 				}
 				if (string.IsNullOrEmpty(message)) {
-					Debug.Log("Client  disconnected (" + connection.address + ") " + reason + ".");
+					Debug.Log("Client disconnected (" + connection.address + ") " + reason + ".");
 				} else {
-					Debug.Log("Client  disconnected (" + connection.address + ") " + reason + " -- '" + message + "'.");
+					Debug.Log("Client disconnected (" + connection.address + ") " + reason + " -- '" + message + "'.");
 				}
 				connection.driverConnection.Dispose();
 			}
