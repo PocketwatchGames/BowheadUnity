@@ -26,7 +26,6 @@ MonoBehaviour:
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
   jumpSpeed: 8
-  dodgeSpeed: 8
   jumpStaminaUse: 0
   groundAcceleration: 2
   crouchSpeed: 0
@@ -39,8 +38,6 @@ MonoBehaviour:
   sprintGracePeriodTime: 0
   groundMaxSpeed: 8
   groundWindDrag: 0.01
-  slideThresholdSlope: 4
-  slideThresholdFlat: 15
   gravity: -30
   fallJumpTime: 0
   fallAcceleration: 30
@@ -49,6 +46,7 @@ MonoBehaviour:
   climbWallRange: 0
   climbGrabMinZVel: 0
   climbSpeed: 0
+  climbAttachCooldown: 0
   bouyancy: 20
   swimJumpSpeed: 60
   swimSinkAcceleration: 0
@@ -65,6 +63,13 @@ MonoBehaviour:
   visionWeight: 2
   smellWeight: 1
   hearingWeight: 2
+  dayVisionDistance: 20
+  nightVisionDistance: 10
+  visionAngleExponent: 1
+  visionDistanceExponent: 0.5
+  visionAngleRange: 55
+  hearingDistance: 20
+  scentDistance: 0
   waryCooldownTime: 3
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4

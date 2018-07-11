@@ -29,6 +29,8 @@ namespace Bowhead.Actors {
 
 		private PawnHUD _hud;
 
+		public float canSmell, canSee, canHear;
+
 		#region core
 
 		public override void Spawn(EntityData d, Vector3 pos, Actor instigator, Actor owner, Team team) {
@@ -218,7 +220,11 @@ namespace Bowhead.Actors {
                     continue;
                 }
 
-                float awareness = (CanSee(p) * data.visionWeight + CanSmell(p) * data.smellWeight + CanHear(p) * data.hearingWeight) / (data.visionWeight + data.smellWeight + data.hearingWeight);
+				canSmell = CanSmell(p);
+				canHear = CanHear(p);
+				canSee = CanSee(p);
+
+				float awareness = (canSee * data.visionWeight + canSmell * data.smellWeight + canHear * data.hearingWeight) / (data.visionWeight + data.smellWeight + data.hearingWeight);
 
                 float waryIncrease = IsPanicked() ? data.waryIncreaseAtMaxAwarenessWhilePanicked : data.waryIncreaseAtMaxAwareness;
                 waryIncrease *= awareness;
@@ -293,7 +299,7 @@ namespace Bowhead.Actors {
 
             return Math.Max(smell, windCarrySmell);
         }
-        float CanHear(Player player) {
+		float CanHear(Player player) {
             if (player.activity != Activity.OnGround)
                 return 0;
             float playerSpeed = player.velocity.magnitude / player.data.groundMaxSpeed;
@@ -306,49 +312,50 @@ namespace Bowhead.Actors {
             if (distance == 0)
                 return 1f;
 
-            float fullSpeedAudibleDistance = 30f;
-            float playerSound = Mathf.Clamp(1f - (distance / (fullSpeedAudibleDistance * playerSpeed)), 0f, 1f);
+            float playerSound = Mathf.Clamp(1f - (distance / (data.hearingDistance * playerSpeed)), 0f, 1f);
             if (playerSound <= 0)
                 return 0;
 
-            return Mathf.Pow(playerSound, 0.25f);
+            return playerSound;
         }
-        float CanSee(Player player) {
+        public float CanSee(Player player) {
             var diff = player.position - position;
             float dist = diff.magnitude;
 
-            float visionDistance = 10;
-            //float sunriseTime = 2;
-            //float sunsetTime = 22;
-            //float sunChangeTime = 2;
-            //if (world.Weather.tod >= sunriseTime + sunChangeTime && world.Weather.tod < sunriseTime - sunChangeTime)
-            //{
-            //	visionDistance += 15;
-            //}
-            //else if (world.Weather.tod >= sunriseTime && world.Weather.tod < sunriseTime + sunChangeTime)
-            //{
-            //	visionDistance += 15f*(world.Weather.tod - sunriseTime) / sunChangeTime;
-            //}
-            //else if (world.Weather.tod >= sunsetTime - sunChangeTime && world.Weather.tod < sunsetTime)
-            //{
-            //	visionDistance += 15f*(sunsetTime - world.Weather.tod) / sunChangeTime;
-            //}
-            //else
-            //{
-            //	visionDistance += 0;
-            //}
+            float visionDistance = data.nightVisionDistance;
+			//float sunriseTime = 2;
+			//float sunsetTime = 22;
+			//float sunChangeTime = 2;
+			//if (world.Weather.tod >= sunriseTime + sunChangeTime && world.Weather.tod < sunriseTime - sunChangeTime)
+			//{
+			//	visionDistance += 15;
+			//}
+			//else if (world.Weather.tod >= sunriseTime && world.Weather.tod < sunriseTime + sunChangeTime)
+			//{
+			//	visionDistance += 15f*(world.Weather.tod - sunriseTime) / sunChangeTime;
+			//}
+			//else if (world.Weather.tod >= sunsetTime - sunChangeTime && world.Weather.tod < sunsetTime)
+			//{
+			//	visionDistance += 15f*(sunsetTime - world.Weather.tod) / sunChangeTime;
+			//}
+			//else
+			//{
+			//	visionDistance += 0;
+			//}
+			visionDistance += (data.dayVisionDistance - data.nightVisionDistance);
 
             if (dist > visionDistance)
                 return 0;
 
             float angleToPlayer = Mathf.Atan2(diff.x, diff.z);
             float angleDiff = Mathf.Abs(Mathf.Repeat(angleToPlayer - yaw, Mathf.PI * 2));
-            float maxVisionAngle = Mathf.PI / 2;
-            if (angleDiff > maxVisionAngle)
+			float angleRange = data.visionAngleRange * Mathf.Deg2Rad;
+
+			if (angleDiff > angleRange)
                 return 0;
 
-            float canSeeAngle = Mathf.Pow(1.0f - angleDiff / maxVisionAngle, 0.333f);
-            float canSeeDistance = Mathf.Pow(1.0f - dist / visionDistance, 0.333f);
+            float canSeeAngle = Mathf.Pow(1.0f - angleDiff / angleRange, data.visionAngleExponent);
+            float canSeeDistance = Mathf.Pow(1.0f - dist / visionDistance, data.visionDistanceExponent);
             return canSeeAngle * canSeeDistance;
         }
 
