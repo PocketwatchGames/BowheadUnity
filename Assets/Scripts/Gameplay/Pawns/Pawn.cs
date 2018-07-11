@@ -75,6 +75,7 @@ namespace Bowhead.Actors {
 		public float sprintTimer;
 		public float sprintGracePeriodTime;
 		public Vector3 climbingNormal;
+		public Vector3 climbingAttachPoint;
         public float fallJumpTimer;
         public float maxHorizontalSpeed;
         public bool skidding;
@@ -374,8 +375,9 @@ namespace Bowhead.Actors {
             }
 
 
-
-            position = new Vector3(position.x, position.y + velocity.y * dt, position.z);
+			if (activity != Activity.Climbing) {
+				SetPosition(new Vector3(position.x, position.y + velocity.y * dt, position.z));
+			}
 
             // Collide feet
             float floorPosition;
@@ -401,12 +403,12 @@ namespace Bowhead.Actors {
                     }
                     velocity.y = Math.Max(0, velocity.y);
                 }
-                position = new Vector3(position.x, floorPosition, position.z);
+                SetPosition(new Vector3(position.x, floorPosition, position.z));
             }
             // Collide head
             else if (WorldUtils.IsSolidBlock(world.GetBlock(headPosition()))) {
                 // TODO: this is broken
-                position = new Vector3(position.x, Math.Min(position.y, (int)headPosition().y - data.height), position.z);
+                SetPosition(new Vector3(position.x, Math.Min(position.y, (int)headPosition().y - data.height), position.z));
                 velocity.y = Math.Min(0, velocity.y);
             }
 
@@ -471,12 +473,14 @@ namespace Bowhead.Actors {
 
                 if (canClimb) {
                     if (firstCheck.magnitude > 0 && CanClimb(firstCheck, position)) {
-                        climbingNormal = -new Vector3(Utils.SignOrZero(firstCheck.x), 0, Utils.SignOrZero(firstCheck.z));
+						climbingAttachPoint = position;
+						climbingNormal = -new Vector3(Utils.SignOrZero(firstCheck.x), 0, Utils.SignOrZero(firstCheck.z));
                         velocity = Vector3.zero;
                         activity = Activity.Climbing;
                     }
                     else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, position)) {
-                        climbingNormal = -new Vector3(Utils.SignOrZero(secondCheck.x), 0, Utils.SignOrZero(secondCheck.z));
+						climbingAttachPoint = position;
+						climbingNormal = -new Vector3(Utils.SignOrZero(secondCheck.x), 0, Utils.SignOrZero(secondCheck.z));
                         velocity = Vector3.zero;
                         activity = Activity.Climbing;
                     }
@@ -839,7 +843,7 @@ namespace Bowhead.Actors {
             if (onGround) {
                 activity = Activity.OnGround;
                 velocity.y = Math.Max(0, velocity.y);
-                position = new Vector3(position.x, floorPosition, position.z);
+                SetPosition(new Vector3(position.x, floorPosition, position.z));
             }
             else {
 				Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
@@ -850,48 +854,58 @@ namespace Bowhead.Actors {
                 if (move.magnitude > 0) {
 
                     bool isOpen = CanMoveTo(move, true, ref newPosition);
-                    if (isOpen) {
-                        if (IsClimbPosition(newPosition, -climbingNormal * data.climbWallRange)) {
-                            SetPosition(newPosition);
-                        }
-                        //else if (move.y > 0)
-                        //{
-                        //	move.y++;
-                        //	move += -climbingNormal*data.WallJumpRange;
-                        //	if (tryMoveTo(move, true, dt, newPosition, interpolate))
-                        //	{
-                        //		moved = true;
-                        //		interpolate = true;
-                        //	}
-                        //}
-                        else if (move.magnitude > 0 && (move.x != 0 || move.z != 0)) {
-                            Vector3 newWallNormal = move.normalized;
-                            move += -climbingNormal * data.climbWallRange;
-                            bool isWrapAroundOpen = CanMoveTo(move, true, ref newPosition);
-                            if (isWrapAroundOpen && IsClimbPosition(newPosition, -newWallNormal * data.climbWallRange)) {
-                                climbingNormal = newWallNormal;
-                                SetPosition(newPosition, 0.1f);
-                            }
-                        }
-                        else {
-                            velocity = Vector3.zero;
-                        }
-                    }
-                    else if (IsClimbPosition(newPosition, move.normalized * data.climbWallRange)) {
-                        SetPosition(newPosition, 0.1f);
-                    }
-                }
-            }
+					if (isOpen) {
+						if (IsClimbPosition(newPosition, -climbingNormal * data.climbWallRange)) {
+							climbingAttachPoint = newPosition;
+							SetPosition(newPosition);
 
-            if (!IsClimbPosition(position, -climbingNormal * data.climbWallRange)) {
+						}
+						//else if (move.y > 0)
+						//{
+						//	move.y++;
+						//	move += -climbingNormal*data.WallJumpRange;
+						//	if (tryMoveTo(move, true, dt, newPosition, interpolate))
+						//	{
+						//		moved = true;
+						//		interpolate = true;
+						//	}
+						//}
+						else {
+							velocity = Vector3.zero;
+							if (move.magnitude > 0 && (move.x != 0 || move.z != 0)) {
+								Vector3 newWallNormal = move.normalized;
+								move += -climbingNormal * data.climbWallRange;
+								bool isWrapAroundOpen = CanMoveTo(move, true, ref newPosition);
+								if (isWrapAroundOpen && IsClimbPosition(newPosition, -newWallNormal * data.climbWallRange)) {
+									climbingNormal = newWallNormal;
+									climbingAttachPoint = newPosition;
+									SetPosition(newPosition);
+								}
+							}
+						}
+					}
+					else {
+						velocity = Vector3.zero;
+						if (IsClimbPosition(newPosition, move.normalized * data.climbWallRange)) {
+							climbingAttachPoint = newPosition;
+							SetPosition(newPosition);
+						}
+					}
+				}
+
+			}
+
+			if (!IsClimbPosition(climbingAttachPoint, -climbingNormal * data.climbWallRange)) {
                 activity = Activity.Falling;
             }
 
         }
 
-        public virtual void SetPosition(Vector3 p, float interpolateTime = 0) {
+        public virtual void SetPosition(Vector3 p) {
             go.GetComponent<Rigidbody>().MovePosition(p);
-            position = p;
+			if (position != p) {
+				position = p;
+			}
         }
 
         public bool IsWading() {

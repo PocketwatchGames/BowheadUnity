@@ -310,8 +310,17 @@ namespace Bowhead {
 				var whitenoise = noise.GetWhiteNoise(chunkPos.x, chunkPos.y, chunkPos.z);
 
 				if (whitenoise > 0.98f) {
-					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x, chunkPos.y, chunkPos.z) * 40 + 8);
-					ConstructTower(ref noise, chunkPos, 8, 0, 8, towerHeight, ref chunk);
+					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x+100, chunkPos.y, chunkPos.z) * 30 + 12);
+					int x = 8;
+					int z = 8;
+					for (int y = VOXEL_CHUNK_SIZE_Y - 1; y >= 0; --y) {
+						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+						var bt = chunk.voxeldata[ofs].type;
+						if (bt != EVoxelBlockType.Air) {
+							ConstructTower(ref noise, chunkPos, x, y, z, towerHeight, ref chunk);
+							break;
+						}
+					}
 				}
 
 				if (whitenoise < -0.98f) {
