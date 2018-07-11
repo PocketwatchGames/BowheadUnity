@@ -1420,7 +1420,7 @@ public partial class World {
 									bool set = false;
 									bool exposed = true;
 
-									if (_vnc[(spaxis * 2) + (side ^ 1)] >= contents) {
+									if (_vnc[(spaxis * 2) + (side ^ 1)] != EVoxelBlockContents.None) {
 										exposed = false;
 
 										// a vertex collapse may have exposed this vertex...
