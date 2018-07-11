@@ -374,15 +374,6 @@ namespace Bowhead.Actors {
             }
 
 
-            if (!canMove) {
-                velocity = Vector3.zero;
-            }
-            if (moveImpulseTimer > 0) {
-                var m = moveImpulse * (dt / moveImpulseTimer);
-                velocity = m / dt;
-                moveImpulse -= m;
-                moveImpulseTimer = Math.Max(0, moveImpulseTimer - dt);
-            }
 
             position = new Vector3(position.x, position.y + velocity.y * dt, position.z);
 
@@ -397,9 +388,13 @@ namespace Bowhead.Actors {
                         if (velocity.y < 0) {
                             float slopeAccel = Vector3.Dot(velocity.normalized, -groundNormal);
                             if (slopeAccel > 0) {
+								var blockData = gameMode.GetTerrainData(new Vector3(position.x, floorPosition, position.z));
 								var slopeRight = Vector3.Cross(velocity.normalized, groundNormal);
 								var slopeDown = Vector3.Cross(groundNormal, slopeRight);
-								velocity = slopeDown * slopeAccel * velocity.magnitude;
+								var slideVelocity = slopeDown * slopeAccel * velocity.magnitude;
+								slideVelocity.y = Math.Max(0, velocity.y);
+
+								velocity = slideVelocity;
 								skidding = true;
                             }
                         }
@@ -537,7 +532,9 @@ namespace Bowhead.Actors {
         }
 
         private void UpdateFalling(float dt, Input_t input) {
-            if (fallJumpTimer > 0) {
+			skidding = false;
+
+			if (fallJumpTimer > 0) {
                 fallJumpTimer = Math.Max(0, fallJumpTimer - dt);
 
 				if (input.IsPressed(InputType.Jump)) {
@@ -626,116 +623,104 @@ namespace Bowhead.Actors {
 			var block = gameMode.GetTerrainData(position + new Vector3(0, -0.1f, 0));
             var midblock = gameMode.GetTerrainData(position + new Vector3(0,0.9f,0));
 
-			float drag = Mathf.Max(block.drag, midblock.drag);
-			if (IsWading()) {
-                drag += data.swimDragHorizontal;
-            }
+			//if (IsWading()) {
+   //             drag += data.swimDragHorizontal;
+   //         }
 
             float curVel = velocity.magnitude;
-            Vector3 velChange = Vector3.zero;
-			bool shouldSkid = false;
 
-            if (input.movement == Vector3.zero && curVel < data.walkSpeed*block.speedModifier && !skidding) {
-                if (curVel > 0) {
-                    // Stopping (only when not sliding)
-                    float stopAccel = dt * data.walkSpeed * block.speedModifier / data.walkStopTime;
-                    if (curVel < stopAccel)
-                        velChange = -velocity;
-                    else
-                        velChange = -velocity.normalized * stopAccel;
-                }
-            }
-            else {
-                float maxSpeed = getGroundMaxSpeed() * block.speedModifier;
-                float acceleration = getGroundAcceleration() * block.accelerationModifier;
-				float slideThreshold = block.slideThreshold;
-
-				if (input.movement != Vector3.zero) {
-                    var normalizedInput = input.movement.normalized;
-                    float slopeDot = Vector3.Dot(groundNormal, normalizedInput);
-                    maxSpeed *= 1f + slopeDot;
-
-					slideThreshold *= Mathf.Min(1.0f, 1.0f - slopeDot);
-
-				}
-
-                {
-                    var desiredVel = input.movement * maxSpeed;
-                    var velDiff = desiredVel - velocity;
-                    velDiff.y = 0;
-
-
-                    if (velDiff != Vector3.zero) {
-						// acceleration scales with our difference from our maxspeed
-                        acceleration *= velDiff.magnitude;
-                        velDiff = velDiff.normalized;
-
-						if (velocity.magnitude <= data.groundMaxSpeed * block.speedModifier) {
-							// walk acceleration is linear
-							var walkAcceleration = data.walkSpeed * block.accelerationModifier / data.walkStartTime;
-							// if walking would cause us to slide, limit our acceleration to the sliding threshold
-							walkAcceleration = Math.Min(walkAcceleration, slideThreshold);
-
-							// if running would cause us to slide, use our linear walk acceleration
-							if (acceleration > slideThreshold) {
-								acceleration = walkAcceleration;
-							}
-						}
-
-						velChange = velDiff * acceleration * dt;
-                    }
-                    else {
-                        acceleration = 0;
-                    }
-
-					if (acceleration > slideThreshold) {
-						shouldSkid = true;
-					}
-				}
-                {
-                    // Wind blowing you while running or skidding
-                    var wind = gameMode.GetWind(position);
-                    if (wind.magnitude >= gameMode.data.windSpeedStormy) {
-                        var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
-                        velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
-                        velChange += velDiff * dt * getHorizontalAirFriction();
-                    }
-                }
-            }
-
-			if (shouldSkid) {
-				skidding = true;
+			// Stopping (only when not sliding)
+			if (!canMove) {
+				velocity = Vector3.zero;
+				skidding = false;
+			}
+			else if (input.movement == Vector3.zero && !skidding && curVel < data.walkSpeed * block.speedModifier) {
+				velocity = Vector3.zero;
+				skidding = false;
 			}
 			else {
-				if (groundNormal == Vector3.up) {
-					skidding = false;
+				Vector3 acceleration = Vector3.zero;
+
+				float maxSpeed = getGroundMaxSpeed() * block.speedModifier;
+				float slideThreshold = block.slideThreshold;
+				if (input.movement != Vector3.zero) {
+					var normalizedInput = input.movement.normalized;
+					float slopeDot = Vector3.Dot(groundNormal, normalizedInput);
+					maxSpeed *= 1f + slopeDot;
+					//slideThreshold *= Mathf.Min(1.0f, 1.0f - slopeDot);
+				}
+
+
+				// Sliding
+				if (skidding) {
+					// Slide down any hills
+					Vector3 slideRight = Vector3.Cross(Vector3.up, groundNormal);
+					Vector3 slideDir = Vector3.Cross(slideRight, Vector3.up);
+					acceleration += -data.gravity * groundNormal.y * slideDir * (1f - block.slideFriction);
+				}
+
+
+				Vector3 desiredVel = input.movement * maxSpeed;
+
+				// running acceleration scales with our difference from our maxspeed
+				var desiredAcceleration = desiredVel - velocity;
+				desiredAcceleration.y = 0;
+
+				if (desiredAcceleration != Vector3.zero) {
+
+					desiredAcceleration *= getGroundAcceleration() * block.accelerationModifier;
+
+					// For stopping
+					if (desiredVel == Vector3.zero && velocity.magnitude < data.walkSpeed) {
+						// walk acceleration is linear
+						desiredAcceleration = desiredAcceleration.normalized * data.walkSpeed * block.accelerationModifier / data.walkStartTime;
+					}
+
+
+					if (desiredAcceleration.magnitude > slideThreshold) {
+						// if we're sprinting and we change direction quickly, start sliding
+						if (velocity.magnitude > data.groundMaxSpeed * block.speedModifier) {
+							skidding = true;
+						}
+
+					}
+					else {
+						skidding = false;
+					}
+					if (skidding) {
+						desiredAcceleration *= block.slideFriction;
+					}
+
+
+					acceleration += desiredAcceleration;
+				}
+
+				velocity += acceleration * dt;
+			}
+
+			if (moveImpulseTimer > 0) {
+				var m = moveImpulse * (dt / moveImpulseTimer);
+				velocity = m / dt * block.speedModifier;
+				moveImpulse -= m;
+				moveImpulseTimer = Math.Max(0, moveImpulseTimer - dt);
+				if (moveImpulseTimer <= 0) {
+					velocity = Vector3.zero;
 				}
 			}
 
-			// Sliding
-			if (skidding) {
-                // Reduce our movement impulse (reduce control while sliding)
-                velChange *= block.slideFriction;
-
-                // Slide down any hills
-                float slopeDot = Vector3.Dot(groundNormal, Vector3.up);
-                Vector3 slideDir = groundNormal;
-                slideDir.y = 0;
-                if (slideDir != Vector3.zero) {
-                    slideDir = slideDir.normalized;
-                    velChange += (1.0f - slopeDot) * dt * -data.gravity * slideDir * (1f - block.slideFriction);
-                }
+			//{
+			//    // Wind blowing you while running or skidding
+			//    var wind = gameMode.GetWind(position);
+			//    if (wind.magnitude >= gameMode.data.windSpeedStormy) {
+			//        var velDiff = (wind - new Vector3(velocity.x, 0, velocity.z));
+			//        velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
+			//        velChange += velDiff * dt * getHorizontalAirFriction();
+			//    }
+			//}
 
 
 
-			}
-
-			// Apply friction for travelling through snow/sand/water
-			velChange += -velocity * dt * drag;
-
-            velocity += velChange;
-
-            Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
+			Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
 
 			if (sprintGracePeriodTime > 0) {
 				maxHorizontalSpeed = Mathf.Max(maxHorizontalSpeed, horizontalVel.magnitude);
@@ -753,6 +738,7 @@ namespace Bowhead.Actors {
 
 			sprintTimer = 0;
 			sprintGracePeriodTime = 0;
+			skidding = false;
 
 
 			if (input.inputs[(int)InputType.Jump] == InputState.Pressed) {
@@ -802,6 +788,7 @@ namespace Bowhead.Actors {
 
 			sprintTimer = 0;
 			sprintGracePeriodTime = 0;
+			skidding = false;
 
             if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
                 activity = Activity.Falling;

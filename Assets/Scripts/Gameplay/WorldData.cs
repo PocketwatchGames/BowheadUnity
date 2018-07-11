@@ -8,7 +8,6 @@ public class WorldData : ScriptableObject {
 	[System.Serializable]
 	public class TerrainType {
 		public string name;
-		public float drag = 0;
 		public float speedModifier = 1;
 		public float accelerationModifier = 1;
 		public float slideThreshold = 100;
