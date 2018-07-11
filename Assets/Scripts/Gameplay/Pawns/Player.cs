@@ -425,8 +425,8 @@ namespace Bowhead.Actors {
 
         }
 
-		public override void SetPosition(Vector3 p, float interpolateTime = 0) {
-			base.SetPosition(p, interpolateTime);
+		public override void SetPosition(Vector3 p) {
+			base.SetPosition(p);
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(p));
 			if (_marker != null) {
 				_marker.worldPosition = new Vector2(p.x, p.z);
