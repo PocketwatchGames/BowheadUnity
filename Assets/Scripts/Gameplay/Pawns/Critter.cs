@@ -56,6 +56,7 @@ namespace Bowhead.Actors {
 
         public void SetActive(Vector3 pos) {
             active = true;
+			position = pos;
 		}
 
 		public override void PostNetConstruct() {
