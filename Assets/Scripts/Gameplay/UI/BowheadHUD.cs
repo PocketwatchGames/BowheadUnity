@@ -8,7 +8,7 @@ namespace Bowhead.Client.UI {
 		InventoryPanel _inventory;
 		PlayerStatePanel _playerState;
         ButtonHint _interactHint;
-		Minimap _minimap;
+		Map _minimap;
         Compass _compass;
 
 		GameObject _pawnHUDs;
@@ -79,7 +79,7 @@ namespace Bowhead.Client.UI {
 			}
         }
 
-		public override T CreateMinimapMarker<T>(T prefab, EMinimapMarkerStyle style) {
+		public override T CreateMapMarker<T>(T prefab, EMapMarkerStyle style) {
 			return _minimap.CreateMarker(prefab, style);
 		}
     }

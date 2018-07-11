@@ -114,11 +114,11 @@ namespace Bowhead.Actors {
             float yaw = 0;
             go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
 
-			if ((_marker == null) && ((data.minimapMarker != null) && (data.minimapMarker.Load() != null))) {
+			if ((_marker == null) && ((data.mapMarker != null) && (data.mapMarker.Load() != null))) {
 				// this is just horrible, normally we'd have the gamestate on the client from the World object
 				// but this is all server code... so fuck it dude let's go bowling.
 				if (GameManager.instance.clientWorld.gameState != null) {
-					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMinimapMarker(data.minimapMarker.Load(), data.minimapMarkerStyle));
+					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMapMarker(data.mapMarker.Load(), data.mapMarkerStyle));
 					_marker.transform.SetAsFirstSibling(); // always sort last.
 				}
 			}

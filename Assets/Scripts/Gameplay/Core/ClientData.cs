@@ -99,7 +99,7 @@ namespace Bowhead {
 		public Material[] bloodDecalMaterials;
 		public Material[] explosionDecalMaterials;
 		public GameObject loadingCanvasPrefab;
-        public Client.UI.Minimap minimapPrefab;
+        public Client.UI.Map minimapPrefab;
         public Client.UI.Compass compassPrefab;
         public Canvas hudCanvasPrefab;
 		public Client.UI.InventoryPanel hudInventoryPanelPrefab;

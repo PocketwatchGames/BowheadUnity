@@ -9,7 +9,7 @@ namespace Bowhead.Client.UI {
 	using IChunk = World.Streaming.IChunk;
 
 	[RequireComponent(typeof(RawImage))]
-	public sealed class Minimap : MonoBehaviourEx {
+	public sealed class Map : MonoBehaviourEx {
 
 		class ChunkTile {
 			public ChunkTile prev, next;
@@ -175,8 +175,8 @@ namespace Bowhead.Client.UI {
 			Graphics.SetRenderTarget(null);
 		}
 
-		public T CreateMarker<T>(T prefab, EMinimapMarkerStyle style) where T: UnityEngine.Object {
-			return Instantiate(prefab, (style == EMinimapMarkerStyle.Normal) ? _markers.transform : _alwaysVisibleMarkers.transform, false);
+		public T CreateMarker<T>(T prefab, EMapMarkerStyle style) where T: UnityEngine.Object {
+			return Instantiate(prefab, (style == EMapMarkerStyle.Normal) ? _markers.transform : _alwaysVisibleMarkers.transform, false);
 		}
 
 		void FullUpdate() {

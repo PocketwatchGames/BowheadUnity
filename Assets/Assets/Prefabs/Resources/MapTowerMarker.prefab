@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 222371208836611396}
   - component: {fileID: 114790518168383052}
   m_Layer: 5
-  m_Name: MinimapTreasureMarker
+  m_Name: MapTowerMarker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -47,7 +47,7 @@ MonoBehaviour:
       m_Calls: []
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
-  m_Sprite: {fileID: 21300000, guid: 99dbcb6e3d5774a459f1f9c875e08e72, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 7609e111a76995b4bb03a2353877421a, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1

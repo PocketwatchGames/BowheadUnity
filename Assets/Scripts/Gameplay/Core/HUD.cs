@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace Bowhead.Client.UI {
 	using EMatchState = Server.GameMode.EMatchState;
 
-	public enum EMinimapMarkerStyle {
+	public enum EMapMarkerStyle {
 		Normal,
 		AlwaysVisible
 	};
@@ -98,7 +98,7 @@ namespace Bowhead.Client.UI {
 
 		public virtual void Fade(Color src, Color dst, float time) { }
 
-		public abstract T CreateMinimapMarker<T>(T prefab, EMinimapMarkerStyle style) where T: UnityEngine.Object;
+		public abstract T CreateMapMarker<T>(T prefab, EMapMarkerStyle style) where T: UnityEngine.Object;
 		
 		protected virtual GameObject hudPrefab {
 			get {

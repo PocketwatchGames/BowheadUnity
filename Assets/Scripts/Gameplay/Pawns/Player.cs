@@ -139,12 +139,12 @@ namespace Bowhead.Actors {
                 }
             }
 			
-			if ((_marker == null) && ((data.minimapMarker != null) && (data.minimapMarker.Load() != null))) {
+			if ((_marker == null) && ((data.mapMarker != null) && (data.mapMarker.Load() != null))) {
 
 				// this is just horrible, normally we'd have the gamestate on the client from the World object
 				// but this is all server code... so fuck it dude let's go bowling.
 				if (GameManager.instance.clientWorld.gameState != null) {
-					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMinimapMarker(data.minimapMarker.Load(), Client.UI.EMinimapMarkerStyle.AlwaysVisible));
+					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMapMarker(data.mapMarker.Load(), Client.UI.EMapMarkerStyle.AlwaysVisible));
 					// SetPosition will set the position
 					_marker.transform.localPosition = new Vector2(position.x, position.z);
 				}

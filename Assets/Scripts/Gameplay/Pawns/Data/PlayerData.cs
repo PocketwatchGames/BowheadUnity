@@ -11,7 +11,7 @@ namespace Bowhead.Actors {
 		[Header("Player"), ClassDropdown(typeof(Player)), SerializeField]
 		string _playerClass;
 		public GameObject_WRef prefab;
-		public GameObject_WRef minimapMarker;
+		public GameObject_WRef mapMarker;
         public float temperatureSleepMinimum;
         public float temperatureSleepMaximum;
         public float fallDamageSpeed;
