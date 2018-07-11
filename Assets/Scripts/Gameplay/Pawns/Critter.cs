@@ -11,6 +11,10 @@ namespace Bowhead.Actors {
 		public override System.Type serverType => typeof(Critter);
 		public override System.Type clientType => typeof(Critter);
 
+		public Critter() {
+			SetReplicates(true);
+		}
+
         #region State
         public float decayTime;
         public float wary;
