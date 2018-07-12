@@ -274,7 +274,7 @@ namespace Bowhead {
 				else {
 					dirToEnemy.Normalize();
 				}
-				float angleToEnemy = Mathf.Repeat(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) - owner.yaw, Mathf.PI * 2);
+				float angleToEnemy = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z), owner.yaw));
 				if (angleToEnemy > defense.defendAngleRange*Mathf.Deg2Rad && Mathf.PI * 2 - angleToEnemy > defense.defendAngleRange * Mathf.Deg2Rad) {
 					return;
 				}

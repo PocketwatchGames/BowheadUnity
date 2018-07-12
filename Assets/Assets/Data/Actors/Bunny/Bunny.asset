@@ -65,9 +65,11 @@ MonoBehaviour:
   hearingWeight: 2
   dayVisionDistance: 15
   nightVisionDistance: 10
-  visionAngleExponent: 0
-  visionDistanceExponent: 0
-  visionAngleRange: 0
+  visionAngleExponent: 2
+  visionDistanceExponent: 0.5
+  visionAngleRange: 60
+  visionAngleRangeUp: 60
+  visionAngleRangeDown: 45
   hearingDistance: 30
   scentDistance: 0
   waryCooldownTime: 3

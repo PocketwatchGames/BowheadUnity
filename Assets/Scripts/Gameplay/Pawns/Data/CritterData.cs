@@ -19,6 +19,8 @@ namespace Bowhead.Actors {
 		public float visionAngleExponent;
 		public float visionDistanceExponent;
 		public float visionAngleRange;
+		public float visionAngleRangeUp;
+		public float visionAngleRangeDown;
 		public float hearingDistance;
 		public float scentDistance;
 

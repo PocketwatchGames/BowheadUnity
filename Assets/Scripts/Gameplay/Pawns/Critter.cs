@@ -348,15 +348,43 @@ namespace Bowhead.Actors {
                 return 0;
 
             float angleToPlayer = Mathf.Atan2(diff.x, diff.z);
-            float angleDiff = Mathf.Abs(Mathf.Repeat(angleToPlayer - yaw, Mathf.PI * 2));
-			float angleRange = data.visionAngleRange * Mathf.Deg2Rad;
+            float angleDiffXZ = Mathf.Abs(Utils.SignedMinAngleDelta(angleToPlayer, yaw));
+			float angleRangeXZ = data.visionAngleRange * Mathf.Deg2Rad;
 
-			if (angleDiff > angleRange)
+			if (angleDiffXZ > angleRangeXZ)
                 return 0;
 
-            float canSeeAngle = Mathf.Pow(1.0f - angleDiff / angleRange, data.visionAngleExponent);
+			float angleDeltaXZ = angleDiffXZ / angleRangeXZ;
+
+			float angleDiffY = Mathf.Atan2(diff.y, Mathf.Sqrt(diff.x*diff.x+diff.z*diff.z));
+			float angleDeltaY = 0;
+			if (angleDiffY > 0) {
+				if (angleDiffY > data.visionAngleRangeUp * Mathf.Deg2Rad) {
+					return 0;
+				}
+				angleDeltaY = angleDiffY / (data.visionAngleRangeUp * Mathf.Deg2Rad);
+			}
+			else if (angleDiffY < 0) {
+				if (angleDiffY < -data.visionAngleRangeDown * Mathf.Deg2Rad) {
+					return 0;
+				}
+				angleDeltaY = -angleDiffY / (data.visionAngleRangeDown * Mathf.Deg2Rad);
+			}
+			float angleDelta = Mathf.Sqrt(angleDeltaXZ * angleDeltaXZ + angleDeltaY * angleDeltaY);
+
+
+			float canSeeAngle = Mathf.Pow(1.0f - angleDelta, data.visionAngleExponent);
+
+
             float canSeeDistance = Mathf.Pow(1.0f - dist / visionDistance, data.visionDistanceExponent);
-            return canSeeAngle * canSeeDistance;
+
+
+			bool hasClearLine = !Physics.Raycast(new Ray(headPosition(), (player.headPosition()-headPosition()).normalized), dist, Layers.PawnCollisionMask) || !Physics.Raycast(new Ray(headPosition(), (player.footPosition() - headPosition()).normalized), dist, Layers.PawnCollisionMask);
+			if (!hasClearLine) {
+				return 0;
+			}
+
+			return canSeeAngle * canSeeDistance;
         }
 
 

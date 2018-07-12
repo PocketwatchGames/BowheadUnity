@@ -1101,7 +1101,7 @@ namespace Bowhead.Actors {
             else {
                 dirToEnemy.Normalize();
             }
-            float angleToEnemysBack = Mathf.Repeat(Mathf.Atan2(-dirToEnemy.x, -dirToEnemy.z) - yaw, Mathf.PI * 2);
+            float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(-dirToEnemy.x, -dirToEnemy.z), yaw));
             if (attackData.attackDamageBackstab > 0 && angleToEnemysBack < data.backStabAngle*Mathf.Deg2Rad || angleToEnemysBack > Math.PI*2-data.backStabAngle * Mathf.Deg2Rad) {
                 remainingStun = attackData.stunPowerBackstab;
                 remainingDamage = attackData.attackDamageBackstab;

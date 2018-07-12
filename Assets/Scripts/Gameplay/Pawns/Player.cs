@@ -900,7 +900,7 @@ namespace Bowhead.Actors {
                         if (dist < maxDist) {
                             float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
 
-                            float yawDiff = Math.Abs(Mathf.Repeat(angleToEnemy - yaw, Mathf.PI * 2));
+                            float yawDiff = Mathf.Abs(Utils.SignedMinAngleDelta(angleToEnemy, yaw));
 
                             float collisionRadius = 0.5f;
 
