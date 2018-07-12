@@ -4,7 +4,7 @@ namespace Bowhead {
 	public abstract class ItemData : EntityData {
 
 		public string description;
-
+		public int monetaryValue;
 
 
 

@@ -17,6 +17,7 @@ namespace Bowhead.Actors {
         public float fallDamageSpeed;
 		public float fallSpeedLoudness;
 		public float dropTime;
+		public float tradePartnerCancelDistance;
 		public int[] weightClassItemCount;
 
 		public Type playerClass { get; private set; }

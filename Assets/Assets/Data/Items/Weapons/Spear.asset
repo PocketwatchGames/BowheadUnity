@@ -15,6 +15,7 @@ MonoBehaviour:
   _index: 12
   description: Fast two handed weapon with a big forward motion and spinning charged
     attack
+  monetaryValue: 40
   prefab:
     _assetPath: Items/Spear
     _editorPath: Assets/Assets/Prefabs/Resources/Items/Spear.prefab

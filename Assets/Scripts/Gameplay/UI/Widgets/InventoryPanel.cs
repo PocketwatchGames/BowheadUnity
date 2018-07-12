@@ -152,14 +152,25 @@ namespace Bowhead.Client.UI {
 			if (_rearranging) {
 				_buttonHintLeftRight.SetHint("Move Item");
 				_buttonHintDown.SetHint("Cancel");
-				_buttonHintUp.SetHint("Drop");
+
+				if (_player.tradePartner != null) {
+					_buttonHintUp.SetHint("Offer for Sale");
+				}
+				else {
+					_buttonHintUp.SetHint("Drop");
+				}
 				_itemInfo.gameObject.SetActive(true);
 				_itemInfo.SetItem(_player.GetInventorySlot(inventorySelected));
 			}
 			else {
 				_buttonHintLeftRight.SetHint("Select");
 				_buttonHintDown.SetHint("Use");
-				_buttonHintUp.SetHint("Info");
+				if (_player.tradePartner != null) {
+					_buttonHintUp.SetHint("Sell");
+				}
+				else {
+					_buttonHintUp.SetHint("Info");
+				}
 				_itemInfo.gameObject.SetActive(false);
 			}
 		}

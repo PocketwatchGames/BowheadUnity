@@ -7,6 +7,8 @@ public class ItemInfoPanel : MonoBehaviour {
 	[SerializeField]
 	UnityEngine.UI.Text _name;
 	[SerializeField]
+	UnityEngine.UI.Text _value;
+	[SerializeField]
 	UnityEngine.UI.Text _description;
 
 	Bowhead.Item _item;
@@ -16,6 +18,7 @@ public class ItemInfoPanel : MonoBehaviour {
 		if (_item != null) {
 			_name.text = item.data.name;
 			_description.text = item.data.description;
+			_value.text = "Value: $" + item.data.monetaryValue;
 		}
 	}
 }

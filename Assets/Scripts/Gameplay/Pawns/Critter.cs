@@ -229,8 +229,15 @@ namespace Bowhead.Actors {
 		}
 
 		private Input_t GetInputFromAI(float dt) {
+
             Input_t input = new Input_t();
-            foreach (var p in world.GetActorIterator<Player>()) {
+
+			if (team == gameMode.teams[0]) {
+				return input;
+			}
+
+
+			foreach (var p in world.GetActorIterator<Player>()) {
 
                 if (p.team == team) {
                     continue;

@@ -20,6 +20,7 @@ namespace Bowhead.Actors {
         public Vector3 spawnPoint;
         public Vector2 mapPos;
 		public Stance stance;
+		public Pawn tradePartner;
 
         [Header("Inventory")]
         public int money;
@@ -269,11 +270,19 @@ namespace Bowhead.Actors {
             }
 
 
+			if (tradePartner != null) {
+				var diff = tradePartner.position - position;
+				if (diff.magnitude > data.tradePartnerCancelDistance) {
+					tradePartner = null;
+				}
+			}
+
 			if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
 				Interact();
 			}
 
 			if (input.inputs[(int)InputType.Look] == InputState.JustPressed) {
+				tradePartner = null;
 				if (mount != null) {
 					SetMount(null);
 				}
@@ -341,6 +350,7 @@ namespace Bowhead.Actors {
 
 			if (isCasting) {
 				SetMount(null);
+				tradePartner = null;
 				stance = Stance.Combat;
 			}
 
@@ -824,9 +834,15 @@ namespace Bowhead.Actors {
         }
 
         public void Drop(Item item) {
-            RemoveFromInventory(item);
-			var worldItem = WorldItemData.Get("chest").Spawn<WorldItem>(world, handPosition(), yaw, this, this, team);
-            worldItem.item = item;
+			if (tradePartner != null) {
+				RemoveFromInventory(item);
+				SetMoney(money + item.data.monetaryValue);
+			}
+			else {
+				RemoveFromInventory(item);
+				var worldItem = WorldItemData.Get("chest").Spawn<WorldItem>(world, handPosition(), yaw, this, this, team);
+				worldItem.item = item;
+			}
         }
 
         #endregion
@@ -853,7 +869,13 @@ namespace Bowhead.Actors {
 					}
 				}
 				else {
-
+					if (tradePartner == critter) {
+						tradePartner = null;
+					}
+					else {
+						tradePartner = critter;
+					}
+					stance = Stance.Explore;
 				}
             }
             else if (targetPos.HasValue) {
@@ -941,8 +963,13 @@ namespace Bowhead.Actors {
                 if (dist < closestDist) {
                     closestDist = dist;
                     closestItem = i;
-                    interactionType = "Get " + i.item.data.name;
-                }
+					if (i.item != null) {
+						interactionType = "Get " + i.item.data.name;
+					}
+					else {
+						interactionType = "Inspect";
+					}
+				}
             }
             foreach (var i in world.GetActorIterator<Critter>()) {
                 if (i.team == team && i.active) {
@@ -956,7 +983,12 @@ namespace Bowhead.Actors {
 					}
 					else {
 						isInteractable = true;
-						iType = "Speak";
+						if (tradePartner == i) {
+							iType = "Cancel";
+						}
+						else {
+							iType = "Greetings!";
+						}
 					}
 					if (isInteractable) {
 						float dist = (i.rigidBody.position - rigidBody.position).magnitude;
