@@ -54,8 +54,10 @@ namespace Bowhead.Actors {
         public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
         public event Action<Vector2, float> OnExplore;
+		public event Action OnInventoryChange;
 
-        public delegate void OnLandFn(float damage);
+
+		public delegate void OnLandFn(float damage);
         public event OnLandFn OnLand;
 
 		#region core functions
@@ -129,7 +131,7 @@ namespace Bowhead.Actors {
                     active = true;
 
                     var horseData = CritterData.Get("horse");
-                    var c = gameMode.SpawnCritter(horseData, position + new Vector3(3,0,0), team);
+                    var c = gameMode.SpawnCritter(horseData, position + new Vector3(3,0,0), yaw, team);
                     c.SetActive(position + new Vector3(3, 0, 0));
                     var weapon = PackData.Get("Pack").CreateItem();
                     c.SetInventorySlot(0, weapon);
@@ -354,8 +356,8 @@ namespace Bowhead.Actors {
 		// Spawning
 		////////////
 
-		public override void Spawn(EntityData d, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			base.Spawn(d, pos, instigator, owner, team);
+		public override void Spawn(EntityData d, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
+			base.Spawn(d, pos, yaw, instigator, owner, team);
 			var gameObject = GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null);
             AttachExternalGameObject(gameObject);
 
@@ -458,6 +460,8 @@ namespace Bowhead.Actors {
                     stun((float)d);
                 }
             }
+
+			gameMode.CreateAudioEvent(this, fallSpeed*data.fallSpeedLoudness);
 
             OnLand?.Invoke(d);
         }
@@ -577,9 +581,11 @@ namespace Bowhead.Actors {
                 }
             }
 
-        }
+			OnInventoryChange?.Invoke();
 
-        public bool Use(Item item) {
+		}
+
+		public bool Use(Item item) {
             if (item == null) {
                 return false;
             }
@@ -822,7 +828,7 @@ namespace Bowhead.Actors {
 
         public void Drop(Item item) {
             RemoveFromInventory(item);
-			var worldItem = WorldItemData.Get("chest").Spawn<WorldItem>(world, handPosition(), this, this, team);
+			var worldItem = WorldItemData.Get("chest").Spawn<WorldItem>(world, handPosition(), yaw, this, this, team);
             worldItem.item = item;
         }
 

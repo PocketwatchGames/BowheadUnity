@@ -25,18 +25,18 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public T Spawn<T>(World world, Vector3 pos, Actor instigator, Actor owner, Team team) where T: WorldItem {
+		public T Spawn<T>(World world, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) where T: WorldItem {
 			var item = (T)world.Spawn(itemClass, null, default(SpawnParameters));
-			Spawn(item, pos, instigator, owner, team);
+			Spawn(item, pos, yaw, instigator, owner, team);
 			return item;
 		}
 
-		public Actor Spawn(World world, Vector3 pos, Team team) {
-			return Spawn<WorldItem>(world, pos, null, null, team);
+		public Actor Spawn(World world, Vector3 pos, float yaw, Team team) {
+			return Spawn<WorldItem>(world, pos, yaw, null, null, team);
 		}
 
-		protected virtual void Spawn(WorldItem item, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			item.Spawn(this, pos, instigator, owner, team);
+		protected virtual void Spawn(WorldItem item, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
+			item.Spawn(this, pos, yaw, instigator, owner, team);
 		}
 	}
 

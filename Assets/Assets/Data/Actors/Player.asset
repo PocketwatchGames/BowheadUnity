@@ -23,6 +23,8 @@ MonoBehaviour:
   stunLimit: 1
   stunRecoveryTime: 1
   backStabAngle: 45
+  runSound: 1
+  sprintSound: 2
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
   jumpSpeed: 13
@@ -66,5 +68,6 @@ MonoBehaviour:
   temperatureSleepMinimum: 50
   temperatureSleepMaximum: 100
   fallDamageSpeed: 30
+  fallSpeedLoudness: 0.25
   dropTime: 0.5
   weightClassItemCount: 00000000060000000b0000001000000015000000

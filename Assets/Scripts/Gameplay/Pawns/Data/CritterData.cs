@@ -24,6 +24,7 @@ namespace Bowhead.Actors {
 		public float visionAngleRangeUp;
 		public float visionAngleRangeDown;
 		public float hearingDistance;
+		public float hearingDistanceExponent;
 		public float scentDistance;
 
 		public float waryCooldownTime;
@@ -45,10 +46,10 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public T Spawn<T>(World world, Vector3 pos, Actor instigator, Actor owner, Team team) where T: Critter {
+		public T Spawn<T>(World world, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) where T: Critter {
 
 			var critter = (T)world.Spawn(critterClass, null, default(SpawnParameters));
-			critter.Spawn(this, pos, instigator, owner, team);
+			critter.Spawn(this, pos, yaw, instigator, owner, team);
 
 			if (defaultLoadout != null) {
 				var loot = defaultLoadout.loot;
@@ -72,8 +73,8 @@ namespace Bowhead.Actors {
 
 		}
 
-		public Actor Spawn(World world, Vector3 pos, Team team) {
-			return Spawn<Critter>(world, pos, null, null, team);
+		public Actor Spawn(World world, Vector3 pos, float yaw, Team team) {
+			return Spawn<Critter>(world, pos, yaw, null, null, team);
 		}
 
 	};

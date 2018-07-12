@@ -33,12 +33,13 @@ namespace Bowhead.Actors {
 
 		#region core
 
-		public override void Spawn(EntityData d, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			base.Spawn(d, pos, instigator, owner, team);
+		public override void Spawn(EntityData d, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
+			base.Spawn(d, pos, yaw, instigator, owner, team);
 			behaviorPanic = CritterBehavior.Create(data.panicBehavior);
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
             position = pos;
-            spawnPosition = pos;
+			this.yaw = yaw;
+			spawnPosition = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
 			maxWater = data.maxWater;
@@ -53,7 +54,10 @@ namespace Bowhead.Actors {
             canRun = true;
             canTurn = true;
             canAttack = true;
+			onHit += OnHit;
             gameMode.CritterSpawned();
+
+			gameMode.onAudioEvent += OnAudioEvent;
 		}
 
         public void SetActive(Vector3 pos) {
@@ -74,6 +78,7 @@ namespace Bowhead.Actors {
 			base.OnDestroy();
 			if (gameMode != null) {
 				gameMode.CritterKilled();
+				gameMode.onAudioEvent -= OnAudioEvent;
 			}
 		}
 
@@ -82,7 +87,7 @@ namespace Bowhead.Actors {
             decayTime = 5;
             foreach (var i in loot) {
                 if (i != null) {
-                    var worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, position, this, null, team);
+                    var worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, position, yaw, this, null, team);
 					worldItem.item = i;
                     worldItem.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
                 }
@@ -212,7 +217,18 @@ namespace Bowhead.Actors {
 
         }
 
-        private Input_t GetInputFromAI(float dt) {
+		private void SetWary(float w, Pawn player) {
+			wary = Math.Min(data.investigateLimit, w);
+			if (wary > data.waryLimit) {
+				hasLastKnownPosition = true;
+				lastKnownPosition = player.position;
+			}
+			if (wary >= data.investigateLimit) {
+				panic = 1f;
+			}
+		}
+
+		private Input_t GetInputFromAI(float dt) {
             Input_t input = new Input_t();
             foreach (var p in world.GetActorIterator<Player>()) {
 
@@ -229,15 +245,7 @@ namespace Bowhead.Actors {
                 float waryIncrease = IsPanicked() ? data.waryIncreaseAtMaxAwarenessWhilePanicked : data.waryIncreaseAtMaxAwareness;
                 waryIncrease *= awareness;
                 if (awareness > 0) {
-                    float maxWary = 4f;
-                    wary = Math.Min(maxWary, wary + dt * waryIncrease);
-                    if (wary > data.waryLimit) {
-                        hasLastKnownPosition = true;
-                        lastKnownPosition = p.position;
-                    }
-					if (wary > data.investigateLimit) {
-						panic = 1f;
-					}
+					SetWary(wary + dt * waryIncrease, p);
 				}
                 else {
                     panic = Math.Max(0, panic - dt / data.panicCooldownTime);
@@ -276,6 +284,28 @@ namespace Bowhead.Actors {
             return input;
         }
 
+		private void OnAudioEvent(Pawn origin, float loudness) {
+
+			Player player = origin as Player;
+			if (player == null) {
+				return;
+			}
+
+			var playerBlock = gameMode.GetTerrainData(player.position + new Vector3(0, -0.1f, 0));
+
+			var diff = origin.position - position;
+			float distance = diff.magnitude;
+
+			float playerSound = loudness * Mathf.Pow(Mathf.Clamp01(1f - (distance / data.hearingDistance)), data.hearingDistanceExponent);
+
+			SetWary(wary + playerSound, origin);
+		}
+
+		private void OnHit(Pawn attacker) {
+			SetWary(data.investigateLimit, attacker);
+			panic = 1;
+		}
+
         float CanSmell(Player player) {
             float basicSmellDist = 1;
 
@@ -301,12 +331,22 @@ namespace Bowhead.Actors {
 
             return Math.Max(smell, windCarrySmell);
         }
-		float CanHear(Player player) {
+		float CanHear(Pawn player) {
+			if (player.mount != null) {
+				player = player.mount;
+			}
             if (player.activity != Activity.OnGround)
                 return 0;
-            float playerSpeed = player.velocity.magnitude / player.data.groundMaxSpeed;
-            if (playerSpeed == 0)
-                return 0;
+
+			float playerSpeed = player.velocity.magnitude;
+			if (playerSpeed == 0)
+				return 0;
+
+			float playerSpeedLevel = player.data.sprintSound;
+			var playerBlock = gameMode.GetTerrainData(position + new Vector3(0, -0.1f, 0));
+			if (playerSpeed < player.data.groundMaxSpeed*playerBlock.speedModifier*1.01f) {
+				playerSpeedLevel = player.data.runSound;
+			}
 
             var diff = player.position - position;
             float distance = diff.magnitude;
@@ -314,11 +354,11 @@ namespace Bowhead.Actors {
             if (distance == 0)
                 return 1f;
 
-            float playerSound = Mathf.Clamp(1f - (distance / (data.hearingDistance * playerSpeed)), 0f, 1f);
+            float playerSound = Mathf.Pow(Mathf.Clamp01(1f - (distance / (data.hearingDistance * playerSpeedLevel))), data.hearingDistanceExponent);
             if (playerSound <= 0)
                 return 0;
 
-			var playerBlock = gameMode.GetTerrainData(player.position + new Vector3(0,-0.1f,0));
+
 			playerSound *= playerBlock.soundModifier;
 
             return playerSound;

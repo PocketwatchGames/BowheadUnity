@@ -22,7 +22,9 @@ MonoBehaviour:
   dodgeTime: 0
   stunLimit: 1
   stunRecoveryTime: 3
-  backStabAngle: 45
+  backStabAngle: 90
+  runSound: 0
+  sprintSound: 0
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
   jumpSpeed: 8
@@ -64,7 +66,7 @@ MonoBehaviour:
   investigateLimit: 3
   visionWeight: 2
   smellWeight: 1
-  hearingWeight: 2
+  hearingWeight: 1
   dayVisionDistance: 20
   nightVisionDistance: 10
   visionAngleExponent: 2
@@ -73,6 +75,7 @@ MonoBehaviour:
   visionAngleRangeUp: 15
   visionAngleRangeDown: 60
   hearingDistance: 20
+  hearingDistanceExponent: 2
   scentDistance: 0
   waryCooldownTime: 3
   panicCooldownTime: 8

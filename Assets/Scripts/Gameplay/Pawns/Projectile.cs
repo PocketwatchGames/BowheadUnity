@@ -12,6 +12,7 @@ namespace Bowhead.Actors {
 
 		public Team team;
 		public Vector3 velocity;
+		public Actor owner;
 
 		#endregion
 
@@ -26,6 +27,7 @@ namespace Bowhead.Actors {
 			this.team = team;
 			SetLifetime(this.data.lifetime);
 			this.velocity = velocity;
+			this.owner = owner;
 		}
 
 		public override void Tick() {
@@ -42,7 +44,7 @@ namespace Bowhead.Actors {
 				var target = (Pawn)hit.transform.FindServerActorUpwards();
 				if (target != null) {
 					if (target.team != team) {
-						target.damage(data.damage);
+						target.hit(this, owner);
 						Destroy();
 						return;
 					}

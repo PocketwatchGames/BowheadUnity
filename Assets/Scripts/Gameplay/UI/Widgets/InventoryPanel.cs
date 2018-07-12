@@ -15,8 +15,13 @@ namespace Bowhead.Client.UI {
         InventorySlot _inventorySlotPrefab;
 		[SerializeField]
 		Transform _inventoryItems;
+		[SerializeField]
+		UnityEngine.UI.Text _money;
+		[SerializeField]
+		UnityEngine.UI.Text _weight;
 
-        public int slotMargin = 8;
+
+		public int slotMargin = 8;
         private Vector3 slotSize;
 
         public int inventorySelected = 0;
@@ -44,10 +49,10 @@ namespace Bowhead.Client.UI {
             var r = _inventorySlotPrefab.GetComponent<RectTransform>().rect;
             slotSize = new Vector3(r.width, r.height, 0);
 
-            _player.OnInventoryChange += OnInventoryChange;
+			_player.OnMoneyChange += onMoneyChange;
+			_player.OnInventoryChange += OnInventoryChange;
 
             _mainContainer = Instantiate(_inventoryContainerPrefab, _inventoryItems, false);
-            Rebuild();
 
 			_buttonHintUp.SetButton("^");
 			_buttonHintDown.SetButton("v");
@@ -55,6 +60,11 @@ namespace Bowhead.Client.UI {
 
 			SetRearranging(false);
 
+			OnInventoryChange();
+		}
+
+		private void onMoneyChange() {
+			_money.text = _player.money.ToString();
 		}
 
 		private void OnInventoryChange() {
@@ -70,6 +80,7 @@ namespace Bowhead.Client.UI {
 			SelectInventory(inventorySelected);
 			OnInventorySelected();
 
+			_weight.text = _player.weight.ToString();
 		}
 
 		private void Rebuild() {

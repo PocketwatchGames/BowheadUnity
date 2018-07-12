@@ -23,8 +23,8 @@ namespace Bowhead.Actors {
 	}
 
 	public abstract class Pawn<T, D> : Pawn where T : Pawn<T, D> where D : PawnData {
-		public override void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			base.Spawn(data, pos, instigator, owner, team);
+		public override void Spawn(EntityData data, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
+			base.Spawn(data, pos, yaw, instigator, owner, team);
 			this.data = (D)data;
 		}
 		
@@ -100,6 +100,8 @@ namespace Bowhead.Actors {
         [SerializeField]
         protected Item[] _inventory = new Item[Pawn.MaxInventorySize];
 
+		protected event Action<Pawn> onHit;
+
         #endregion
 
 
@@ -139,8 +141,6 @@ namespace Bowhead.Actors {
             public Vector3 velocity;
         };
 		        
-        public delegate void OnInventoryChangeFn();
-        public event OnInventoryChangeFn OnInventoryChange;
 
 		// This field is a HACK and is null on clients
 		public Server.BowheadGame gameMode {
@@ -148,7 +148,7 @@ namespace Bowhead.Actors {
 			private set;
 		}
 
-		public virtual void Spawn(EntityData data, Vector3 pos, Actor instigator, Actor owner, Team team) {
+		public virtual void Spawn(EntityData data, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
 			base.ConstructEntity(data);
 			this.data = (PawnData)data;
 			gameMode = (Server.BowheadGame)((Server.ServerWorld)world).gameMode;
@@ -1090,7 +1090,13 @@ namespace Bowhead.Actors {
             blood.transform.localPosition = waistPosition() - rigidBody.position;
         }
 
-        public void hit(Pawn attacker, Weapon weapon, WeaponData.AttackData attackData) {
+		public void hit(Projectile projectile, Actor owner) {
+			damage(projectile.data.damage);
+
+			onHit?.Invoke(owner as Pawn);
+		}
+
+		public void hit(Pawn attacker, Weapon weapon, WeaponData.AttackData attackData) {
             float remainingStun;
             float remainingDamage;
 
@@ -1155,10 +1161,13 @@ namespace Bowhead.Actors {
 					moveImpulseTimer = 0;
 				}
 			}
+
+			onHit?.Invoke(attacker);
+
 		}
 
 
-        virtual public void LandOnGround() {
+		virtual public void LandOnGround() {
 
         }
 
@@ -1182,8 +1191,6 @@ namespace Bowhead.Actors {
             _inventory[index] = item;
 
             item?.OnSlotChange(index, this);
-
-            OnInventoryChange?.Invoke();
         }
 
         public Item GetInventorySlot(int index) {
@@ -1216,7 +1223,7 @@ namespace Bowhead.Actors {
 
 			if (mount != null) {
                 go.transform.parent = mount.go.transform;
-                go.transform.localPosition = mount.headPosition()-mount.position;
+                go.transform.localPosition = new Vector3(0,1.0f,0);
 				go.transform.localRotation = Quaternion.identity;
             }
             else {

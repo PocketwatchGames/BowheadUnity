@@ -12,7 +12,7 @@ namespace Bowhead.Actors {
 	};
 
 	public interface ISpawnPointSupport {
-		Actor Spawn(World world, Vector3 pos, Team team);
+		Actor Spawn(World world, Vector3 pos, float yaw, Team team);
 	};
 
     [CreateAssetMenu(menuName = "EntityData/SpawnPoint")]
@@ -41,7 +41,7 @@ namespace Bowhead.Actors {
 			return arr;
 		}
 
-		public T Spawn<T>(Server.GameMode gameMode, Vector3 pos) where T: Actor {
+		public T Spawn<T>(Server.GameMode gameMode, Vector3 pos, float yaw) where T: Actor {
 			Team team;
 			switch (_type) {
 				default:
@@ -54,7 +54,7 @@ namespace Bowhead.Actors {
 
 			var spawnFn = (ISpawnPointSupport)_entityData;
 			if (spawnFn != null) {
-				return (T)spawnFn.Spawn(gameMode.world, pos, team);
+				return (T)spawnFn.Spawn(gameMode.world, pos, yaw, team);
 			}
 
 			return null;
