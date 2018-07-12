@@ -18,6 +18,33 @@ namespace Bowhead {
 		void OnMatchFreeze();
 		void OnMatchExit();
 	}
+
+	public struct GameTime {
+		public const int SECONDS_PER_MINUTE = 60;
+		public const int SECONDS_PER_HOUR = SECONDS_PER_MINUTE*60;
+		public const int SECONDS_PER_DAY = SECONDS_PER_HOUR*24;
+		
+		public int seconds;
+		public int minutes;
+		public int hours;
+		public int days;
+
+		public bool isNight => hours >= 7;
+		public bool isDay => !isNight;
+
+		public static GameTime FromSeconds(int seconds) {
+			var gt = default(GameTime);
+
+			gt.days = seconds / SECONDS_PER_DAY;
+			seconds -= gt.days*SECONDS_PER_DAY;
+			gt.hours = seconds / SECONDS_PER_HOUR;
+			seconds -= gt.hours*SECONDS_PER_HOUR;
+			gt.minutes = seconds / SECONDS_PER_MINUTE;
+			gt.seconds = seconds - (gt.minutes*SECONDS_PER_MINUTE);
+
+			return gt;
+		}
+	};
 }
 
 namespace Bowhead.Server {
@@ -38,6 +65,11 @@ namespace Bowhead.Server {
 	public abstract class GameMode : IDisposable {
 		const float DELAY_UNTIL_MATCH_FREEZE = 15;
 		const float DELAY_UNTIL_EXIT = 20;
+		const float SECONDS_IN_24_GAMETIME_HOURS = 10*60;
+		const float SECONDS_IN_24_REALTIME_HOURS = 60*60*24;
+		const float TIMESCALE = SECONDS_IN_24_REALTIME_HOURS / SECONDS_IN_24_GAMETIME_HOURS;
+		const float GAMETIME_START = 8*60*60;
+
 		public enum EMatchState {
 			Traveling,
 			WaitingForPlayers,
@@ -54,8 +86,9 @@ namespace Bowhead.Server {
 		EMatchState _matchState;
 		GameState _gameState;
 		float _timer;
-		float _nonReplicatedTimer;
-		double _gameTime;
+		double _elapsedTime;
+		double _elapsedGameTime;
+		GameTime _gameTime;
 		int _timerAsInt;
 		bool _oldOvertimeEnabled;
 		bool _endMatch;
@@ -73,6 +106,7 @@ namespace Bowhead.Server {
 			_roPlayers = new ReadOnlyCollection<ServerPlayerController>(_players);
 			world.worldStreaming.onChunkLoaded += OnChunkLoaded;
 			world.worldStreaming.onChunkUnloaded += OnChunkUnloaded;
+			_elapsedGameTime = GAMETIME_START;
 		}
 
 		public void Dispose() {
@@ -96,6 +130,8 @@ namespace Bowhead.Server {
 				case EMatchState.WaitingForPlayers:
 					TickTravelPlayers();
 					_readyForConnect = true;
+					_elapsedTime = 0;
+					_elapsedGameTime = GAMETIME_START;
 					if (allPlayersLoaded) {
 							_timer = matchPlayTime;
 							if (matchIsTimed) {
@@ -114,16 +150,18 @@ namespace Bowhead.Server {
 							}
 						}
 #endif
-				}
+					}
 				break;
 				case EMatchState.MatchInProgress: goto case EMatchState.MatchOvertime;
 				case EMatchState.MatchOvertime:
+					_elapsedTime += dt;
+					_elapsedGameTime += dt*TIMESCALE;
+
 					if (matchIsTimed) {
 						_timer -= dt;
 					}
 
 					if (matchIsOverFlag) {
-						_nonReplicatedTimer = Mathf.Min(delayUntilMatchFreeze, delayUntilExit);
 						_timer = delayUntilExit;
 
 						Debug.Log("Match is over and will freeze in " + _timer + " seconds.");
@@ -139,9 +177,8 @@ namespace Bowhead.Server {
 					}
 				break;
 				case EMatchState.MatchComplete:
-					_nonReplicatedTimer -= dt;
 					_timer -= dt;
-					if (_nonReplicatedTimer <= 0f) {
+					if (_timer <= 0f) {
 						Debug.Log("Match is frozen and will exit in " + _timer + " seconds.");
 						SetMatchState(EMatchState.MatchFrozen);
 					}
@@ -160,7 +197,8 @@ namespace Bowhead.Server {
 				}
 				break;
 			}
-			
+
+			_gameTime = GameTime.FromSeconds(matchTimer);
 
 			if ((_oldOvertimeEnabled != overtimeFlag) || (_timerAsInt != matchTimer)) {
 				ReplicateMatchState();
@@ -415,7 +453,7 @@ namespace Bowhead.Server {
 				if (_timer < 0f) {
 					return Mathf.Max(Mathf.CeilToInt(matchOvertime + _timer), 0);
 				} else {
-					return Mathf.Max(Mathf.CeilToInt(_timer), 0);
+					return (int)Math.Ceiling(_elapsedGameTime);
 				}
 			}
 		}
@@ -643,5 +681,7 @@ namespace Bowhead.Server {
 			get;
 			private set;
 		}
+
+		public GameTime gameTime => _gameTime;
 	}
 }

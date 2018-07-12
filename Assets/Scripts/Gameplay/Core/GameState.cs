@@ -46,6 +46,8 @@ namespace Bowhead.Actors {
 		Client.UI.HUD _hud;
 		bool _diposeStreaming;
 		WorldStreaming.IWorldStreaming _streaming;
+		GameTime _gameTime;
+		EnviroSky _sky;
 
 		readonly ActorRPC<byte, bool, int> rpc_Multicast_SetMatchState;
 
@@ -62,6 +64,7 @@ namespace Bowhead.Actors {
 			_gameModeClass = gameModeType.FullName;
 			_matchPlayTime = Mathf.FloorToInt(gameMode.matchPlayTime);
 			_matchIsTimed = gameMode.matchIsTimed;
+			_matchTimer = gameMode.matchTimer;
 		}
 
 		public override void Tick() {
@@ -93,6 +96,23 @@ namespace Bowhead.Actors {
 			if (!GameManager.instance.isServer) {
 				_streaming = CreateWorldStreaming();
 			}
+			
+			_gameTime = GameTime.FromSeconds(_matchTimer);
+		}
+
+		public override void OnLevelStart() {
+			base.OnLevelStart();
+
+			_sky = GameObject.FindObjectOfType<EnviroSky>();
+			SyncEnviroSkyTime();
+		}
+
+		void SyncEnviroSkyTime() {
+			_sky.GameTime.Years = 1;
+			_sky.GameTime.Days = gameTime.days + 1;
+			_sky.GameTime.Hours = gameTime.hours;
+			_sky.GameTime.Minutes = gameTime.minutes;
+			_sky.GameTime.Seconds = gameTime.seconds;
 		}
 
 		protected abstract WorldStreaming.IWorldStreaming CreateWorldStreaming();
@@ -196,6 +216,10 @@ namespace Bowhead.Actors {
 
 			if (_matchTimer != matchTimer) {
 				_matchTimer = matchTimer;
+				_gameTime = GameTime.FromSeconds(_matchTimer);
+				if (_sky != null) {
+					SyncEnviroSkyTime();
+				}
 				OnMatchTimer();
 			}
 		}
@@ -336,6 +360,8 @@ namespace Bowhead.Actors {
 			get;
 			private set;
 		}
+
+		public GameTime gameTime => _gameTime;
 
 		public WorldStreaming.IWorldStreaming worldStreaming {
 			get;

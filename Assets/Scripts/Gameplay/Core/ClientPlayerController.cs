@@ -16,7 +16,7 @@ namespace Bowhead.Client.Actors {
 		Vector2 _mapMins;
 		Vector2 _mapMaxs;
 		Camera _camera;
-
+		
 		static bool IsDualAnalogAiming = true;
 		bool _hideCursor = false;
 		
@@ -111,7 +111,6 @@ namespace Bowhead.Client.Actors {
 				TickPlayerInput(world.deltaTime, gameState.playerCanIssueCommands);
 				ClickThrough.Pop();
 			}
-
 		}
 
 		public override void LateTick() {
@@ -148,9 +147,14 @@ namespace Bowhead.Client.Actors {
 			GameManager.instance.CloseLoadingScreen();
 			GameManager.instance.StartPlayOnAwakeSounds();
 			gameState.hud.OnLevelStart();
-			_cameraController = new CameraController(Camera.main, GameManager.instance.clientData.cameraData);
+			_camera = Camera.main;
+			_cameraController = new CameraController(_camera, GameManager.instance.clientData.cameraData);
 			_cameraController.SetTarget(playerPawn);
             rpc_Server_ClientHasLoaded.Invoke();
+
+			var sky = GameObject.FindObjectOfType<EnviroSky>();
+			sky.Player = playerPawn.go;
+			sky.PlayerCamera = _camera;
 		}
 
 		protected override void Dispose(bool disposing) {

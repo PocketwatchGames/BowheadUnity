@@ -26,11 +26,11 @@ public class FPSController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		moveFB = Input.GetAxis ("Vertical") * speed;
-		moveLR = Input.GetAxis ("Horizontal") * speed;
+		moveFB = Input.GetAxis ("MoveVertical") * speed;
+		moveLR = Input.GetAxis ("MoveHorizontal") * speed;
 
-		rotX = Input.GetAxis ("Mouse X") * sensitivity;
-		rotY -= Input.GetAxis ("Mouse Y") * sensitivity;
+		rotX = Input.GetAxis ("MouseAxis1") * sensitivity;
+		rotY -= Input.GetAxis ("MouseAxis2") * sensitivity;
 
 		rotY = Mathf.Clamp (rotY, -60f, 60f);
 
