@@ -14,11 +14,6 @@ namespace Bowhead.Client.UI {
 		ButtonHint _buttonHintStance;
 
 		[SerializeField]
-		UnityEngine.UI.Text _money;
-		[SerializeField]
-		UnityEngine.UI.Text _weight;
-
-		[SerializeField]
         Player _player;
 
 		[SerializeField]
@@ -59,15 +54,7 @@ namespace Bowhead.Client.UI {
 
         public void Init(Player player) {
             _player = player;
-            _player.OnMoneyChange += onMoneyChange;
-            _player.OnInventoryChange += OnInventoryChange;
         }
 
-        private void onMoneyChange() {
-			_money.text = _player.money.ToString();
-        }
-        private void OnInventoryChange() {
-			_weight.text = _player.weight.ToString();
-        }
     }
 }

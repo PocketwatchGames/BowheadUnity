@@ -18,8 +18,8 @@ namespace Bowhead.Actors {
 		[SerializeField]
 		LootItem[] _items;
 
-		protected override void Spawn(WorldItem item, Vector3 pos, Actor instigator, Actor owner, Team team) {
-			base.Spawn(item, pos, instigator, owner, team);
+		protected override void Spawn(WorldItem item, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
+			base.Spawn(item, pos, yaw, instigator, owner, team);
 
 			if ((_items != null) && (_items.Length > 0)) {
 				float totalp = 0f;

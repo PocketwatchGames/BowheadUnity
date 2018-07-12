@@ -15,7 +15,8 @@ namespace Bowhead.Actors {
         public float temperatureSleepMinimum;
         public float temperatureSleepMaximum;
         public float fallDamageSpeed;
-        public float dropTime;
+		public float fallSpeedLoudness;
+		public float dropTime;
 		public int[] weightClassItemCount;
 
 		public Type playerClass { get; private set; }
@@ -30,9 +31,9 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public T Spawn<T>(World world, Vector3 pos, Actor instigator, Actor owner, Team team) where T : Player {
+		public T Spawn<T>(World world, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) where T : Player {
 			var player = (T)world.Spawn(playerClass, null, default(SpawnParameters));
-			player.Spawn(this, pos, instigator, owner, team);
+			player.Spawn(this, pos, yaw, instigator, owner, team);
 			return player;
 		}
 	};

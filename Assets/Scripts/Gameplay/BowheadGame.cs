@@ -105,6 +105,8 @@ namespace Bowhead.Server {
 		int numCritters;
 		FastNoise_t noise = FastNoise_t.New();
 
+		public event Action<Pawn, float> onAudioEvent;
+
 		protected override void PrepareForMatchInProgress() {
 			base.PrepareForMatchInProgress();
 
@@ -188,7 +190,7 @@ namespace Bowhead.Server {
 				break;
 			}
 
-			spawnPoint.Spawn<Actor>(this, decoration.pos);
+			spawnPoint.Spawn<Actor>(this, decoration.pos, 0);
 		}
 
 		#region perlin utils
@@ -219,11 +221,11 @@ namespace Bowhead.Server {
 		}
 
 		Player SpawnPlayer() {
-			return PlayerData.Get("player").Spawn<Player>(world, new Vector3(16, 600, 16), null, null, null);
+			return PlayerData.Get("player").Spawn<Player>(world, new Vector3(16, 600, 16), 0, null, null, null);
 		}
 
-		public Critter SpawnCritter(CritterData data, Vector3 pos, Team team) {
-			var critter = data.Spawn<Critter>(world, pos, null, null, team);
+		public Critter SpawnCritter(CritterData data, Vector3 pos, float yaw, Team team) {
+			var critter = data.Spawn<Critter>(world, pos, yaw, null, null, team);
 			
 			return critter;
 		}
@@ -248,7 +250,7 @@ namespace Bowhead.Server {
 					pos.x += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
 					pos.z += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
 
-					SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos, monsterTeam);
+					SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos, UnityEngine.Random.Range(0,360)*Mathf.Deg2Rad, monsterTeam);
 					break;
 				}
 			}
@@ -379,10 +381,19 @@ namespace Bowhead.Server {
 			}
 		}
 		#endregion
+
+
+		#region World Events
+
+		public void CreateAudioEvent(Pawn origin, float loudness) {
+			onAudioEvent?.Invoke(origin, loudness);
+		}
+
+		#endregion
 	}
 
 
-    public class BowheadGame : BowheadGame<GSBowheadGame> {
+	public class BowheadGame : BowheadGame<GSBowheadGame> {
 		public BowheadGame(ServerWorld world) : base(world) { }
 	}
 
