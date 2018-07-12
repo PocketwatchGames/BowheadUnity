@@ -231,10 +231,10 @@ namespace Bowhead {
 
 
 								float humidity = GetHumidity(ref noise, xpos, zpos);
-								float forestPower = (1.0f - (GetPerlinNormal(ref noise, xpos, zpos, NoiseFloatScale._01) * GetPerlinNormal(ref noise, xpos + 64325, zpos + 6543, NoiseFloatScale._005))) * Mathf.Pow(humidity, 2) * (1.0f - Mathf.Pow(rock, 4));
-								float cutoff = 0.05f;
+								float forestPower = (1.0f - (GetPerlinNormal(ref noise, xpos, zpos, NoiseFloatScale._01) * GetPerlinNormal(ref noise, xpos + 64325, zpos + 6543, NoiseFloatScale._005))) * Mathf.Pow(humidity, 1) * (1.0f - Mathf.Pow(rock, 2));
+								float cutoff = 0.1f;
 								if (forestPower > cutoff) {
-									float forestLimit = Mathf.Pow(1.0f - (forestPower - cutoff) / (1.0f - cutoff), 8) * 100 + 4;
+									float forestLimit = Mathf.Pow(1.0f - (forestPower - cutoff) / (1.0f - cutoff), 8) * 200 + 4;
 									if (GetWhiteNoise(ref noise, xpos, ypos, zpos) < 1.0f / forestLimit) {
 										float temperature = GetTemperature(ref noise, xpos, ypos, zpos);
 
@@ -307,9 +307,11 @@ namespace Bowhead {
 					}
 				}
 
-				var whitenoise = noise.GetWhiteNoise(chunkPos.x, chunkPos.y, chunkPos.z);
-
-				if (whitenoise > 0.98f) {
+				int voxelsPerTower = 400;
+				Vector2Int towerRegion = new Vector2Int(Mathf.FloorToInt((chunkPos.x*VOXEL_CHUNK_SIZE_XZ)/ voxelsPerTower), Mathf.FloorToInt((chunkPos.z * VOXEL_CHUNK_SIZE_XZ) / voxelsPerTower));
+				Vector2Int towerWorldPosition = new Vector2Int(towerRegion.x*voxelsPerTower+(int)(GetWhiteNoise(ref noise, towerRegion.x, 0, towerRegion.y) * voxelsPerTower), towerRegion.y * voxelsPerTower + (int)(GetWhiteNoise(ref noise, towerRegion.x+100, 0, towerRegion.y) * voxelsPerTower));
+				var towerChunkPos = new Vector2Int(towerWorldPosition.x / VOXEL_CHUNK_SIZE_XZ, towerWorldPosition.y / VOXEL_CHUNK_SIZE_XZ);
+				if (towerChunkPos.x == chunkPos.x && towerChunkPos.y == chunkPos.z) {
 					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x+100, chunkPos.y, chunkPos.z) * 30 + 12);
 					int x = 8;
 					int z = 8;
@@ -323,7 +325,7 @@ namespace Bowhead {
 					}
 				}
 
-				if (whitenoise < -0.98f) {
+				if (GetWhiteNoise(ref noise, chunkPos.x+632, 0, chunkPos.z) < 0.01f) {
 					chunk.AddDecoration(
 						new Decoration_t() {
 							pos = chunkPos + new Vector3(VOXEL_CHUNK_SIZE_XZ / 2, VOXEL_CHUNK_SIZE_Y - 1, VOXEL_CHUNK_SIZE_XZ / 2),
@@ -589,19 +591,23 @@ namespace Bowhead {
                                 }
 								int modElevation = (k + stepIndex) % 7;
 
-								if (modElevation < 3) {
-									pos.y = k + y;
-									if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
-										var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-										if (i == -4 || i == 4 || j==-4 || j == 4) {
+								pos.y = k + y;
+								if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
+									var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+									if (modElevation < 3) {
+										if (i == -4 || i == 4 || j == -4 || j == 4) {
 											chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
-										} else {
-											if (modElevation == 2) {
-												continue;
-											}
+										}
+										else if (modElevation == 2) {
+											chunk.voxeldata[ofs] = EVoxelBlockType.Air;
+										}
+										else {
 											chunk.voxeldata[ofs] = EVoxelBlockType.Rock;
 										}
 										chunk.flags |= EChunkFlags.SOLID;
+									}
+									else {
+										chunk.voxeldata[ofs] = EVoxelBlockType.Air;
 									}
 								}
 							}
