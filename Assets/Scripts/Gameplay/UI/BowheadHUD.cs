@@ -20,8 +20,12 @@ namespace Bowhead.Client.UI {
 			public Transform wmMarker;
 
 			public void SetAsFirstSibling() {
-				mmMarker.SetAsFirstSibling();
-				wmMarker.SetAsFirstSibling();
+				if (mmMarker != null) {
+					mmMarker.SetAsFirstSibling();
+				}
+				if (wmMarker != null) {
+					wmMarker.SetAsFirstSibling();
+				}
 			}
 
 			public Vector2 worldPosition {
