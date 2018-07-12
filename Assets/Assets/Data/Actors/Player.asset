@@ -61,8 +61,8 @@ MonoBehaviour:
     _assetPath: Actors/Player
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Player.prefab
   mapMarker:
-    _assetPath: MapPlayerMarker
-    _editorPath: Assets/Assets/Prefabs/Resources/MapPlayerMarker.prefab
+    _assetPath: 
+    _editorPath: 
   temperatureSleepMinimum: 50
   temperatureSleepMaximum: 100
   fallDamageSpeed: 30

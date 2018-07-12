@@ -15,7 +15,7 @@ MonoBehaviour:
   bloodDecalMaterials: []
   explosionDecalMaterials: []
   loadingCanvasPrefab: {fileID: 0}
-  minimapPrefab: {fileID: 114427837530928932, guid: 05eb4574dd4d3c44ab6619125ff2d8a4,
+  mapFlagIconPrefab: {fileID: 1953719483150920, guid: 8d02812f4935d5846b41364b2d022bf5,
     type: 2}
   worldMapPrefab: {fileID: 114427837530928932, guid: 1030da55241158a41a0f54e186a963fa,
     type: 2}

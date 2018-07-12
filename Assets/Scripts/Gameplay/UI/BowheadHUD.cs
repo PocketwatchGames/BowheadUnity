@@ -9,7 +9,6 @@ namespace Bowhead.Client.UI {
 		InventoryPanel _inventory;
 		PlayerStatePanel _playerState;
         ButtonHint _interactHint;
-		Map _minimap;
 		Map _worldmap;
         Compass _compass;
 
@@ -30,8 +29,12 @@ namespace Bowhead.Client.UI {
 					return mmMarker.localPosition;
 				}
 				set {
-					mmMarker.localPosition = value;
-					wmMarker.localPosition = value;
+					if (mmMarker != null) {
+						mmMarker.localPosition = value;
+					}
+					if (wmMarker != null) {
+						wmMarker.localPosition = value;
+					}
 				}
 			}
 
@@ -49,7 +52,6 @@ namespace Bowhead.Client.UI {
 			_inventory = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPanelPrefab, hudCanvas.transform, false);
 			_playerState = GameObject.Instantiate(GameManager.instance.clientData.hudPlayerStatePanelPrefab, hudCanvas.transform, false);
             _interactHint = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, hudCanvas.transform, false);
-            _minimap = GameObject.Instantiate(GameManager.instance.clientData.minimapPrefab, hudCanvas.transform, false);
             _worldmap = GameObject.Instantiate(GameManager.instance.clientData.worldMapPrefab, hudCanvas.transform, false);
 			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
 			_weaponChargeLeft = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
@@ -69,7 +71,6 @@ namespace Bowhead.Client.UI {
 			_playerState.Init(player);
             _compass.Init(Camera.main, player);
 
-			_minimap.SetStreaming(player.world.worldStreaming);
 			_worldmap.SetStreaming(player.world.worldStreaming);
 			_worldmap.SetOrigin(0, 0);
 
@@ -90,9 +91,11 @@ namespace Bowhead.Client.UI {
 
 		private void OnExplore(Vector2 pos, float radius) {
 			var chunkPos = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.y)));
-            _minimap.SetOrigin(chunkPos.cx, chunkPos.cz);
-            _minimap.RevealArea(new Vector2(pos.x, pos.y), radius);
 			_worldmap.RevealArea(new Vector2(pos.x, pos.y), radius);
+			if (GameManager.instance.clientData.mapFlagIconPrefab != null) {
+				var marker = CreateMapMarker(GameManager.instance.clientData.mapFlagIconPrefab, EMapMarkerStyle.Normal);
+				marker.worldPosition = pos;
+			}
         }
 
         public override void Tick(float dt) {
@@ -112,22 +115,15 @@ namespace Bowhead.Client.UI {
 			_interactHint.SetButton("X");
             _interactHint.SetHint(interaction);
 
-			if (localPlayer.playerPawn.active) {
-				var pos = World.WorldToChunk(World.Vec3ToWorld(localPlayer.playerPawn.go.transform.position));
-				_minimap.SetOrigin(pos.cx, pos.cz);
-			}
-
 			if (Input.GetButtonDown("Start")) {
 				ShowWorldMap(!worldMapVisible);
 			}
         }
 
 		public override IMapMarker CreateMapMarker<T>(T prefab, EMapMarkerStyle style) {
-			var mmMarker = _minimap.CreateMarker(prefab, style);
 			var wmMarker = _worldmap.CreateMarker(prefab, style);
 
 			return new MapMarker() {
-				mmMarker = mmMarker.GetGameObject().transform,
 				wmMarker = wmMarker.GetGameObject().transform
 			};
 		}
