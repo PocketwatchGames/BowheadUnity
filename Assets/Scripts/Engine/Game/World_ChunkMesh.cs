@@ -1265,7 +1265,7 @@ public partial class World {
 				}
 
 				for (int i = 0; i < 6; ++i) {
-					if ((_vnc[i] == EVoxelBlockContents.None) && (_vnc[i ^ 1] != EVoxelBlockContents.None)) { // we can only collapse faces whose opposite face is hidden.
+					if ((_vnc[i] == EVoxelBlockContents.None) && (_vnc[i ^ 1] >= contents)) { // we can only collapse faces whose opposite face is hidden.
 
 						int numOver2 = 0;
 
@@ -1345,7 +1345,7 @@ public partial class World {
 				var contents = _tables.blockContents[(int)voxel.type];
 
 				for (int i = 0; i < 6; ++i) {
-					if (_vnc[i] >= contents) {
+					if (_vnc[i] != EVoxelBlockContents.None) {
 						// flag any neighboring voxels if they have vertex shifts.
 
 						var axis = i / 2;
@@ -1674,10 +1674,35 @@ public partial class World {
 			void EmitVoxelFaces(int index, int x, int y, int z, EVoxelBlockType blocktype, bool isBorderVoxel) {
 				var voxel = _voxels[index];
 				var contents = _tables.blockContents[(int)blocktype];
-				
+
 				// emit cube tris that are not degenerate from collapse
 				for (int i = 0; i < 6; ++i) {
-					if (voxel->neighbors[i] == 1) {
+					if (_vnc[i] < contents) {
+						Color32 color;
+						uint smg;
+						float factor;
+						int submesh;
+						int layer;
+
+						GetBlockColorAndSmoothing(blocktype, out color, out smg, out factor, out submesh, out layer);
+
+						var v0 = GetVoxelVert(voxel, _tables.voxelFaces[i][0]);
+
+						for (int k = 1; k <= 2; ++k) {
+							var v1 = GetVoxelVert(voxel, _tables.voxelFaces[i][k]);
+							var v2 = GetVoxelVert(voxel, _tables.voxelFaces[i][k + 1]);
+
+							if ((v0 != v1) && (v0 != v2) && (v1 != v2)) {
+								_smoothVerts.EmitTri(
+									x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
+									x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
+									x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
+									smg, factor, color, submesh, layer, isBorderVoxel
+								);
+							}
+
+						}
+					} else if (voxel->neighbors[i] == 1) {
 						// hole-filling:
 						// a neighboring voxel on this side may have collapsed a vertex exposing a triangle on this face.
 
@@ -1742,34 +1767,18 @@ public partial class World {
 										x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
 										smg, factor, color, submesh, layer, isBorderVoxel
 									);
+
+									// emit backface?
+									if (_vnc[i] > contents) {
+										_smoothVerts.EmitTri(
+											x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
+											x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
+											x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
+											smg, factor, color, submesh, layer, isBorderVoxel
+										);
+									}
 								}
 							}
-						}
-
-					} else if (_vnc[i] < contents) {
-						Color32 color;
-						uint smg;
-						float factor;
-						int submesh;
-						int layer;
-
-						GetBlockColorAndSmoothing(blocktype, out color, out smg, out factor, out submesh, out layer);
-
-						var v0 = GetVoxelVert(voxel, _tables.voxelFaces[i][0]);
-
-						for (int k = 1; k <= 2; ++k) {
-							var v1 = GetVoxelVert(voxel, _tables.voxelFaces[i][k]);
-							var v2 = GetVoxelVert(voxel, _tables.voxelFaces[i][k + 1]);
-
-							if ((v0 != v1) && (v0 != v2) && (v1 != v2)) {
-								_smoothVerts.EmitTri(
-									x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
-									x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
-									x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
-									smg, factor, color, submesh, layer, isBorderVoxel
-								);
-							}
-
 						}
 					}
 				}
