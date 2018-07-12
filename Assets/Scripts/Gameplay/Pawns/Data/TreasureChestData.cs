@@ -39,6 +39,14 @@ namespace Bowhead.Actors {
 							p += i.probability/totalp;
 							if (r <= p) {
 								item.item = i.itemClass.CreateItem();
+								Loot loot;
+								Money money;
+								if ((loot = (item.item as Loot)) != null) {
+									loot.count = GameManager.instance.RandomRange(i.count.x, i.count.y);
+								}
+								else if ((money = (item.item as Money)) != null) {
+									money.count = GameManager.instance.RandomRange(i.count.x, i.count.y);
+								}
 								break;
 							}
 						}

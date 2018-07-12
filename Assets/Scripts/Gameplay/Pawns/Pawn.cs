@@ -1212,6 +1212,8 @@ namespace Bowhead.Actors {
 
             mount = m;
 
+			skidding = false;
+
             if (mount != null) {
                 mount.driver = this;
             }

@@ -32,14 +32,14 @@ MonoBehaviour:
     count:
       x: 1
       y: 1
-    probability: 1
+    probability: 0
   - itemClass: {fileID: 11400000, guid: 1966101ed621fdc4589312e9eb8da18e, type: 2}
     count:
       x: 1
       y: 1
-    probability: 1
+    probability: 0
   - itemClass: {fileID: 11400000, guid: 0be75761387f19e4c97f4a0160e7f2cd, type: 2}
     count:
       x: 1
       y: 1
-    probability: 1
+    probability: 0
