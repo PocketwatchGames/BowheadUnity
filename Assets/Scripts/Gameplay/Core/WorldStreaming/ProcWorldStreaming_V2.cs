@@ -232,9 +232,9 @@ namespace Bowhead {
 
 								float humidity = GetHumidity(ref noise, xpos, zpos);
 								float forestPower = (1.0f - (GetPerlinNormal(ref noise, xpos, zpos, NoiseFloatScale._01) * GetPerlinNormal(ref noise, xpos + 64325, zpos + 6543, NoiseFloatScale._005))) * Mathf.Pow(humidity, 1) * (1.0f - Mathf.Pow(rock, 2));
-								float cutoff = 0.1f;
+								float cutoff = 0.125f;
 								if (forestPower > cutoff) {
-									float forestLimit = Mathf.Pow(1.0f - (forestPower - cutoff) / (1.0f - cutoff), 8) * 200 + 4;
+									float forestLimit = Mathf.Pow(1.0f - (forestPower - cutoff) / (1.0f - cutoff), 8) * 400 + 4;
 									if (GetWhiteNoise(ref noise, xpos, ypos, zpos) < 1.0f / forestLimit) {
 										float temperature = GetTemperature(ref noise, xpos, ypos, zpos);
 

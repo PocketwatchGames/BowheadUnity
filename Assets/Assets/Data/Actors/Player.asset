@@ -70,4 +70,5 @@ MonoBehaviour:
   fallDamageSpeed: 30
   fallSpeedLoudness: 0.25
   dropTime: 0.5
+  tradePartnerCancelDistance: 3
   weightClassItemCount: 00000000060000000b0000001000000015000000

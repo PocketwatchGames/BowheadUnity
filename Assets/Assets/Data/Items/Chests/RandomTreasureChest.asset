@@ -27,7 +27,7 @@ MonoBehaviour:
     count:
       x: 25
       y: 100
-    probability: 5
+    probability: 10
   - itemClass: {fileID: 11400000, guid: 3cb8976245727274a9669f3751ec78f2, type: 2}
     count:
       x: 1
@@ -39,6 +39,36 @@ MonoBehaviour:
       y: 1
     probability: 1
   - itemClass: {fileID: 11400000, guid: 0be75761387f19e4c97f4a0160e7f2cd, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: bec5f3627f9e2294493b760be84cde02, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 1d4256ad6b874c441bea840879926b1b, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 0142bce150c456c4f9783a2755bf37c1, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: c4cae3e25ad7b3740acc178ae5dc4ba3, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: ed53fb9a24de05e4c9c184295e621648, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 7879e1126a8e1da4a8521af4d952f8b6, type: 2}
     count:
       x: 1
       y: 1
