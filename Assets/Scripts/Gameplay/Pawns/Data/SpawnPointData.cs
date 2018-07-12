@@ -7,8 +7,10 @@ namespace Bowhead.Actors {
 
 	public enum ESpawnPointType {
 		Monster,
+		Merchant,
+		Horse,
 		Chest,
-		MapReveal
+		MapReveal,
 	};
 
 	public interface ISpawnPointSupport {
@@ -47,9 +49,13 @@ namespace Bowhead.Actors {
 				default:
 					team = null;
 				break;
+				case ESpawnPointType.Horse:
+				case ESpawnPointType.Merchant:
+					team = gameMode.players[0].team;
+					break;
 				case ESpawnPointType.Monster:
 					team = gameMode.monsterTeam;
-				break;
+					break;
 			}
 
 			var spawnFn = (ISpawnPointSupport)_entityData;

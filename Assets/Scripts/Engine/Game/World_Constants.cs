@@ -223,6 +223,8 @@ public enum EChunkLayers : int {
 
 public enum EDecorationType : int {
 	MonsterSpawn,
+	Merchant,
+	Horse,
 	Chest,
 	MapReveal
 };

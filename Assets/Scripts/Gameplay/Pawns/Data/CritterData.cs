@@ -26,6 +26,7 @@ namespace Bowhead.Actors {
 		public float hearingDistance;
 		public float hearingDistanceExponent;
 		public float scentDistance;
+		public bool canMount;
 
 		public float waryCooldownTime;
 		public float panicCooldownTime;

@@ -131,7 +131,7 @@ namespace Bowhead.Actors {
 			}
 
 			// TODO: this doesn't need to be done *every* frame
-			CheckDespawn(500);
+			CheckDespawn(300);
 
 			if (pendingKill) {
 				return;
@@ -148,7 +148,7 @@ namespace Bowhead.Actors {
         }
 
 		void CheckDespawn(float maxDist) {
-			float closestDist = 1000;
+			float closestDist = maxDist;
 			foreach (var p in world.GetActorIterator<Player>()) {
 				if (p.active) {
 					var diff = position - p.position;
@@ -156,7 +156,7 @@ namespace Bowhead.Actors {
 					closestDist = Mathf.Min(closestDist, diff.magnitude);
 				}
 			}
-			if (closestDist > maxDist) {
+			if (closestDist >= maxDist) {
 				Destroy();
 			}
 		}

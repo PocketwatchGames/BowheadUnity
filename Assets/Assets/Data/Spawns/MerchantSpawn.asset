@@ -9,9 +9,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d52a1a3059e4d7f408c5f9512a1fff70, type: 3}
-  m_Name: MapSpawn
+  m_Name: MerchantSpawn
   m_EditorClassIdentifier: 
   version: 0
-  _index: 8
-  _type: 4
-  _entityData: {fileID: 11400000, guid: ad72690c6d518754db1b67cf52254dd3, type: 2}
+  _index: 26
+  _type: 1
+  _entityData: {fileID: 11400000, guid: 675357c1533e0dc4295ad4da9930ca15, type: 2}

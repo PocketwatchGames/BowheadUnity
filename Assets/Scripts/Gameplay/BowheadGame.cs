@@ -93,6 +93,8 @@ namespace Bowhead.Server {
 		public const WorldStreaming.EGenerator WORLD_GENERATOR_TYPE = WorldStreaming.EGenerator.PROC_V2;
 
 		static SpawnPointData[] _monsterSpawns = SpawnPointData.GetAllSpawnTypes<CritterData>(ESpawnPointType.Monster);
+		static SpawnPointData[] _merchantSpawns = SpawnPointData.GetAllSpawnTypes<CritterData>(ESpawnPointType.Merchant);
+		static SpawnPointData[] _horseSpawns = SpawnPointData.GetAllSpawnTypes<CritterData>(ESpawnPointType.Horse);
 		static SpawnPointData[] _chestSpawns = SpawnPointData.GetAllSpawnTypes<WorldItemData>(ESpawnPointType.Chest);
 		static SpawnPointData[] _mapRevealSpawns = SpawnPointData.GetAllSpawnTypes<WorldItemData>(ESpawnPointType.MapReveal);
 
@@ -176,12 +178,24 @@ namespace Bowhead.Server {
 					}
 					spawnPoint = _monsterSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
 				break;
+				case EDecorationType.Merchant:
+					if (_merchantSpawns.Length < 1) {
+						return;
+					}
+					spawnPoint = _merchantSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+					break;
+				case EDecorationType.Horse:
+					if (_horseSpawns.Length < 1) {
+						return;
+					}
+					spawnPoint = _horseSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+					break;
 				case EDecorationType.Chest:
 					if (_chestSpawns.Length < 1) {
 						return;
 					}
 					spawnPoint = _chestSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
-				break;
+					break;
 				case EDecorationType.MapReveal:
 					if (_mapRevealSpawns.Length < 1) {
 						return;
@@ -241,7 +255,7 @@ namespace Bowhead.Server {
 
 		public void SpawnRandomCritter() {
 
-			if (numCritters < 50) {
+			if (numCritters < 100) {
 				var bunnyData = CritterData.Get("bunny");
 				var wolfData = CritterData.Get("wolf");
 				foreach (var player in world.GetActorIterator<Player>()) {

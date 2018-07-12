@@ -9,10 +9,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 20b7cacce8e11b348a6038eb11e97760, type: 3}
-  m_Name: Horse
+  m_Name: Merchant
   m_EditorClassIdentifier: 
   version: 0
-  _index: 3
+  _index: 25
   height: 3
   maxHealth: 100
   maxWater: 0
@@ -60,8 +60,8 @@ MonoBehaviour:
   _critterClass: Bowhead.Actors.Critter, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   prefab:
-    _assetPath: Actors/Horse
-    _editorPath: Assets/Assets/Prefabs/Resources/Actors/Horse.prefab
+    _assetPath: Actors/NPC
+    _editorPath: Assets/Assets/Prefabs/Resources/Actors/NPC.prefab
   waryLimit: 0
   investigateLimit: 0
   visionWeight: 2
@@ -77,7 +77,6 @@ MonoBehaviour:
   hearingDistance: 0
   hearingDistanceExponent: 0
   scentDistance: 0
-  canMount: 1
   waryCooldownTime: 3
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4

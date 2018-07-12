@@ -294,48 +294,45 @@ namespace Bowhead.Actors {
 					if (itemLeft.CanCast()) {
 						if (input.IsPressed(InputType.AttackLeft)) {
 							itemLeft.Charge(dt);
+							isCasting = true;
 						}
 						else {
 							if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
 								itemLeft.Attack(this);
+								isCasting = true;
 							}
 							itemLeft.chargeTime = 0;
 						}
 					}
-                    if (itemLeft.castTime > 0) {
-                        isCasting = true;
-                    }
                 }
 				if (itemRight != null) {
 					if (itemRight.CanCast()) {
 						if (input.IsPressed(InputType.AttackRight)) {
 							itemRight.Charge(dt);
+							isCasting = true;
 						}
 						else {
 							if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
 								itemRight.Attack(this);
+								isCasting = true;
 							}
 							itemRight.chargeTime = 0;
 						}
-					}
-					if (itemRight.castTime > 0) {
-						isCasting = true;
 					}
 				}
 				if (itemRanged != null) {
 					if (itemRanged.CanCast()) {
 						if (input.IsPressed(InputType.AttackRanged)) {
 							itemRanged.Charge(dt);
+							isCasting = true;
 						}
 						else {
 							if (input.inputs[(int)InputType.AttackRanged] == InputState.JustReleased) {
 								itemRanged.Attack(this);
+								isCasting = true;
 							}
 							itemRanged.chargeTime = 0;
 						}
-					}
-					if (itemRanged.castTime > 0) {
-						isCasting = true;
 					}
 				}
 			}
@@ -850,9 +847,14 @@ namespace Bowhead.Actors {
                 worldItem.Interact(this);
             }
             else if ((critter = target as Critter) != null) {
-                if (mount != critter) {
-                    SetMount(critter);
-                }
+				if (critter.data.canMount) {
+					if (mount != critter) {
+						SetMount(critter);
+					}
+				}
+				else {
+
+				}
             }
             else if (targetPos.HasValue) {
                 var block = world.GetBlock(targetPos.Value);
@@ -939,17 +941,29 @@ namespace Bowhead.Actors {
                 if (dist < closestDist) {
                     closestDist = dist;
                     closestItem = i;
-                    interactionType = "Get";
+                    interactionType = "Get " + i.item.data.name;
                 }
             }
             foreach (var i in world.GetActorIterator<Critter>()) {
                 if (i.team == team && i.active) {
-					if (mount != i) {
+					bool isInteractable = false;
+					string iType = null;
+					if (i.data.canMount) {
+						if (mount != i) {
+							isInteractable = true;
+							iType = "Mount";
+						}
+					}
+					else {
+						isInteractable = true;
+						iType = "Speak";
+					}
+					if (isInteractable) {
 						float dist = (i.rigidBody.position - rigidBody.position).magnitude;
 						if (dist < closestDist) {
 							closestDist = dist;
 							closestItem = i;
-							interactionType = "Mount";
+							interactionType = iType;
 						}
 					}
                 }
