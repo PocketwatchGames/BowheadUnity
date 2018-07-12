@@ -1,6 +1,7 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
 #define BOUNDS_CHECK
+//#define NO_SMOOTHING
 
 using System;
 using System.Runtime.InteropServices;
@@ -953,7 +954,7 @@ public partial class World {
 				}
 
 				var count = vtoiCounts[idx];
-				Assert(count < 16);
+				Assert(count < BANK_SIZE);
 
 				normals[(idx*BANK_SIZE) + count] = normal;
 				colors[(idx*BANK_SIZE) + count] = color;
@@ -1341,9 +1342,10 @@ public partial class World {
 				}
 
 				smoothVoxel->touched = false;
+				var contents = _tables.blockContents[(int)voxel.type];
 
 				for (int i = 0; i < 6; ++i) {
-					if (_vnc[i] != EVoxelBlockContents.None) {
+					if (_vnc[i] >= contents) {
 						// flag any neighboring voxels if they have vertex shifts.
 
 						var axis = i / 2;
@@ -1377,8 +1379,6 @@ public partial class World {
 				// flag vertices uncovered by neighbor vertex shifts to be collapsed as well if possible.
 				var faceCounts = stackalloc int[8];
 				ZeroInts(faceCounts, 8);
-
-				var contents = _tables.blockContents[(int)voxel.type];
 
 				for (int i = 0; i < 6; ++i) {
 					if ((_vnc[i] == EVoxelBlockContents.None) || (smoothVoxel->neighbors[i] != 0)) {
@@ -1843,6 +1843,9 @@ public partial class World {
 									++_numVoxels;
 									continue;
 								}
+#if NO_SMOOTHING
+								voxel.flags |= EVoxelBlockFlags.FullVoxel;
+#endif
 
 								var blocktype = voxel.type;
 
@@ -1940,6 +1943,9 @@ public partial class World {
 								if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
 									continue;
 								}
+#if NO_SMOOTHING
+								voxel.flags |= EVoxelBlockFlags.FullVoxel;
+#endif
 
 								var blocktype = voxel.type;
 
@@ -2046,6 +2052,9 @@ public partial class World {
 								if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
 									continue;
 								}
+#if NO_SMOOTHING
+								voxel.flags |= EVoxelBlockFlags.FullVoxel;
+#endif
 
 								var blocktype = voxel.type;
 
