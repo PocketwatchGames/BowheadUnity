@@ -41,8 +41,15 @@ public class PawnHUD : MonoBehaviour {
 			_health.gameObject.SetActive(false);
 		}
 		if (w > 0 && critter.panic == 0 && critter.alive) {
-			_aggro.value = Mathf.Clamp01(w);
 			_aggro.gameObject.SetActive(true);
+			if (w > critter.data.waryLimit) {
+				_aggro.transform.GetChild(1).GetChildComponent<UnityEngine.UI.Image>("Fill").color = Color.red;
+				_aggro.value = Mathf.Clamp01((w-critter.data.waryLimit)/ (critter.data.investigateLimit - critter.data.waryLimit));
+			}
+			else {
+				_aggro.transform.GetChild(1).GetChildComponent<UnityEngine.UI.Image>("Fill").color = Color.white;
+				_aggro.value = Mathf.Clamp01(w/ critter.data.waryLimit);
+			}
 		}
 		else {
 			_aggro.gameObject.SetActive(false);

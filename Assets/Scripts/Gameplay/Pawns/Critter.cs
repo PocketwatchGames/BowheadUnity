@@ -229,14 +229,16 @@ namespace Bowhead.Actors {
                 float waryIncrease = IsPanicked() ? data.waryIncreaseAtMaxAwarenessWhilePanicked : data.waryIncreaseAtMaxAwareness;
                 waryIncrease *= awareness;
                 if (awareness > 0) {
-                    float maxWary = 2f;
+                    float maxWary = 4f;
                     wary = Math.Min(maxWary, wary + dt * waryIncrease);
-                    if (wary > 1.0f) {
+                    if (wary > data.waryLimit) {
                         hasLastKnownPosition = true;
                         lastKnownPosition = p.position;
-                        panic = 1f;
                     }
-                }
+					if (wary > data.investigateLimit) {
+						panic = 1f;
+					}
+				}
                 else {
                     panic = Math.Max(0, panic - dt / data.panicCooldownTime);
                     wary = Math.Max(0, wary - dt / data.waryCooldownTime);

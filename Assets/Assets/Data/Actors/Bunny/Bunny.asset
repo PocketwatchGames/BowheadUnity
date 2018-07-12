@@ -60,6 +60,8 @@ MonoBehaviour:
   prefab:
     _assetPath: Actors/Bunny
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Bunny.prefab
+  waryLimit: 1
+  investigateLimit: 3
   visionWeight: 2
   smellWeight: 1
   hearingWeight: 2

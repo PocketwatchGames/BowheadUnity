@@ -22,6 +22,7 @@ MonoBehaviour:
     canClimbLight: 1
     canClimbMedium: 0
     canHang: 1
+    soundModifier: 1
   - name: sand or snow
     speedModifier: 0.75
     accelerationModifier: 0.75
@@ -32,6 +33,7 @@ MonoBehaviour:
     canClimbLight: 0
     canClimbMedium: 0
     canHang: 0
+    soundModifier: 0.5
   - name: foliage
     speedModifier: 0.8
     accelerationModifier: 0.5
@@ -42,6 +44,7 @@ MonoBehaviour:
     canClimbLight: 1
     canClimbMedium: 1
     canHang: 1
+    soundModifier: 1
   - name: ice
     speedModifier: 1
     accelerationModifier: 0.5
@@ -52,6 +55,7 @@ MonoBehaviour:
     canClimbLight: 0
     canClimbMedium: 0
     canHang: 0
+    soundModifier: 0.5
   - name: flowers
     speedModifier: 1
     accelerationModifier: 1
@@ -62,6 +66,7 @@ MonoBehaviour:
     canClimbLight: 0
     canClimbMedium: 0
     canHang: 0
+    soundModifier: 1
   - name: air
     speedModifier: 1
     accelerationModifier: 1
@@ -72,6 +77,7 @@ MonoBehaviour:
     canClimbLight: 0
     canClimbMedium: 0
     canHang: 0
+    soundModifier: 0
   - name: water
     speedModifier: 1
     accelerationModifier: 1
@@ -82,6 +88,7 @@ MonoBehaviour:
     canClimbLight: 0
     canClimbMedium: 0
     canHang: 0
+    soundModifier: 1
   windSpeedStormy: 24
   windSpeedWindy: 16
   windSpeedBreezy: 8

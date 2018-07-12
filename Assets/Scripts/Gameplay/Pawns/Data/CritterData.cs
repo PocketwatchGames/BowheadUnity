@@ -11,6 +11,8 @@ namespace Bowhead.Actors {
 		string _critterClass;
 
 		public GameObject_WRef prefab;
+		public float waryLimit;
+		public float investigateLimit;
 		public float visionWeight;
 		public float smellWeight;
 		public float hearingWeight;
