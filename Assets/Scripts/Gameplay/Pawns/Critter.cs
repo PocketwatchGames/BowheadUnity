@@ -316,6 +316,9 @@ namespace Bowhead.Actors {
             if (playerSound <= 0)
                 return 0;
 
+			var playerBlock = gameMode.GetTerrainData(player.position + new Vector3(0,-0.1f,0));
+			playerSound *= playerBlock.soundModifier;
+
             return playerSound;
         }
         public float CanSee(Player player) {

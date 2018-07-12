@@ -17,6 +17,7 @@ public class WorldData : ScriptableObject {
 		public bool canClimbLight;
 		public bool canClimbMedium;
 		public bool canHang;
+		public float soundModifier;
 	}
 
 	public TerrainType[] terrainTypes;

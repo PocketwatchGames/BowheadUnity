@@ -33,23 +33,23 @@ public class PawnHUD : MonoBehaviour {
 		if (h < 1 || w > 0) {
 			transform.position = Camera.main.WorldToScreenPoint(_target.headPosition());
 		}
-		if (h < 1) {
+		if (h < 1 && critter.alive) {
 			_health.value = h;
 			_health.gameObject.SetActive(true);
 		}
 		else {
 			_health.gameObject.SetActive(false);
 		}
-		if (w > 0 && critter.panic == 0) {
+		if (w > 0 && critter.panic == 0 && critter.alive) {
 			_aggro.value = Mathf.Clamp01(w);
 			_aggro.gameObject.SetActive(true);
 		}
 		else {
 			_aggro.gameObject.SetActive(false);
 		}
-		_scent.gameObject.SetActive(critter.canSmell > 0 && critter.panic == 0);
-		_sight.gameObject.SetActive(critter.canSee > 0 && critter.panic == 0);
-		_hearing.gameObject.SetActive(critter.canHear > 0 && critter.panic == 0);
+		_scent.gameObject.SetActive(critter.canSmell > 0 && critter.panic == 0 && critter.alive);
+		_sight.gameObject.SetActive(critter.canSee > 0 && critter.panic == 0 && critter.alive);
+		_hearing.gameObject.SetActive(critter.canHear > 0 && critter.panic == 0 && critter.alive);
 	}
 
 
