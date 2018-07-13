@@ -153,8 +153,10 @@ namespace Bowhead.Client.Actors {
             rpc_Server_ClientHasLoaded.Invoke();
 
 			var sky = GameObject.FindObjectOfType<EnviroSky>();
-			sky.Player = playerPawn.go;
-			sky.PlayerCamera = _camera;
+			if (sky != null) {
+				sky.Player = playerPawn.go;
+				sky.PlayerCamera = _camera;
+			}
 		}
 
 		protected override void Dispose(bool disposing) {

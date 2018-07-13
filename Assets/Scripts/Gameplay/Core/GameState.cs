@@ -104,7 +104,9 @@ namespace Bowhead.Actors {
 			base.OnLevelStart();
 
 			_sky = GameObject.FindObjectOfType<EnviroSky>();
-			SyncEnviroSkyTime();
+			if (_sky != null) {
+				SyncEnviroSkyTime();
+			}
 		}
 
 		void SyncEnviroSkyTime() {

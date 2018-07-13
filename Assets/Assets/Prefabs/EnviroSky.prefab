@@ -519,7 +519,7 @@ MonoBehaviour:
   satelliteRenderingLayer: 31
   setCameraClearFlags: 1
   singlePassVR: 0
-  volumeLighting: 1
+  volumeLighting: 0
   globalFog: 1
   profile: {fileID: 11400000, guid: 3e5a09b0270d2aa49a32e22c067d1590, type: 2}
   GameTime:
@@ -574,7 +574,7 @@ MonoBehaviour:
     scatteringStrenght: 0.84999406
     sunBlocking: 0.5
   LightShafts:
-    sunLightShafts: 1
+    sunLightShafts: 0
     moonLightShafts: 0
   Components:
     Sun: {fileID: 1270814650469686}
@@ -1598,7 +1598,7 @@ MonoBehaviour:
   qualitySettings:
     GlobalParticleEmissionRates: 1
     UpdateInterval: 0.5
-  cloudsMode: 2
+  cloudsMode: 3
   moonCamera: {fileID: 20326132957872552}
   satCamera: {fileID: 0}
   directVolumeLight: {fileID: 0}
