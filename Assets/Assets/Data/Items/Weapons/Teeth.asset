@@ -13,6 +13,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 29
+  description: 
+  monetaryValue: 0
   prefab:
     _assetPath: 
     _editorPath: 
@@ -23,13 +25,13 @@ MonoBehaviour:
   moveSpeedChargeDelay: 0.2
   weaponSize: {x: 0, y: 0, z: 0}
   attacks:
-  - castTime: 0.5
-    activeTime: 0.5
-    cooldown: 1
+  - castTime: 0.25
+    activeTime: 0.2
+    cooldown: 2
     attackRange: 1.5
     attackRadius: 0.75
-    knockback: 0
-    attackDamage: 10
+    knockback: 1
+    attackDamage: 20
     defendPower: 0
     defendDamageAbsorb: 0
     defendStaminaUse: 0
@@ -42,7 +44,7 @@ MonoBehaviour:
     attackDamageBackstab: 20
     canMoveDuringCooldown: 0
     canMoveDuringCast: 0
-    canMoveDuringActive: 0
+    canMoveDuringActive: 1
     interrupt: 0
     unblockable: 0
     defendInterrupt: 0

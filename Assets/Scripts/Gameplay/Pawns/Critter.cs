@@ -145,7 +145,27 @@ namespace Bowhead.Actors {
                 SetActive(spawnPosition);
             }
 
-        }
+			var head = go.GetChildComponent<MeshRenderer>("Head");
+			if (head != null) {
+				if (stunTimer > 0) {
+					head.material.color = Color.red;
+				}
+				else if (dodgeTimer > 0) {
+					head.material.color = Color.black;
+				}
+				else if (skidding) {
+					head.material.color = Color.cyan;
+				}
+				else if (recovering) {
+					head.material.color = Color.yellow;
+				}
+				else {
+					head.material.color = Color.white;
+				}
+			}
+
+
+		}
 
 		void CheckDespawn(float maxDist) {
 			float closestDist = maxDist;

@@ -317,7 +317,7 @@ namespace Bowhead.Actors {
 
         virtual public void Simulate(float dt, Input_t input) {
             if (!alive) {
-                go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
+				go.transform.SetPositionAndRotation(position, Quaternion.Euler(0, yaw * Mathf.Rad2Deg, 180));
                 return;
             }
 
@@ -1199,9 +1199,10 @@ namespace Bowhead.Actors {
 
         virtual protected void Die() {
             alive = false;
-        }
+			position += new Vector3(0, data.height, 0);
+		}
 
-        virtual protected bool SetMount(Pawn m) {
+		virtual protected bool SetMount(Pawn m) {
 
             if (m?.driver != null) {
                 return false;

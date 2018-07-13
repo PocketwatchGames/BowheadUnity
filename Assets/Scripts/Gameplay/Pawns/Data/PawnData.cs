@@ -41,6 +41,7 @@ namespace Bowhead.Actors {
         public float fallDragHorizontal;
         public float fallMaxHorizontalSpeed;
 
+
         [Header("Climbing")]
         public float climbWallRange;
         public float climbGrabMinZVel;
