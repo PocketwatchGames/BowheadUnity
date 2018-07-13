@@ -23,7 +23,7 @@ public class TerrainTestMono : MonoBehaviour {
 		_chunkStreaming = Bowhead.WorldStreaming.NewProceduralWorldStreaming(0, _generator);
 
 		_tick = true;
-		_streaming = new World.Streaming(_chunkPrefab, CreateGenVoxelsJob);
+		_streaming = new World.Streaming(_chunkPrefab, CreateGenVoxelsJob, null, null);
 		_volume = _streaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);
 		_volume.position = default(WorldChunkPos_t);
 

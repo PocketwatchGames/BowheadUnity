@@ -137,6 +137,14 @@ namespace Bowhead.Server {
 			return _gameMode.worldStreaming.ScheduleChunkGenerationJob(pos, chunk, GameManager.instance.isClient);
 		}
 
+		protected override Streaming.IAsyncChunkReadIO AsyncReadChunkData(WorldChunkPos_t pos, ChunkMeshGen.CompiledChunkData data) {
+			return _gameMode.worldStreaming.AsyncReadChunkData(pos, data);
+		}
+
+		protected override Streaming.IAsyncChunkWriteIO AsyncWriteChunkData(Streaming.IChunk chunk, ChunkMeshGen.CompiledChunkData data) {
+			return _gameMode.worldStreaming.AsyncWriteChunkData(chunk, data);
+		}
+
 #if BACKEND_SERVER
 		public override void LateUpdate(float dt, ref NetIOMetrics reliableMetrics, ref NetIOMetrics unreliableMetrics) {
 			try {

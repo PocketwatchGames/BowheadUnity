@@ -90,7 +90,7 @@ public partial class World {
 		return ChunkMeshGen.tableStorage.blockContents[(int)type];
 	}
 
-	static partial class ChunkMeshGen {
+	public static partial class ChunkMeshGen {
 		const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
 		const int BANK_SIZE = 16;
 		
@@ -2138,14 +2138,14 @@ public partial class World {
 
 		public static TableStorage tableStorage;
 
-		public struct JobInputData : IDisposable {
+		public struct CompiledChunkData : IDisposable {
 			public SmoothingVertsOut_t smoothVerts;
 			public VoxelStorage_t voxelStorage;
 			public FinalMeshVerts_t outputVerts;
 			public NativeArray<PinnedChunkData_t> neighbors;
 
-			public static JobInputData New() {
-				return new JobInputData() {
+			public static CompiledChunkData New() {
+				return new CompiledChunkData() {
 					smoothVerts = SmoothingVertsOut_t.New(),
 					voxelStorage = VoxelStorage_t.New(),
 					outputVerts = FinalMeshVerts_t.New(),
@@ -2160,11 +2160,11 @@ public partial class World {
 			}
 		};
 
-		public static JobHandle ScheduleGenVoxelsJob(WorldChunkPos_t pos, ChunkData_t chunkData, Streaming.CreateGenVoxelsJob createGenVoxelsJob) {
+		public static JobHandle ScheduleGenVoxelsJob(WorldChunkPos_t pos, ChunkData_t chunkData, Streaming.CreateGenVoxelsJobDelegate createGenVoxelsJob) {
 			return createGenVoxelsJob(pos, NewPinnedChunkData_t(chunkData));
 		}
 
-		public static JobHandle ScheduleGenTrisJob(ref JobInputData jobData, JobHandle dependsOn = default(JobHandle)) {
+		public static JobHandle ScheduleGenTrisJob(ref CompiledChunkData jobData, JobHandle dependsOn = default(JobHandle)) {
 			var genChunkVerts = GenerateChunkVerts_t.New(jobData.smoothVerts, jobData.voxelStorage.voxels, jobData.neighbors, tableStorage).Schedule(dependsOn);
 			return GenerateFinalVertices_t.New(SmoothingVertsIn_t.New(jobData.smoothVerts), jobData.outputVerts).Schedule(genChunkVerts);
 		}

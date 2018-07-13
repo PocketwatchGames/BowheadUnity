@@ -33,6 +33,14 @@ namespace Bowhead {
 					}.Schedule();
 				}
 
+				public World.Streaming.IAsyncChunkReadIO AsyncReadChunkData(WorldChunkPos_t pos, ChunkMeshGen.CompiledChunkData data) {
+					return null;
+				}
+
+				public World.Streaming.IAsyncChunkWriteIO AsyncWriteChunkData(World.Streaming.IChunk chunk, ChunkMeshGen.CompiledChunkData data) {
+					return null;
+				}
+
 				public void Dispose() { }
 			};
 

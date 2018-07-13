@@ -262,6 +262,14 @@ namespace Bowhead.Client {
 			return gameState.worldStreaming.ScheduleChunkGenerationJob(pos, chunk, true);
 		}
 
+		protected override Streaming.IAsyncChunkReadIO AsyncReadChunkData(WorldChunkPos_t pos, ChunkMeshGen.CompiledChunkData data) {
+			return gameState.worldStreaming.AsyncReadChunkData(pos, data);
+		}
+
+		protected override Streaming.IAsyncChunkWriteIO AsyncWriteChunkData(Streaming.IChunk chunk, ChunkMeshGen.CompiledChunkData data) {
+			return gameState.worldStreaming.AsyncWriteChunkData(chunk, data);
+		}
+
 		public void OnCritterActive(Bowhead.Actors.Critter c) {
 			CritterActiveEvent?.Invoke(c);
 		}

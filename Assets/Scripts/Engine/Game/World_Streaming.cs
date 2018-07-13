@@ -13,6 +13,24 @@ using Unity.Collections;
 
 public partial class World {
 	public sealed class Streaming : IDisposable {
+
+		public enum EAsyncChunkReadResult {
+			Pending,
+			Success,
+			Error
+		};
+
+		public interface IAsyncChunkIO : IDisposable {
+			EAsyncChunkReadResult result { get; }
+		};
+
+		public interface IAsyncChunkReadIO : IAsyncChunkIO {
+			ChunkMeshGen.CompiledChunkData chunkData { get; }
+			EChunkFlags chunkFlags { get; }
+		};
+
+		public interface IAsyncChunkWriteIO : IAsyncChunkIO {};
+
 #if UNITY_EDITOR
 		const int MAX_STREAMING_CHUNKS = 4;
 		static bool _debugDraw;
@@ -42,8 +60,10 @@ public partial class World {
 #else
 		const int MAX_STREAMING_CHUNKS = 8;
 #endif
-		public delegate JobHandle CreateGenVoxelsJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
+		public delegate JobHandle CreateGenVoxelsJobDelegate(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
 		public delegate void ChunkGeneratedDelegate(IChunk chunk);
+		public delegate IAsyncChunkReadIO AsyncChunkReadDelegate(WorldChunkPos_t pos, ChunkMeshGen.CompiledChunkData data);
+		public delegate IAsyncChunkWriteIO AsyncChunkWriteDelegate(IChunk chunk, ChunkMeshGen.CompiledChunkData data);
 
 		public event ChunkGeneratedDelegate onChunkVoxelsLoaded;
 		public event ChunkGeneratedDelegate onChunkVoxelsUpdated;
@@ -64,7 +84,9 @@ public partial class World {
 
 		ChunkJobData _freeJobData;
 		ChunkJobData _usedJobData;
-		CreateGenVoxelsJob _createGenVoxelsJob;
+		CreateGenVoxelsJobDelegate _createGenVoxelsJob;
+		AsyncChunkReadDelegate _chunkRead;
+		AsyncChunkWriteDelegate _chunkWrite;
 		bool _loading;
 		bool _flush;
 
@@ -80,7 +102,7 @@ public partial class World {
 
 		public static Color32[] blockColors => ChunkMeshGen.tableStorage.blockColorsArray;
 		
-		public Streaming(World_ChunkComponent chunkPrefab, CreateGenVoxelsJob createGenVoxelsJob) {
+		public Streaming(World_ChunkComponent chunkPrefab, CreateGenVoxelsJobDelegate createGenVoxelsJob, AsyncChunkReadDelegate chunkRead, AsyncChunkWriteDelegate chunkWrite) {
 			_chunkPrefab = chunkPrefab;
 			_createGenVoxelsJob = createGenVoxelsJob;
 
@@ -259,13 +281,18 @@ public partial class World {
 			jobData.chunk = chunk;
 			jobData.hasSubJob = false;
 			chunk.jobData = jobData;
-			chunk.chunkData.Pin();
 
 #if DEBUG_DRAW
 			chunk.dbgDraw.state = EDebugDrawState.GENERATING_VOXELS;
 #endif
 
-			jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
+			jobData.ioRead = _chunkRead?.Invoke(chunk.pos, jobData.jobData);
+			
+			if (jobData.ioRead == null) {
+				chunk.chunkData.Pin();
+				jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
+			}
+
 			QueueJobData(jobData);
 			return true;
 		}
@@ -283,42 +310,46 @@ public partial class World {
 				}
 				chunk.jobData.chunk = chunk;
 				chunk.jobData.hasSubJob = false;
+
+				chunk.jobData.ioRead = _chunkRead?.Invoke(chunk.pos, chunk.jobData.jobData);
 			}
 
-			chunk.jobData.flags = EJobFlags.TRIS;
+			if (chunk.jobData.ioRead == null) {
+				chunk.jobData.flags = EJobFlags.TRIS;
 
-			if (!(existingJob || chunk.hasVoxelData)) {
-				AddRef(chunk);
-				chunk.jobData.flags |= EJobFlags.VOXELS;
-				chunk.chunkData.Pin();
-				chunk.jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
-				chunk.jobData.subJobHandle = chunk.jobData.jobHandle;
-				chunk.jobData.hasSubJob = true;
-			} else if (existingJob) {
-				chunk.jobData.flags |= EJobFlags.VOXELS;
-			}
-
-			chunk.jobData.jobData.voxelStorage.Pin();
-
-			var dependancies = new NativeArray<JobHandle>(_neighbors.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
-			
-			for (int i = 0; i < _neighbors.Length; ++i) {
-				var neighbor = _neighbors[i];
-				chunk.jobData.neighbors[i] = neighbor;
-
-				if (neighbor != null) {
-					AddRef(neighbor);
-					neighbor.chunkData.Pin();
-					chunk.jobData.jobData.neighbors[i] = ChunkMeshGen.NewPinnedChunkData_t(neighbor.chunkData);
-					dependancies[i] = neighbor.jobData != null ? neighbor.jobData.jobHandle : default(JobHandle);
-				} else {
-					chunk.jobData.jobData.neighbors[i] = default(PinnedChunkData_t);
-					dependancies[i] = default(JobHandle);
+				if (!(existingJob || chunk.hasVoxelData)) {
+					AddRef(chunk);
+					chunk.jobData.flags |= EJobFlags.VOXELS;
+					chunk.chunkData.Pin();
+					chunk.jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
+					chunk.jobData.subJobHandle = chunk.jobData.jobHandle;
+					chunk.jobData.hasSubJob = true;
+				} else if (existingJob) {
+					chunk.jobData.flags |= EJobFlags.VOXELS;
 				}
-			}
 
-			chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, JobHandle.CombineDependencies(dependancies));
-			dependancies.Dispose();
+				chunk.jobData.jobData.voxelStorage.Pin();
+
+				var dependancies = new NativeArray<JobHandle>(_neighbors.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+
+				for (int i = 0; i < _neighbors.Length; ++i) {
+					var neighbor = _neighbors[i];
+					chunk.jobData.neighbors[i] = neighbor;
+
+					if (neighbor != null) {
+						AddRef(neighbor);
+						neighbor.chunkData.Pin();
+						chunk.jobData.jobData.neighbors[i] = ChunkMeshGen.NewPinnedChunkData_t(neighbor.chunkData);
+						dependancies[i] = neighbor.jobData != null ? neighbor.jobData.jobHandle : default(JobHandle);
+					} else {
+						chunk.jobData.jobData.neighbors[i] = default(PinnedChunkData_t);
+						dependancies[i] = default(JobHandle);
+					}
+				}
+
+				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, JobHandle.CombineDependencies(dependancies));
+				dependancies.Dispose();
+			}
 
 #if DEBUG_DRAW
 			chunk.dbgDraw.state = EDebugDrawState.GENERATING_TRIS;
@@ -338,16 +369,53 @@ public partial class World {
 			for (var job = _usedJobData; job != null; job = next) {
 				next = job.next;
 
-				if (job.jobHandle.IsCompleted) {
+				bool jobComplete = false;
+				bool jobError = false;
+
+				if (job.ioRead != null) {
+					jobComplete = job.ioRead.result == EAsyncChunkReadResult.Success;
+					jobError = job.ioRead.result == EAsyncChunkReadResult.Error;
+				} else if (job.ioWrite != null) {
+					// TODO: figure out a way to avoid callbacks from having to wait until data is written to disk
+					jobComplete = job.ioWrite.result != EAsyncChunkReadResult.Pending;
+				} else {
+					jobComplete = job.jobHandle.IsCompleted;
+					if (jobComplete && ((job.flags&EJobFlags.TRIS_AND_VOXELS) == EJobFlags.TRIS_AND_VOXELS)) {
+						job.ioWrite = _chunkWrite?.Invoke(job.chunk, job.jobData);
+						jobComplete = job.ioWrite == null;
+					}
+				}
+
+				if (jobComplete || jobError) {
 					job.jobHandle.Complete();
-					
-					QueueJobCompletion(job);
+
+					if (!jobError) {
+						QueueJobCompletion(job);
+					}
 
 					if (prev != null) {
 						prev.next = job.next;
 					} else {
 						_usedJobData = job.next;
 					}
+
+					if (jobError) {
+						var flags = job.flags;
+						var chunk = job.chunk;
+						CompleteJob(job, _flush);
+						job.next = _freeJobData;
+						_freeJobData = job;
+
+						if (chunk.refCount > 0) {
+							// reque the chunk, chunk read should return null because of the error this time.
+							if ((flags&EJobFlags.TRIS_AND_VOXELS) == EJobFlags.TRIS_AND_VOXELS) {
+								ScheduleGenTrisJob(chunk);
+							} else {
+								ScheduleGenVoxelsJob(chunk);
+							}
+						}
+					}
+
 				} else {
 					if (job.hasSubJob && (job.flags & (EJobFlags.TRIS|EJobFlags.VOXELS)) == (EJobFlags.TRIS|EJobFlags.VOXELS)) {
 						// don't wait for tris to notify that we have voxel data.
@@ -417,10 +485,6 @@ public partial class World {
 			chunk.jobData = null;
 			chunk.hasVoxelData = true;
 
-#if DEBUG_DRAW
-			chunk.dbgDraw.state = EDebugDrawState.HAS_VOXELS;
-#endif
-
 			if ((job.flags & EJobFlags.TRIS) != 0) {
 				job.jobData.voxelStorage.Unpin();
 				chunk.hasTrisData = true;
@@ -431,7 +495,9 @@ public partial class World {
 						Release(neighbor);
 					}
 				}
-			} else {
+			}
+
+			if ((job.flags & EJobFlags.VOXELS) != 0) {
 				chunk.chunkData.Unpin();
 				Release(chunk);
 			}
@@ -439,24 +505,32 @@ public partial class World {
 			job.chunk = null;
 			job.jobHandle = default(JobHandle);
 			job.subJobHandle = default(JobHandle);
-			
-			if (!flush && (chunk.refCount > 0)) {
-				if ((job.flags & EJobFlags.VOXELS) != 0) {
-					if (!chunk.hasLoaded) {
-						onChunkVoxelsLoaded?.Invoke(chunk);
+
+			if ((job.ioRead == null) || (job.ioRead.result == EAsyncChunkReadResult.Success)) {
+				if (!flush && (chunk.refCount > 0)) {
+#if DEBUG_DRAW
+					chunk.dbgDraw.state = EDebugDrawState.HAS_VOXELS;
+#endif
+					if ((job.flags & EJobFlags.VOXELS) != 0) {
+						if (!chunk.hasLoaded) {
+							onChunkVoxelsLoaded?.Invoke(chunk);
+						}
+						onChunkVoxelsUpdated?.Invoke(chunk);
+						chunk.InvokeVoxelsUpdated();
 					}
-					onChunkVoxelsUpdated?.Invoke(chunk);
-					chunk.InvokeVoxelsUpdated();
-				}
-				if (chunk.hasTrisData) {
-					CopyToMesh(job, chunk);
-					if (!chunk.hasLoaded) {
-						onChunkLoaded?.Invoke(chunk);
+					if (chunk.hasTrisData) {
+						CopyToMesh(job, chunk);
+						if (!chunk.hasLoaded) {
+							onChunkLoaded?.Invoke(chunk);
+						}
+						onChunkTrisUpdated?.Invoke(chunk);
+						chunk.InvokeTrisUpdated();
 					}
-					onChunkTrisUpdated?.Invoke(chunk);
-					chunk.InvokeTrisUpdated();
 				}
 			}
+
+			job.ioRead?.Dispose();
+			job.ioRead = null;
 
 			_flush = saveFlush;
 		}
@@ -540,7 +614,7 @@ public partial class World {
 			}
 		}
 
-		void CreateChunkMesh(ref ChunkMeshGen.JobInputData jobData, ref World_ChunkComponent root, Vector3 pos, int layer, ref int baseIndex, ref int baseVertex) {
+		void CreateChunkMesh(ref ChunkMeshGen.CompiledChunkData jobData, ref World_ChunkComponent root, Vector3 pos, int layer, ref int baseIndex, ref int baseVertex) {
 			var outputVerts = jobData.outputVerts;
 
 			var vertCount = outputVerts.counts[layer*3+0];
@@ -712,17 +786,20 @@ public partial class World {
 		[Flags]
 		enum EJobFlags {
 			VOXELS = 0x1,
-			TRIS = 0x2
+			TRIS = 0x2,
+			TRIS_AND_VOXELS = 0x4
 		};
 
 		class ChunkJobData : IDisposable {
 			public ChunkJobData next;
 			public Chunk chunk;
 			public Chunk[] neighbors = new Chunk[27];
-			public ChunkMeshGen.JobInputData jobData = ChunkMeshGen.JobInputData.New();
+			public ChunkMeshGen.CompiledChunkData jobData = ChunkMeshGen.CompiledChunkData.New();
 			public EJobFlags flags;
 			public JobHandle jobHandle;
 			public JobHandle subJobHandle;
+			public IAsyncChunkReadIO ioRead;
+			public IAsyncChunkWriteIO ioWrite;
 			public bool hasSubJob;
 
 			public void Dispose() {
