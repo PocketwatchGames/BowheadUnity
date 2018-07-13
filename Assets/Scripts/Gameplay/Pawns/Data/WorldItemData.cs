@@ -12,6 +12,7 @@ namespace Bowhead.Actors {
 
 		public GameObject_WRef mapMarker;
 		public Client.UI.EMapMarkerStyle mapMarkerStyle;
+		public int range;
 
 		public Type itemClass { get; private set; }
 

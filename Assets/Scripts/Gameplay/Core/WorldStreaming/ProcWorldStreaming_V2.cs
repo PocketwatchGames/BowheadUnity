@@ -36,7 +36,7 @@ namespace Bowhead {
 				public void Dispose() { }
 			};
 
-			const float waterLevel = 64;
+			const float waterLevel = 0;
 			const float minCaveElevation = 0;
 
 			static int positive_modulo(int i, int n) {
@@ -234,7 +234,7 @@ namespace Bowhead {
 								float forestPower = (1.0f - (GetPerlinNormal(ref noise, xpos, zpos, NoiseFloatScale._01) * GetPerlinNormal(ref noise, xpos + 64325, zpos + 6543, NoiseFloatScale._005))) * Mathf.Pow(humidity, 1) * (1.0f - Mathf.Pow(rock, 2));
 								float cutoff = 0.125f;
 								if (forestPower > cutoff) {
-									float forestLimit = Mathf.Pow(1.0f - (forestPower - cutoff) / (1.0f - cutoff), 8) * 400 + 4;
+									float forestLimit = Mathf.Pow(1.0f - (forestPower - cutoff) / (1.0f - cutoff), 8) * 400 + 8;
 									if (GetWhiteNoise(ref noise, xpos, ypos, zpos) < 1.0f / forestLimit) {
 										float temperature = GetTemperature(ref noise, xpos, ypos, zpos);
 
@@ -416,19 +416,20 @@ namespace Bowhead {
 				//float distToOrigin = Mathf.Sqrt(distToOriginSquared);
 
 				float elevation = 0;
-				elevation += GetPerlinNormal(ref noise, x, z, 0.0005f) * 0.05f;
-				elevation += GetPerlinNormal(ref noise, x, z, 0.0001f) * 0.05f;
-				elevation += GetPerlinNormal(ref noise, x, z, 0.00005f) * 0.35f;
-				elevation += GetPerlinNormal(ref noise, x, z, 0.00001f) * 0.55f;
+				elevation += GetPerlinNormal(ref noise, x, z, 0.001f) * 0.05f;
+				elevation += GetPerlinNormal(ref noise, x, z, 0.0002f) * 0.05f;
+				elevation += GetPerlinNormal(ref noise, x, z, 0.0001f) * 0.35f;
+				elevation += GetPerlinNormal(ref noise, x, z, 0.00002f) * 0.55f;
 
 				elevation *= maxRegionHeight;
 
-				elevation += GetPerlinNormal(ref noise, x, z, 0.01f) * 4;
+
+				elevation += GetPerlinNormal(ref noise, x, z, 0.1f) * 4;
 				elevation += GetPerlinNormal(ref noise, x, z, 0.05f) * 8;
-				elevation += GetPerlinNormal(ref noise, x, z, 0.001f) * 16;
+				elevation += GetPerlinNormal(ref noise, x, z, 0.01f) * 16;
 				elevation += GetPerlinNormal(ref noise, x, z, 0.005f) * 24;
 
-				return elevation;
+				return elevation - maxRegionHeight / 2;
 			}
 
 			static void GetLocalElevation(ref FastNoise_t noise, int x, int z, ref int plateauElevation, ref float slopedElevation) {
