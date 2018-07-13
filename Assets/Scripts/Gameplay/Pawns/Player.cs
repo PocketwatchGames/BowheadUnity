@@ -202,6 +202,7 @@ namespace Bowhead.Actors {
                 canClimbWell = false;
                 canAttack = false;
                 canMove = false;
+				canTurn = false;
             }
 
             if (activity == Activity.Swimming || activity == Activity.Climbing) {

@@ -115,7 +115,8 @@ namespace Bowhead.Actors {
                 canClimbWell = false;
                 canAttack = false;
                 canMove = false;
-            }
+				canTurn = false;
+			}
 
 
 			base.PreSimulate(dt);

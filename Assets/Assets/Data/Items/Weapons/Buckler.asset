@@ -19,6 +19,7 @@ MonoBehaviour:
     _assetPath: Items/Shield
     _editorPath: Assets/Assets/Prefabs/Resources/Items/Shield.prefab
   hand: 0
+  cooldownNextAttackQueueTime: 0
   chargeTime: 0.25
   parryTime: 0
   canRunWhileCharging: 0
@@ -96,7 +97,7 @@ MonoBehaviour:
     staminaUse: 0
     stepDistance: 0
     staminaDrain: 0
-    stunPower: 0
+    stunPower: 1
     stunPowerBackstab: 0
     attackDamageBackstab: 0
     canMoveDuringCooldown: 1

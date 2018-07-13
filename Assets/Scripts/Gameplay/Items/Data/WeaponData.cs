@@ -52,7 +52,8 @@ namespace Bowhead {
 
 		public GameObject_WRef prefab;
         public Hand hand;
-        public float chargeTime;
+		public float cooldownNextAttackQueueTime;
+		public float chargeTime;
 		public float parryTime;
 		public bool canRunWhileCharging;
 		public float moveSpeedChargeDelay = 0.2f;

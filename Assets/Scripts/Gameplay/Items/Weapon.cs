@@ -14,6 +14,7 @@ namespace Bowhead {
 		public float activeTime;
         public float cooldown;
         public float chargeTime;
+		public bool attackWhenCooldownComplete;
 		public List<Pawn> hitTargets = new List<Pawn>();
 
 		#endregion
@@ -26,10 +27,10 @@ namespace Bowhead {
 		}
 
 		public bool CanCast() {
-			return castTime == 0 && activeTime == 0 && cooldown == 0;
+			return castTime == 0 && activeTime == 0 && cooldown <= data.cooldownNextAttackQueueTime;
 		}
 
-        public override void OnSlotChange(int newSlot, Pawn owner) {
+		public override void OnSlotChange(int newSlot, Pawn owner) {
             castTime = 0;
             chargeTime = 0;
 			activeTime = 0;
@@ -46,15 +47,24 @@ namespace Bowhead {
             }
         }
         public void Charge(float dt) {
-            if (CanCast()) {
-				chargeTime += dt;
+			attackWhenCooldownComplete = false;
+			if (CanCast()) {
+				if (cooldown <= 0) {
+					chargeTime += dt;
+				}
 			}
 		}
+
 
 		public bool Attack(Pawn owner) {
             if (!CanCast()) {
                 return false;
             }
+
+			if (cooldown > 0) {
+				attackWhenCooldownComplete = true;
+				return true;
+			}
 
 			hitTargets.Clear();
 			attackType = getCurCharge();
@@ -148,7 +158,14 @@ namespace Bowhead {
 					owner.canTurn = false;
                 }
             }
-            if (castTime > 0) {
+			else {
+				if (attackWhenCooldownComplete) {
+					attackWhenCooldownComplete = false;
+					Attack(owner);
+				}
+			}
+
+			if (castTime > 0) {
 				castTime = Mathf.Max(0, castTime - dt);
                 if (castTime <= 0) {
                     Activate(owner);
@@ -171,6 +188,7 @@ namespace Bowhead {
 				owner.canRun = false;
 				owner.canSprint = false;
 			}
+
 
 			UpdateAnimation(owner);
 

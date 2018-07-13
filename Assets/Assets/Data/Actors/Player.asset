@@ -17,11 +17,12 @@ MonoBehaviour:
   maxHealth: 200
   maxWater: 100
   maxStamina: 100
-  recoveryTime: 2
-  staminaRechargeTime: 1
+  recoveryTime: 1
+  staminaRechargeTime: 3
   dodgeTime: 0.25
   stunLimit: 1
   stunRecoveryTime: 1
+  postStunInvincibilityTime: 1
   backStabAngle: 45
   runSound: 1
   sprintSound: 2

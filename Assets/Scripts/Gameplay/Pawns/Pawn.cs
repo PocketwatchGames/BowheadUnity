@@ -338,6 +338,7 @@ namespace Bowhead.Actors {
                 stunTimer = Math.Max(0, stunTimer - dt);
                 if (stunTimer <= 0) {
                     stunned = false;
+					dodgeTimer = Mathf.Max(dodgeTimer, data.postStunInvincibilityTime);
                 }
             }
             else if (stunAmount > 0) {
