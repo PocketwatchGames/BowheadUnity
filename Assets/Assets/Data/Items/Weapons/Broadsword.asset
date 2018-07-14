@@ -21,14 +21,14 @@ MonoBehaviour:
   hand: 2
   moveSpeedChargeDelay: 0.2
   attacks:
-  - chargeTime: 0.5
+  - chargeTime: 0
     castTime: 0
     activeTime: 0
     cooldown: 0.25
     cooldownNextAttackQueueTime: 0
-    attackRange: 0
-    attackRadius: 0
-    attackStaminaUse: 0
+    range: 0
+    radius: 0
+    staminaUse: 0
     stepDistance: 0
     canRunWhileCharging: 0
     canMoveDuringCooldown: 0
@@ -42,14 +42,14 @@ MonoBehaviour:
     projectileSpeed: 0
     attackResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
     backstabResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
     canDefend: 1
@@ -57,8 +57,8 @@ MonoBehaviour:
     defendAngleRange: 0
     defendResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
       stunAbsorb: 0
@@ -68,8 +68,8 @@ MonoBehaviour:
     parryTime: 0.25
     parryResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
       stunAbsorb: 0
@@ -80,9 +80,9 @@ MonoBehaviour:
     activeTime: 0.1
     cooldown: 0.3
     cooldownNextAttackQueueTime: 0.1
-    attackRange: 3
-    attackRadius: 2
-    attackStaminaUse: 20
+    range: 3
+    radius: 2
+    staminaUse: 30
     stepDistance: 1
     canRunWhileCharging: 0
     canMoveDuringCooldown: 0
@@ -96,14 +96,14 @@ MonoBehaviour:
     projectileSpeed: 0
     attackResult:
       knockback: 2
-      attackDamage: 25
-      stunPower: 0.5
-      interrupt: 0
+      damage: 25
+      stun: 0.5
+      interrupt: 1
       staminaDrain: 0
     backstabResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
     canDefend: 0
@@ -111,8 +111,8 @@ MonoBehaviour:
     defendAngleRange: 0
     defendResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
       stunAbsorb: 0
@@ -122,8 +122,8 @@ MonoBehaviour:
     parryTime: 0
     parryResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
       stunAbsorb: 0

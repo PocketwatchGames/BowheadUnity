@@ -1114,8 +1114,8 @@ namespace Bowhead.Actors {
             //    remainingDamage = attackResult.attackDamageBackstab;
             //}
             //else {
-                remainingStun = attackResult.stunPower;
-                remainingDamage = attackResult.attackDamage;
+                remainingStun = attackResult.stun;
+                remainingDamage = attackResult.damage;
             //}
 
 
@@ -1138,20 +1138,11 @@ namespace Bowhead.Actors {
             }
 
             if (remainingStun > 0) {
-
-                if (attackResult.knockback != 0) {
-                    moveImpulseTimer = 0.1f;
-                    var kb = (rigidBody.position - attacker.rigidBody.position);
-                    kb.y = 0;
-                    kb.Normalize();
-                    moveImpulse = attackResult.knockback * kb;
-                }
-
-                useStamina(attackResult.staminaDrain);
                 stun(remainingStun);
             }
 
-			if (attackResult.interrupt) {
+
+            if (attackResult.interrupt) {
 				foreach (var i in getInventory()) {
 					var w = i as Weapon;
 					if (w != null) {
@@ -1163,7 +1154,18 @@ namespace Bowhead.Actors {
 				}
 			}
 
-			onHit?.Invoke(attacker);
+            if (attackResult.knockback != 0)
+            {
+                moveImpulseTimer = 0.1f;
+                var kb = (rigidBody.position - attacker.rigidBody.position);
+                kb.y = 0;
+                kb.Normalize();
+                moveImpulse = attackResult.knockback * kb;
+            }
+
+            useStamina(attackResult.staminaDrain);
+
+            onHit?.Invoke(attacker);
 
 		}
 

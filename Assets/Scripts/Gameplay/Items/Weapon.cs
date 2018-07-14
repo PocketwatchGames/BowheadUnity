@@ -108,7 +108,7 @@ namespace Bowhead {
             float critterRadius = 1.0f;
             var diff = enemy.waistPosition() - attackPos;
             float dist = diff.magnitude;
-            if (dist <= data.attacks[attackHand].attackRadius + critterRadius) {
+            if (dist <= data.attacks[attackHand].radius + critterRadius) {
 
                 enemy.Hit(owner, this, data.attacks[attackHand].attackResult, !data.attacks[attackHand].unblockable);
 
@@ -130,9 +130,9 @@ namespace Bowhead {
 			castTime = 0;
             cooldown = data.attacks[attackHand].cooldown;
 
-			if (data.attacks[attackHand].attackRadius > 0) {
+			if (data.attacks[attackHand].radius > 0) {
 				_damageIndicator = GameObject.Instantiate(GameManager.instance.clientData.damageIndicatorPrefab);
-				_damageIndicator.Init(data.attacks[attackHand].activeTime > 0 ? data.attacks[attackHand].activeTime : 0.05f, data.attacks[attackHand].attackRadius);
+				_damageIndicator.Init(data.attacks[attackHand].activeTime > 0 ? data.attacks[attackHand].activeTime : 0.05f, data.attacks[attackHand].radius*2);
 			}
 
 			if (data.attacks[attackHand].activeTime == 0) {
@@ -150,7 +150,7 @@ namespace Bowhead {
 				ActivateSpell(owner);
 			}
 
-			owner.useStamina(data.attacks[attackHand].attackStaminaUse);
+			owner.useStamina(data.attacks[attackHand].staminaUse);
 			owner.useWater(data.attacks[attackHand].waterUse);
 
         }
@@ -226,7 +226,7 @@ namespace Bowhead {
 
 		private void DoActiveTick(Pawn owner) {
 			Vector3 attackDir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
-			Vector3 attackPos = owner.waistPosition() + attackDir * data.attacks[attackHand].attackRange;
+			Vector3 attackPos = owner.waistPosition() + attackDir * data.attacks[attackHand].range;
 			bool hit = false;
 
 			foreach (var c in owner.world.GetActorIterator<Pawn>()) {

@@ -22,8 +22,8 @@ namespace Bowhead {
 		[System.Serializable]
 		public class AttackResult {
 			public float knockback;
-			public float attackDamage;
-			public float stunPower;
+			public float damage;
+			public float stun;
 			public bool interrupt;
 			public float staminaDrain;
 		}
@@ -43,9 +43,9 @@ namespace Bowhead {
 			public float activeTime;
 			public float cooldown;
 			public float cooldownNextAttackQueueTime;
-			public float attackRange;
-			public float attackRadius;
-			public float attackStaminaUse;
+			public float range;
+			public float radius;
+			public float staminaUse;
 			public float stepDistance;
 			public bool canRunWhileCharging;
 			public bool canMoveDuringCooldown;

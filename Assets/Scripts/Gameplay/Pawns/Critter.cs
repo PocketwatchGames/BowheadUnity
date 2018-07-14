@@ -118,6 +118,11 @@ namespace Bowhead.Actors {
 				canTurn = false;
 			}
 
+            if (moveImpulseTimer > 0)
+            {
+                canAttack = false;
+            }
+
 
 			base.PreSimulate(dt);
 
