@@ -7,12 +7,12 @@ using Bowhead.Actors;
 namespace Bowhead.Client.UI {
 	public class BowheadHUD : HUD {
 		InventoryPanel _inventory;
-		PlayerStatePanel _playerState;
         ButtonHint _interactHint;
 		Map _worldmap;
         Compass _compass;
 
 		GameObject _pawnHUDs;
+        GameObject _playerHUD;
 		WeaponChargeHUD _weaponChargeLeft, _weaponChargeRight;
 
 		class MapMarker : IMapMarker, IDisposable {
@@ -54,7 +54,6 @@ namespace Bowhead.Client.UI {
 
 		public BowheadHUD(ClientWorld world, GameState gameState) : base(world, gameState) {
 			_inventory = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPanelPrefab, hudCanvas.transform, false);
-			_playerState = GameObject.Instantiate(GameManager.instance.clientData.hudPlayerStatePanelPrefab, hudCanvas.transform, false);
             _interactHint = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, hudCanvas.transform, false);
             _worldmap = GameObject.Instantiate(GameManager.instance.clientData.worldMapPrefab, hudCanvas.transform, false);
 			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
@@ -72,7 +71,6 @@ namespace Bowhead.Client.UI {
         public override void OnPlayerPossessed(Player player) {
 			base.OnPlayerPossessed(player);
 			_inventory.Init(player);
-			_playerState.Init(player);
             _compass.Init(Camera.main, player);
 
 			_worldmap.SetStreaming(player.world.worldStreaming);
@@ -86,9 +84,12 @@ namespace Bowhead.Client.UI {
 
 			_weaponChargeLeft.SetTarget(player, 1);
 			_weaponChargeRight.SetTarget(player, 2);
-		}
 
-		public void OnCritterActive(Critter critter) {
+            var playerHUD = GameObject.Instantiate<PlayerHUD>(GameManager.instance.clientData.playerHudPrefab, _pawnHUDs.transform);
+            playerHUD.SetTarget(player);
+        }
+
+        public void OnCritterActive(Critter critter) {
 			var critterHUD = GameObject.Instantiate<PawnHUD>(GameManager.instance.clientData.critterHudPrefab, _pawnHUDs.transform);
 			critterHUD.SetTarget(critter);
 		}

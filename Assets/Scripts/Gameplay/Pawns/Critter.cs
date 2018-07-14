@@ -27,7 +27,6 @@ namespace Bowhead.Actors {
 
 		#endregion
 
-		private PawnHUD _hud;
 
 		public float canSmell, canSee, canHear;
 

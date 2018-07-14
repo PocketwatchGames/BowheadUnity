@@ -104,11 +104,11 @@ namespace Bowhead {
         public Client.UI.Compass compassPrefab;
         public Canvas hudCanvasPrefab;
 		public Client.UI.InventoryPanel hudInventoryPanelPrefab;
-		public Client.UI.PlayerStatePanel hudPlayerStatePanelPrefab;
         public Client.UI.ButtonHint hudButtonHintPrefab;
         public CameraData cameraData;
         public DamageIndicator damageIndicatorPrefab;
 		public PawnHUD critterHudPrefab;
+        public PlayerHUD playerHudPrefab;
 		public WeaponChargeHUD weaponChargePrefab;
 		public bool isDualAnalogAiming;
 
