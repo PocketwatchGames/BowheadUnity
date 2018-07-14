@@ -24,32 +24,32 @@ MonoBehaviour:
   - chargeTime: 0
     castTime: 0
     activeTime: 0
-    cooldown: 0
-    cooldownNextAttackQueueTime: 0
-    attackRange: 0
-    attackRadius: 0
-    attackStaminaUse: 0
+    cooldown: 0.5
+    cooldownNextAttackQueueTime: 0.1
+    range: 0
+    radius: 0
+    staminaUse: 0
     stepDistance: 0
-    canRunWhileCharging: 0
-    canMoveDuringCooldown: 0
-    canMoveDuringCast: 0
-    canMoveDuringActive: 0
+    canRunWhileCharging: 1
+    canMoveDuringCooldown: 1
+    canMoveDuringCast: 1
+    canMoveDuringActive: 1
     unblockable: 0
     spell: 0
     spellPower: 0
-    waterUse: 0
-    projectile: {fileID: 0}
-    projectileSpeed: 0
+    waterUse: 10
+    projectile: {fileID: 11400000, guid: 3153fb8bcefe50a44af717fe0aa81363, type: 2}
+    projectileSpeed: 20
     attackResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
     backstabResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
     canDefend: 0
@@ -57,8 +57,8 @@ MonoBehaviour:
     defendAngleRange: 0
     defendResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
       stunAbsorb: 0
@@ -68,8 +68,8 @@ MonoBehaviour:
     parryTime: 0
     parryResult:
       knockback: 0
-      attackDamage: 0
-      stunPower: 0
+      damage: 0
+      stun: 0
       interrupt: 0
       staminaDrain: 0
       stunAbsorb: 0
