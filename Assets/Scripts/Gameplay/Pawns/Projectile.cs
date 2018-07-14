@@ -44,7 +44,7 @@ namespace Bowhead.Actors {
 				var target = (Pawn)hit.transform.FindServerActorUpwards();
 				if (target != null) {
 					if (target.team != team) {
-						target.hit(this, owner);
+						target.Hit(this, owner);
 						Destroy();
 						return;
 					}

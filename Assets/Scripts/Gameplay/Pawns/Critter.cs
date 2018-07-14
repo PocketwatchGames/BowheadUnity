@@ -201,7 +201,7 @@ namespace Bowhead.Actors {
                     if (w != null && w.CanCast()) {
 						
                         if (input.IsPressed(InputType.AttackRight)) {
-                            w.Charge(dt);
+                            w.Charge(dt, 1);
                         }
                         else {
                             if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {

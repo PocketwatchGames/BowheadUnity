@@ -1077,7 +1077,7 @@ namespace Bowhead.Actors {
                 foreach (var w in getInventory()) {
                     var weapon = w as Weapon;
                     if (weapon != null) {
-                        weapon.interrupt(this);
+                        weapon.Interrupt(this);
                     }
                 }
             }
@@ -1091,13 +1091,13 @@ namespace Bowhead.Actors {
             blood.transform.localPosition = waistPosition() - rigidBody.position;
         }
 
-		public void hit(Projectile projectile, Actor owner) {
+		public void Hit(Projectile projectile, Actor owner) {
 			damage(projectile.data.damage);
 
 			onHit?.Invoke(owner as Pawn);
 		}
 
-		public void hit(Pawn attacker, Weapon weapon, WeaponData.AttackData attackData) {
+		public void Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, bool canBlock) {
             float remainingStun;
             float remainingDamage;
 
@@ -1108,15 +1108,15 @@ namespace Bowhead.Actors {
             else {
                 dirToEnemy.Normalize();
             }
-            float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(-dirToEnemy.x, -dirToEnemy.z), yaw));
-            if (attackData.attackDamageBackstab > 0 && angleToEnemysBack < data.backStabAngle*Mathf.Deg2Rad || angleToEnemysBack > Math.PI*2-data.backStabAngle * Mathf.Deg2Rad) {
-                remainingStun = attackData.stunPowerBackstab;
-                remainingDamage = attackData.attackDamageBackstab;
-            }
-            else {
-                remainingStun = attackData.stunPower;
-                remainingDamage = attackData.attackDamage;
-            }
+            //float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(-dirToEnemy.x, -dirToEnemy.z), yaw));
+            //if (attackResult.attackDamageBackstab > 0 && angleToEnemysBack < data.backStabAngle*Mathf.Deg2Rad || angleToEnemysBack > Math.PI*2-data.backStabAngle * Mathf.Deg2Rad) {
+            //    remainingStun = attackResult.stunPowerBackstab;
+            //    remainingDamage = attackResult.attackDamageBackstab;
+            //}
+            //else {
+                remainingStun = attackResult.stunPower;
+                remainingDamage = attackResult.attackDamage;
+            //}
 
 
             if (dodgeTimer > 0) {
@@ -1124,11 +1124,11 @@ namespace Bowhead.Actors {
             }
 
 			// Check if we're blocking with shield
-			if (!attackData.unblockable) {
+			if (canBlock) {
 				foreach (var w in getInventory()) {
 					var shield = w as Weapon;
 					if (shield != null) {
-						shield.defend(this, attacker, weapon, attackData, ref remainingStun, ref remainingDamage);
+						shield.Defend(this, attacker, weapon, ref remainingStun, ref remainingDamage);
 					}
 				}
 			}
@@ -1139,24 +1139,24 @@ namespace Bowhead.Actors {
 
             if (remainingStun > 0) {
 
-                if (attackData.knockback != 0) {
+                if (attackResult.knockback != 0) {
                     moveImpulseTimer = 0.1f;
                     var kb = (rigidBody.position - attacker.rigidBody.position);
                     kb.y = 0;
                     kb.Normalize();
-                    moveImpulse = attackData.knockback * kb;
+                    moveImpulse = attackResult.knockback * kb;
                 }
 
-                useStamina(attackData.staminaDrain);
+                useStamina(attackResult.staminaDrain);
                 stun(remainingStun);
             }
 
-			if (attackData.interrupt) {
+			if (attackResult.interrupt) {
 				foreach (var i in getInventory()) {
 					var w = i as Weapon;
 					if (w != null) {
 						if (w.castTime > 0 || w.activeTime > 0 || w.chargeTime > 0) {
-							w.interrupt(this);
+							w.Interrupt(this);
 						}
 					}
 					moveImpulseTimer = 0;

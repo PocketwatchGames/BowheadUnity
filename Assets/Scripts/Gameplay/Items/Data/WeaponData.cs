@@ -18,48 +18,66 @@ namespace Bowhead {
 			Heal,
 		}
 
-        [System.Serializable]
-        public class AttackData {
-            public float castTime;
+
+		[System.Serializable]
+		public class AttackResult {
+			public float knockback;
+			public float attackDamage;
+			public float stunPower;
+			public bool interrupt;
+			public float staminaDrain;
+		}
+
+		[System.Serializable]
+		public class DefendResult : AttackResult {
+			public float stunAbsorb;
+			public float damageAbsorb;
+			public float staminaUse;
+		}
+
+		[System.Serializable]
+		public class AttackData {
+			[Header("Attack")]
+			public float chargeTime;
+			public float castTime;
 			public float activeTime;
-            public float cooldown;
-            public float attackRange;
-            public float attackRadius;
-            public float knockback;
-            public float attackDamage;
-            public float defendPower;
-            public float defendDamageAbsorb;
-            public float defendStaminaUse;
-			public float defendAngleRange;
-            public float staminaUse;
-            public float stepDistance;
-            public float staminaDrain;
-            public float stunPower;
-            public float stunPowerBackstab;
-            public float attackDamageBackstab;
+			public float cooldown;
+			public float cooldownNextAttackQueueTime;
+			public float attackRange;
+			public float attackRadius;
+			public float attackStaminaUse;
+			public float stepDistance;
+			public bool canRunWhileCharging;
 			public bool canMoveDuringCooldown;
 			public bool canMoveDuringCast;
 			public bool canMoveDuringActive;
-			public bool interrupt;
 			public bool unblockable;
-			public bool defendInterrupt;
 			public Spell spell;
 			public float spellPower;
 			public float waterUse;
 			public Actors.ProjectileData projectile;
 			public float projectileSpeed;
+			public AttackResult attackResult;
+			public AttackResult backstabResult;
+
+			[Header("Defend")]
+			public bool canDefend;
+			public bool canRunWhileDefending;
+			public float defendAngleRange;
+			public DefendResult defendResult;
+
+			[Header("Parry")]
+			public bool canParry;
+			public float parryTime;
+			public DefendResult parryResult;
+
 		}
 
 		public GameObject_WRef prefab;
         public Hand hand;
-		public float cooldownNextAttackQueueTime;
-		public float chargeTime;
-		public float parryTime;
-		public bool canRunWhileCharging;
 		public float moveSpeedChargeDelay = 0.2f;
-        public Vector3 weaponSize;
-		public AttackData[] attacks;
-		public AttackData parry;
 
-    }
+		public AttackData[] attacks;
+
+	}
 }

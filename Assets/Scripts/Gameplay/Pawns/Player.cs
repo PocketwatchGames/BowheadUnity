@@ -296,44 +296,63 @@ namespace Bowhead.Actors {
 			}
 
 			bool isCasting = false;
-            var itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
-			var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
-			var itemRanged = GetInventorySlot((int)InventorySlot.RANGED) as Weapon;
+            Weapon itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
+			Weapon itemLeft;
+			if (itemRight?.data.hand == WeaponData.Hand.BOTH) {
+				itemLeft = itemRight;
+			}
+			else {
+				itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
+			}
+			Weapon itemRanged = GetInventorySlot((int)InventorySlot.RANGED) as Weapon;
 			if (canAttack) {
-                if (itemLeft != null) {
+				if (itemLeft != null) {
+					if (itemLeft.CanCast()) {
+						if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
+							itemLeft.Attack(this);
+							isCasting = true;
+						}
+					}
+				}
+				if (itemRight != null) {
+					if (itemRight.CanCast()) {
+						if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
+							itemRight.Attack(this);
+							isCasting = true;
+						}
+					}
+				}
+				if (itemLeft != null) {
 					if (itemLeft.CanCast()) {
 						if (input.IsPressed(InputType.AttackLeft)) {
-							itemLeft.Charge(dt);
+							itemLeft.Charge(dt, 0);
 							isCasting = true;
 						}
 						else {
-							if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
-								itemLeft.Attack(this);
-								isCasting = true;
+							if (itemLeft.attackHand == 0) {
+								itemLeft.chargeTime = 0;
 							}
-							itemLeft.chargeTime = 0;
 						}
 					}
                 }
 				if (itemRight != null) {
 					if (itemRight.CanCast()) {
 						if (input.IsPressed(InputType.AttackRight)) {
-							itemRight.Charge(dt);
+							itemRight.Charge(dt, 1);
 							isCasting = true;
 						}
 						else {
-							if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
-								itemRight.Attack(this);
-								isCasting = true;
+							if (itemRight.attackHand == 1) {
+								itemRight.chargeTime = 0;
 							}
-							itemRight.chargeTime = 0;
 						}
 					}
 				}
+
 				if (itemRanged != null) {
 					if (itemRanged.CanCast()) {
 						if (input.IsPressed(InputType.AttackRanged)) {
-							itemRanged.Charge(dt);
+							itemRanged.Charge(dt, 0);
 							isCasting = true;
 						}
 						else {
