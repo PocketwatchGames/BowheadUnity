@@ -863,12 +863,19 @@ namespace Bowhead.Actors {
 			}
         }
 
-        #endregion
+		#endregion
 
 
-        #region World Interaction
+		#region World Interaction
 
-        void Interact() {
+		protected override void SetActivity(Activity a) {
+			base.SetActivity(a);
+			if (a == Activity.Climbing) {
+				stance = Stance.Explore;
+			}
+		}
+
+		void Interact() {
 
             Entity target;
             string interaction;

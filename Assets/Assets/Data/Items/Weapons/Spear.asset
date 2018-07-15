@@ -36,6 +36,7 @@ MonoBehaviour:
     canMoveDuringCast: 1
     canMoveDuringActive: 1
     unblockable: 0
+    interruptOnHit: 1
     spell: 0
     spellPower: 0
     waterUse: 0
@@ -90,6 +91,7 @@ MonoBehaviour:
     canMoveDuringCast: 0
     canMoveDuringActive: 0
     unblockable: 0
+    interruptOnHit: 0
     spell: 0
     spellPower: 0
     waterUse: 0

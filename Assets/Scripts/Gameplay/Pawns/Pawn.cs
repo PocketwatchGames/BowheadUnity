@@ -444,64 +444,64 @@ namespace Bowhead.Actors {
 					if (activity != Activity.Falling) {
 						climbingAttachCooldown = data.climbAttachCooldown;
 					}
-					activity = Activity.Falling;
+					SetActivity(Activity.Falling);
 				}
 			}
             else if (world.GetBlock(position) == EVoxelBlockType.Water) {
-                activity = Activity.Swimming;
-            }
-            else if (onGround && velocity.y <= 0) {
-                activity = Activity.OnGround;
+				SetActivity(Activity.Swimming);
+			}
+			else if (onGround && velocity.y <= 0) {
+				SetActivity(Activity.OnGround);
 
-                //if (Crouched)
-                //{
-                //	bool interpolate = false;
-                //	Vector3 climbDownPos = position + Vector3(0, 0, -2f);
-                //	Vector3 wallNormal;
-                //	if (canClimb(-firstCheck, climbDownPos + firstCheck * data.WallJumpRange / 2)) {
-                //		interpolate = true;
-                //		climbDownPos += firstCheck * data.WallJumpRange / 2;
-                //		wallNormal = firstCheck;
-                //	}
-                //	else if (canClimb(-secondCheck, climbDownPos + secondCheck * data.WallJumpRange / 2)) {
-                //		interpolate = true;
-                //		climbDownPos += secondCheck * data.WallJumpRange / 2;
-                //		wallNormal = firstCheck;
-                //	}
-                //	if (interpolate)
-                //	{
-                //		physics = PhysicsState::CLIMBING;
-                //		setPosition(climbDownPos, 0.1f);
-                //		climbingNormal = Vector3(Mathf.Sign(wallNormal.x), Mathf.Sign(wallNormal.y), 0);
-                //		velocity = Vector3.zero;
-                //		if (climbingNormal.x != 0)
-                //			velocity.y = 0;
-                //		if (climbingNormal.y != 0)
-                //			velocity.x = 0;
-                //	}
-                //}
+				//if (Crouched)
+				//{
+				//	bool interpolate = false;
+				//	Vector3 climbDownPos = position + Vector3(0, 0, -2f);
+				//	Vector3 wallNormal;
+				//	if (canClimb(-firstCheck, climbDownPos + firstCheck * data.WallJumpRange / 2)) {
+				//		interpolate = true;
+				//		climbDownPos += firstCheck * data.WallJumpRange / 2;
+				//		wallNormal = firstCheck;
+				//	}
+				//	else if (canClimb(-secondCheck, climbDownPos + secondCheck * data.WallJumpRange / 2)) {
+				//		interpolate = true;
+				//		climbDownPos += secondCheck * data.WallJumpRange / 2;
+				//		wallNormal = firstCheck;
+				//	}
+				//	if (interpolate)
+				//	{
+				//		physics = PhysicsState::CLIMBING;
+				//		setPosition(climbDownPos, 0.1f);
+				//		climbingNormal = Vector3(Mathf.Sign(wallNormal.x), Mathf.Sign(wallNormal.y), 0);
+				//		velocity = Vector3.zero;
+				//		if (climbingNormal.x != 0)
+				//			velocity.y = 0;
+				//		if (climbingNormal.y != 0)
+				//			velocity.x = 0;
+				//	}
+				//}
 
-            }
-            else {
+			}
+			else {
 				if (activity != Activity.Falling) {
 					climbingAttachCooldown = data.climbAttachCooldown;
 				}
-				activity = Activity.Falling;
+				SetActivity(Activity.Falling);
 
 				if (canClimb && climbingAttachCooldown <= 0) {
                     if (firstCheck.magnitude > 0 && CanClimb(firstCheck, position)) {
 						climbingAttachPoint = position;
 						climbingNormal = -firstCheck;
                         velocity = Vector3.zero;
-                        activity = Activity.Climbing;
-                    }
-                    else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, position)) {
+						SetActivity(Activity.Climbing);
+					}
+					else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, position)) {
 						climbingAttachPoint = position;
 						climbingNormal = -secondCheck;
                         velocity = Vector3.zero;
-                        activity = Activity.Climbing;
-                    }
-                }
+						SetActivity(Activity.Climbing);
+					}
+				}
 
             }
 
@@ -514,6 +514,10 @@ namespace Bowhead.Actors {
 				driver?.MountMoved();
 			}
         }
+
+		virtual protected void SetActivity(Activity a) {
+			activity = a;
+		}
 
 		protected virtual void MountMoved() { }
 
@@ -819,7 +823,7 @@ namespace Bowhead.Actors {
 				if (activity != Activity.Falling) {
 					climbingAttachCooldown = data.climbAttachCooldown;
 				}
-				activity = Activity.Falling;
+				SetActivity(Activity.Falling);
 
 				Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
                 if (canJump) {
@@ -864,8 +868,8 @@ namespace Bowhead.Actors {
             Vector3 groundNormal;
             bool onGround = CheckFloor(vertMovePosition, out floorPosition, out groundNormal);
             if (onGround) {
-                activity = Activity.OnGround;
-                velocity.y = Math.Max(0, velocity.y);
+				SetActivity(Activity.OnGround);
+				velocity.y = Math.Max(0, velocity.y);
                 SetPosition(new Vector3(position.x, floorPosition, position.z));
             }
             else {
@@ -922,7 +926,7 @@ namespace Bowhead.Actors {
 				if (activity != Activity.Falling) {
 					climbingAttachCooldown = data.climbAttachCooldown;
 				}
-				activity = Activity.Falling;
+				SetActivity(Activity.Falling);
 			}
 
 		}
