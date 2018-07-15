@@ -425,7 +425,7 @@ namespace Bowhead.Actors {
                 return 0;
 
             float angleToPlayer = Mathf.Atan2(diff.x, diff.z);
-            float angleDiffXZ = Mathf.Abs(Utils.SignedMinAngleDelta(angleToPlayer, yaw));
+            float angleDiffXZ = Mathf.Abs(Utils.SignedMinAngleDelta(angleToPlayer * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg));
 			float angleRangeXZ = data.visionAngleRange * Mathf.Deg2Rad;
 
 			if (angleDiffXZ > angleRangeXZ)

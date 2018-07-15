@@ -937,7 +937,7 @@ public static class Utils {
 		float d = a - b;
 
 		if (d < -180) {
-			d = -360 - d;
+			d = 360 + d;
 		} else if (d > 180) {
 			d = 360 - d;
 		}
@@ -969,10 +969,10 @@ public static class Utils {
 	}
 
 	public static float NormalizeAngle(float a) {
-		while (a >= 360) {
+		while (a >= 180) {
 			a -= 360;
 		}
-		while (a < 0) {
+		while (a < -180) {
 			a += 360;
 		}
 		return a;

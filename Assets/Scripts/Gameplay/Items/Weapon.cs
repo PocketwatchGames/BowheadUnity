@@ -192,7 +192,7 @@ namespace Bowhead {
 			if (parryTime <= 0 && activeTime <= 0) {
 				if (cooldown > 0) {
 					cooldown = Mathf.Max(0, cooldown - dt);
-					if (!data.attacks[attackHand].canMoveDuringCooldown) {
+					if (cooldown > 0 && !data.attacks[attackHand].canMoveDuringCooldown) {
 						owner.canMove = false;
 						owner.canTurn = false;
 					}
@@ -312,7 +312,7 @@ namespace Bowhead {
 			else {
 				dirToEnemy.Normalize();
 			}
-			float angleToEnemy = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z), owner.yaw));
+			float angleToEnemy = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) * Mathf.Rad2Deg, owner.yaw * Mathf.Rad2Deg))*Mathf.Rad2Deg;
 			if (angleToEnemy > data.attacks[attackHand].defendAngleRange*Mathf.Deg2Rad && Mathf.PI * 2 - angleToEnemy > data.attacks[attackHand].defendAngleRange * Mathf.Deg2Rad) {
 				return;
 			}
