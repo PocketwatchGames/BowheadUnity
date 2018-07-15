@@ -208,6 +208,9 @@ namespace Bowhead.Actors {
 
 						// Mario style leash camera
 						if (_mouseLookActive) {
+
+							//_position += _target.velocity *0.8f * dt;
+
 							diff = _position - _lookAt;
 							diff.y = 0;
 							if (diff.magnitude < 0.1f)
@@ -215,7 +218,8 @@ namespace Bowhead.Actors {
 							diff.Normalize();
 							diff *= minDist;
 
-							_yaw = Mathf.Atan2(-diff.x, -diff.z);
+							var desiredYaw = Mathf.Atan2(-diff.x, -diff.z);
+							_yaw = Utils.AngleLerpShortestPath(_yaw*Mathf.Rad2Deg, desiredYaw * Mathf.Rad2Deg,dt/0.05f) * Mathf.Deg2Rad;
 						}
 						// end leash camera
 					}

@@ -52,6 +52,7 @@ namespace Bowhead {
 			public bool canMoveDuringCast;
 			public bool canMoveDuringActive;
 			public bool unblockable;
+			public bool interruptOnHit;
 			public Spell spell;
 			public float spellPower;
 			public float waterUse;

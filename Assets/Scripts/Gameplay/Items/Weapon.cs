@@ -110,10 +110,13 @@ namespace Bowhead {
             float dist = diff.magnitude;
             if (dist <= data.attacks[attackHand].radius + critterRadius) {
 
-                enemy.Hit(owner, this, data.attacks[attackHand].attackResult, !data.attacks[attackHand].unblockable);
-
-                Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
-                return true;
+				if (enemy.Hit(owner, this, data.attacks[attackHand].attackResult, !data.attacks[attackHand].unblockable)) {
+					Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
+					if (data.attacks[attackHand].interruptOnHit) {
+						Interrupt(owner);
+					}
+					return true;
+				}
             }
             return false;
         }

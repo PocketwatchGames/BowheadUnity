@@ -1097,7 +1097,7 @@ namespace Bowhead.Actors {
 			onHit?.Invoke(owner as Pawn);
 		}
 
-		public void Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, bool canBlock) {
+		public bool Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, bool canBlock) {
             float remainingStun;
             float remainingDamage;
 
@@ -1120,7 +1120,7 @@ namespace Bowhead.Actors {
 
 
             if (dodgeTimer > 0) {
-                return;
+                return false;
             }
 
 			// Check if we're blocking with shield
@@ -1167,6 +1167,7 @@ namespace Bowhead.Actors {
 
             onHit?.Invoke(attacker);
 
+			return true;
 		}
 
 
