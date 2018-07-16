@@ -386,7 +386,7 @@ namespace Bowhead.Actors {
             if (distance == 0)
                 return 1f;
 
-            float playerSound = Mathf.Pow(Mathf.Clamp01(1f - (distance / (data.hearingDistance * playerSpeedLevel))), data.hearingDistanceExponent);
+            float playerSound = Mathf.Pow(Mathf.Clamp01(1f - (distance / data.hearingDistance)) * playerSpeedLevel, data.hearingDistanceExponent);
             if (playerSound <= 0)
                 return 0;
 
