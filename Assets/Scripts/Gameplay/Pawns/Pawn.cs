@@ -66,9 +66,6 @@ namespace Bowhead.Actors {
         public bool recovering;
         public float recoveryTimer;
         public float dodgeTimer;
-        public bool stunned;
-        public float stunTimer;
-        public float stunAmount;
 
 		[Header("Gameplay")]
         public Activity activity;
@@ -326,26 +323,16 @@ namespace Bowhead.Actors {
             }
             else {
                 if (stamina < maxStamina) {
-                    stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTime);
-                }
+					if (recovering) {
+						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTime);
+					}
+					else {
+						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTimeDuringRecovery);
+					}
+				}
                 else {
                     recovering = false;
                 }
-            }
-
-            if (stunned) {
-                stunAmount = 0;
-                stunTimer = Math.Max(0, stunTimer - dt);
-                if (stunTimer <= 0) {
-                    stunned = false;
-					dodgeTimer = Mathf.Max(dodgeTimer, data.postStunInvincibilityTime);
-                }
-            }
-            else if (stunAmount > 0) {
-                stunAmount = Math.Max(0, stunAmount - dt * data.stunLimit / data.stunRecoveryTime);
-            }
-            else {
-                stunned = false;
             }
 
             if (dodgeTimer > 0) {
@@ -1034,9 +1021,12 @@ namespace Bowhead.Actors {
 			if (stamina <= 0)
 				return;
 			stamina -= s;
-			recoveryTimer = data.recoveryTime;
 			if (stamina <= 0) {
 				recovering = true;
+				recoveryTimer = 0;
+			}
+			else {
+				recoveryTimer = data.recoveryTime;
 			}
 		}
 		public void useWater(float w) {
@@ -1070,22 +1060,23 @@ namespace Bowhead.Actors {
 
         public void stun(float s) {
             // Can't stun further if already stunned
-            if (stunned || s <= 0) {
+            if (recovering) {
                 return;
             }
 
-            stunAmount += s;
-            if (stunAmount >= data.stunLimit) {
-                stunned = true;
-                stunTimer = data.stunRecoveryTime;
-                foreach (var w in getInventory()) {
-                    var weapon = w as Weapon;
-                    if (weapon != null) {
-                        weapon.Interrupt(this);
-                    }
-                }
-            }
-        }
+			useStamina(s);
+            if (recovering) {
+				foreach (var i in getInventory()) {
+					var w = i as Weapon;
+					if (w != null) {
+						if (w.castTime > 0 || w.activeTime > 0 || w.chargeTime > 0) {
+							w.Interrupt(this);
+						}
+					}
+					moveImpulseTimer = 0;
+				}
+			}
+		}
 
 
         public void damage(float d) {
@@ -1166,8 +1157,6 @@ namespace Bowhead.Actors {
                 kb.Normalize();
                 moveImpulse = attackResult.knockback * kb;
             }
-
-            useStamina(attackResult.staminaDrain);
 
             onHit?.Invoke(attacker);
 

@@ -155,10 +155,7 @@ namespace Bowhead.Actors {
 
 			var head = go.GetChildComponent<MeshRenderer>("Head");
 			if (head != null) {
-				if (stunTimer > 0) {
-					head.material.color = Color.red;
-				}
-				else if (dodgeTimer > 0) {
+				if (dodgeTimer > 0) {
 					head.material.color = Color.black;
 				}
 				else if (skidding) {
@@ -175,7 +172,7 @@ namespace Bowhead.Actors {
 
         override public void PreSimulate(float dt) {
 
-            canMove = weight < WeightClass.IMMOBILE && !stunned;
+            canMove = weight < WeightClass.IMMOBILE;
             canAttack = weight < WeightClass.IMMOBILE;
             canRun = weight < WeightClass.ENCUMBERED;
 			canJump = weight < WeightClass.ENCUMBERED;
@@ -193,16 +190,6 @@ namespace Bowhead.Actors {
                 canClimb = false;
                 canClimbWell = false;
                 canAttack = false;
-            }
-            if (stunned) {
-				canRun = false;
-				canSprint = false;
-				canJump = false;
-                canClimb = false;
-                canClimbWell = false;
-                canAttack = false;
-                canMove = false;
-				canTurn = false;
             }
 
             if (activity == Activity.Swimming || activity == Activity.Climbing) {
