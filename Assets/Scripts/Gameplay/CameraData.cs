@@ -11,5 +11,9 @@ public class CameraData : ScriptableObject {
     public float cameraFriction = 10f;
     public float minDistance = 20;
     public float maxDistance = 40;
-
+	public float turnStopTime = 0.1f;
+	public float turnAcceleration = 360;
+	public float turnMaxSpeed = 360;
+	public float turnAccelerationFirstTime = 360;
+	public float turnAccelerationSlowTime = 0.75f;
 }

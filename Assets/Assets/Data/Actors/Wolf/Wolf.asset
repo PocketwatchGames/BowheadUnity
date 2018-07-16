@@ -19,9 +19,9 @@ MonoBehaviour:
   maxStamina: 50
   recoveryTime: 1
   staminaRechargeTime: 3
+  staminaRechargeTimeDuringRecovery: 3
   dodgeTime: 0
-  stunLimit: 1
-  stunRecoveryTime: 3
+  postStunInvincibilityTime: 0
   backStabAngle: 90
   runSound: 0
   sprintSound: 0

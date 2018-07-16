@@ -11,9 +11,8 @@ namespace Bowhead.Actors {
         public float maxStamina;
         public float recoveryTime;
         public float staminaRechargeTime;
-        public float dodgeTime;
-        public float stunLimit;
-        public float stunRecoveryTime;
+		public float staminaRechargeTimeDuringRecovery;
+		public float dodgeTime;
 		public float postStunInvincibilityTime;
 		public float backStabAngle;
 		public float runSound;

@@ -43,6 +43,8 @@ namespace Bowhead.Actors {
 			health = maxHealth;
 			maxWater = data.maxWater;
 			water = maxWater;
+			maxStamina = data.maxStamina;
+			stamina = maxStamina;
 			this.team = team;
             active = false;
             canClimb = false;
@@ -106,7 +108,7 @@ namespace Bowhead.Actors {
 			canTurn = true;
             canAttack = true;
 
-            if (stunned) {
+            if (recovering) {
                 canRun = false;
 				canSprint = false;
 				canJump = false;
@@ -152,10 +154,7 @@ namespace Bowhead.Actors {
 
 			var head = go.GetChildComponent<MeshRenderer>("Head");
 			if (head != null) {
-				if (stunTimer > 0) {
-					head.material.color = Color.red;
-				}
-				else if (dodgeTimer > 0) {
+				if (dodgeTimer > 0) {
 					head.material.color = Color.black;
 				}
 				else if (skidding) {
@@ -386,7 +385,7 @@ namespace Bowhead.Actors {
             if (distance == 0)
                 return 1f;
 
-            float playerSound = Mathf.Pow(Mathf.Clamp01(1f - (distance / (data.hearingDistance * playerSpeedLevel))), data.hearingDistanceExponent);
+            float playerSound = Mathf.Pow(Mathf.Clamp01(1f - (distance / data.hearingDistance)) * playerSpeedLevel, data.hearingDistanceExponent);
             if (playerSound <= 0)
                 return 0;
 

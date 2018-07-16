@@ -9,6 +9,7 @@ namespace Bowhead.Actors {
 
         private float _yaw;
         private float _pitch;
+		private Vector2 _angularVelocity;
 
 		private Vector2 _angleCorrectionVelocity;
 		private float _desiredFOV, _fovVelocity, _fovAcceleration;
@@ -33,7 +34,8 @@ namespace Bowhead.Actors {
 
 		private float _adjustYaw;
 		private float _adjustYawVelocity;
-		private float _adjustYawTime;
+		private bool _isAdjustingYaw;
+		private float _turnAccelerationTimer;
 
 		Camera _camera;
 
@@ -83,8 +85,6 @@ namespace Bowhead.Actors {
         Vector3 _oldMousePosition;
         void HandleInput(int playerNum, float dt) {
 			
-            float mouseTurnSpeed = 360f * Mathf.Deg2Rad;
-            float gpTurnSpeed = 360f * Mathf.Deg2Rad;
 
             _isLooking = false;
 
@@ -94,8 +94,32 @@ namespace Bowhead.Actors {
                 var mouseDelta = m - _oldMousePosition;
 
                 Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
-                _yaw += gamepad.x * gpTurnSpeed * dt;
-                _pitch += gamepad.y * gpTurnSpeed * dt;
+
+				if (gamepad == Vector2.zero) {
+					if (_angularVelocity.magnitude < 0.1f) {
+						_angularVelocity = Vector2.zero;
+					}
+					else {
+						_angularVelocity = -_angularVelocity * dt * data.turnStopTime;
+					}
+				} else {
+					_turnAccelerationTimer += dt;
+					float acceleration;
+					if (_turnAccelerationTimer < data.turnAccelerationSlowTime) {
+						acceleration = data.turnAccelerationFirstTime;
+					}
+					else {
+						acceleration = data.turnAcceleration;
+					}
+
+					_angularVelocity += gamepad * dt * acceleration * Mathf.Deg2Rad;
+				}
+				if (_angularVelocity.magnitude > data.turnMaxSpeed * Mathf.Deg2Rad) {
+					_angularVelocity = _angularVelocity.normalized * data.turnMaxSpeed * Mathf.Deg2Rad;
+				}
+
+				_yaw += _angularVelocity.x * dt;
+                _pitch += _angularVelocity.y * dt;
 
                 _isLooking |= gamepad != Vector2.zero;
 
@@ -132,7 +156,8 @@ namespace Bowhead.Actors {
 				_desiredFOV = 65;
 			}
             if (_target != null) {
-				_mouseLookActive = _target.stance == Player.Stance.Explore;
+				SetMouseLookActive(_target.stance == Player.Stance.Explore);
+
 
 				float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (data.maxDistance - data.minDistance) + data.minDistance;
 
@@ -151,7 +176,7 @@ namespace Bowhead.Actors {
 
 				if (_isLooking) {
 
-					_adjustYawTime = 0;
+					_isAdjustingYaw = false;
                     _playerPosition = avgPlayerPosition;
                     _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
                     _lookAtVelocity += lookAtDiff * data.lookAtAcceleration * dt;
@@ -215,21 +240,22 @@ namespace Bowhead.Actors {
 						if (_target.activity == Pawn.Activity.Climbing) {
 							var desiredYaw = Mathf.Atan2(-_target.climbingNormal.x, -_target.climbingNormal.z);
 							if (Mathf.Abs(Utils.SignedMinAngleDelta(desiredYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) >= 45) {
-								if (_adjustYawTime > 0 || _adjustYaw != desiredYaw) {
-									_adjustYawTime = 1.0f;
-									_adjustYaw = desiredYaw - Mathf.Sign(Utils.SignedMinAngleDelta(desiredYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) * 40 * Mathf.Deg2Rad;
+								if (_isAdjustingYaw || _adjustYaw != desiredYaw) {
+									_isAdjustingYaw = true;
+									_adjustYaw = desiredYaw;
 								}
 							}
 						}
 						else {
-							_adjustYawTime = 0;
+							_isAdjustingYaw = false;
 							_adjustYaw = -1000;
 						}
 
-						if (_adjustYawTime > 0) {
-							_adjustYawTime = Mathf.Max(0, _adjustYawTime - dt);
+						if (_isAdjustingYaw) {
 							float adjustYawAcceleration = 5;
-							float desiredVelocity = Utils.SignedMinAngleDelta(_adjustYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg) * Mathf.Deg2Rad * 2;
+
+							float turnToYaw = _adjustYaw-Mathf.Sign(Utils.SignedMinAngleDelta(_adjustYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) * 40 * Mathf.Deg2Rad;
+							float desiredVelocity = Utils.SignedMinAngleDelta(turnToYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg) * Mathf.Deg2Rad * 2;
 							_adjustYawVelocity += (desiredVelocity - _adjustYawVelocity) *dt * adjustYawAcceleration;
 							_yaw = Utils.NormalizeAngle((_yaw +_adjustYawVelocity * dt) * Mathf.Rad2Deg)*Mathf.Deg2Rad;
 						}
@@ -288,6 +314,13 @@ namespace Bowhead.Actors {
 			_shakeTime = Mathf.Max(0, _shakeTime - dt);
         }
 
+		private void SetMouseLookActive(bool a) {
+			if (a == _mouseLookActive) {
+				return;
+			}
+			_turnAccelerationTimer = 0;
+			_mouseLookActive = a;
+		}
 
         void Init() {
             _position = Vector3.zero;
@@ -310,11 +343,11 @@ namespace Bowhead.Actors {
         void GetPositionAngles(out Vector3 _pos, out float _yaw, out float _pitch) {
             _pos = _position;
 
-            RaycastHit hit;
-            var dir = _position - _lookAt;
-            if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Layers.CameraTraceMask)) {
-                _pos = hit.point;
-            }
+            //RaycastHit hit;
+            //var dir = _position - _lookAt;
+            //if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Layers.CameraTraceMask)) {
+            //    _pos = hit.point;
+            //}
 			
             _yaw = this._yaw;
             _pitch = this._pitch;

@@ -17,3 +17,8 @@ MonoBehaviour:
   cameraFriction: 10
   minDistance: 10
   maxDistance: 20
+  turnStopTime: 0.05
+  turnAcceleration: 2000
+  turnMaxSpeed: 360
+  turnAccelerationFirstTime: 360
+  turnAccelerationSlowTime: 0.75
