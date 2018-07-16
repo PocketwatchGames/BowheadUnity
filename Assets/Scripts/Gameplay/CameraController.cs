@@ -114,8 +114,8 @@ namespace Bowhead.Actors {
 
 					_angularVelocity += gamepad * dt * acceleration * Mathf.Deg2Rad;
 				}
-				if (_angularVelocity.magnitude > data.turnMaxSpeed) {
-					_angularVelocity = _angularVelocity.normalized * data.turnMaxSpeed;
+				if (_angularVelocity.magnitude > data.turnMaxSpeed * Mathf.Deg2Rad) {
+					_angularVelocity = _angularVelocity.normalized * data.turnMaxSpeed * Mathf.Deg2Rad;
 				}
 
 				_yaw += _angularVelocity.x * dt;
@@ -343,11 +343,11 @@ namespace Bowhead.Actors {
         void GetPositionAngles(out Vector3 _pos, out float _yaw, out float _pitch) {
             _pos = _position;
 
-            RaycastHit hit;
-            var dir = _position - _lookAt;
-            if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Layers.CameraTraceMask)) {
-                _pos = hit.point;
-            }
+            //RaycastHit hit;
+            //var dir = _position - _lookAt;
+            //if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Layers.CameraTraceMask)) {
+            //    _pos = hit.point;
+            //}
 			
             _yaw = this._yaw;
             _pitch = this._pitch;

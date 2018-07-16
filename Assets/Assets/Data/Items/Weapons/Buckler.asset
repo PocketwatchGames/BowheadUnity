@@ -46,33 +46,29 @@ MonoBehaviour:
       damage: 0
       stun: 0
       interrupt: 0
-      staminaDrain: 0
     backstabResult:
       knockback: 0
       damage: 0
       stun: 0
       interrupt: 0
-      staminaDrain: 0
     canDefend: 1
     canRunWhileDefending: 0
     defendAngleRange: 60
     defendResult:
       knockback: 0.5
       damage: 0
-      stun: 0
+      stun: 20
       interrupt: 1
-      staminaDrain: 0
-      stunAbsorb: 0.1
+      stunAbsorb: 10
       damageAbsorb: 10
-      staminaUse: 20
+      staminaUse: 5
     canParry: 1
     parryTime: 0.25
     parryResult:
       knockback: 1
       damage: 0
-      stun: 1
+      stun: 100
       interrupt: 1
-      staminaDrain: 0
-      stunAbsorb: 1
+      stunAbsorb: 20
       damageAbsorb: 10
-      staminaUse: 20
+      staminaUse: 5
