@@ -402,8 +402,6 @@ namespace Bowhead.Actors {
 			PickUp(ItemData.Get("Rapier").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
 			PickUp(ItemData.Get("Buckler").CreateItem());
-			PickUp(ItemData.Get("Spear").CreateItem());
-			PickUp(ItemData.Get("Broadsword").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
@@ -865,12 +863,19 @@ namespace Bowhead.Actors {
 			}
         }
 
-        #endregion
+		#endregion
 
 
-        #region World Interaction
+		#region World Interaction
 
-        void Interact() {
+		protected override void SetActivity(Activity a) {
+			base.SetActivity(a);
+			if (a == Activity.Climbing) {
+				stance = Stance.Explore;
+			}
+		}
+
+		void Interact() {
 
             Entity target;
             string interaction;
@@ -950,7 +955,7 @@ namespace Bowhead.Actors {
                         if (dist < maxDist) {
                             float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
 
-                            float yawDiff = Mathf.Abs(Utils.SignedMinAngleDelta(angleToEnemy, yaw));
+                            float yawDiff = Mathf.Abs(Utils.SignedMinAngleDelta(angleToEnemy * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg))*Mathf.Deg2Rad;
 
                             float collisionRadius = 0.5f;
 

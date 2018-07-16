@@ -110,10 +110,13 @@ namespace Bowhead {
             float dist = diff.magnitude;
             if (dist <= data.attacks[attackHand].radius + critterRadius) {
 
-                enemy.Hit(owner, this, data.attacks[attackHand].attackResult, !data.attacks[attackHand].unblockable);
-
-                Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
-                return true;
+				if (enemy.Hit(owner, this, data.attacks[attackHand].attackResult, !data.attacks[attackHand].unblockable)) {
+					Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
+					if (data.attacks[attackHand].interruptOnHit) {
+						Interrupt(owner);
+					}
+					return true;
+				}
             }
             return false;
         }
@@ -189,7 +192,7 @@ namespace Bowhead {
 			if (parryTime <= 0 && activeTime <= 0) {
 				if (cooldown > 0) {
 					cooldown = Mathf.Max(0, cooldown - dt);
-					if (!data.attacks[attackHand].canMoveDuringCooldown) {
+					if (cooldown > 0 && !data.attacks[attackHand].canMoveDuringCooldown) {
 						owner.canMove = false;
 						owner.canTurn = false;
 					}
@@ -309,7 +312,7 @@ namespace Bowhead {
 			else {
 				dirToEnemy.Normalize();
 			}
-			float angleToEnemy = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z), owner.yaw));
+			float angleToEnemy = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) * Mathf.Rad2Deg, owner.yaw * Mathf.Rad2Deg))*Mathf.Rad2Deg;
 			if (angleToEnemy > data.attacks[attackHand].defendAngleRange*Mathf.Deg2Rad && Mathf.PI * 2 - angleToEnemy > data.attacks[attackHand].defendAngleRange * Mathf.Deg2Rad) {
 				return;
 			}
