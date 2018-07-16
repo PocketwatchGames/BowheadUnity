@@ -47,33 +47,50 @@ namespace Bowhead.Actors {
             input.movement = Vector3.zero;
             input.inputs[(int)InputType.Jump] = InputState.Released;
             input.inputs[(int)InputType.AttackRight] = InputState.Released;
+
             if (c.hasLastKnownPosition) {
                 var diff = c.rigidBody.position - c.lastKnownPosition;
 
-                if (diff.y <= -3) {
-                    if (c.canJump && c.activity == Pawn.Activity.OnGround) {
-                        input.inputs[(int)InputType.Jump] = InputState.JustPressed;
-                    }
-                }
-                diff.y = 0;
-                if (diff == Vector3.zero) {
-                    diff.x = 1;
-                }
-                var desiredPos = c.lastKnownPosition + diff.normalized * 5;
-                var move = desiredPos - c.position;
-                move.y = 0;
+				if (c.stamina < 20) {
+					var desiredPos = c.lastKnownPosition + diff.normalized * 5;
+					var move = desiredPos - c.position;
+					move.y = 0;
 
-                float dist = diff.magnitude;
+					float dist = diff.magnitude;
 
-                var weapon = c.GetInventorySlot(0) as Weapon;
-                if (dist > 2 && dist < 5 && c.canAttack && c.activity == Pawn.Activity.OnGround && weapon.CanCast())
-                {
-                    input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
-                }
-                else {
-                    input.movement = move.normalized;
-                }
-				input.look = -diff;
+					input.movement = move.normalized;
+					input.look = -diff;
+
+				}
+				else {
+
+					if (diff.y <= -3) {
+						if (c.canJump && c.activity == Pawn.Activity.OnGround) {
+							input.inputs[(int)InputType.Jump] = InputState.JustPressed;
+						}
+					}
+					diff.y = 0;
+					if (diff == Vector3.zero) {
+						diff.x = 1;
+					}
+					var desiredPos = c.lastKnownPosition + diff.normalized * 5;
+					var move = desiredPos - c.position;
+					move.y = 0;
+
+					float dist = diff.magnitude;
+
+
+					if (c.CanSee(c.gameMode.players[0].playerPawn) > 0) {
+						var weapon = c.GetInventorySlot(0) as Weapon;
+						if (dist > 2 && dist < 5 && c.canAttack && c.activity == Pawn.Activity.OnGround && weapon.CanCast()) {
+							input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
+						}
+						else {
+							input.movement = move.normalized;
+						}
+					}
+					input.look = -diff;
+				}
             }
 
         }

@@ -24,8 +24,11 @@ public class PlayerHUD : MonoBehaviour {
             Destroy(gameObject);
             return;
         }
+
+		var mountOrTarget = _target.mount ?? _target;
+
         float h = _target.health / _target.maxHealth;
-        float s = _target.stamina / _target.maxStamina;
+        float s = mountOrTarget.stamina / mountOrTarget.maxStamina;
         float w = _target.water / _target.maxWater;
 
 		if (_health.value != h) {
@@ -41,7 +44,7 @@ public class PlayerHUD : MonoBehaviour {
             _health.value = h;
             _water.value = w;
             _stamina.value = s;
-            _staminaFill.color = _target.recovering ? Color.yellow : Color.green;
+            _staminaFill.color = mountOrTarget.recovering ? Color.yellow : Color.green;
         }
         _stamina.gameObject.SetActive(s < 1);
         _health.gameObject.SetActive(_changeTimerHealth > 0 || (h < 1 && _target.stance == Player.Stance.Combat));

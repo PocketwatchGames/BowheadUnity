@@ -51,8 +51,6 @@ namespace Bowhead.Actors {
         [Header("Swimming")]
         public float bouyancy;
         public float swimJumpSpeed;
-        public float swimSinkAcceleration;
-        public float swimJumpBoostAcceleration;
         public float swimAcceleration;
         public float swimMaxSpeed;
         public float swimDragVertical;

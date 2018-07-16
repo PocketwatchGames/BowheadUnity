@@ -261,9 +261,16 @@ namespace Bowhead.Actors {
 						}
 
 						// Mario style leash camera
+						float leashFollowVelocityRate;
 						if (_mouseLookActive) {
+							leashFollowVelocityRate = data.leashFollowVelocityRateExplore;
+						}
+						else {
+							leashFollowVelocityRate = data.leashFollowVelocityRateCombat;
+						}
+						{
 
-							//_position += _target.velocity *0.8f * dt;
+							_position += _target.velocity * leashFollowVelocityRate * dt;
 
 							diff = _position - _lookAt;
 							diff.y = 0;
@@ -273,8 +280,10 @@ namespace Bowhead.Actors {
 							diff *= minDist;
 
 							var desiredYaw = Mathf.Atan2(-diff.x, -diff.z);
-							_yaw = Utils.AngleLerpShortestPath(_yaw*Mathf.Rad2Deg, desiredYaw * Mathf.Rad2Deg,dt/0.05f) * Mathf.Deg2Rad;
+							_yaw = Utils.AngleLerpShortestPath(_yaw * Mathf.Rad2Deg, desiredYaw * Mathf.Rad2Deg, dt / 0.05f) * Mathf.Deg2Rad;
 						}
+						//}
+
 						// end leash camera
 					}
 				}
