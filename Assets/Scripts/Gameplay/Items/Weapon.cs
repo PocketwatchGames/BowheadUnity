@@ -110,7 +110,16 @@ namespace Bowhead {
             float dist = diff.magnitude;
             if (dist <= data.attacks[attackHand].radius + critterRadius) {
 
-				if (enemy.Hit(owner, this, data.attacks[attackHand].attackResult, !data.attacks[attackHand].unblockable)) {
+				WeaponData.AttackResult attackType;
+				float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(diff.x, diff.z)*Mathf.Rad2Deg, enemy.yaw * Mathf.Rad2Deg));
+				if (data.attacks[attackHand].canBackstab && angleToEnemysBack < enemy.data.backStabAngle) {
+					attackType = data.attacks[attackHand].backstabResult;
+				}
+				else {
+					attackType = data.attacks[attackHand].attackResult;
+				}
+
+				if (enemy.Hit(owner, this, attackType, !data.attacks[attackHand].unblockable)) {
 					Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
 					if (data.attacks[attackHand].interruptOnHit) {
 						Interrupt(owner);

@@ -9,6 +9,7 @@ namespace Bowhead.Actors {
         public float maxHealth;
 		public float maxWater;
         public float maxStamina;
+		public float minStamina;
         public float recoveryTime;
         public float staminaRechargeTime;
 		public float staminaRechargeTimeDuringRecovery;

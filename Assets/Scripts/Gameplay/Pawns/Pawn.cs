@@ -65,6 +65,7 @@ namespace Bowhead.Actors {
         public float maxStamina;
         public bool recovering;
         public float recoveryTimer;
+		public float stunInvulnerabilityTimer;
         public float dodgeTimer;
 
 		[Header("Gameplay")]
@@ -321,20 +322,27 @@ namespace Bowhead.Actors {
             else {
                 if (stamina < maxStamina) {
 					if (recovering) {
-						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTime);
+						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTimeDuringRecovery);
 					}
 					else {
-						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTimeDuringRecovery);
+						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTime);
 					}
 				}
                 else {
+					if (recovering) {
+						stunInvulnerabilityTimer = data.postStunInvincibilityTime;
+					}
                     recovering = false;
                 }
             }
 
-            if (dodgeTimer > 0) {
-                dodgeTimer = Math.Max(0, dodgeTimer - dt);
-            }
+			if (dodgeTimer > 0) {
+				dodgeTimer = Math.Max(0, dodgeTimer - dt);
+			}
+
+			if (stunInvulnerabilityTimer > 0) {
+				stunInvulnerabilityTimer = Math.Max(0, stunInvulnerabilityTimer - dt);
+			}
 
 
 			if (climbingAttachCooldown > 0) {
@@ -1014,7 +1022,7 @@ namespace Bowhead.Actors {
 		public void useStamina(float s) {
 			if (stamina <= 0)
 				return;
-			stamina -= s;
+			stamina = Mathf.Max(data.minStamina, stamina - s);
 			if (stamina <= 0) {
 				recovering = true;
 				recoveryTimer = 0;
@@ -1054,7 +1062,7 @@ namespace Bowhead.Actors {
 
         public void stun(float s) {
             // Can't stun further if already stunned
-            if (recovering) {
+            if (recovering || stunInvulnerabilityTimer > 0) {
                 return;
             }
 
@@ -1097,15 +1105,8 @@ namespace Bowhead.Actors {
             else {
                 dirToEnemy.Normalize();
             }
-            //float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(-dirToEnemy.x, -dirToEnemy.z), yaw));
-            //if (attackResult.attackDamageBackstab > 0 && angleToEnemysBack < data.backStabAngle*Mathf.Deg2Rad || angleToEnemysBack > Math.PI*2-data.backStabAngle * Mathf.Deg2Rad) {
-            //    remainingStun = attackResult.stunPowerBackstab;
-            //    remainingDamage = attackResult.attackDamageBackstab;
-            //}
-            //else {
-                remainingStun = attackResult.stun;
-                remainingDamage = attackResult.damage;
-            //}
+            remainingStun = attackResult.stun;
+            remainingDamage = attackResult.damage;
 
 
             if (dodgeTimer > 0) {

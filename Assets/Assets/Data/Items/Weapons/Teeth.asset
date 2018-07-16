@@ -36,6 +36,7 @@ MonoBehaviour:
     canMoveDuringActive: 0
     unblockable: 0
     interruptOnHit: 0
+    canBackstab: 1
     spell: 0
     spellPower: 0
     waterUse: 0
@@ -48,8 +49,8 @@ MonoBehaviour:
       interrupt: 1
     backstabResult:
       knockback: 1
-      damage: 0
-      stun: 0
+      damage: 20
+      stun: 50
       interrupt: 1
     canDefend: 0
     canRunWhileDefending: 0
