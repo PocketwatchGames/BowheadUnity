@@ -80,13 +80,11 @@ namespace Bowhead {
 					}.Schedule();
 				}
 
-				public World.Streaming.IAsyncChunkReadIO AsyncReadChunkData(WorldChunkPos_t pos, ChunkMeshGen.CompiledChunkData data) {
+				public World.Streaming.IAsyncChunkIO AsyncReadChunkData(World.Streaming.IChunkIO chunk) {
 					return null;
 				}
 
-				public World.Streaming.IAsyncChunkWriteIO AsyncWriteChunkData(World.Streaming.IChunk chunk, ChunkMeshGen.CompiledChunkData data) {
-					return null;
-				}
+				public void WriteChunkData(World.Streaming.IChunkIO chunk) {}
 
 				public void Dispose() { }
 			};

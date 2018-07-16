@@ -47,6 +47,10 @@ public struct WorldChunkPos_t {
 		return false;
 	}
 
+	public bool Equals(WorldChunkPos_t pos) {
+		return pos == this;
+	}
+
 	public override string ToString() {
 		return "cx = " + cx + ", cy = " + cy + ", cz = " + cz;
 	}

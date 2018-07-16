@@ -25,6 +25,22 @@ namespace Bowhead {
 			}
 
 			public class Streaming : IWorldStreaming {
+
+				WorldFile _worldFile;
+
+				public Streaming() {
+#if UNITY_EDITOR
+					string path = Utils.projectRootDirectory + "/WorldData";
+#else
+					string path = System.IO.Directory.GetCurrentDirectory() + "/WorldData";
+#endif
+					if (!System.IO.Directory.Exists(path)) {
+						System.IO.Directory.CreateDirectory(path);
+					}
+
+					_worldFile = WorldFile.OpenOrCreate(path + "/EditorWorld");
+				}
+
 				public JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk, bool checkSolid) {
 					return new ProcWorldStreaming_V2_Job_t() {
 						cpos = cpos,
@@ -33,15 +49,17 @@ namespace Bowhead {
 					}.Schedule();
 				}
 
-				public World.Streaming.IAsyncChunkReadIO AsyncReadChunkData(WorldChunkPos_t pos, ChunkMeshGen.CompiledChunkData data) {
-					return null;
+				public World.Streaming.IAsyncChunkIO AsyncReadChunkData(World.Streaming.IChunkIO chunk) {
+					return _worldFile.AsyncReadChunk(chunk);
 				}
 
-				public World.Streaming.IAsyncChunkWriteIO AsyncWriteChunkData(World.Streaming.IChunk chunk, ChunkMeshGen.CompiledChunkData data) {
-					return null;
+				public void WriteChunkData(World.Streaming.IChunkIO chunk) {
+					_worldFile.WriteChunkToFile(chunk);
 				}
 
-				public void Dispose() { }
+				public void Dispose() {
+					_worldFile?.Dispose();
+				}
 			};
 
 			const float waterLevel = 0;

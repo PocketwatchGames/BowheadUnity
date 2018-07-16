@@ -22,14 +22,8 @@ public partial class World {
 
 		public interface IAsyncChunkIO : IDisposable {
 			EAsyncChunkReadResult result { get; }
+			IChunkIO chunkIO { get; }
 		};
-
-		public interface IAsyncChunkReadIO : IAsyncChunkIO {
-			ChunkMeshGen.CompiledChunkData chunkData { get; }
-			EChunkFlags chunkFlags { get; }
-		};
-
-		public interface IAsyncChunkWriteIO : IAsyncChunkIO {};
 
 #if UNITY_EDITOR
 		const int MAX_STREAMING_CHUNKS = 4;
@@ -62,8 +56,8 @@ public partial class World {
 #endif
 		public delegate JobHandle CreateGenVoxelsJobDelegate(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
 		public delegate void ChunkGeneratedDelegate(IChunk chunk);
-		public delegate IAsyncChunkReadIO AsyncChunkReadDelegate(WorldChunkPos_t pos, ChunkMeshGen.CompiledChunkData data);
-		public delegate IAsyncChunkWriteIO AsyncChunkWriteDelegate(IChunk chunk, ChunkMeshGen.CompiledChunkData data);
+		public delegate IAsyncChunkIO AsyncChunkReadDelegate(IChunkIO chunk);
+		public delegate void ChunkWriteDelegate(IChunkIO chunk);
 
 		public event ChunkGeneratedDelegate onChunkVoxelsLoaded;
 		public event ChunkGeneratedDelegate onChunkVoxelsUpdated;
@@ -86,7 +80,7 @@ public partial class World {
 		ChunkJobData _usedJobData;
 		CreateGenVoxelsJobDelegate _createGenVoxelsJob;
 		AsyncChunkReadDelegate _chunkRead;
-		AsyncChunkWriteDelegate _chunkWrite;
+		ChunkWriteDelegate _chunkWrite;
 		bool _loading;
 		bool _flush;
 
@@ -102,8 +96,10 @@ public partial class World {
 
 		public static Color32[] blockColors => ChunkMeshGen.tableStorage.blockColorsArray;
 		
-		public Streaming(World_ChunkComponent chunkPrefab, CreateGenVoxelsJobDelegate createGenVoxelsJob, AsyncChunkReadDelegate chunkRead, AsyncChunkWriteDelegate chunkWrite) {
+		public Streaming(World_ChunkComponent chunkPrefab, CreateGenVoxelsJobDelegate createGenVoxelsJob, AsyncChunkReadDelegate chunkRead, ChunkWriteDelegate chunkWrite) {
 			_chunkPrefab = chunkPrefab;
+			_chunkRead = chunkRead;
+			_chunkWrite = chunkWrite;
 			_createGenVoxelsJob = createGenVoxelsJob;
 
 			for (int i = 0; i < MAX_STREAMING_CHUNKS; ++i) {
@@ -286,7 +282,7 @@ public partial class World {
 			chunk.dbgDraw.state = EDebugDrawState.GENERATING_VOXELS;
 #endif
 
-			jobData.ioRead = _chunkRead?.Invoke(chunk.pos, jobData.jobData);
+			jobData.ioRead = _chunkRead?.Invoke(chunk);
 			
 			if (jobData.ioRead == null) {
 				chunk.chunkData.Pin();
@@ -311,10 +307,15 @@ public partial class World {
 				chunk.jobData.chunk = chunk;
 				chunk.jobData.hasSubJob = false;
 
-				chunk.jobData.ioRead = _chunkRead?.Invoke(chunk.pos, chunk.jobData.jobData);
+				chunk.jobData.ioRead = _chunkRead?.Invoke(chunk);
 			}
 
-			if (chunk.jobData.ioRead == null) {
+			if (chunk.jobData.ioRead != null) {
+				chunk.jobData.flags = EJobFlags.TRIS;
+				if (!chunk.hasVoxelData) {
+					chunk.jobData.flags |= EJobFlags.VOXELS;
+				}
+			} else {
 				chunk.jobData.flags = EJobFlags.TRIS;
 
 				if (!(existingJob || chunk.hasVoxelData)) {
@@ -375,14 +376,11 @@ public partial class World {
 				if (job.ioRead != null) {
 					jobComplete = job.ioRead.result == EAsyncChunkReadResult.Success;
 					jobError = job.ioRead.result == EAsyncChunkReadResult.Error;
-				} else if (job.ioWrite != null) {
-					// TODO: figure out a way to avoid callbacks from having to wait until data is written to disk
-					jobComplete = job.ioWrite.result != EAsyncChunkReadResult.Pending;
-				} else {
+				}  else {
 					jobComplete = job.jobHandle.IsCompleted;
-					if (jobComplete && ((job.flags&EJobFlags.TRIS_AND_VOXELS) == EJobFlags.TRIS_AND_VOXELS)) {
-						job.ioWrite = _chunkWrite?.Invoke(job.chunk, job.jobData);
-						jobComplete = job.ioWrite == null;
+					if (jobComplete && ((job.flags&EJobFlags.TRIS) == EJobFlags.TRIS)) {
+						job.jobHandle.Complete();
+						_chunkWrite?.Invoke(job.chunk);
 					}
 				}
 
@@ -408,7 +406,7 @@ public partial class World {
 
 						if (chunk.refCount > 0) {
 							// reque the chunk, chunk read should return null because of the error this time.
-							if ((flags&EJobFlags.TRIS_AND_VOXELS) == EJobFlags.TRIS_AND_VOXELS) {
+							if ((flags&EJobFlags.TRIS) == EJobFlags.TRIS) {
 								ScheduleGenTrisJob(chunk);
 							} else {
 								ScheduleGenVoxelsJob(chunk);
@@ -486,19 +484,23 @@ public partial class World {
 			chunk.hasVoxelData = true;
 
 			if ((job.flags & EJobFlags.TRIS) != 0) {
-				job.jobData.voxelStorage.Unpin();
 				chunk.hasTrisData = true;
-				for (int i = 0; i < job.neighbors.Length; ++i) {
-					var neighbor = job.neighbors[i];
-					if (neighbor != null) {
-						neighbor.chunkData.Unpin();
-						Release(neighbor);
+				if (job.ioRead == null) {
+					job.jobData.voxelStorage.Unpin();
+					for (int i = 0; i < job.neighbors.Length; ++i) {
+						var neighbor = job.neighbors[i];
+						if (neighbor != null) {
+							neighbor.chunkData.Unpin();
+							Release(neighbor);
+						}
 					}
 				}
 			}
 
 			if ((job.flags & EJobFlags.VOXELS) != 0) {
-				chunk.chunkData.Unpin();
+				if (job.ioRead == null) {
+					chunk.chunkData.Unpin();
+				}
 				Release(chunk);
 			}
 
@@ -637,10 +639,10 @@ public partial class World {
 			var maxSubmesh = outputVerts.counts[layer*3+2];
 
 			for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
-				int numLayerVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
-				if (numLayerVerts > 0) {
-					MeshCopyHelper.SetSubMeshTris(mesh, submeshidx, Copy(staticIndices, outputVerts.indices, indexOfs+baseIndex, numLayerVerts), numLayerVerts, true, 0);
-					indexOfs += numLayerVerts;
+				int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
+				if (numSubmeshVerts > 0) {
+					MeshCopyHelper.SetSubMeshTris(mesh, submeshidx, Copy(staticIndices, outputVerts.indices, indexOfs+baseIndex, numSubmeshVerts), numSubmeshVerts, true, 0);
+					indexOfs += numSubmeshVerts;
 					++submeshidx;
 				}
 			}
@@ -697,7 +699,7 @@ public partial class World {
 		};
 #endif
 
-		class Chunk : IChunk {
+		class Chunk : IChunkIO {
 			public Chunk hashNext;
 			public Chunk hashPrev;
 			public WorldChunkPos_t pos;
@@ -719,6 +721,17 @@ public partial class World {
 			EChunkFlags IChunk.flags => chunkData.flags[0];
 			Decoration_t[] IChunk.decorations => chunkData.decorations;
 			int IChunk.decorationCount => chunkData.decorationCount[0];
+
+			EChunkFlags IChunkIO.flags {
+				get {
+					return chunkData.flags[0];
+				}
+				set {
+					chunkData.flags[0] = value;
+				}
+			}
+
+			ChunkMeshGen.FinalMeshVerts_t IChunkIO.verts => jobData.jobData.outputVerts;
 
 			public event ChunkGeneratedDelegate onChunkVoxelsLoaded;
 			public event ChunkGeneratedDelegate onChunkVoxelsUpdated;
@@ -786,8 +799,7 @@ public partial class World {
 		[Flags]
 		enum EJobFlags {
 			VOXELS = 0x1,
-			TRIS = 0x2,
-			TRIS_AND_VOXELS = 0x4
+			TRIS = 0x2
 		};
 
 		class ChunkJobData : IDisposable {
@@ -798,8 +810,7 @@ public partial class World {
 			public EJobFlags flags;
 			public JobHandle jobHandle;
 			public JobHandle subJobHandle;
-			public IAsyncChunkReadIO ioRead;
-			public IAsyncChunkWriteIO ioWrite;
+			public IAsyncChunkIO ioRead;
 			public bool hasSubJob;
 
 			public void Dispose() {
@@ -952,6 +963,11 @@ public partial class World {
 			event ChunkGeneratedDelegate onChunkTrisUpdated;
 			event ChunkGeneratedDelegate onChunkLoaded;
 			event ChunkGeneratedDelegate onChunkUnloaded;
+		};
+
+		public interface IChunkIO : IChunk {
+			EChunkFlags flags { get; set; }
+			ChunkMeshGen.FinalMeshVerts_t verts { get; }
 		};
 
 		public IChunk GetChunk(WorldChunkPos_t pos) {

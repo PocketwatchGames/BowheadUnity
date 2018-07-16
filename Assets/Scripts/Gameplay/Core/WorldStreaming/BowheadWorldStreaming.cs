@@ -18,8 +18,8 @@ namespace Bowhead {
 
 		public interface IWorldStreaming : System.IDisposable {
 			JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk, bool checkSolid);
-			Streaming.IAsyncChunkReadIO AsyncReadChunkData(WorldChunkPos_t pos, ChunkMeshGen.CompiledChunkData data);
-			Streaming.IAsyncChunkWriteIO AsyncWriteChunkData(Streaming.IChunk chunk, ChunkMeshGen.CompiledChunkData data);
+			Streaming.IAsyncChunkIO AsyncReadChunkData(Streaming.IChunkIO chunk);
+			void WriteChunkData(Streaming.IChunkIO chunk);
 		};
 
 		public static IWorldStreaming NewProceduralWorldStreaming(ulong seed, EGenerator generator) {

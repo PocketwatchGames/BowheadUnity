@@ -1136,7 +1136,7 @@ public partial class World {
 		};
 
 		public struct VoxelStorage_t {
-			const int NUM_VOXELS = MAX_VIS_VOXELS;
+			public const int NUM_VOXELS = MAX_VIS_VOXELS;
 
 			public VoxelArray1D voxels;
 

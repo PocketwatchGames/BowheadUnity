@@ -137,12 +137,12 @@ namespace Bowhead.Server {
 			return _gameMode.worldStreaming.ScheduleChunkGenerationJob(pos, chunk, GameManager.instance.isClient);
 		}
 
-		protected override Streaming.IAsyncChunkReadIO AsyncReadChunkData(WorldChunkPos_t pos, ChunkMeshGen.CompiledChunkData data) {
-			return _gameMode.worldStreaming.AsyncReadChunkData(pos, data);
+		protected override Streaming.IAsyncChunkIO AsyncReadChunkData(Streaming.IChunkIO chunk) {
+			return _gameMode.worldStreaming.AsyncReadChunkData(chunk);
 		}
 
-		protected override Streaming.IAsyncChunkWriteIO AsyncWriteChunkData(Streaming.IChunk chunk, ChunkMeshGen.CompiledChunkData data) {
-			return _gameMode.worldStreaming.AsyncWriteChunkData(chunk, data);
+		protected override void WriteChunkData(Streaming.IChunkIO chunk) {
+			_gameMode.worldStreaming.WriteChunkData(chunk);
 		}
 
 #if BACKEND_SERVER

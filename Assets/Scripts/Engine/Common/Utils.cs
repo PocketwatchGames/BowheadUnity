@@ -659,12 +659,24 @@ public static class Utils {
 		return ((Color32)c).ToUIntRGB();
 	}
 
+	public static uint ToUIntRGBA(this Color c) {
+		return ((Color32)c).ToUIntRGBA();
+	}
+
 	public static uint ToUIntRGB(this Color32 c) {
 		return ((uint)c.b) | (((uint)c.g) << 8) | (((uint)c.r) << 16);
 	}
 
+	public static uint ToUIntRGBA(this Color32 c) {
+		return ((uint)c.b) | (((uint)c.g) << 8) | (((uint)c.r) << 16) | (((uint)c.a) << 24);
+	}
+
 	public static Color32 GetColor32FromUIntRGB(uint rgb) {
 		return new Color32((byte)((rgb >> 16) & 0xff), (byte)((rgb >> 8) & 0xff), (byte)(rgb & 0xff), 0xff);
+	}
+
+	public static Color32 GetColor32FromUIntRGBA(uint rgba) {
+		return new Color32((byte)((rgba >> 16) & 0xff), (byte)((rgba >> 8) & 0xff), (byte)(rgba & 0xff), (byte)((rgba >> 24) & 0xff));
 	}
 
 	public static T[] ToList<T>(this ReadOnlyCollection<T> collection) {
