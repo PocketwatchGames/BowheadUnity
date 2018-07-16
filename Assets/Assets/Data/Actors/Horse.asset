@@ -16,21 +16,21 @@ MonoBehaviour:
   height: 3
   maxHealth: 100
   maxWater: 0
-  maxStamina: 50
+  maxStamina: 200
   recoveryTime: 1
   staminaRechargeTime: 3
+  staminaRechargeTimeDuringRecovery: 0
   dodgeTime: 0
-  stunLimit: 1
-  stunRecoveryTime: 3
+  postStunInvincibilityTime: 0
   backStabAngle: 45
   runSound: 2
   sprintSound: 4
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
-  jumpSpeed: 0
-  jumpStaminaUse: 0
+  jumpSpeed: 11
+  jumpStaminaUse: 50
   groundAcceleration: 2
-  crouchSpeed: 0
+  crouchSpeed: 3.5
   walkSpeed: 3.5
   walkStartTime: 0.1
   walkStopTime: 0.1
@@ -50,12 +50,10 @@ MonoBehaviour:
   climbSpeed: 0
   climbAttachCooldown: 0
   bouyancy: 20
-  swimJumpSpeed: 60
-  swimSinkAcceleration: 0
-  swimJumpBoostAcceleration: 0
+  swimJumpSpeed: 13
   swimAcceleration: 15
   swimMaxSpeed: 10
-  swimDragVertical: 5
+  swimDragVertical: 2
   swimDragHorizontal: 0.25
   _critterClass: Bowhead.Actors.Critter, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null

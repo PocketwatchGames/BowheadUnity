@@ -50,9 +50,7 @@ MonoBehaviour:
   climbSpeed: 2
   climbAttachCooldown: 0.25
   bouyancy: 20
-  swimJumpSpeed: 60
-  swimSinkAcceleration: 100
-  swimJumpBoostAcceleration: 12
+  swimJumpSpeed: 13
   swimAcceleration: 15
   swimMaxSpeed: 6
   swimDragVertical: 2

@@ -90,9 +90,6 @@ namespace Bowhead.Actors {
         public Pawn mount;
         public Pawn driver;
 
-        [Header("Combat")]
-        public Pawn attackTarget;
-
         [Header("Inventory")]
         [SerializeField]
         protected Item[] _inventory = new Item[Pawn.MaxInventorySize];
@@ -753,13 +750,10 @@ namespace Bowhead.Actors {
 			skidding = false;
 
 
-			if (input.inputs[(int)InputType.Jump] == InputState.Pressed) {
-//                velocity.y = Math.Min(velocity.y + data.swimMaxSpeed * dt, data.swimJumpSpeed);
-            }
-			else if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
+			if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
 				if (canJump) {
 					var jumpDir = input.movement * data.sprintSpeed;
-					jumpDir.y += data.swimJumpBoostAcceleration;
+					jumpDir.y += data.swimJumpSpeed;
 					jump(jumpDir);
 				}
 			}
