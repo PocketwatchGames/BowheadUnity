@@ -11,9 +11,11 @@ namespace Bowhead {
 			return DataManager.GetData<EntityData>(name);
 		}
 
+#if UNITY_EDITOR
 		protected override void InitVersion() {
 			base.InitVersion();
 		}
+#endif
 	}
 
 	public abstract class EntityData<T> : EntityData where T : EntityData<T> {
