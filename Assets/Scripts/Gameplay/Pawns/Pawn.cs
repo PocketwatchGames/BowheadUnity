@@ -948,12 +948,23 @@ namespace Bowhead.Actors {
 						maxSpeed = data.sprintSpeed;
 					}
 				}
-
-				return maxSpeed;
             }
             else {
-                return Mathf.Min(maxSpeed, data.crouchSpeed);
+                maxSpeed = Mathf.Min(maxSpeed, data.crouchSpeed);
             }
+
+			for (int i=0;i<Player.MaxInventorySize;i++) {
+				var weapon = GetInventorySlot(i) as Weapon;
+				if (weapon != null) {
+					if (weapon.data.attacks[weapon.attackHand].maxCharge > 0 && weapon.GetMultiplier() >= weapon.data.attacks[weapon.attackHand].maxCharge) {
+						maxSpeed *= weapon.data.attacks[weapon.attackHand].moveSpeedWhileFullyCharged;
+					}
+					else if (weapon.chargeTime > weapon.data.moveSpeedChargeDelay) {
+						maxSpeed *= weapon.data.attacks[weapon.attackHand].moveSpeedWhileCharging;
+					}
+				}
+			}
+			return maxSpeed;
         }
         public float getGroundAcceleration() {
             float v = data.groundAcceleration;
@@ -1094,7 +1105,7 @@ namespace Bowhead.Actors {
 			onHit?.Invoke(owner as Pawn);
 		}
 
-		public bool Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, bool canBlock) {
+		public bool Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, float multiplier, bool canBlock) {
             float remainingStun;
             float remainingDamage;
 
@@ -1105,8 +1116,8 @@ namespace Bowhead.Actors {
             else {
                 dirToEnemy.Normalize();
             }
-            remainingStun = attackResult.stun;
-            remainingDamage = attackResult.damage;
+            remainingStun = attackResult.stun * multiplier;
+            remainingDamage = attackResult.damage * multiplier;
 
 
             if (dodgeTimer > 0) {

@@ -38,6 +38,7 @@ namespace Bowhead {
 		public class AttackData {
 			[Header("Attack")]
 			public float chargeTime;
+			public float maxCharge;
 			public float castTime;
 			public float activeTime;
 			public float cooldown;
@@ -46,7 +47,8 @@ namespace Bowhead {
 			public float radius;
 			public float staminaUse;
 			public float stepDistance;
-			public bool canRunWhileCharging;
+			public float moveSpeedWhileCharging;
+			public float moveSpeedWhileFullyCharged;
 			public bool canMoveDuringCooldown;
 			public bool canMoveDuringCast;
 			public bool canMoveDuringActive;
@@ -64,7 +66,6 @@ namespace Bowhead {
 
 			[Header("Defend")]
 			public bool canDefend;
-			public bool canRunWhileDefending;
 			public float defendAngleRange;
 			public DefendResult defendResult;
 

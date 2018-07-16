@@ -21,7 +21,8 @@ MonoBehaviour:
   hand: 1
   moveSpeedChargeDelay: 0.2
   attacks:
-  - chargeTime: 0
+  - chargeTime: 0.5
+    maxCharge: 8
     castTime: 0.05
     activeTime: 0.1
     cooldown: 0.1
@@ -30,7 +31,8 @@ MonoBehaviour:
     radius: 0.25
     staminaUse: 20
     stepDistance: 1
-    canRunWhileCharging: 1
+    moveSpeedWhileCharging: 0.8
+    moveSpeedWhileFullyCharged: 0.25
     canMoveDuringCooldown: 0
     canMoveDuringCast: 0
     canMoveDuringActive: 0
@@ -53,7 +55,6 @@ MonoBehaviour:
       stun: 50
       interrupt: 1
     canDefend: 0
-    canRunWhileDefending: 0
     defendAngleRange: 0
     defendResult:
       knockback: 0
