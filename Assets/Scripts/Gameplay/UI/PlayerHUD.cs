@@ -36,7 +36,7 @@ public class PlayerHUD : MonoBehaviour {
 		for (int i=0;i<Player.MaxInventorySize;i++) {
 			var weapon = _target.GetInventorySlot(i) as Bowhead.Weapon;
 			if (weapon != null) {
-				wm = Mathf.Max(wm, weapon.GetMultiplier());
+				wm = Mathf.Max(wm, weapon.GetMultiplier(_target));
 			}
 		}
 		if (wm <= 1) {

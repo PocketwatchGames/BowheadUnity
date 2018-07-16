@@ -120,7 +120,7 @@ namespace Bowhead {
 					attackType = data.attacks[attackHand].attackResult;
 				}
 
-				if (enemy.Hit(owner, this, attackType, GetMultiplier(), !data.attacks[attackHand].unblockable)) {
+				if (enemy.Hit(owner, this, attackType, GetMultiplier(owner), !data.attacks[attackHand].unblockable)) {
 					Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
 					if (data.attacks[attackHand].interruptOnHit) {
 						Interrupt(owner);
@@ -337,11 +337,14 @@ namespace Bowhead {
 
         }
 
-		public float GetMultiplier() {
-			if (data.attacks[attackHand].chargeTime == 0) {
-				return 1;
+		public float GetMultiplier(Pawn owner) {
+			if (data.attacks[attackHand].chargeTime > 0 && chargeTime > 0) {
+				if (owner.activity == Pawn.Activity.Falling) {
+					return 2;
+				}
+				return Mathf.Clamp(Mathf.FloorToInt(chargeTime / data.attacks[attackHand].chargeTime) * 2, 1, data.attacks[attackHand].maxCharge);
 			}
-			return Mathf.Clamp(Mathf.FloorToInt(chargeTime / data.attacks[attackHand].chargeTime)*2, 1, data.attacks[attackHand].maxCharge);
+			return 1;
 		}
 
     }
