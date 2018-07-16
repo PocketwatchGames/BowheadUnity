@@ -35,16 +35,16 @@ MonoBehaviour:
   walkStartTime: 0.1
   walkStopTime: 0.1
   sprintTime: 0.5
-  sprintSpeed: 8
+  sprintSpeed: 14
   sprintStaminaUse: 0
   sprintGracePeriodTime: 0
-  groundMaxSpeed: 10
+  groundMaxSpeed: 14
   groundWindDrag: 0.01
   gravity: -30
   fallJumpTime: 0
   fallAcceleration: 30
   fallDragHorizontal: 0.05
-  fallMaxHorizontalSpeed: 5
+  fallMaxHorizontalSpeed: 14
   climbWallRange: 0
   climbGrabMinZVel: 0
   climbSpeed: 0
@@ -77,6 +77,7 @@ MonoBehaviour:
   hearingDistance: 30
   hearingDistanceExponent: 2
   scentDistance: 0
+  canMount: 0
   waryCooldownTime: 3
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4

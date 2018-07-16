@@ -27,7 +27,6 @@ namespace Bowhead.Actors {
 
 		#endregion
 
-		private PawnHUD _hud;
 
 		public float canSmell, canSee, canHear;
 
@@ -115,6 +114,12 @@ namespace Bowhead.Actors {
                 canClimbWell = false;
                 canAttack = false;
                 canMove = false;
+				canTurn = false;
+			}
+
+            if (moveImpulseTimer > 0)
+            {
+                canAttack = false;
             }
 
 
@@ -145,7 +150,27 @@ namespace Bowhead.Actors {
                 SetActive(spawnPosition);
             }
 
-        }
+			var head = go.GetChildComponent<MeshRenderer>("Head");
+			if (head != null) {
+				if (stunTimer > 0) {
+					head.material.color = Color.red;
+				}
+				else if (dodgeTimer > 0) {
+					head.material.color = Color.black;
+				}
+				else if (skidding) {
+					head.material.color = Color.cyan;
+				}
+				else if (recovering) {
+					head.material.color = Color.yellow;
+				}
+				else {
+					head.material.color = Color.white;
+				}
+			}
+
+
+		}
 
 		void CheckDespawn(float maxDist) {
 			float closestDist = maxDist;
@@ -180,7 +205,7 @@ namespace Bowhead.Actors {
                     if (w != null && w.CanCast()) {
 						
                         if (input.IsPressed(InputType.AttackRight)) {
-                            w.Charge(dt);
+                            w.Charge(dt, 1);
                         }
                         else {
                             if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
@@ -400,7 +425,7 @@ namespace Bowhead.Actors {
                 return 0;
 
             float angleToPlayer = Mathf.Atan2(diff.x, diff.z);
-            float angleDiffXZ = Mathf.Abs(Utils.SignedMinAngleDelta(angleToPlayer, yaw));
+            float angleDiffXZ = Mathf.Abs(Utils.SignedMinAngleDelta(angleToPlayer * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg));
 			float angleRangeXZ = data.visionAngleRange * Mathf.Deg2Rad;
 
 			if (angleDiffXZ > angleRangeXZ)

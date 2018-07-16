@@ -63,13 +63,15 @@ namespace Bowhead.Actors {
                 var move = desiredPos - c.position;
                 move.y = 0;
 
-                if (move.magnitude > 0.5f) {
-                    input.movement = move.normalized;
+                float dist = diff.magnitude;
+
+                var weapon = c.GetInventorySlot(0) as Weapon;
+                if (dist > 2 && dist < 5 && c.canAttack && c.activity == Pawn.Activity.OnGround && weapon.CanCast())
+                {
+                    input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
                 }
                 else {
-                    if (c.canAttack && c.activity == Pawn.Activity.OnGround) {
-                        input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
-                    }
+                    input.movement = move.normalized;
                 }
 				input.look = -diff;
             }

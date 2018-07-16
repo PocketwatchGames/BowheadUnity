@@ -30,6 +30,11 @@ namespace Bowhead.Actors {
         private Vector3 _lookAtVelocity;
         private Vector3 _lookAt;
 
+
+		private float _adjustYaw;
+		private float _adjustYawVelocity;
+		private float _adjustYawTime;
+
 		Camera _camera;
 
 		public CameraController(Camera camera, CameraData d) {
@@ -73,6 +78,7 @@ namespace Bowhead.Actors {
 				Shake(0.15f, 0.05f, 0.01f);
 			}
 		}
+
 
         Vector3 _oldMousePosition;
         void HandleInput(int playerNum, float dt) {
@@ -145,6 +151,7 @@ namespace Bowhead.Actors {
 
 				if (_isLooking) {
 
+					_adjustYawTime = 0;
                     _playerPosition = avgPlayerPosition;
                     _lookAtVelocity -= _lookAtVelocity * data.lookAtFriction * dt;
                     _lookAtVelocity += lookAtDiff * data.lookAtAcceleration * dt;
@@ -205,9 +212,33 @@ namespace Bowhead.Actors {
 						_position += _cameraVelocity * dt;
 						_position = new Vector3(_position.x, Mathf.Max(_position.y, avgPlayerPosition.y), _position.z);
 
+						if (_target.activity == Pawn.Activity.Climbing) {
+							var desiredYaw = Mathf.Atan2(-_target.climbingNormal.x, -_target.climbingNormal.z);
+							if (Mathf.Abs(Utils.SignedMinAngleDelta(desiredYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) >= 45) {
+								if (_adjustYawTime > 0 || _adjustYaw != desiredYaw) {
+									_adjustYawTime = 1.0f;
+									_adjustYaw = desiredYaw - Mathf.Sign(Utils.SignedMinAngleDelta(desiredYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) * 40 * Mathf.Deg2Rad;
+								}
+							}
+						}
+						else {
+							_adjustYawTime = 0;
+							_adjustYaw = -1000;
+						}
+
+						if (_adjustYawTime > 0) {
+							_adjustYawTime = Mathf.Max(0, _adjustYawTime - dt);
+							float adjustYawAcceleration = 5;
+							float desiredVelocity = Utils.SignedMinAngleDelta(_adjustYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg) * Mathf.Deg2Rad * 2;
+							_adjustYawVelocity += (desiredVelocity - _adjustYawVelocity) *dt * adjustYawAcceleration;
+							_yaw = Utils.NormalizeAngle((_yaw +_adjustYawVelocity * dt) * Mathf.Rad2Deg)*Mathf.Deg2Rad;
+						}
 
 						// Mario style leash camera
 						if (_mouseLookActive) {
+
+							//_position += _target.velocity *0.8f * dt;
+
 							diff = _position - _lookAt;
 							diff.y = 0;
 							if (diff.magnitude < 0.1f)
@@ -215,7 +246,8 @@ namespace Bowhead.Actors {
 							diff.Normalize();
 							diff *= minDist;
 
-							_yaw = Mathf.Atan2(-diff.x, -diff.z);
+							var desiredYaw = Mathf.Atan2(-diff.x, -diff.z);
+							_yaw = Utils.AngleLerpShortestPath(_yaw*Mathf.Rad2Deg, desiredYaw * Mathf.Rad2Deg,dt/0.05f) * Mathf.Deg2Rad;
 						}
 						// end leash camera
 					}

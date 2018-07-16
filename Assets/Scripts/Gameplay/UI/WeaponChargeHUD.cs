@@ -16,11 +16,13 @@ public class WeaponChargeHUD : MonoBehaviour {
 	private int _slot;
 
 	void LateUpdate() {
+		return;
+
 		var weapon = _target.GetInventorySlot(_slot) as Bowhead.Weapon;
 		if (weapon != null && weapon.chargeTime > 0.2f) {
 			float value = 0;
-			if (weapon.data.chargeTime > chargeMinDisplayTime) {
-				value = Mathf.Min(1, (weapon.chargeTime - chargeMinDisplayTime) / (weapon.data.chargeTime - chargeMinDisplayTime));
+			if (weapon.data.attacks[weapon.attackHand].chargeTime > chargeMinDisplayTime) {
+				value = Mathf.Min(1, (weapon.chargeTime - chargeMinDisplayTime) / (weapon.data.attacks[weapon.attackHand].chargeTime - chargeMinDisplayTime));
 			}
 			_charge.value = value;
 			if (value < 1) {

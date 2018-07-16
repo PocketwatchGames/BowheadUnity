@@ -202,6 +202,7 @@ namespace Bowhead.Actors {
                 canClimbWell = false;
                 canAttack = false;
                 canMove = false;
+				canTurn = false;
             }
 
             if (activity == Activity.Swimming || activity == Activity.Climbing) {
@@ -295,44 +296,63 @@ namespace Bowhead.Actors {
 			}
 
 			bool isCasting = false;
-            var itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
-			var itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
-			var itemRanged = GetInventorySlot((int)InventorySlot.RANGED) as Weapon;
+            Weapon itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
+			Weapon itemLeft;
+			if (itemRight?.data.hand == WeaponData.Hand.BOTH) {
+				itemLeft = itemRight;
+			}
+			else {
+				itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
+			}
+			Weapon itemRanged = GetInventorySlot((int)InventorySlot.RANGED) as Weapon;
 			if (canAttack) {
-                if (itemLeft != null) {
+				if (itemLeft != null) {
+					if (itemLeft.CanCast()) {
+						if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
+							itemLeft.Attack(this);
+							isCasting = true;
+						}
+					}
+				}
+				if (itemRight != null) {
+					if (itemRight.CanCast()) {
+						if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
+							itemRight.Attack(this);
+							isCasting = true;
+						}
+					}
+				}
+				if (itemLeft != null) {
 					if (itemLeft.CanCast()) {
 						if (input.IsPressed(InputType.AttackLeft)) {
-							itemLeft.Charge(dt);
+							itemLeft.Charge(dt, 0);
 							isCasting = true;
 						}
 						else {
-							if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
-								itemLeft.Attack(this);
-								isCasting = true;
+							if (itemLeft.attackHand == 0) {
+								itemLeft.chargeTime = 0;
 							}
-							itemLeft.chargeTime = 0;
 						}
 					}
                 }
 				if (itemRight != null) {
 					if (itemRight.CanCast()) {
 						if (input.IsPressed(InputType.AttackRight)) {
-							itemRight.Charge(dt);
+							itemRight.Charge(dt, 1);
 							isCasting = true;
 						}
 						else {
-							if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
-								itemRight.Attack(this);
-								isCasting = true;
+							if (itemRight.attackHand == 1) {
+								itemRight.chargeTime = 0;
 							}
-							itemRight.chargeTime = 0;
 						}
 					}
 				}
+
 				if (itemRanged != null) {
 					if (itemRanged.CanCast()) {
 						if (input.IsPressed(InputType.AttackRanged)) {
-							itemRanged.Charge(dt);
+							itemRanged.Charge(dt, 0);
 							isCasting = true;
 						}
 						else {
@@ -382,8 +402,6 @@ namespace Bowhead.Actors {
 			PickUp(ItemData.Get("Rapier").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
 			PickUp(ItemData.Get("Buckler").CreateItem());
-			PickUp(ItemData.Get("Spear").CreateItem());
-			PickUp(ItemData.Get("Broadsword").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
@@ -845,12 +863,19 @@ namespace Bowhead.Actors {
 			}
         }
 
-        #endregion
+		#endregion
 
 
-        #region World Interaction
+		#region World Interaction
 
-        void Interact() {
+		protected override void SetActivity(Activity a) {
+			base.SetActivity(a);
+			if (a == Activity.Climbing) {
+				stance = Stance.Explore;
+			}
+		}
+
+		void Interact() {
 
             Entity target;
             string interaction;
@@ -930,7 +955,7 @@ namespace Bowhead.Actors {
                         if (dist < maxDist) {
                             float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
 
-                            float yawDiff = Mathf.Abs(Utils.SignedMinAngleDelta(angleToEnemy, yaw));
+                            float yawDiff = Mathf.Abs(Utils.SignedMinAngleDelta(angleToEnemy * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg))*Mathf.Deg2Rad;
 
                             float collisionRadius = 0.5f;
 

@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33194553707142554}
   - component: {fileID: 23754373585018784}
   m_Layer: 0
-  m_Name: Bunny (4)
+  m_Name: LegLF
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -39,7 +39,7 @@ GameObject:
   - component: {fileID: 33100375487167430}
   - component: {fileID: 23351789950262156}
   m_Layer: 0
-  m_Name: Bunny (1)
+  m_Name: EarR
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -56,7 +56,7 @@ GameObject:
   - component: {fileID: 33495462826168972}
   - component: {fileID: 23885767054033526}
   m_Layer: 0
-  m_Name: Bunny (5)
+  m_Name: LegLB
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -73,7 +73,7 @@ GameObject:
   - component: {fileID: 33104005960896322}
   - component: {fileID: 23984896993720440}
   m_Layer: 0
-  m_Name: Bunny (3)
+  m_Name: LegRF
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -90,7 +90,7 @@ GameObject:
   - component: {fileID: 33312926713788094}
   - component: {fileID: 23704139071586208}
   m_Layer: 0
-  m_Name: Bunny (2)
+  m_Name: EarL
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -124,7 +124,7 @@ GameObject:
   - component: {fileID: 33128072977361568}
   - component: {fileID: 23996836370528166}
   m_Layer: 0
-  m_Name: Bunny
+  m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -141,7 +141,7 @@ GameObject:
   - component: {fileID: 33931515107891380}
   - component: {fileID: 23004532137532780}
   m_Layer: 0
-  m_Name: Bunny (6)
+  m_Name: LegRB
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -232,7 +232,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1615879953855314}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 946.7352, y: 275.02573, z: 17.767382}
+  m_LocalPosition: {x: -34946.63, y: 17992.553, z: -4502.611}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4042934462503262}

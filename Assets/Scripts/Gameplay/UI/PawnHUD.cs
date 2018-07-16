@@ -32,6 +32,12 @@ public class PawnHUD : MonoBehaviour {
 		float w = critter.wary;
 		if (h < 1 || w > 0) {
 			transform.position = Camera.main.WorldToScreenPoint(_target.headPosition());
+			if (Vector2.Dot(Camera.main.transform.forward, _target.headPosition() - Camera.main.transform.position) < 0) {
+				transform.GetChild(0).gameObject.SetActive(false);
+			}
+			else {
+				transform.GetChild(0).gameObject.SetActive(true);
+			}
 		}
 		if (h < 1 && critter.alive) {
 			_health.value = h;

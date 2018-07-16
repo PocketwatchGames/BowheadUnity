@@ -317,7 +317,7 @@ namespace Bowhead.Actors {
 
         virtual public void Simulate(float dt, Input_t input) {
             if (!alive) {
-                go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
+				go.transform.SetPositionAndRotation(position, Quaternion.Euler(0, yaw * Mathf.Rad2Deg, 180));
                 return;
             }
 
@@ -338,6 +338,7 @@ namespace Bowhead.Actors {
                 stunTimer = Math.Max(0, stunTimer - dt);
                 if (stunTimer <= 0) {
                     stunned = false;
+					dodgeTimer = Mathf.Max(dodgeTimer, data.postStunInvincibilityTime);
                 }
             }
             else if (stunAmount > 0) {
@@ -443,64 +444,64 @@ namespace Bowhead.Actors {
 					if (activity != Activity.Falling) {
 						climbingAttachCooldown = data.climbAttachCooldown;
 					}
-					activity = Activity.Falling;
+					SetActivity(Activity.Falling);
 				}
 			}
             else if (world.GetBlock(position) == EVoxelBlockType.Water) {
-                activity = Activity.Swimming;
-            }
-            else if (onGround && velocity.y <= 0) {
-                activity = Activity.OnGround;
+				SetActivity(Activity.Swimming);
+			}
+			else if (onGround && velocity.y <= 0) {
+				SetActivity(Activity.OnGround);
 
-                //if (Crouched)
-                //{
-                //	bool interpolate = false;
-                //	Vector3 climbDownPos = position + Vector3(0, 0, -2f);
-                //	Vector3 wallNormal;
-                //	if (canClimb(-firstCheck, climbDownPos + firstCheck * data.WallJumpRange / 2)) {
-                //		interpolate = true;
-                //		climbDownPos += firstCheck * data.WallJumpRange / 2;
-                //		wallNormal = firstCheck;
-                //	}
-                //	else if (canClimb(-secondCheck, climbDownPos + secondCheck * data.WallJumpRange / 2)) {
-                //		interpolate = true;
-                //		climbDownPos += secondCheck * data.WallJumpRange / 2;
-                //		wallNormal = firstCheck;
-                //	}
-                //	if (interpolate)
-                //	{
-                //		physics = PhysicsState::CLIMBING;
-                //		setPosition(climbDownPos, 0.1f);
-                //		climbingNormal = Vector3(Mathf.Sign(wallNormal.x), Mathf.Sign(wallNormal.y), 0);
-                //		velocity = Vector3.zero;
-                //		if (climbingNormal.x != 0)
-                //			velocity.y = 0;
-                //		if (climbingNormal.y != 0)
-                //			velocity.x = 0;
-                //	}
-                //}
+				//if (Crouched)
+				//{
+				//	bool interpolate = false;
+				//	Vector3 climbDownPos = position + Vector3(0, 0, -2f);
+				//	Vector3 wallNormal;
+				//	if (canClimb(-firstCheck, climbDownPos + firstCheck * data.WallJumpRange / 2)) {
+				//		interpolate = true;
+				//		climbDownPos += firstCheck * data.WallJumpRange / 2;
+				//		wallNormal = firstCheck;
+				//	}
+				//	else if (canClimb(-secondCheck, climbDownPos + secondCheck * data.WallJumpRange / 2)) {
+				//		interpolate = true;
+				//		climbDownPos += secondCheck * data.WallJumpRange / 2;
+				//		wallNormal = firstCheck;
+				//	}
+				//	if (interpolate)
+				//	{
+				//		physics = PhysicsState::CLIMBING;
+				//		setPosition(climbDownPos, 0.1f);
+				//		climbingNormal = Vector3(Mathf.Sign(wallNormal.x), Mathf.Sign(wallNormal.y), 0);
+				//		velocity = Vector3.zero;
+				//		if (climbingNormal.x != 0)
+				//			velocity.y = 0;
+				//		if (climbingNormal.y != 0)
+				//			velocity.x = 0;
+				//	}
+				//}
 
-            }
-            else {
+			}
+			else {
 				if (activity != Activity.Falling) {
 					climbingAttachCooldown = data.climbAttachCooldown;
 				}
-				activity = Activity.Falling;
+				SetActivity(Activity.Falling);
 
 				if (canClimb && climbingAttachCooldown <= 0) {
                     if (firstCheck.magnitude > 0 && CanClimb(firstCheck, position)) {
 						climbingAttachPoint = position;
 						climbingNormal = -firstCheck;
                         velocity = Vector3.zero;
-                        activity = Activity.Climbing;
-                    }
-                    else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, position)) {
+						SetActivity(Activity.Climbing);
+					}
+					else if (secondCheck.magnitude > 0 && CanClimb(secondCheck, position)) {
 						climbingAttachPoint = position;
 						climbingNormal = -secondCheck;
                         velocity = Vector3.zero;
-                        activity = Activity.Climbing;
-                    }
-                }
+						SetActivity(Activity.Climbing);
+					}
+				}
 
             }
 
@@ -513,6 +514,10 @@ namespace Bowhead.Actors {
 				driver?.MountMoved();
 			}
         }
+
+		virtual protected void SetActivity(Activity a) {
+			activity = a;
+		}
 
 		protected virtual void MountMoved() { }
 
@@ -818,7 +823,7 @@ namespace Bowhead.Actors {
 				if (activity != Activity.Falling) {
 					climbingAttachCooldown = data.climbAttachCooldown;
 				}
-				activity = Activity.Falling;
+				SetActivity(Activity.Falling);
 
 				Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
                 if (canJump) {
@@ -863,8 +868,8 @@ namespace Bowhead.Actors {
             Vector3 groundNormal;
             bool onGround = CheckFloor(vertMovePosition, out floorPosition, out groundNormal);
             if (onGround) {
-                activity = Activity.OnGround;
-                velocity.y = Math.Max(0, velocity.y);
+				SetActivity(Activity.OnGround);
+				velocity.y = Math.Max(0, velocity.y);
                 SetPosition(new Vector3(position.x, floorPosition, position.z));
             }
             else {
@@ -921,7 +926,7 @@ namespace Bowhead.Actors {
 				if (activity != Activity.Falling) {
 					climbingAttachCooldown = data.climbAttachCooldown;
 				}
-				activity = Activity.Falling;
+				SetActivity(Activity.Falling);
 			}
 
 		}
@@ -1076,7 +1081,7 @@ namespace Bowhead.Actors {
                 foreach (var w in getInventory()) {
                     var weapon = w as Weapon;
                     if (weapon != null) {
-                        weapon.interrupt(this);
+                        weapon.Interrupt(this);
                     }
                 }
             }
@@ -1090,13 +1095,13 @@ namespace Bowhead.Actors {
             blood.transform.localPosition = waistPosition() - rigidBody.position;
         }
 
-		public void hit(Projectile projectile, Actor owner) {
+		public void Hit(Projectile projectile, Actor owner) {
 			damage(projectile.data.damage);
 
 			onHit?.Invoke(owner as Pawn);
 		}
 
-		public void hit(Pawn attacker, Weapon weapon, WeaponData.AttackData attackData) {
+		public bool Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, bool canBlock) {
             float remainingStun;
             float remainingDamage;
 
@@ -1107,27 +1112,27 @@ namespace Bowhead.Actors {
             else {
                 dirToEnemy.Normalize();
             }
-            float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(-dirToEnemy.x, -dirToEnemy.z), yaw));
-            if (attackData.attackDamageBackstab > 0 && angleToEnemysBack < data.backStabAngle*Mathf.Deg2Rad || angleToEnemysBack > Math.PI*2-data.backStabAngle * Mathf.Deg2Rad) {
-                remainingStun = attackData.stunPowerBackstab;
-                remainingDamage = attackData.attackDamageBackstab;
-            }
-            else {
-                remainingStun = attackData.stunPower;
-                remainingDamage = attackData.attackDamage;
-            }
+            //float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(-dirToEnemy.x, -dirToEnemy.z), yaw));
+            //if (attackResult.attackDamageBackstab > 0 && angleToEnemysBack < data.backStabAngle*Mathf.Deg2Rad || angleToEnemysBack > Math.PI*2-data.backStabAngle * Mathf.Deg2Rad) {
+            //    remainingStun = attackResult.stunPowerBackstab;
+            //    remainingDamage = attackResult.attackDamageBackstab;
+            //}
+            //else {
+                remainingStun = attackResult.stun;
+                remainingDamage = attackResult.damage;
+            //}
 
 
             if (dodgeTimer > 0) {
-                return;
+                return false;
             }
 
 			// Check if we're blocking with shield
-			if (!attackData.unblockable) {
+			if (canBlock) {
 				foreach (var w in getInventory()) {
 					var shield = w as Weapon;
 					if (shield != null) {
-						shield.defend(this, attacker, weapon, attackData, ref remainingStun, ref remainingDamage);
+						shield.Defend(this, attacker, weapon, ref remainingStun, ref remainingDamage);
 					}
 				}
 			}
@@ -1137,33 +1142,36 @@ namespace Bowhead.Actors {
             }
 
             if (remainingStun > 0) {
-
-                if (attackData.knockback != 0) {
-                    moveImpulseTimer = 0.1f;
-                    var kb = (rigidBody.position - attacker.rigidBody.position);
-                    kb.y = 0;
-                    kb.Normalize();
-                    moveImpulse = attackData.knockback * kb;
-                }
-
-                useStamina(attackData.staminaDrain);
                 stun(remainingStun);
             }
 
-			if (attackData.interrupt) {
+
+            if (attackResult.interrupt) {
 				foreach (var i in getInventory()) {
 					var w = i as Weapon;
 					if (w != null) {
 						if (w.castTime > 0 || w.activeTime > 0 || w.chargeTime > 0) {
-							w.interrupt(this);
+							w.Interrupt(this);
 						}
 					}
 					moveImpulseTimer = 0;
 				}
 			}
 
-			onHit?.Invoke(attacker);
+            if (attackResult.knockback != 0)
+            {
+                moveImpulseTimer = 0.1f;
+                var kb = (rigidBody.position - attacker.rigidBody.position);
+                kb.y = 0;
+                kb.Normalize();
+                moveImpulse = attackResult.knockback * kb;
+            }
 
+            useStamina(attackResult.staminaDrain);
+
+            onHit?.Invoke(attacker);
+
+			return true;
 		}
 
 
@@ -1199,9 +1207,10 @@ namespace Bowhead.Actors {
 
         virtual protected void Die() {
             alive = false;
-        }
+			position += new Vector3(0, data.height, 0);
+		}
 
-        virtual protected bool SetMount(Pawn m) {
+		virtual protected bool SetMount(Pawn m) {
 
             if (m?.driver != null) {
                 return false;
