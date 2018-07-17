@@ -56,6 +56,7 @@ namespace Bowhead {
 			}
 			if (attackHand != hand) {
 				chargeTime = 0;
+				parryTime = 0;
 			}
 			attackHand = hand;
 
@@ -110,7 +111,16 @@ namespace Bowhead {
             float dist = diff.magnitude;
             if (dist <= data.attacks[attackHand].radius + critterRadius) {
 
-				if (enemy.Hit(owner, this, data.attacks[attackHand].attackResult, !data.attacks[attackHand].unblockable)) {
+				WeaponData.AttackResult attackType;
+				float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(diff.x, diff.z)*Mathf.Rad2Deg, enemy.yaw * Mathf.Rad2Deg));
+				if (data.attacks[attackHand].canBackstab && angleToEnemysBack < enemy.data.backStabAngle) {
+					attackType = data.attacks[attackHand].backstabResult;
+				}
+				else {
+					attackType = data.attacks[attackHand].attackResult;
+				}
+
+				if (enemy.Hit(owner, this, attackType, GetMultiplier(owner), !data.attacks[attackHand].unblockable)) {
 					Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
 					if (data.attacks[attackHand].interruptOnHit) {
 						Interrupt(owner);
@@ -203,11 +213,6 @@ namespace Bowhead {
 						Attack(owner);
 					}
 				}
-			}
-
-			if (chargeTime > data.moveSpeedChargeDelay && !data.attacks[attackHand].canRunWhileCharging) {
-				owner.canRun = false;
-				owner.canSprint = false;
 			}
 
 
@@ -321,17 +326,26 @@ namespace Bowhead {
 				owner.useStamina(data.attacks[attackHand].parryResult.staminaUse);
 				remainingDamage = Mathf.Max(0, remainingDamage - data.attacks[attackHand].parryResult.damageAbsorb);
 				remainingStun = Mathf.Max(0, remainingStun - data.attacks[attackHand].parryResult.stunAbsorb);
-				attacker.Hit(owner, this, data.attacks[attackHand].parryResult, false);
+				attacker.Hit(owner, this, data.attacks[attackHand].parryResult, 1, false);
             }
 			else if (isDefend) {
 				owner.useStamina(data.attacks[attackHand].parryResult.staminaUse);
 				remainingDamage = Mathf.Max(0, remainingDamage - data.attacks[attackHand].parryResult.damageAbsorb);
 				remainingStun = Mathf.Max(0, remainingStun - data.attacks[attackHand].parryResult.stunAbsorb);
-				attacker.Hit(owner, this, data.attacks[attackHand].defendResult, false);
+				attacker.Hit(owner, this, data.attacks[attackHand].defendResult, 1, false);
 			}
 
         }
 
+		public float GetMultiplier(Pawn owner) {
+			if (data.attacks[attackHand].chargeTime > 0 && chargeTime > 0) {
+				if (owner.activity == Pawn.Activity.Falling) {
+					return 2;
+				}
+				return Mathf.Clamp(Mathf.FloorToInt(chargeTime / data.attacks[attackHand].chargeTime) * 2, 1, data.attacks[attackHand].maxCharge);
+			}
+			return 1;
+		}
 
     }
 }

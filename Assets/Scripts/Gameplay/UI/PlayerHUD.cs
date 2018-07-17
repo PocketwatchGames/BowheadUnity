@@ -13,6 +13,8 @@ public class PlayerHUD : MonoBehaviour {
     UnityEngine.UI.Image _staminaFill;
     [SerializeField]
     UnityEngine.UI.Slider _water;
+	[SerializeField]
+	UnityEngine.UI.Text _weaponMultiplier;
 
     private Player _target;
 	private float _changeTimerWater, _changeTimerHealth;
@@ -30,6 +32,21 @@ public class PlayerHUD : MonoBehaviour {
         float h = _target.health / _target.maxHealth;
         float s = mountOrTarget.stamina / mountOrTarget.maxStamina;
         float w = _target.water / _target.maxWater;
+		float wm = 0;
+		for (int i=0;i<Player.MaxInventorySize;i++) {
+			var weapon = _target.GetInventorySlot(i) as Bowhead.Weapon;
+			if (weapon != null) {
+				wm = Mathf.Max(wm, weapon.GetMultiplier(_target));
+			}
+		}
+		if (wm <= 1) {
+			_weaponMultiplier.gameObject.SetActive(false);
+		}
+		else {
+			_weaponMultiplier.fontSize = 20 + (int)(2 * wm);
+			_weaponMultiplier.gameObject.SetActive(true);
+			_weaponMultiplier.text = "x" + Mathf.FloorToInt(wm);
+		}
 
 		if (_health.value != h) {
 			_changeTimerHealth = 3;
@@ -38,7 +55,7 @@ public class PlayerHUD : MonoBehaviour {
 			_changeTimerWater = 3;
 		}
 
-        if (h < 1 || w < 1 || s < 1 || _changeTimerHealth > 0 || _changeTimerWater > 0)
+        if (h < 1 || w < 1 || s < 1 || _changeTimerHealth > 0 || _changeTimerWater > 0 || wm > 1)
         {
             transform.position = Camera.main.WorldToScreenPoint(_target.headPosition());
             _health.value = h;

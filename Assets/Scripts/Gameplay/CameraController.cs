@@ -106,13 +106,13 @@ namespace Bowhead.Actors {
 					_turnAccelerationTimer += dt;
 					float acceleration;
 					if (_turnAccelerationTimer < data.turnAccelerationSlowTime) {
-						acceleration = data.turnAccelerationFirstTime;
+						acceleration = data.turnAccelerationFirstTime * Mathf.Deg2Rad;
 					}
 					else {
-						acceleration = data.turnAcceleration;
+						acceleration = data.turnAcceleration * Mathf.Deg2Rad;
 					}
 
-					_angularVelocity += gamepad * dt * acceleration * Mathf.Deg2Rad;
+					_angularVelocity += (gamepad* data.turnMaxSpeed * Mathf.Deg2Rad - _angularVelocity) * dt * acceleration;
 				}
 				if (_angularVelocity.magnitude > data.turnMaxSpeed * Mathf.Deg2Rad) {
 					_angularVelocity = _angularVelocity.normalized * data.turnMaxSpeed * Mathf.Deg2Rad;

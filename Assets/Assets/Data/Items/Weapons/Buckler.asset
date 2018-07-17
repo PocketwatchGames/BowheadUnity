@@ -22,6 +22,7 @@ MonoBehaviour:
   moveSpeedChargeDelay: 0.2
   attacks:
   - chargeTime: 0
+    maxCharge: 0
     castTime: 0
     activeTime: 0
     cooldown: 0
@@ -30,12 +31,14 @@ MonoBehaviour:
     radius: 0
     staminaUse: 0
     stepDistance: 0
-    canRunWhileCharging: 0
+    moveSpeedWhileCharging: 0.75
+    moveSpeedWhileFullyCharged: 0
     canMoveDuringCooldown: 0
     canMoveDuringCast: 0
     canMoveDuringActive: 0
     unblockable: 0
     interruptOnHit: 0
+    canBackstab: 0
     spell: 0
     spellPower: 0
     waterUse: 0
@@ -52,7 +55,6 @@ MonoBehaviour:
       stun: 0
       interrupt: 0
     canDefend: 1
-    canRunWhileDefending: 0
     defendAngleRange: 60
     defendResult:
       knockback: 0.5
@@ -67,7 +69,7 @@ MonoBehaviour:
     parryResult:
       knockback: 1
       damage: 0
-      stun: 100
+      stun: 50
       interrupt: 1
       stunAbsorb: 20
       damageAbsorb: 10
