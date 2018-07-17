@@ -1,5 +1,7 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
+#define DISABLE_WORLD_STREAMING_FILE
+
 using UnityEngine;
 using Unity.Jobs;
 using static World;
@@ -50,11 +52,19 @@ namespace Bowhead {
 				}
 
 				public World.Streaming.IMMappedChunkData MMapChunkData(World.Streaming.IChunk chunk) {
+#if DISABLE_WORLD_STREAMING_FILE
 					return _worldFile.MMapChunkData(chunk);
+#else
+					return null;
+#endif
 				}
 
 				public void WriteChunkData(World.Streaming.IChunkIO chunk) {
+#if DISABLE_WORLD_STREAMING_FILE
 					_worldFile.WriteChunkToFile(chunk);
+#else
+					return null;
+#endif
 				}
 
 				public void Dispose() {

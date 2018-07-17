@@ -1,7 +1,5 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
-//#define DISABLE
-
 using System;
 using System.Threading;
 using System.Text;
@@ -116,7 +114,6 @@ public partial class World {
 		}
 
 		public void WriteChunkToFile(Streaming.IChunkIO chunk) {
-#if !DISABLE
 			if (_chunkWrite != null) {
 				++_modifyCount;
 
@@ -138,11 +135,9 @@ public partial class World {
 				};
 				_chunkFiles[chunkFile.pos] = chunkFile;
 			}
-#endif
 		}
 
 		public Streaming.IMMappedChunkData MMapChunkData(Streaming.IChunk chunk) {
-#if !DISABLE
 			ChunkFile_t chunkFile;
 			if (_chunkFiles.TryGetValue(chunk.chunkPos, out chunkFile)) {
 
@@ -183,7 +178,6 @@ public partial class World {
 				_chunkRead.AddRef();
 				return io;
 			}
-#endif
 			return null;
 		}
 
