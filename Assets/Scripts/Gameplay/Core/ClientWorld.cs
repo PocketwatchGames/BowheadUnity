@@ -22,6 +22,7 @@ namespace Bowhead.Client {
 		ActorSingleton<Bowhead.Actors.GameState> _gameState;
 
 		public event Action<Bowhead.Actors.Critter> CritterActiveEvent;
+        public event Action<Bowhead.Actors.Pawn, float> DamageEvent;
 		
 		public ClientWorld(
 			IGameInstance gameInstance,
@@ -270,10 +271,16 @@ namespace Bowhead.Client {
 			gameState.worldStreaming.WriteChunkData(chunk);
 		}
 
-		public void OnCritterActive(Bowhead.Actors.Critter c) {
-			CritterActiveEvent?.Invoke(c);
-		}
+        public void OnCritterActive(Bowhead.Actors.Critter c)
+        {
+            CritterActiveEvent?.Invoke(c);
+        }
+
+        public void OnDamage(Bowhead.Actors.Pawn p, float d)
+        {
+            DamageEvent?.Invoke(p, d);
+        }
 
 
-	}
+    }
 }
