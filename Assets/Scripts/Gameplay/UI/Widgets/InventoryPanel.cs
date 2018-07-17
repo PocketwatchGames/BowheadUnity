@@ -54,7 +54,7 @@ namespace Bowhead.Client.UI {
 
 			_player.OnMoneyChange += onMoneyChange;
 			_player.OnInventoryChange += OnInventoryChange;
-			_player.oStatusEffectAdded += OnStatusEffectAdded;
+			GameManager.instance.clientWorld.StatusEffectAddedEvent += OnStatusEffectAdded;
 
             _mainContainer = Instantiate(_inventoryContainerPrefab, _inventoryItems, false);
 
@@ -87,7 +87,10 @@ namespace Bowhead.Client.UI {
 			_weight.text = _player.weight.ToString();
 		}
 
-		private void OnStatusEffectAdded(StatusEffect e) {
+		private void OnStatusEffectAdded(Pawn target, StatusEffect e) {
+            if (target != _player) {
+                return;
+            }
 			var hud = Instantiate<StatusEffectHUD>(_statusEffectPrefab, _statusEffectContainer.transform);
 			hud.Init(e);
 		}

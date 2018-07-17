@@ -67,7 +67,7 @@ namespace Bowhead {
 
             foreach (var d in StaticData.GetAllStaticAssets<StatusEffectData>())
             {
-                Add(d, typeof(StatusEffectData));
+                Add(d);
             }
         }
     }

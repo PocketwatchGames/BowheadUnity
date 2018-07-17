@@ -20,9 +20,21 @@ public class DamageHUD : MonoBehaviour {
         Destroy(gameObject, time);
     }
 
-	
-	// Update is called once per frame
-	void Update () {
+    public void Init(string s, int size, float t, Bowhead.Actors.Pawn target)
+    {
+        totalTime = time = t;
+        text = GetComponent<UnityEngine.UI.Text>();
+        text.fontSize = size;
+        text.color = Color.red;
+        text.text = s;
+        transform.position = startPos = Camera.main.WorldToScreenPoint(target.headPosition());
+
+        Destroy(gameObject, time);
+    }
+
+
+    // Update is called once per frame
+    void Update () {
         time -= Time.deltaTime;
         if (time <= 0) {
             return;

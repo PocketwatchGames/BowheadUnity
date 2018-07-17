@@ -1270,7 +1270,7 @@ namespace Bowhead.Actors {
 		public void AddStatusEffect(StatusEffectData data, float time) {
 			var e = StatusEffect.Create(data, time);
 			statusEffects.Add(e);
-            gameMode.CreateStatusEffectAddedEvent(this, e);
+            GameManager.instance.clientWorld.OnStatusEffectAdded(this, e);
 		}
     }
 }

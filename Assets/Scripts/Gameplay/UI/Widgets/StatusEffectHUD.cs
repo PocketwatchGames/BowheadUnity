@@ -18,7 +18,7 @@ public class StatusEffectHUD : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (_statusEffect.time <= 0) {
+		if (_statusEffect == null || _statusEffect.time <= 0) {
 			Destroy(gameObject);
 		}
 		else {

@@ -23,8 +23,9 @@ namespace Bowhead.Client {
 
 		public event Action<Bowhead.Actors.Critter> CritterActiveEvent;
         public event Action<Bowhead.Actors.Pawn, float> DamageEvent;
-		
-		public ClientWorld(
+        public event Action<Bowhead.Actors.Pawn, StatusEffect> StatusEffectAddedEvent;
+
+        public ClientWorld(
 			IGameInstance gameInstance,
 			Streaming serverStreaming,
 			World_ChunkComponent chunkComponent,
@@ -281,6 +282,10 @@ namespace Bowhead.Client {
             DamageEvent?.Invoke(p, d);
         }
 
+        public void OnStatusEffectAdded(Bowhead.Actors.Pawn target, StatusEffect effect)
+        {
+            StatusEffectAddedEvent?.Invoke(target, effect);
+        }
 
     }
 }

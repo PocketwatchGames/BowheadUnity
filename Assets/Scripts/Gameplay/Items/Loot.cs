@@ -20,6 +20,10 @@ namespace Bowhead {
 			else if (data.useType == LootData.UseType.Water) {
                 success = UseWater(this, owner);
 			}
+            else
+            {
+                success = true;
+            }
             if (success && data.statusEffect != null)
             {
                 owner.AddStatusEffect(data.statusEffect, data.statusEffectTime);

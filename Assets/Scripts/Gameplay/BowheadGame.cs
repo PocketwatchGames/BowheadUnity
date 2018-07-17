@@ -108,7 +108,6 @@ namespace Bowhead.Server {
 		FastNoise_t noise = FastNoise_t.New();
 
         public event Action<Pawn, float> onAudioEvent;
-        public event Action<Pawn, StatusEffect> onStatusEffectAddedEvent;
 
         protected override void PrepareForMatchInProgress() {
 			base.PrepareForMatchInProgress();
@@ -403,10 +402,6 @@ namespace Bowhead.Server {
         public void CreateAudioEvent(Pawn origin, float loudness)
         {
             onAudioEvent?.Invoke(origin, loudness);
-        }
-        public void CreateStatusEffectAddedEvent(Pawn target, StatusEffect effect)
-        {
-            onStatusEffectAddedEvent?.Invoke(target, effect);
         }
 
         #endregion

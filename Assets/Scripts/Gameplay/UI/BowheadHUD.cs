@@ -67,6 +67,7 @@ namespace Bowhead.Client.UI {
 
 			world.CritterActiveEvent += OnCritterActive;
             world.DamageEvent += OnDamage;
+            world.StatusEffectAddedEvent += OnStatusEffectAdded;
         }
 
         public override void OnPlayerPossessed(Player player) {
@@ -108,6 +109,11 @@ namespace Bowhead.Client.UI {
         {
             var damageHUD = GameObject.Instantiate<DamageHUD>(GameManager.instance.clientData.damageHUDPrefab, _pawnHUDs.transform);
             damageHUD.Init(damage, 1.5f, target);
+        }
+        private void OnStatusEffectAdded(Pawn target, StatusEffect e)
+        {
+            var damageHUD = GameObject.Instantiate<DamageHUD>(GameManager.instance.clientData.damageHUDPrefab, _pawnHUDs.transform);
+            damageHUD.Init("+" + e.data.name, 20, 1.5f, target);
         }
 
         public override void Tick(float dt) {
