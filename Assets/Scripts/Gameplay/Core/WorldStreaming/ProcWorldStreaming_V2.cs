@@ -52,7 +52,7 @@ namespace Bowhead {
 				}
 
 				public World.Streaming.IMMappedChunkData MMapChunkData(World.Streaming.IChunk chunk) {
-#if DISABLE_WORLD_STREAMING_FILE
+#if !DISABLE_WORLD_STREAMING_FILE
 					return _worldFile.MMapChunkData(chunk);
 #else
 					return null;
@@ -60,10 +60,8 @@ namespace Bowhead {
 				}
 
 				public void WriteChunkData(World.Streaming.IChunkIO chunk) {
-#if DISABLE_WORLD_STREAMING_FILE
+#if !DISABLE_WORLD_STREAMING_FILE
 					_worldFile.WriteChunkToFile(chunk);
-#else
-					return null;
 #endif
 				}
 
