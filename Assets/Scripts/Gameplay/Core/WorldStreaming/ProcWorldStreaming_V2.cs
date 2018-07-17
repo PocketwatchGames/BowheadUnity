@@ -73,6 +73,8 @@ namespace Bowhead {
 				var wpos = ChunkToWorld(cpos);
 				var v3 = WorldToVec3(wpos);
 
+				bool hasRoad = false;
+
 				for (int x = 0; x < VOXEL_CHUNK_SIZE_XZ; ++x) {
 					for (int z = 0; z < VOXEL_CHUNK_SIZE_XZ; ++z) {
 						var xpos = (int)v3.x + x;
@@ -90,6 +92,7 @@ namespace Bowhead {
 
 
 						CreateRivers(ref chunk, ref noise, v3, x, z, plateauElevation);
+						hasRoad = CreateRoads(ref chunk, ref noise, v3, x, z, plateauElevation);
 
 					}
 				}
@@ -102,7 +105,7 @@ namespace Bowhead {
 				}
 
 				if (solid && air) {
-					AddDecorations(v3, ref chunk, ref noise);
+					AddDecorations(v3, hasRoad, ref chunk, ref noise);
 				}
 
 				return chunk;
@@ -148,13 +151,13 @@ namespace Bowhead {
 					0.3f * GetPerlinNormal(ref noise, x + 2254, z + 6563, 0, powerScaleInverse * 0.1f);
 				float range =
 					roadWidthMin + roadWidthRange * Mathf.Pow(0.2f * Mathf.Pow(humidity, 3) + 0.8f * (
-					0.8f * GetPerlinNormal(ref noise, x + 7646745, z + 24, NoiseFloatScale._0005) + 
+					0.8f * GetPerlinNormal(ref noise, x + 7646745, z + 24, NoiseFloatScale._0005) +
 					0.2f * GetPerlinNormal(ref noise, x + 7645, z + 234, NoiseFloatScale._01)), 4);
 
 				if (power > 0.5f - range && power < 0.5f + range) {
 					float depth = 0;
 					if (power > 0.5f - range && power < 0.5f + range) {
-						for (int i=elevation-2;i<=elevation;i++) {
+						for (int i = elevation - 2; i <= elevation; i++) {
 							int cy = (int)(i - v3.y);
 							if (cy >= 0 && cy < VOXEL_CHUNK_SIZE_Y) {
 								float temperature = GetTemperature(ref noise, x, i, z);
@@ -169,6 +172,42 @@ namespace Bowhead {
 						}
 					}
 				}
+			}
+
+			private static bool CreateRoads(ref PinnedChunkData_t chunk, ref FastNoise_t noise, Vector3 v3, int cx, int cz, int elevation) {
+				if (elevation <= waterLevel)
+					return false;
+				var x = (int)v3.x + cx;
+				var z = (int)v3.z + cz;
+
+				float powerScaleInverse = 0.005f;
+				float roadWidthMin = 0.001f;
+				float roadWidthRange = 0.02f;
+				float humidity = GetHumidity(ref noise, x, z);
+				float power =
+					0.4f * GetPerlinNormal(ref noise, x + 43, z+5634, NoiseFloatScale._0005) +
+					0.3f * GetPerlinNormal(ref noise, x + 254, z + 6563, 0, powerScaleInverse * 0.5f) +
+					0.3f * GetPerlinNormal(ref noise, x + 22554, z + 657463, 0, powerScaleInverse * 0.1f);
+				float range =
+					roadWidthMin + roadWidthRange * Mathf.Pow(0.2f * Mathf.Pow(humidity, 3) + 0.8f * (
+					0.8f * GetPerlinNormal(ref noise, x + 766745, z + 2446, NoiseFloatScale._0005) +
+					0.2f * GetPerlinNormal(ref noise, x + 75, z + 2344, NoiseFloatScale._01)), 4);
+
+				if (power > 0.5f - range && power < 0.5f + range) {
+					float depth = 0;
+					if (power > 0.5f - range && power < 0.5f + range) {
+						for (int i = elevation - 2; i <= elevation; i++) {
+							int cy = (int)(i - v3.y);
+							if (cy >= 0 && cy < VOXEL_CHUNK_SIZE_Y) {
+								float temperature = GetTemperature(ref noise, x, i, z);
+								int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + ((int)(i - v3.y) * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+								chunk.voxeldata[ofs] = EVoxelBlockType.Dirt;
+							}
+						}
+						return true;
+					}
+				}
+				return false;
 			}
 
 			private static void AssignBlocks(ref PinnedChunkData_t chunk, ref FastNoise_t noise, ref bool solid, Vector3 v3, int x, int z, float elevation) {
@@ -212,7 +251,7 @@ namespace Bowhead {
 				}
 			}
 
-			private static void AddDecorations(Vector3 chunkPos, ref PinnedChunkData_t chunk, ref FastNoise_t noise) {
+			private static void AddDecorations(Vector3 chunkPos, bool hasRoad, ref PinnedChunkData_t chunk, ref FastNoise_t noise) {
 				for (int x = 0; x < VOXEL_CHUNK_SIZE_XZ; ++x) {
 					for (int z = 0; z < VOXEL_CHUNK_SIZE_XZ; ++z) {
 						var xpos = (int)chunkPos.x + x;
@@ -315,7 +354,7 @@ namespace Bowhead {
 					}
 				}
 
-				int voxelsPerTower = 400;
+				int voxelsPerTower = 800;
 				Vector2Int towerRegion = new Vector2Int(Mathf.FloorToInt((chunkPos.x*VOXEL_CHUNK_SIZE_XZ)/ voxelsPerTower), Mathf.FloorToInt((chunkPos.z * VOXEL_CHUNK_SIZE_XZ) / voxelsPerTower));
 				Vector2Int towerWorldPosition = new Vector2Int(towerRegion.x*voxelsPerTower+(int)(GetWhiteNoise(ref noise, towerRegion.x, 0, towerRegion.y) * voxelsPerTower), towerRegion.y * voxelsPerTower + (int)(GetWhiteNoise(ref noise, towerRegion.x+100, 0, towerRegion.y) * voxelsPerTower));
 				var towerChunkPos = new Vector2Int(towerWorldPosition.x / VOXEL_CHUNK_SIZE_XZ, towerWorldPosition.y / VOXEL_CHUNK_SIZE_XZ);
@@ -332,15 +371,19 @@ namespace Bowhead {
 						}
 					}
 				}
-				else if (GetWhiteNoise(ref noise, chunkPos.x + 63452, 0, chunkPos.z) < 0.005f) {
-					chunk.AddDecoration(
-						new Decoration_t() {
-							pos = chunkPos + new Vector3(VOXEL_CHUNK_SIZE_XZ / 2, VOXEL_CHUNK_SIZE_Y - 1, VOXEL_CHUNK_SIZE_XZ / 2),
-							type = EDecorationType.Merchant
+				else if (hasRoad && GetWhiteNoise(ref noise, chunkPos.x + 63452, 0, chunkPos.z) < 0.001f) {
+					int x = 8;
+					int z = 8;
+					for (int y = VOXEL_CHUNK_SIZE_Y - 1; y >= 0; --y) {
+						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+						var bt = chunk.voxeldata[ofs].type;
+						if (bt != EVoxelBlockType.Air) {
+							ConstructStore(ref noise, chunkPos, x, y, z, ref chunk);
+							break;
 						}
-					);
+					}
 				}
-				else if (GetWhiteNoise(ref noise, chunkPos.x + 6345, 0, chunkPos.z) < 0.005f) {
+				else if (GetWhiteNoise(ref noise, chunkPos.x + 6345, 0, chunkPos.z) < 0.002f) {
 					chunk.AddDecoration(
 						new Decoration_t() {
 							pos = chunkPos + new Vector3(VOXEL_CHUNK_SIZE_XZ / 2, VOXEL_CHUNK_SIZE_Y - 1, VOXEL_CHUNK_SIZE_XZ / 2),
@@ -558,17 +601,17 @@ namespace Bowhead {
 				}
 			}
 
-            static void ConstructTower(ref FastNoise_t noise, Vector3 chunkPos, int x, int y, int z, int towerHeight, ref PinnedChunkData_t chunk) {
+			static void ConstructTower(ref FastNoise_t noise, Vector3 chunkPos, int x, int y, int z, int towerHeight, ref PinnedChunkData_t chunk) {
 
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        Vector3Int pos = new Vector3Int(x + i, 0, z + j);
-                        int groundHeight = 0;
-                        for (int k = towerHeight; k >= groundHeight; k--) {
-                            pos.y = k + y;
-                            if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
-                                var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-                                chunk.flags |= EChunkFlags.SOLID;
+				for (int i = -1; i <= 1; i++) {
+					for (int j = -1; j <= 1; j++) {
+						Vector3Int pos = new Vector3Int(x + i, 0, z + j);
+						int groundHeight = 0;
+						for (int k = towerHeight; k >= groundHeight; k--) {
+							pos.y = k + y;
+							if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
+								var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+								chunk.flags |= EChunkFlags.SOLID;
 								if (k == towerHeight) {
 									chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
 								}
@@ -576,43 +619,43 @@ namespace Bowhead {
 									chunk.voxeldata[ofs] = EVoxelBlockType.Rock;
 								}
 							}
-                        }
-                    }
-                }
-                for (int i = -4; i <= 4; i++) {
-                    for (int j = -4; j <= 4; j++) {
-                        if (i > 1 || i < -1 || j > 1 || j < -1) {
-                            Vector3Int pos = new Vector3Int(x + i, 0, z + j);
-                            int groundHeight = 0;
-                            for (int k = towerHeight; k >= groundHeight; k--) {
-                                int stepIndex = 0;
-                                if (j < -1) {
-                                    if (i < -1)
-                                        stepIndex = 0;
-                                    else if (i < 2)
-                                        stepIndex = 1;
-                                    else
-                                        stepIndex = 2;
-                                }
-                                else if (j < 2) {
-                                    if (i > 1) {
-                                        stepIndex = 3;
-                                    }
-                                    else {
-                                        stepIndex = 7;
-                                    }
-                                }
-                                else {
-                                    if (i > 1) {
-                                        stepIndex = 4;
-                                    }
-                                    else if (i > -2) {
-                                        stepIndex = 5;
-                                    }
-                                    else {
-                                        stepIndex = 6;
-                                    }
-                                }
+						}
+					}
+				}
+				for (int i = -4; i <= 4; i++) {
+					for (int j = -4; j <= 4; j++) {
+						if (i > 1 || i < -1 || j > 1 || j < -1) {
+							Vector3Int pos = new Vector3Int(x + i, 0, z + j);
+							int groundHeight = 0;
+							for (int k = towerHeight; k >= groundHeight; k--) {
+								int stepIndex = 0;
+								if (j < -1) {
+									if (i < -1)
+										stepIndex = 0;
+									else if (i < 2)
+										stepIndex = 1;
+									else
+										stepIndex = 2;
+								}
+								else if (j < 2) {
+									if (i > 1) {
+										stepIndex = 3;
+									}
+									else {
+										stepIndex = 7;
+									}
+								}
+								else {
+									if (i > 1) {
+										stepIndex = 4;
+									}
+									else if (i > -2) {
+										stepIndex = 5;
+									}
+									else {
+										stepIndex = 6;
+									}
+								}
 								int modElevation = (k + stepIndex) % 7;
 
 								pos.y = k + y;
@@ -643,6 +686,32 @@ namespace Bowhead {
 					chunk.AddDecoration(new Decoration_t() {
 						pos = chunkPos + new Vector3(x + 0.5f, y + towerHeight + 2, z + 0.5f),
 						type = EDecorationType.MapReveal
+					});
+				}
+			}
+
+			static void ConstructStore(ref FastNoise_t noise, Vector3 chunkPos, int x, int y, int z, ref PinnedChunkData_t chunk) {
+
+				int height = 8;
+				for (int i = -6; i <= 6; i++) {
+					for (int j = -6; j <= 0; j++) {
+						Vector3Int pos = new Vector3Int(x + i, 0, z + j);
+						int groundHeight = 0;
+						for (int k = height; k >= groundHeight; k--) {
+							pos.y = k + y;
+							if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
+								var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+								chunk.flags |= EChunkFlags.SOLID;
+								chunk.voxeldata[ofs] = EVoxelBlockType.Wood.WithFlags(EVoxelBlockFlags.FullVoxel);
+							}
+						}
+					}
+				}
+
+				{
+					chunk.AddDecoration(new Decoration_t() {
+						pos = chunkPos + new Vector3(x + 0.5f, y + 2, z + 1.5f),
+						type = EDecorationType.Merchant
 					});
 				}
 			}
