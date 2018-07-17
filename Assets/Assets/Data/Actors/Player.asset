@@ -13,6 +13,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 1
+  mapMarker:
+    _assetPath: MapFlagMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MapFlagMarker.prefab
   height: 2
   maxHealth: 200
   maxWater: 100
@@ -61,9 +64,6 @@ MonoBehaviour:
   prefab:
     _assetPath: Actors/Player
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Player.prefab
-  mapMarker:
-    _assetPath: 
-    _editorPath: 
   temperatureSleepMinimum: 50
   temperatureSleepMaximum: 100
   fallDamageSpeed: 30

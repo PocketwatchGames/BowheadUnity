@@ -5,7 +5,8 @@ namespace Bowhead.Actors {
 
     public abstract class PawnData : EntityData {
 		[Header("Basic")]
-        public float height;
+		public GameObject_WRef mapMarker;
+		public float height;
         public float maxHealth;
 		public float maxWater;
         public float maxStamina;
