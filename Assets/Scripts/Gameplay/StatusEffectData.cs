@@ -1,9 +1,10 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Bowhead.Actors {
+namespace Bowhead {
 
-	public abstract class StatusEffectData : EntityData {
+    [CreateAssetMenu(menuName = "Status Effect")]
+    public class StatusEffectData : EntityData {
 
 		new public static StatusEffectData Get(string name) {
 			return DataManager.GetData<StatusEffectData>(name);
@@ -11,10 +12,11 @@ namespace Bowhead.Actors {
 
 	}
 
-	public abstract class StatusEffectData<T> : StatusEffectData where T : StatusEffectData<T> {
+    public abstract class StatusEffectData<T, D> : StatusEffectData where T : StatusEffect, new() where D : StatusEffectData<T, D>, new()
+    {
 
-		new public static T Get(string name) {
-			return DataManager.GetData<T>(name);
+        new public static D Get(string name) {
+			return (D)DataManager.GetData<D>(name);
 		}
 	}
 }

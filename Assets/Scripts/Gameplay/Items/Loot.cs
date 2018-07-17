@@ -1,10 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Bowhead.Actors;
 
 namespace Bowhead {
-	using Player = Actors.Player;
-	using Pawn = Actors.Pawn;
     public class Loot : Item<Loot, LootData> {
 
         #region State
@@ -14,13 +13,18 @@ namespace Bowhead {
         #endregion
 
         public bool use(Pawn owner) {
+            bool success = false;
 			if (data.useType == LootData.UseType.Food) {
-				return UseFood(this, owner);
+				success = UseFood(this, owner);
 			}
 			else if (data.useType == LootData.UseType.Water) {
-				return UseWater(this, owner);
+                success = UseWater(this, owner);
 			}
-			return false;
+            if (success && data.statusEffect != null)
+            {
+                owner.AddStatusEffect(data.statusEffect, data.statusEffectTime);
+            }
+			return success;
         }
 
         static bool UseWater(Loot item, Pawn owner) {

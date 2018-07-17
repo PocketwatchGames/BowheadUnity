@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Bowhead.Actors;
+using Bowhead;
 public class StatusEffectHUD : MonoBehaviour {
 
-	public Text name;
+	public Text nameText;
 	public Slider slider;
 
 	private StatusEffect _statusEffect;
 
 	public void Init(StatusEffect e) {
 		_statusEffect = e;
-		name.text = _statusEffect.data.name;
+        nameText.text = _statusEffect.data.name;
 		slider.value = 1;
 	}
 	

@@ -60,8 +60,14 @@ namespace Bowhead {
                 Add(d);
             }
 
-            foreach (var d in StaticData.GetAllStaticAssets<ItemData>()) {
+            foreach (var d in StaticData.GetAllStaticAssets<ItemData>())
+            {
                 Add(d, typeof(ItemData));
+            }
+
+            foreach (var d in StaticData.GetAllStaticAssets<StatusEffectData>())
+            {
+                Add(d, typeof(StatusEffectData));
             }
         }
     }

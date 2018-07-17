@@ -14,5 +14,8 @@ namespace Bowhead {
         public float power;
         public int stackSize;
 
+        public StatusEffectData statusEffect;
+        public float statusEffectTime;
+
 	}
 }

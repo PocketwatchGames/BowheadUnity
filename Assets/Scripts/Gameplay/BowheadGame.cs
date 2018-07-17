@@ -107,9 +107,10 @@ namespace Bowhead.Server {
 		int numCritters;
 		FastNoise_t noise = FastNoise_t.New();
 
-		public event Action<Pawn, float> onAudioEvent;
+        public event Action<Pawn, float> onAudioEvent;
+        public event Action<Pawn, StatusEffect> onStatusEffectAddedEvent;
 
-		protected override void PrepareForMatchInProgress() {
+        protected override void PrepareForMatchInProgress() {
 			base.PrepareForMatchInProgress();
 
 			//for (int i = 0; i < 100; i++) {
@@ -394,20 +395,25 @@ namespace Bowhead.Server {
 				}
 			}
 		}
-		#endregion
+        #endregion
 
 
-		#region World Events
+        #region World Events
 
-		public void CreateAudioEvent(Pawn origin, float loudness) {
-			onAudioEvent?.Invoke(origin, loudness);
-		}
+        public void CreateAudioEvent(Pawn origin, float loudness)
+        {
+            onAudioEvent?.Invoke(origin, loudness);
+        }
+        public void CreateStatusEffectAddedEvent(Pawn target, StatusEffect effect)
+        {
+            onStatusEffectAddedEvent?.Invoke(target, effect);
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 
 
-	public class BowheadGame : BowheadGame<GSBowheadGame> {
+    public class BowheadGame : BowheadGame<GSBowheadGame> {
 		public BowheadGame(ServerWorld world) : base(world) { }
 	}
 

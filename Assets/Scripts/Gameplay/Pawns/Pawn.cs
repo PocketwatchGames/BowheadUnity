@@ -1268,9 +1268,9 @@ namespace Bowhead.Actors {
         }
 
 		public void AddStatusEffect(StatusEffectData data, float time) {
-			var e = StatusEffect.Spawn(data, time);
+			var e = StatusEffect.Create(data, time);
 			statusEffects.Add(e);
-			oStatusEffectAdded?.Invoke(e);
+            gameMode.CreateStatusEffectAddedEvent(this, e);
 		}
     }
 }
