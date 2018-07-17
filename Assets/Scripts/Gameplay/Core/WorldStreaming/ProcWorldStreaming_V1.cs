@@ -33,7 +33,7 @@ namespace Bowhead {
 					}.Schedule();
 				}
 
-				public World.Streaming.IAsyncChunkIO AsyncReadChunkData(World.Streaming.IChunkIO chunk) {
+				public World.Streaming.IMMappedChunkData MMapChunkData(World.Streaming.IChunk chunk) {
 					return null;
 				}
 

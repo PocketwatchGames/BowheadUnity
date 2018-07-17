@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
 using Unity.Collections;
+using Unity.Collections.LowLevel.Unsafe;
 
 public partial class World {
 	public sealed class Streaming : IDisposable {
@@ -20,9 +21,10 @@ public partial class World {
 			Error
 		};
 
-		public interface IAsyncChunkIO : IDisposable {
-			EAsyncChunkReadResult result { get; }
-			IChunkIO chunkIO { get; }
+		public interface IMMappedChunkData : IDisposable {
+			unsafe byte* chunkData { get; }
+			int chunkDataLen { get; }
+			EChunkFlags chunkFlags { get; }
 		};
 
 #if UNITY_EDITOR
@@ -56,7 +58,7 @@ public partial class World {
 #endif
 		public delegate JobHandle CreateGenVoxelsJobDelegate(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
 		public delegate void ChunkGeneratedDelegate(IChunk chunk);
-		public delegate IAsyncChunkIO AsyncChunkReadDelegate(IChunkIO chunk);
+		public delegate IMMappedChunkData MMapChunkDataDelegate(IChunk chunk);
 		public delegate void ChunkWriteDelegate(IChunkIO chunk);
 
 		public event ChunkGeneratedDelegate onChunkVoxelsLoaded;
@@ -79,7 +81,7 @@ public partial class World {
 		ChunkJobData _freeJobData;
 		ChunkJobData _usedJobData;
 		CreateGenVoxelsJobDelegate _createGenVoxelsJob;
-		AsyncChunkReadDelegate _chunkRead;
+		MMapChunkDataDelegate _chunkRead;
 		ChunkWriteDelegate _chunkWrite;
 		bool _loading;
 		bool _flush;
@@ -96,7 +98,7 @@ public partial class World {
 
 		public static Color32[] blockColors => ChunkMeshGen.tableStorage.blockColorsArray;
 		
-		public Streaming(World_ChunkComponent chunkPrefab, CreateGenVoxelsJobDelegate createGenVoxelsJob, AsyncChunkReadDelegate chunkRead, ChunkWriteDelegate chunkWrite) {
+		public Streaming(World_ChunkComponent chunkPrefab, CreateGenVoxelsJobDelegate createGenVoxelsJob, MMapChunkDataDelegate chunkRead, ChunkWriteDelegate chunkWrite) {
 			_chunkPrefab = chunkPrefab;
 			_chunkRead = chunkRead;
 			_chunkWrite = chunkWrite;
@@ -282,10 +284,22 @@ public partial class World {
 			chunk.dbgDraw.state = EDebugDrawState.GENERATING_VOXELS;
 #endif
 
-			jobData.ioRead = _chunkRead?.Invoke(chunk);
-			
-			if (jobData.ioRead == null) {
-				chunk.chunkData.Pin();
+			jobData.mmappedChunkData = _chunkRead?.Invoke(chunk);
+
+			chunk.chunkData.Pin();
+
+			if (jobData.mmappedChunkData != null) {
+				jobData.flags |= EJobFlags.TRIS;
+				chunk.chunkData.flags[0] = jobData.mmappedChunkData.chunkFlags;
+				unsafe {
+					jobData.jobHandle = new DecompressChunkDataJob_t() {
+						ptr = jobData.mmappedChunkData.chunkData,
+						len = jobData.mmappedChunkData.chunkDataLen,
+						verts = jobData.jobData.outputVerts,
+						chunk = ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData)
+					}.Schedule();
+				}
+			} else {
 				jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
 			}
 
@@ -307,13 +321,20 @@ public partial class World {
 				chunk.jobData.chunk = chunk;
 				chunk.jobData.hasSubJob = false;
 
-				chunk.jobData.ioRead = _chunkRead?.Invoke(chunk);
+				chunk.jobData.mmappedChunkData = _chunkRead?.Invoke(chunk);
 			}
 
-			if (chunk.jobData.ioRead != null) {
-				chunk.jobData.flags = EJobFlags.TRIS;
-				if (!chunk.hasVoxelData) {
-					chunk.jobData.flags |= EJobFlags.VOXELS;
+			if (chunk.jobData.mmappedChunkData != null) {
+				chunk.chunkData.Pin();
+				chunk.jobData.flags = EJobFlags.TRIS|EJobFlags.VOXELS;
+				chunk.chunkData.flags[0] = chunk.jobData.mmappedChunkData.chunkFlags;
+				unsafe {
+					chunk.jobData.jobHandle = new DecompressChunkDataJob_t() {
+						ptr = chunk.jobData.mmappedChunkData.chunkData,
+						len = chunk.jobData.mmappedChunkData.chunkDataLen,
+						verts = chunk.jobData.jobData.outputVerts,
+						chunk = ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData)
+					}.Schedule();
 				}
 			} else {
 				chunk.jobData.flags = EJobFlags.TRIS;
@@ -370,48 +391,21 @@ public partial class World {
 			for (var job = _usedJobData; job != null; job = next) {
 				next = job.next;
 
-				bool jobComplete = false;
-				bool jobError = false;
-
-				if (job.ioRead != null) {
-					jobComplete = job.ioRead.result == EAsyncChunkReadResult.Success;
-					jobError = job.ioRead.result == EAsyncChunkReadResult.Error;
-				}  else {
-					jobComplete = job.jobHandle.IsCompleted;
-					if (jobComplete && ((job.flags&EJobFlags.TRIS) == EJobFlags.TRIS)) {
-						job.jobHandle.Complete();
-						_chunkWrite?.Invoke(job.chunk);
-					}
-				}
-
-				if (jobComplete || jobError) {
+				var jobComplete = job.jobHandle.IsCompleted;
+				
+				if (jobComplete) {
 					job.jobHandle.Complete();
 
-					if (!jobError) {
-						QueueJobCompletion(job);
+					if ((job.mmappedChunkData == null) && ((job.flags&EJobFlags.TRIS) == EJobFlags.TRIS)) {
+						_chunkWrite?.Invoke(job.chunk);
 					}
 
+					QueueJobCompletion(job);
+					
 					if (prev != null) {
 						prev.next = job.next;
 					} else {
 						_usedJobData = job.next;
-					}
-
-					if (jobError) {
-						var flags = job.flags;
-						var chunk = job.chunk;
-						CompleteJob(job, _flush);
-						job.next = _freeJobData;
-						_freeJobData = job;
-
-						if (chunk.refCount > 0) {
-							// reque the chunk, chunk read should return null because of the error this time.
-							if ((flags&EJobFlags.TRIS) == EJobFlags.TRIS) {
-								ScheduleGenTrisJob(chunk);
-							} else {
-								ScheduleGenVoxelsJob(chunk);
-							}
-						}
 					}
 
 				} else {
@@ -435,6 +429,23 @@ public partial class World {
 				}
 			}
 		}
+
+		unsafe struct DecompressChunkDataJob_t : IJob {
+			[NativeDisableUnsafePtrRestriction]
+			public byte* ptr;
+			public int len;
+			public PinnedChunkData_t chunk;
+			public ChunkMeshGen.FinalMeshVerts_t verts;
+
+			public void Execute() {
+				chunk = WorldFile.DecompressChunkData(ptr, len, chunk, verts);
+
+				unsafe {
+					chunk.pinnedDecorationCount[0] = chunk.decorationCount;
+					chunk.pinnedFlags[0] = chunk.flags;
+				}
+			}
+		};
 
 		class CompleteJobTask : PooledTaskQueueTask<CompleteJobTask> {
 			ChunkJobData job;
@@ -485,7 +496,7 @@ public partial class World {
 
 			if ((job.flags & EJobFlags.TRIS) != 0) {
 				chunk.hasTrisData = true;
-				if (job.ioRead == null) {
+				if (job.mmappedChunkData == null) {
 					job.jobData.voxelStorage.Unpin();
 					for (int i = 0; i < job.neighbors.Length; ++i) {
 						var neighbor = job.neighbors[i];
@@ -498,9 +509,7 @@ public partial class World {
 			}
 
 			if ((job.flags & EJobFlags.VOXELS) != 0) {
-				if (job.ioRead == null) {
-					chunk.chunkData.Unpin();
-				}
+				chunk.chunkData.Unpin();
 				Release(chunk);
 			}
 
@@ -508,31 +517,29 @@ public partial class World {
 			job.jobHandle = default(JobHandle);
 			job.subJobHandle = default(JobHandle);
 
-			if ((job.ioRead == null) || (job.ioRead.result == EAsyncChunkReadResult.Success)) {
-				if (!flush && (chunk.refCount > 0)) {
+			if (!flush && (chunk.refCount > 0)) {
 #if DEBUG_DRAW
-					chunk.dbgDraw.state = EDebugDrawState.HAS_VOXELS;
+				chunk.dbgDraw.state = EDebugDrawState.HAS_VOXELS;
 #endif
-					if ((job.flags & EJobFlags.VOXELS) != 0) {
-						if (!chunk.hasLoaded) {
-							onChunkVoxelsLoaded?.Invoke(chunk);
-						}
-						onChunkVoxelsUpdated?.Invoke(chunk);
-						chunk.InvokeVoxelsUpdated();
+				if ((job.flags & EJobFlags.VOXELS) != 0) {
+					if (!chunk.hasLoaded) {
+						onChunkVoxelsLoaded?.Invoke(chunk);
 					}
-					if (chunk.hasTrisData) {
-						CopyToMesh(job, chunk);
-						if (!chunk.hasLoaded) {
-							onChunkLoaded?.Invoke(chunk);
-						}
-						onChunkTrisUpdated?.Invoke(chunk);
-						chunk.InvokeTrisUpdated();
+					onChunkVoxelsUpdated?.Invoke(chunk);
+					chunk.InvokeVoxelsUpdated();
+				}
+				if (chunk.hasTrisData) {
+					CopyToMesh(job, chunk);
+					if (!chunk.hasLoaded) {
+						onChunkLoaded?.Invoke(chunk);
 					}
+					onChunkTrisUpdated?.Invoke(chunk);
+					chunk.InvokeTrisUpdated();
 				}
 			}
 
-			job.ioRead?.Dispose();
-			job.ioRead = null;
+			job.mmappedChunkData?.Dispose();
+			job.mmappedChunkData = null;
 
 			_flush = saveFlush;
 		}
@@ -810,7 +817,7 @@ public partial class World {
 			public EJobFlags flags;
 			public JobHandle jobHandle;
 			public JobHandle subJobHandle;
-			public IAsyncChunkIO ioRead;
+			public IMMappedChunkData mmappedChunkData;
 			public bool hasSubJob;
 
 			public void Dispose() {

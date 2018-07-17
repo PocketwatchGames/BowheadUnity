@@ -137,8 +137,8 @@ namespace Bowhead.Server {
 			return _gameMode.worldStreaming.ScheduleChunkGenerationJob(pos, chunk, GameManager.instance.isClient);
 		}
 
-		protected override Streaming.IAsyncChunkIO AsyncReadChunkData(Streaming.IChunkIO chunk) {
-			return _gameMode.worldStreaming.AsyncReadChunkData(chunk);
+		protected override Streaming.IMMappedChunkData MMapChunkData(Streaming.IChunk chunk) {
+			return _gameMode.worldStreaming.MMapChunkData(chunk);
 		}
 
 		protected override void WriteChunkData(Streaming.IChunkIO chunk) {

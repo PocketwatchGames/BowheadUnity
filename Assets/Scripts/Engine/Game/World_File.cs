@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.IO.MemoryMappedFiles;
 using UnityEngine;
 
-namespace Bowhead {
+public partial class World {
 	public sealed class WorldFile : IDisposable {
 		const int VERSION = 1;
 
@@ -20,6 +20,7 @@ namespace Bowhead {
 			public uint flags;
 			public uint ofs;
 			public uint size;
+			public ulong modifyCount;
 
 			public static ChunkFile_t Read(BinaryReader s) {
 				var cf = default(ChunkFile_t);
@@ -50,15 +51,56 @@ namespace Bowhead {
 			public int chunkCount;
 		};
 
+		class MMChunkFile : IDisposable {
+			int _refCount;
+			MemoryMappedFile _file;
+			MemoryMappedViewAccessor _view;
+			unsafe byte* _ptr;
+			long _fileSize;
+			public ulong modifyCount;
+
+			public void Open(string path) {
+				var fstream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+				_fileSize = fstream.Length;
+
+				_file = MemoryMappedFile.CreateFromFile(fstream, null, 0, MemoryMappedFileAccess.Read, null, HandleInheritability.None, false); 
+				_view = _file.CreateViewAccessor(0, 0, MemoryMappedFileAccess.Read);
+				unsafe {
+					_view.SafeMemoryMappedViewHandle.AcquirePointer(ref _ptr);
+				}
+				_refCount = 1;
+			}
+
+			public int AddRef() {
+				return ++_refCount;
+			}
+
+			public int Release() {
+				return --_refCount;
+			}
+
+			public void Dispose() {
+				_view.SafeMemoryMappedViewHandle.ReleasePointer();
+				_view?.Dispose();
+				_file?.Dispose();
+				_view = null;
+				_file = null;
+			}
+
+			public unsafe byte* ptr => _ptr;
+			public long fileSize => _fileSize;
+
+		};
+
 		Dictionary<WorldChunkPos_t, ChunkFile_t> _chunkFiles;
+		ObjectPool<MMChunkFile> _mmChunkFiles = new ObjectPool<MMChunkFile>();
+		ObjectPool<AsyncIO> _mmChunkIO = new ObjectPool<AsyncIO>();
 
 		BinaryWriter _indexFile;
-		FileStream _chunkRead;
+		MMChunkFile _chunkRead;
 		BinaryWriter _chunkWrite;
-		Thread _ioThread;
-		bool _run;
-
-		uint _ofs;
+		string _chunkFilePath;
+		ulong _modifyCount;
 
 		WorldFile() { }
 
@@ -73,13 +115,15 @@ namespace Bowhead {
 			return wf;
 		}
 
-		public void WriteChunkToFile(World.Streaming.IChunkIO chunk) {
+		public void WriteChunkToFile(Streaming.IChunkIO chunk) {
 #if !DISABLE
 			if (_chunkWrite != null) {
+				++_modifyCount;
+
 				long ofs = 0;
 				long size = 0;
 
-				if ((chunk.flags&World.EChunkFlags.SOLID) != 0) {
+				if ((chunk.flags&EChunkFlags.SOLID) != 0) {
 					ofs = _chunkWrite.BaseStream.Position;
 					WriteChunkDataToFile(_chunkWrite, chunk);
 					size = _chunkWrite.BaseStream.Position - ofs;
@@ -89,18 +133,55 @@ namespace Bowhead {
 					pos = chunk.chunkPos,
 					ofs = (uint)ofs,
 					size = (uint)size,
-					flags = (uint)chunk.flags
+					flags = (uint)chunk.flags,
+					modifyCount = _modifyCount
 				};
 				_chunkFiles[chunkFile.pos] = chunkFile;
 			}
 #endif
 		}
 
-		public World.Streaming.IAsyncChunkIO AsyncReadChunk(World.Streaming.IChunkIO chunk) {
+		public Streaming.IMMappedChunkData MMapChunkData(Streaming.IChunk chunk) {
 #if !DISABLE
 			ChunkFile_t chunkFile;
 			if (_chunkFiles.TryGetValue(chunk.chunkPos, out chunkFile)) {
-				return ReadChunkData(_chunkRead, chunkFile, chunk);
+
+				if ((_chunkRead != null) && (_chunkRead.modifyCount < _modifyCount)) {
+					ReleaseMMChunkFile(_chunkRead);
+					_chunkRead = null;
+				}
+
+				if (_chunkRead == null) {
+					_chunkRead = _mmChunkFiles.GetObject();
+					try {
+						_chunkRead.Open(_chunkFilePath);
+						_chunkRead.modifyCount = _modifyCount;
+					} catch (Exception e) {
+						_chunkRead.Release();
+						_chunkRead.Dispose();
+						_mmChunkFiles.ReturnObject(_chunkRead);
+						_chunkRead = null;
+						throw e;
+					}
+				}
+
+				if ((chunkFile.ofs + chunkFile.size) > _chunkRead.fileSize) {
+					_chunkFiles.Remove(chunk.chunkPos);
+					return null;
+				}
+
+				var io = _mmChunkIO.GetObject();
+				io.worldFile = this;
+				io.chunkFile = _chunkRead;
+				io.flags = (EChunkFlags)chunkFile.flags;
+				io.len = (int)chunkFile.size;
+
+				unsafe {
+					io.ptr = _chunkRead.ptr + chunkFile.ofs;
+				}
+
+				_chunkRead.AddRef();
+				return io;
 			}
 #endif
 			return null;
@@ -148,27 +229,38 @@ namespace Bowhead {
 		}
 
 		void OpenChunkFile(string path) {
-			_chunkRead = File.Open(path + ".cdf", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+			_chunkFilePath = path + ".cdf";
+			_chunkRead = _mmChunkFiles.GetObject();
+			_chunkRead.Open(_chunkFilePath);
+
 			try {
-				var writeFile = File.Open(path + ".cdf", FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
+				var writeFile = File.Open(_chunkFilePath, FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
 
 				_chunkWrite = new BinaryWriter(writeFile);
 				_chunkWrite.BaseStream.Position = _chunkWrite.BaseStream.Length;
 			} catch (Exception e) {
-				_chunkRead.Close();
+				_chunkRead.Release();
+				_chunkRead.Dispose();
+				_mmChunkFiles.ReturnObject(_chunkRead);
 				_chunkRead = null;
 				throw e;
 			}
 		}
 
 		void NewChunkFile(string path) {
-			_chunkWrite = new BinaryWriter(File.Open(path + ".cdf", FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+			_chunkFilePath = path + ".cdf";
+			_chunkWrite = new BinaryWriter(File.Open(_chunkFilePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+			_chunkRead = _mmChunkFiles.GetObject();
 
 			try {
-				_chunkRead = File.Open(path + ".cdf", FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+				_chunkRead.Open(_chunkFilePath);
 			} catch (Exception e) {
 				_chunkWrite.Close();
 				_chunkWrite = null;
+				_chunkRead.Release();
+				_chunkRead.Dispose();
+				_mmChunkFiles.ReturnObject(_chunkRead);
+				_chunkRead = null;
 				throw e;
 			}
 		}
@@ -179,31 +271,45 @@ namespace Bowhead {
 				_indexFile.Close();
 				_indexFile = null;
 			}
-			_chunkRead?.Close();
-			_chunkRead = null;
+
+			if (_chunkRead != null) {
+				ReleaseMMChunkFile(_chunkRead);
+				_chunkRead = null;
+			}
+
 			_chunkWrite?.Close();
 			_chunkWrite = null;
 		}
 
-		class AsyncIO : World.Streaming.IAsyncChunkIO {
-			public World.Streaming.IChunkIO chunk;
+		void ReleaseMMChunkFile(MMChunkFile mmchunkFile) {
+			if (mmchunkFile.Release() == 0) {
+				mmchunkFile.Dispose();
+				_mmChunkFiles.ReturnObject(mmchunkFile);
+			}
+		}
 
-			public static byte[] memblock;
+		class AsyncIO : Streaming.IMMappedChunkData {
+			public MMChunkFile chunkFile;
+			public WorldFile worldFile;
+			public unsafe byte* ptr;
+			public int len;
+			public EChunkFlags flags;
 
-			World.Streaming.EAsyncChunkReadResult World.Streaming.IAsyncChunkIO.result => World.Streaming.EAsyncChunkReadResult.Success;
-			World.Streaming.IChunkIO World.Streaming.IAsyncChunkIO.chunkIO => chunk;
-
-			public void Dispose() {}
+			unsafe byte* Streaming.IMMappedChunkData.chunkData => ptr;
+			int Streaming.IMMappedChunkData.chunkDataLen => len;
+			EChunkFlags Streaming.IMMappedChunkData.chunkFlags => flags;
+			
+			public void Dispose() {
+				worldFile.ReleaseMMChunkFile(chunkFile);
+				chunkFile = null;
+				worldFile._mmChunkIO.ReturnObject(this);
+			}
 		};
 
-		static AsyncIO ReadChunkData(FileStream file, ChunkFile_t chunkFile, World.Streaming.IChunkIO chunk) {
-
-			chunk.flags = (World.EChunkFlags)chunkFile.flags;
-
-			if ((chunk.flags&World.EChunkFlags.SOLID) == 0) {
+		public static unsafe PinnedChunkData_t DecompressChunkData(byte* ptr, int len, PinnedChunkData_t chunk, ChunkMeshGen.FinalMeshVerts_t verts) {
+			if ((chunk.flags&EChunkFlags.SOLID) == 0) {
 				// empty chunk
 				chunk.voxeldata.Broadcast(EVoxelBlockType.Air);
-				var verts = chunk.verts;
 
 				for (int i = 0; i < verts.counts.Length; ++i) {
 					verts.counts[i] = 0;
@@ -213,83 +319,69 @@ namespace Bowhead {
 					verts.submeshes[i] = 0;
 				}
 
-				return new AsyncIO() {
-					chunk = chunk
-				};
+				return chunk;
 			}
 
-			if ((AsyncIO.memblock == null) || (AsyncIO.memblock.Length < (int)chunkFile.size)) {
-				AsyncIO.memblock = new byte[chunkFile.size];
+			var src = ptr;
+
+			{
+				var voxeldata = chunk.voxeldata;
+				var count = chunk.voxeldata.length;
+				for (int i = 0; i < count; ++i) {
+					voxeldata[i] = new Voxel_t(src[i]);
+				}
 			}
 
-			file.Position = chunkFile.ofs;
-			file.Read(AsyncIO.memblock, 0, (int)chunkFile.size);
+			src = ptr + chunk.voxeldata.length;		
 			
-			unsafe {
-				fixed (byte* src = &AsyncIO.memblock[0]) {
-					fixed (Voxel_t* dst = &chunk.voxeldata[0]) {
-						var count = chunk.voxeldata.Length;
-						for (int i = 0; i < count; ++i) {
-							dst[i].raw = src[i];
-						}
-					}
-				}
-				var verts = chunk.verts;
-
-				fixed (byte* pinned = &AsyncIO.memblock[chunk.voxeldata.Length]) {
-					byte* src = pinned;
-					for (int i = 0; i < verts.counts.Length; ++i) {
-						verts.counts[i] = *((int*)src);
-						src += 4;
-					}
-					for (int i = 0; i < verts.submeshes.Length; ++i) {
-						verts.submeshes[i] = *((int*)src);
-						src += 4;
-					}
-
-					int totalVerts = *((int*)src);
-					src += 4;
-					int totalIndices = *((int*)src);
-					src += 4;
-
-					for (int i = 0; i < totalVerts; ++i) {
-						Vector3 v3;
-						v3.x = *((float*)src);
-						src += 4;
-						v3.y = *((float*)src);
-						src += 4;
-						v3.z = *((float*)src);
-						src += 4;
-						verts.positions[i] = v3;
-					}
-					for (int i = 0; i < totalVerts; ++i) {
-						Vector3 v3;
-						v3.x = *((float*)src);
-						src += 4;
-						v3.y = *((float*)src);
-						src += 4;
-						v3.z = *((float*)src);
-						src += 4;
-						verts.normals[i] = v3;
-					}
-					for (int i = 0; i < totalVerts; ++i) {
-						uint c = *((uint*)src);
-						src += 4;
-						verts.colors[i] = Utils.GetColor32FromUIntRGBA(c);
-					}
-					for (int i = 0; i < totalIndices; ++i) {
-						verts.indices[i] = *((int*)src);
-						src += 4;
-					}
-				}
+			for (int i = 0; i < verts.counts.Length; ++i) {
+				verts.counts[i] = *((int*)src);
+				src += 4;
+			}
+			for (int i = 0; i < verts.submeshes.Length; ++i) {
+				verts.submeshes[i] = *((int*)src);
+				src += 4;
 			}
 
-			return new AsyncIO() {
-				chunk = chunk
-			};
+			int totalVerts = *((int*)src);
+			src += 4;
+			int totalIndices = *((int*)src);
+			src += 4;
+
+			for (int i = 0; i < totalVerts; ++i) {
+				Vector3 v3;
+				v3.x = *((float*)src);
+				src += 4;
+				v3.y = *((float*)src);
+				src += 4;
+				v3.z = *((float*)src);
+				src += 4;
+				verts.positions[i] = v3;
+			}
+			for (int i = 0; i < totalVerts; ++i) {
+				Vector3 v3;
+				v3.x = *((float*)src);
+				src += 4;
+				v3.y = *((float*)src);
+				src += 4;
+				v3.z = *((float*)src);
+				src += 4;
+				verts.normals[i] = v3;
+			}
+			for (int i = 0; i < totalVerts; ++i) {
+				uint c = *((uint*)src);
+				src += 4;
+				verts.colors[i] = Utils.GetColor32FromUIntRGBA(c);
+			}
+			for (int i = 0; i < totalIndices; ++i) {
+				verts.indices[i] = *((int*)src);
+				src += 4;
+			}
+			
+			return chunk;
 		}
 
-		static void WriteChunkDataToFile(BinaryWriter file, World.Streaming.IChunkIO chunk) {
+		static void WriteChunkDataToFile(BinaryWriter file, Streaming.IChunkIO chunk) {
 			var numVoxels = chunk.voxeldata.Length;
 			for (int i = 0; i < numVoxels; ++i) {
 				file.Write(chunk.voxeldata[i].raw);

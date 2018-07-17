@@ -86,7 +86,7 @@ public abstract partial class World : INetDriverCallbacks, IDisposable {
 		_netArchive = new NetMsgArchive(_netArchiveBytes);
 		_nextNetID = 0;
 
-		_worldStreaming = sharedStreaming ?? new Streaming(chunkComponent, CreateGenVoxelsJob, AsyncReadChunkData, WriteChunkData);
+		_worldStreaming = sharedStreaming ?? new Streaming(chunkComponent, CreateGenVoxelsJob, MMapChunkData, WriteChunkData);
 		_sharedWorldStreaming = sharedStreaming != null;
 	}
 
@@ -351,7 +351,7 @@ public abstract partial class World : INetDriverCallbacks, IDisposable {
 	}
 
 	protected abstract Unity.Jobs.JobHandle CreateGenVoxelsJob(WorldChunkPos_t pos, PinnedChunkData_t chunk);
-	protected abstract Streaming.IAsyncChunkIO AsyncReadChunkData(Streaming.IChunkIO chunk);
+	protected abstract Streaming.IMMappedChunkData MMapChunkData(Streaming.IChunk chunk);
 	protected abstract void WriteChunkData(Streaming.IChunkIO chunk);
 	protected abstract void SpawnActorTags();
 

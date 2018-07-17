@@ -170,6 +170,10 @@ public enum EVoxelBlockFlags : byte {
 public struct Voxel_t {
 	public byte raw;
 
+	public Voxel_t(byte raw) {
+		this.raw = raw;
+	}
+
 	public Voxel_t(EVoxelBlockType type) {
 		raw = (byte)type;
 	}

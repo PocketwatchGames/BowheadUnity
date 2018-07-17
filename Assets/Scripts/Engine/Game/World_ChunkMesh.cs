@@ -52,6 +52,14 @@ public partial class World {
 				_arr[i] = value;
 			}
 		}
+
+		public void Broadcast(Voxel_t v) {
+			for (int i = 0; i < _x; ++i) {
+				_arr[i] = v;
+			}
+		}
+
+		public int length => _x;
 	};
 
 	public unsafe struct DecorationStorageArray1D_t {

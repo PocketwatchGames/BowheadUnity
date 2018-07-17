@@ -262,8 +262,8 @@ namespace Bowhead.Client {
 			return gameState.worldStreaming.ScheduleChunkGenerationJob(pos, chunk, true);
 		}
 
-		protected override Streaming.IAsyncChunkIO AsyncReadChunkData(Streaming.IChunkIO chunk) {
-			return gameState.worldStreaming.AsyncReadChunkData(chunk);
+		protected override Streaming.IMMappedChunkData MMapChunkData(Streaming.IChunk chunk) {
+			return gameState.worldStreaming.MMapChunkData(chunk);
 		}
 
 		protected override void WriteChunkData(Streaming.IChunkIO chunk) {

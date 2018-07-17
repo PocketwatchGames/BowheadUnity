@@ -49,8 +49,8 @@ namespace Bowhead {
 					}.Schedule();
 				}
 
-				public World.Streaming.IAsyncChunkIO AsyncReadChunkData(World.Streaming.IChunkIO chunk) {
-					return _worldFile.AsyncReadChunk(chunk);
+				public World.Streaming.IMMappedChunkData MMapChunkData(World.Streaming.IChunk chunk) {
+					return _worldFile.MMapChunkData(chunk);
 				}
 
 				public void WriteChunkData(World.Streaming.IChunkIO chunk) {

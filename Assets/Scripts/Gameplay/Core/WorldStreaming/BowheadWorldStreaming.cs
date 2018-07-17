@@ -18,7 +18,7 @@ namespace Bowhead {
 
 		public interface IWorldStreaming : System.IDisposable {
 			JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk, bool checkSolid);
-			Streaming.IAsyncChunkIO AsyncReadChunkData(Streaming.IChunkIO chunk);
+			Streaming.IMMappedChunkData MMapChunkData(Streaming.IChunk chunk);
 			void WriteChunkData(Streaming.IChunkIO chunk);
 		};
 
