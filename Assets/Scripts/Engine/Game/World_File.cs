@@ -1,5 +1,7 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
+//#define DISABLE
+
 using System;
 using System.Threading;
 using System.Text;
@@ -10,7 +12,7 @@ using UnityEngine;
 
 public partial class World {
 	public sealed class WorldFile : IDisposable {
-		const int VERSION = 1;
+		const int VERSION = 2;
 
 		struct ChunkFile_t {
 			public const int SIZE_ON_DISK = 8*4;
@@ -78,7 +80,7 @@ public partial class World {
 			}
 
 			public void Dispose() {
-				_view.SafeMemoryMappedViewHandle.ReleasePointer();
+				_view?.SafeMemoryMappedViewHandle.ReleasePointer();
 				_view?.Dispose();
 				_file?.Dispose();
 				_view = null;
@@ -103,6 +105,9 @@ public partial class World {
 		WorldFile() { }
 
 		public static WorldFile OpenOrCreate(string path) {
+#if DISABLE
+			return null;
+#else
 			var wf = new WorldFile();
 			wf.LoadIndexFile(path);
 			if (wf._chunkFiles.Count > 0) {
@@ -111,6 +116,7 @@ public partial class World {
 				wf.NewChunkFile(path);
 			}
 			return wf;
+#endif
 		}
 
 		public void WriteChunkToFile(Streaming.IChunkIO chunk) {
@@ -244,19 +250,6 @@ public partial class World {
 		void NewChunkFile(string path) {
 			_chunkFilePath = path + ".cdf";
 			_chunkWrite = new BinaryWriter(File.Open(_chunkFilePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
-			_chunkRead = _mmChunkFiles.GetObject();
-
-			try {
-				_chunkRead.Open(_chunkFilePath);
-			} catch (Exception e) {
-				_chunkWrite.Close();
-				_chunkWrite = null;
-				_chunkRead.Release();
-				_chunkRead.Dispose();
-				_mmChunkFiles.ReturnObject(_chunkRead);
-				_chunkRead = null;
-				throw e;
-			}
 		}
 
 		public void Dispose() {
