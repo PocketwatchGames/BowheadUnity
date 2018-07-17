@@ -7,6 +7,7 @@ using System.Threading;
 using System.Text;
 using System.IO;
 using System.Collections.Generic;
+using System.IO.MemoryMappedFiles;
 using UnityEngine;
 
 namespace Bowhead {
@@ -49,27 +50,7 @@ namespace Bowhead {
 			public int chunkCount;
 		};
 
-		abstract class IOReq {
-			public World.ChunkMeshGen.CompiledChunkData chunkData;
-			public WorldFile file;
-			public abstract void Exec();
-		};
-
-		class IOReadReq : IOReq {
-			public override void Exec() {
-				
-			}
-		};
-
-		class IOWriteReq : IOReq {
-			public override void Exec() {
-				
-			}
-		};
-
 		Dictionary<WorldChunkPos_t, ChunkFile_t> _chunkFiles;
-		ObjectPool<IOReadReq> _readPool;
-		ObjectPool<IOWriteReq> _writePool;
 
 		BinaryWriter _indexFile;
 		FileStream _chunkRead;
@@ -172,6 +153,7 @@ namespace Bowhead {
 				var writeFile = File.Open(path + ".cdf", FileMode.Open, FileAccess.Write, FileShare.ReadWrite);
 
 				_chunkWrite = new BinaryWriter(writeFile);
+				_chunkWrite.BaseStream.Position = _chunkWrite.BaseStream.Length;
 			} catch (Exception e) {
 				_chunkRead.Close();
 				_chunkRead = null;
