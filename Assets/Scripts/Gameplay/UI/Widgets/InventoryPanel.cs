@@ -1,9 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Bowhead.Actors;
 
 namespace Bowhead.Client.UI {
-	using Player = Bowhead.Actors.Player;
     public class InventoryPanel : MonoBehaviour {
 
         [SerializeField]
@@ -19,6 +19,8 @@ namespace Bowhead.Client.UI {
 		UnityEngine.UI.Text _money;
 		[SerializeField]
 		UnityEngine.UI.Text _weight;
+		[SerializeField]
+		StatusEffectHUD _statusEffectPrefab;
 
 
 		public int slotMargin = 8;
@@ -42,6 +44,7 @@ namespace Bowhead.Client.UI {
 		[SerializeField] ButtonHint _buttonHintLeftRight;
 
 		[SerializeField] ItemInfoPanel _itemInfo;
+		[SerializeField] GameObject _statusEffectContainer;
 
 
 		public void Init(Player player) {
@@ -51,6 +54,7 @@ namespace Bowhead.Client.UI {
 
 			_player.OnMoneyChange += onMoneyChange;
 			_player.OnInventoryChange += OnInventoryChange;
+			_player.oStatusEffectAdded += OnStatusEffectAdded;
 
             _mainContainer = Instantiate(_inventoryContainerPrefab, _inventoryItems, false);
 
@@ -82,6 +86,12 @@ namespace Bowhead.Client.UI {
 
 			_weight.text = _player.weight.ToString();
 		}
+
+		private void OnStatusEffectAdded(StatusEffect e) {
+			var hud = Instantiate<StatusEffectHUD>(_statusEffectPrefab, _statusEffectContainer.transform);
+			hud.Init(e);
+		}
+
 
 		private void Rebuild() {
 

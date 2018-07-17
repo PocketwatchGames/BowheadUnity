@@ -90,6 +90,7 @@ namespace Bowhead.Actors {
         public bool canAttack;
         public Pawn mount;
         public Pawn driver;
+		public List<StatusEffect> statusEffects = new List<StatusEffect>();
 
         [Header("Inventory")]
         [SerializeField]
@@ -102,7 +103,7 @@ namespace Bowhead.Actors {
         #endregion
 
 
-        public Vector3 position { get { return rigidBody.position; } set { rigidBody.position = value; } }
+		public Vector3 position { get { return rigidBody.position; } set { rigidBody.position = value; } }
         
         public const int MaxInventorySize = 32;
 
@@ -314,6 +315,11 @@ namespace Bowhead.Actors {
         }
 
         virtual public void PreSimulate(float dt) {
+
+			foreach (var e in statusEffects) {
+				e.Tick(dt);
+			}
+			statusEffects.RemoveAll(e => e.time <= 0);
 
             for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) != null) {
@@ -1260,6 +1266,12 @@ namespace Bowhead.Actors {
 
             return true;
         }
+
+		public void AddStatusEffect(StatusEffectData data, float time) {
+			var e = StatusEffect.Spawn(data, time);
+			statusEffects.Add(e);
+			oStatusEffectAdded?.Invoke(e);
+		}
     }
 }
 

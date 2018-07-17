@@ -56,7 +56,6 @@ namespace Bowhead.Actors {
         public event Action<Vector2, float> OnExplore;
 		public event Action OnInventoryChange;
 
-
 		public delegate void OnLandFn(float damage);
         public event OnLandFn OnLand;
 
