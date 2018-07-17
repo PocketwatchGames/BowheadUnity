@@ -13,7 +13,7 @@ namespace Bowhead.Client.UI {
 
 		GameObject _pawnHUDs;
         GameObject _playerHUD;
-		WeaponChargeHUD _weaponChargeLeft, _weaponChargeRight;
+        WeaponChargeHUD _weaponChargeLeft, _weaponChargeRight;
 
 		class MapMarker : IMapMarker, IDisposable {
 			public Transform mmMarker;
@@ -66,6 +66,7 @@ namespace Bowhead.Client.UI {
 			_worldmap.gameObject.SetActive(false);
 
 			world.CritterActiveEvent += OnCritterActive;
+            world.DamageEvent += OnDamage;
         }
 
         public override void OnPlayerPossessed(Player player) {
@@ -101,6 +102,12 @@ namespace Bowhead.Client.UI {
 				var marker = CreateMapMarker(GameManager.instance.clientData.mapFlagIconPrefab, EMapMarkerStyle.Normal);
 				marker.worldPosition = pos;
 			}
+        }
+
+        private void OnDamage(Pawn target, float damage)
+        {
+            var damageHUD = GameObject.Instantiate<DamageHUD>(GameManager.instance.clientData.damageHUDPrefab, _pawnHUDs.transform);
+            damageHUD.Init(damage, 1.5f, target);
         }
 
         public override void Tick(float dt) {

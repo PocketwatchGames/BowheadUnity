@@ -1092,15 +1092,17 @@ namespace Bowhead.Actors {
 		}
 
 
-        public void damage(float d) {
+        public void Damage(float d) {
             health = health - d;
 
             var blood = GameObject.Instantiate<ParticleSystem>(data.bloodParticle, go.transform);
             blood.transform.localPosition = waistPosition() - rigidBody.position;
+
+            GameManager.instance.clientWorld.OnDamage(this, d);
         }
 
 		public void Hit(Projectile projectile, Actor owner) {
-			damage(projectile.data.damage);
+			Damage(projectile.data.damage);
 
 			onHit?.Invoke(owner as Pawn);
 		}
@@ -1135,7 +1137,7 @@ namespace Bowhead.Actors {
 			}
 
             if (remainingDamage > 0) {
-                damage(remainingDamage);
+                Damage(remainingDamage);
             }
 
             if (remainingStun > 0) {

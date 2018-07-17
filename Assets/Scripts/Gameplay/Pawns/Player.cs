@@ -470,7 +470,7 @@ namespace Bowhead.Actors {
             if (fallSpeed > data.fallDamageSpeed) {
                 d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * gameMode.GetTerrainData(position).fallDamage * data.maxHealth;
                 if (d > 0) {
-                    damage(d);
+                    Damage(d);
                     useStamina((float)d);
                     stun((float)d);
                 }
