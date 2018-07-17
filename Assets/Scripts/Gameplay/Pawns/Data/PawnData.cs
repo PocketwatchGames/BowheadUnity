@@ -5,10 +5,12 @@ namespace Bowhead.Actors {
 
     public abstract class PawnData : EntityData {
 		[Header("Basic")]
-        public float height;
+		public GameObject_WRef mapMarker;
+		public float height;
         public float maxHealth;
 		public float maxWater;
         public float maxStamina;
+		public float minStamina;
         public float recoveryTime;
         public float staminaRechargeTime;
 		public float staminaRechargeTimeDuringRecovery;
@@ -51,8 +53,6 @@ namespace Bowhead.Actors {
         [Header("Swimming")]
         public float bouyancy;
         public float swimJumpSpeed;
-        public float swimSinkAcceleration;
-        public float swimJumpBoostAcceleration;
         public float swimAcceleration;
         public float swimMaxSpeed;
         public float swimDragVertical;

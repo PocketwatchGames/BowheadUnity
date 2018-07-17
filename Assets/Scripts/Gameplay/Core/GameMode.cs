@@ -44,6 +44,7 @@ namespace Bowhead {
 
 			return gt;
 		}
+
 	};
 }
 
@@ -683,5 +684,6 @@ namespace Bowhead.Server {
 		}
 
 		public GameTime gameTime => _gameTime;
+
 	}
 }

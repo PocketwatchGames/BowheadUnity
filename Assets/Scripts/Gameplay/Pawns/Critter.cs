@@ -157,6 +157,9 @@ namespace Bowhead.Actors {
 				if (dodgeTimer > 0) {
 					head.material.color = Color.black;
 				}
+				else if (stunInvulnerabilityTimer > 0) {
+					head.material.color = Color.gray;
+				}
 				else if (skidding) {
 					head.material.color = Color.cyan;
 				}
@@ -399,25 +402,22 @@ namespace Bowhead.Actors {
             float dist = diff.magnitude;
 
             float visionDistance = data.nightVisionDistance;
-			//float sunriseTime = 2;
-			//float sunsetTime = 22;
-			//float sunChangeTime = 2;
-			//if (world.Weather.tod >= sunriseTime + sunChangeTime && world.Weather.tod < sunriseTime - sunChangeTime)
-			//{
-			//	visionDistance += 15;
-			//}
-			//else if (world.Weather.tod >= sunriseTime && world.Weather.tod < sunriseTime + sunChangeTime)
-			//{
-			//	visionDistance += 15f*(world.Weather.tod - sunriseTime) / sunChangeTime;
-			//}
-			//else if (world.Weather.tod >= sunsetTime - sunChangeTime && world.Weather.tod < sunsetTime)
-			//{
-			//	visionDistance += 15f*(sunsetTime - world.Weather.tod) / sunChangeTime;
-			//}
-			//else
-			//{
-			//	visionDistance += 0;
-			//}
+			float sunriseTime = 2;
+			float sunsetTime = 22;
+			float sunChangeTime = 2;
+			float timeOfDay = gameMode.gameTime.seconds/GameTime.SECONDS_PER_DAY;
+			if (timeOfDay >= sunriseTime + sunChangeTime && timeOfDay < sunriseTime - sunChangeTime) {
+				visionDistance += 15;
+			}
+			else if (timeOfDay >= sunriseTime && timeOfDay < sunriseTime + sunChangeTime) {
+				visionDistance += 15f * (timeOfDay - sunriseTime) / sunChangeTime;
+			}
+			else if (timeOfDay >= sunsetTime - sunChangeTime && timeOfDay < sunsetTime) {
+				visionDistance += 15f * (sunsetTime - timeOfDay) / sunChangeTime;
+			}
+			else {
+				visionDistance += 0;
+			}
 			visionDistance += (data.dayVisionDistance - data.nightVisionDistance);
 
             if (dist > visionDistance)

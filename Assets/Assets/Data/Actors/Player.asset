@@ -13,10 +13,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 1
+  mapMarker:
+    _assetPath: MapFlagMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MapFlagMarker.prefab
   height: 2
   maxHealth: 200
   maxWater: 100
   maxStamina: 100
+  minStamina: -50
   recoveryTime: 1
   staminaRechargeTime: 3
   staminaRechargeTimeDuringRecovery: 2
@@ -50,9 +54,7 @@ MonoBehaviour:
   climbSpeed: 2
   climbAttachCooldown: 0.25
   bouyancy: 20
-  swimJumpSpeed: 60
-  swimSinkAcceleration: 100
-  swimJumpBoostAcceleration: 12
+  swimJumpSpeed: 13
   swimAcceleration: 15
   swimMaxSpeed: 6
   swimDragVertical: 2
@@ -62,9 +64,6 @@ MonoBehaviour:
   prefab:
     _assetPath: Actors/Player
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Player.prefab
-  mapMarker:
-    _assetPath: 
-    _editorPath: 
   temperatureSleepMinimum: 50
   temperatureSleepMaximum: 100
   fallDamageSpeed: 30

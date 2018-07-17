@@ -13,15 +13,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 25
+  mapMarker:
+    _assetPath: MapFlagMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MapFlagMarker.prefab
   height: 3
   maxHealth: 100
   maxWater: 0
   maxStamina: 50
+  minStamina: 0
   recoveryTime: 1
   staminaRechargeTime: 3
+  staminaRechargeTimeDuringRecovery: 0
   dodgeTime: 0
-  stunLimit: 1
-  stunRecoveryTime: 3
+  postStunInvincibilityTime: 0
   backStabAngle: 45
   runSound: 2
   sprintSound: 4
@@ -51,8 +55,6 @@ MonoBehaviour:
   climbAttachCooldown: 0
   bouyancy: 20
   swimJumpSpeed: 60
-  swimSinkAcceleration: 0
-  swimJumpBoostAcceleration: 0
   swimAcceleration: 15
   swimMaxSpeed: 10
   swimDragVertical: 5
@@ -77,6 +79,7 @@ MonoBehaviour:
   hearingDistance: 0
   hearingDistanceExponent: 0
   scentDistance: 0
+  canMount: 0
   waryCooldownTime: 3
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4

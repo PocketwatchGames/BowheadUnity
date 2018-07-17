@@ -17,11 +17,12 @@ MonoBehaviour:
   maxHealth: 100
   maxWater: 0
   maxStamina: 50
+  minStamina: -25
   recoveryTime: 1
   staminaRechargeTime: 3
-  staminaRechargeTimeDuringRecovery: 3
+  staminaRechargeTimeDuringRecovery: 2
   dodgeTime: 0
-  postStunInvincibilityTime: 0
+  postStunInvincibilityTime: 1
   backStabAngle: 90
   runSound: 0
   sprintSound: 0
@@ -51,8 +52,6 @@ MonoBehaviour:
   climbAttachCooldown: 0
   bouyancy: 20
   swimJumpSpeed: 60
-  swimSinkAcceleration: 0
-  swimJumpBoostAcceleration: 0
   swimAcceleration: 15
   swimMaxSpeed: 10
   swimDragVertical: 5

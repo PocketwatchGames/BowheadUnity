@@ -65,6 +65,7 @@ namespace Bowhead.Actors {
         public float maxStamina;
         public bool recovering;
         public float recoveryTimer;
+		public float stunInvulnerabilityTimer;
         public float dodgeTimer;
 
 		[Header("Gameplay")]
@@ -89,9 +90,6 @@ namespace Bowhead.Actors {
         public bool canAttack;
         public Pawn mount;
         public Pawn driver;
-
-        [Header("Combat")]
-        public Pawn attackTarget;
 
         [Header("Inventory")]
         [SerializeField]
@@ -324,20 +322,27 @@ namespace Bowhead.Actors {
             else {
                 if (stamina < maxStamina) {
 					if (recovering) {
-						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTime);
+						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTimeDuringRecovery);
 					}
 					else {
-						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTimeDuringRecovery);
+						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTime);
 					}
 				}
                 else {
+					if (recovering) {
+						stunInvulnerabilityTimer = data.postStunInvincibilityTime;
+					}
                     recovering = false;
                 }
             }
 
-            if (dodgeTimer > 0) {
-                dodgeTimer = Math.Max(0, dodgeTimer - dt);
-            }
+			if (dodgeTimer > 0) {
+				dodgeTimer = Math.Max(0, dodgeTimer - dt);
+			}
+
+			if (stunInvulnerabilityTimer > 0) {
+				stunInvulnerabilityTimer = Math.Max(0, stunInvulnerabilityTimer - dt);
+			}
 
 
 			if (climbingAttachCooldown > 0) {
@@ -753,13 +758,10 @@ namespace Bowhead.Actors {
 			skidding = false;
 
 
-			if (input.inputs[(int)InputType.Jump] == InputState.Pressed) {
-//                velocity.y = Math.Min(velocity.y + data.swimMaxSpeed * dt, data.swimJumpSpeed);
-            }
-			else if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
+			if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
 				if (canJump) {
 					var jumpDir = input.movement * data.sprintSpeed;
-					jumpDir.y += data.swimJumpBoostAcceleration;
+					jumpDir.y += data.swimJumpSpeed;
 					jump(jumpDir);
 				}
 			}
@@ -946,12 +948,23 @@ namespace Bowhead.Actors {
 						maxSpeed = data.sprintSpeed;
 					}
 				}
-
-				return maxSpeed;
             }
             else {
-                return Mathf.Min(maxSpeed, data.crouchSpeed);
+                maxSpeed = Mathf.Min(maxSpeed, data.crouchSpeed);
             }
+
+			for (int i=0;i<Player.MaxInventorySize;i++) {
+				var weapon = GetInventorySlot(i) as Weapon;
+				if (weapon != null) {
+					if (weapon.data.attacks[weapon.attackHand].maxCharge > 0 && weapon.GetMultiplier(this) >= weapon.data.attacks[weapon.attackHand].maxCharge) {
+						maxSpeed *= weapon.data.attacks[weapon.attackHand].moveSpeedWhileFullyCharged;
+					}
+					else if (weapon.chargeTime > weapon.data.moveSpeedChargeDelay) {
+						maxSpeed *= weapon.data.attacks[weapon.attackHand].moveSpeedWhileCharging;
+					}
+				}
+			}
+			return maxSpeed;
         }
         public float getGroundAcceleration() {
             float v = data.groundAcceleration;
@@ -1020,7 +1033,7 @@ namespace Bowhead.Actors {
 		public void useStamina(float s) {
 			if (stamina <= 0)
 				return;
-			stamina -= s;
+			stamina = Mathf.Max(data.minStamina, stamina - s);
 			if (stamina <= 0) {
 				recovering = true;
 				recoveryTimer = 0;
@@ -1060,7 +1073,7 @@ namespace Bowhead.Actors {
 
         public void stun(float s) {
             // Can't stun further if already stunned
-            if (recovering) {
+            if (recovering || stunInvulnerabilityTimer > 0) {
                 return;
             }
 
@@ -1092,7 +1105,7 @@ namespace Bowhead.Actors {
 			onHit?.Invoke(owner as Pawn);
 		}
 
-		public bool Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, bool canBlock) {
+		public bool Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, float multiplier, bool canBlock) {
             float remainingStun;
             float remainingDamage;
 
@@ -1103,15 +1116,8 @@ namespace Bowhead.Actors {
             else {
                 dirToEnemy.Normalize();
             }
-            //float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(-dirToEnemy.x, -dirToEnemy.z), yaw));
-            //if (attackResult.attackDamageBackstab > 0 && angleToEnemysBack < data.backStabAngle*Mathf.Deg2Rad || angleToEnemysBack > Math.PI*2-data.backStabAngle * Mathf.Deg2Rad) {
-            //    remainingStun = attackResult.stunPowerBackstab;
-            //    remainingDamage = attackResult.attackDamageBackstab;
-            //}
-            //else {
-                remainingStun = attackResult.stun;
-                remainingDamage = attackResult.damage;
-            //}
+            remainingStun = attackResult.stun * multiplier;
+            remainingDamage = attackResult.damage * multiplier;
 
 
             if (dodgeTimer > 0) {

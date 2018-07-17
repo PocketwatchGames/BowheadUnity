@@ -16,4 +16,6 @@ public class CameraData : ScriptableObject {
 	public float turnMaxSpeed = 360;
 	public float turnAccelerationFirstTime = 360;
 	public float turnAccelerationSlowTime = 0.75f;
+	public float leashFollowVelocityRateExplore = 0.15f;
+	public float leashFollowVelocityRateCombat = 0.35f;
 }
