@@ -368,6 +368,7 @@ namespace Bowhead.Actors {
             AttachExternalGameObject(gameObject);
 
 			attackTargetPreview = null;
+			stance = Stance.Explore;
 
 			// JOSEPH: this will be better once this is moved into new Actor framework, for now HACK
 			_worldStreaming = GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);

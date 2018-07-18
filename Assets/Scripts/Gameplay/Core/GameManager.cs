@@ -547,7 +547,12 @@ namespace Bowhead {
 
 			_guiStatus = GameObject.Find("MainMenuCanvas/MainMenuPanel/VersionInfoStatus/Status").GetComponent<TMPro.TMP_Text>();
 			_guiStatus.text = string.Empty;
+
+#if UNITY_EDITOR
+			GameObject.Find("MainMenuCanvas/MainMenuPanel/VersionInfoStatus/Version").GetComponent<TMPro.TMP_Text>().text = "Editor";
+#else
 			GameObject.Find("MainMenuCanvas/MainMenuPanel/VersionInfoStatus/Version").GetComponent<TMPro.TMP_Text>().text = BuildInfo.ID;
+#endif
 
 			Cursor.visible = true;
 			SetScreenModeCursorLockState();
@@ -616,6 +621,10 @@ namespace Bowhead {
 				onlineServices.ReleaseAllAvatars();
 			}
 #endif
+		}
+
+		public void PlayPortWorld() {
+			Host("PortWorld", 7777, 1);
 		}
 
 		public void StartPlayOnAwakeSounds() {

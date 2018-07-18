@@ -392,7 +392,7 @@ namespace Bowhead.Server {
 					if (_timer <= -matchOvertime) {
 						return true;
 					}
-				} else if (!overtimeFlag) {
+				} else if (matchIsTimed && !overtimeFlag) {
 					if (_timer <= 0f) {
 						return true;
 					}

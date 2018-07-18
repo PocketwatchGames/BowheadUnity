@@ -235,7 +235,7 @@ namespace Bowhead.Server {
 		}
 
 		Player SpawnPlayer() {
-			return PlayerData.Get("player").Spawn<Player>(world, new Vector3(16, 100, 16), 0, null, null, null);
+			return PlayerData.Get("player").Spawn<Player>(world, new Vector3(16, 100, 20), 0, null, null, null);
 		}
 
 		public Critter SpawnCritter(CritterData data, Vector3 pos, float yaw, Team team) {
