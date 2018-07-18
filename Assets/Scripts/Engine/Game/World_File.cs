@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
-#define DISABLE
+//#define DISABLE
 
 using System;
 using System.Threading;
