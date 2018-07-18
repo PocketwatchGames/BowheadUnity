@@ -20,7 +20,9 @@ namespace Bowhead {
 			JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk, bool checkSolid);
 			Streaming.IMMappedChunkData MMapChunkData(Streaming.IChunk chunk);
 			void WriteChunkData(Streaming.IChunkIO chunk);
-		};
+            void GetElevationAndTopBlock(int x, int z, out int elevation, out EVoxelBlockType blockType);
+
+        };
 
 		public static IWorldStreaming NewProceduralWorldStreaming(ulong seed, EGenerator generator) {
 			switch (generator) {

@@ -40,7 +40,14 @@ namespace Bowhead {
 				public void WriteChunkData(World.Streaming.IChunkIO chunk) { }
 
 				public void Dispose() { }
-			};
+
+                public void GetElevationAndTopBlock(int x, int z, out int elevation, out EVoxelBlockType blockType)
+                {
+                    elevation = 0;
+                    blockType = EVoxelBlockType.Grass;
+                }
+
+            };
 
 			const int noiseFloatPregenSize = 512;
 			const float waterLevel = 64;

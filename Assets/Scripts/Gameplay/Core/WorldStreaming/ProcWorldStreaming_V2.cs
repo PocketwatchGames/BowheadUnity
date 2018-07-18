@@ -60,6 +60,12 @@ namespace Bowhead {
 				public void Dispose() {
 					_worldFile?.Dispose();
 				}
+
+                public void GetElevationAndTopBlock(int x, int z, out int elevation, out EVoxelBlockType blockType)
+                {
+                    elevation = 0;
+                    blockType = EVoxelBlockType.Grass;
+                }
 			};
 
 			const float waterLevel = 0;
