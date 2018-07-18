@@ -14,8 +14,8 @@ MonoBehaviour:
   version: 0
   _index: 1
   mapMarker:
-    _assetPath: MapFlagMarker
-    _editorPath: Assets/Assets/Prefabs/Resources/MapFlagMarker.prefab
+    _assetPath: 
+    _editorPath: 
   height: 2
   maxHealth: 200
   maxWater: 100

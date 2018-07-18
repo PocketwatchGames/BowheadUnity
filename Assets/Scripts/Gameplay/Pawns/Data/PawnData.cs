@@ -6,6 +6,7 @@ namespace Bowhead.Actors {
     public abstract class PawnData : EntityData {
 		[Header("Basic")]
 		public GameObject_WRef mapMarker;
+		public Client.UI.EMapMarkerStyle mapMarkerStyle;
 		public float height;
         public float maxHealth;
 		public float maxWater;

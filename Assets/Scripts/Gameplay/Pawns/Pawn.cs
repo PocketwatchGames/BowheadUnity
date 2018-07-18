@@ -97,6 +97,8 @@ namespace Bowhead.Actors {
 
 		protected event Action<Pawn> onHit;
 
+		Client.UI.IMapMarker _marker;
+		        
         #endregion
 
 
@@ -135,7 +137,6 @@ namespace Bowhead.Actors {
             public Vector3 position;
             public Vector3 velocity;
         };
-		        
 
 		// This field is a HACK and is null on clients
 		public Server.BowheadGame gameMode {
@@ -298,7 +299,18 @@ namespace Bowhead.Actors {
 				Input_t input = GetInput(dt);
 
 				Simulate(dt, input);
-            }
+
+				if ((_marker == null) && ((data.mapMarker != null) && (data.mapMarker.Load() != null))) {
+
+					// this is just horrible, normally we'd have the gamestate on the client from the World object
+					// but this is all server code... so fuck it dude let's go bowling.
+					if (GameManager.instance.clientWorld.gameState != null) {
+						_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMapMarker(data.mapMarker.Load(), data.mapMarkerStyle));
+						// SetPosition will set the position
+						_marker.worldPosition = new Vector2(position.x, position.z);
+					}
+				}
+			}
         }
 
         virtual public void PreSimulate(float dt) {
@@ -511,7 +523,11 @@ namespace Bowhead.Actors {
 			activity = a;
 		}
 
-		protected virtual void MountMoved() { }
+		protected virtual void MountMoved() {
+			if (_marker != null) {
+				_marker.worldPosition = new Vector2(mount.position.x, mount.position.z);
+			}
+		}
 
         public bool Move(Vector3 moveXZ) {
             float moveXZLength = moveXZ.magnitude;
@@ -925,7 +941,10 @@ namespace Bowhead.Actors {
 			if (position != p) {
 				position = p;
 			}
-        }
+			if (_marker != null) {
+				_marker.worldPosition = new Vector2(p.x, p.z);
+			}
+		}
 
         public bool IsWading() {
             return activity == Activity.OnGround && world.GetBlock(waistPosition()) == EVoxelBlockType.Water && world.GetBlock(position) != EVoxelBlockType.Water;

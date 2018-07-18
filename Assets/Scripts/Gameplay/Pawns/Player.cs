@@ -50,7 +50,6 @@ namespace Bowhead.Actors {
 		World.Streaming.IVolume _worldStreaming;
 
         Pawn attackTargetPreview;
-		Client.UI.IMapMarker _marker;
 
         public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
@@ -142,16 +141,7 @@ namespace Bowhead.Actors {
                 }
             }
 			
-			if ((_marker == null) && ((data.mapMarker != null) && (data.mapMarker.Load() != null))) {
-
-				// this is just horrible, normally we'd have the gamestate on the client from the World object
-				// but this is all server code... so fuck it dude let's go bowling.
-				if (GameManager.instance.clientWorld.gameState != null) {
-					_marker = AddGC(GameManager.instance.clientWorld.gameState.hud.CreateMapMarker(data.mapMarker.Load(), Client.UI.EMapMarkerStyle.AlwaysVisible));
-					// SetPosition will set the position
-					_marker.worldPosition = new Vector2(position.x, position.z);
-				}
-			}
+			
 
 			var head = go.GetChildComponent<MeshRenderer>("Head");
 			if (head != null) {
@@ -445,17 +435,12 @@ namespace Bowhead.Actors {
 		public override void SetPosition(Vector3 p) {
 			base.SetPosition(p);
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(p));
-			if (_marker != null) {
-				_marker.worldPosition = new Vector2(p.x, p.z);
-			}
+			
 		}
 
 		protected override void MountMoved() {
 			base.MountMoved();
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(mount.position));
-			if (_marker != null) {
-				_marker.worldPosition = new Vector2(mount.position.x, mount.position.z);
-			}
 		}
 
 		override public void LandOnGround() {
