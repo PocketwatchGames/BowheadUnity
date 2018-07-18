@@ -389,7 +389,7 @@ namespace Bowhead {
 						}
 					}
 				}
-				else if (hasRoad && GetWhiteNoise(ref noise, chunkPos.x + 63452, 0, chunkPos.z) < 0.01f) {
+				else if (hasRoad && GetWhiteNoise(ref noise, chunkPos.x + 63452, 0, chunkPos.z) < 0.025f) {
 					int x = 8;
 					int z = 8;
 					for (int y = VOXEL_CHUNK_SIZE_Y - 1; y >= 0; --y) {
