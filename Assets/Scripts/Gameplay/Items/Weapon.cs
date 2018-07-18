@@ -337,7 +337,7 @@ namespace Bowhead {
 
         }
 
-		public float GetMultiplier(Pawn owner) {
+		public float GetChargeMultiplier(Pawn owner) {
 			if (data.attacks[attackHand].chargeTime > 0 && chargeTime > 0) {
 				if (owner.activity == Pawn.Activity.Falling) {
 					return 2;
@@ -345,6 +345,15 @@ namespace Bowhead {
 				return Mathf.Clamp(Mathf.FloorToInt(chargeTime / data.attacks[attackHand].chargeTime) * 2, 1, data.attacks[attackHand].maxCharge);
 			}
 			return 1;
+		}
+
+		public float GetMultiplier(Pawn owner) {
+			float m = owner.damageMultiplier;
+			float chargeMultiplier = GetChargeMultiplier(owner);
+			if (chargeMultiplier > 1) {
+				return m * chargeMultiplier;
+			}
+			return m;
 		}
 
     }

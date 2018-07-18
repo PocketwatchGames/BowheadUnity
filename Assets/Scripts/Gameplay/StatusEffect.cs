@@ -52,7 +52,7 @@ namespace Bowhead {
                 if (data.staminaPerSecond > 0) {
                     owner.stamina = Mathf.Min(owner.maxStamina, owner.stamina + data.staminaPerSecond * dt);
                 } else if (data.staminaPerSecond < 0) {
-                    owner.stamina = Mathf.Max(0, Mathf.Max(owner.stamina, owner.stamina + data.staminaPerSecond * dt);
+                    owner.stamina = Mathf.Max(0, Mathf.Max(owner.stamina, owner.stamina + data.staminaPerSecond * dt));
                 }
                 time -= dt;
                 if (time <= 0) {

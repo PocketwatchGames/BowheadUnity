@@ -67,6 +67,7 @@ namespace Bowhead.Actors {
         public float recoveryTimer;
 		public float stunInvulnerabilityTimer;
         public float dodgeTimer;
+		public float damageMultiplier;
 
 		[Header("Gameplay")]
         public Activity activity;
@@ -149,6 +150,7 @@ namespace Bowhead.Actors {
 			base.ConstructEntity(data);
 			this.data = (PawnData)data;
 			gameMode = (Server.BowheadGame)((Server.ServerWorld)world).gameMode;
+			damageMultiplier = 1;
 		}
 	
 		#region getdata
@@ -317,7 +319,7 @@ namespace Bowhead.Actors {
         virtual public void PreSimulate(float dt) {
 
 			foreach (var e in statusEffects) {
-				e.Tick(dt);
+				e.Tick(dt, this);
 			}
 			statusEffects.RemoveAll(e => e.time <= 0);
 
@@ -1270,6 +1272,7 @@ namespace Bowhead.Actors {
 		public void AddStatusEffect(StatusEffectData data, float time) {
 			var e = StatusEffect.Create(data, time);
 			statusEffects.Add(e);
+			e.Apply(this);
             GameManager.instance.clientWorld.OnStatusEffectAdded(this, e);
 		}
     }
