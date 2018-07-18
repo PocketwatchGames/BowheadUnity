@@ -13,6 +13,7 @@ namespace Bowhead.Actors {
 		public Team team;
 		public Vector3 velocity;
 		public Actor owner;
+		public Pawn target;
 
 		#endregion
 
@@ -21,13 +22,14 @@ namespace Bowhead.Actors {
 
 		public Vector3 position { get { return go.transform.position; } set { go.transform.position = value; } }
 
-		public void Spawn(EntityData data, Vector3 pos, Vector3 velocity, Actor instigator, Actor owner, Team team) {
+		public void Spawn(EntityData data, Vector3 pos, Vector3 velocity, Pawn target, Actor instigator, Actor owner, Team team) {
 			base.ConstructEntity(data);
 			AttachExternalGameObject(GameObject.Instantiate(this.data.prefab.Load(), pos, Quaternion.identity, null));
 			this.team = team;
 			SetLifetime(this.data.lifetime);
 			this.velocity = velocity;
 			this.owner = owner;
+			this.target = target;
 		}
 
 		public override void Tick() {
@@ -38,7 +40,12 @@ namespace Bowhead.Actors {
 			}
 
 			float dt = world.deltaTime;
-			var move = velocity * dt;
+			Vector3 move;
+			if (target != null) {
+				move = (target.position - position) * dt / Mathf.Max(dt, lifetime);
+			} else {
+				move = velocity * dt;
+			}
 			RaycastHit hit;
 			if (Physics.Raycast(position,move.normalized,out hit,move.magnitude)) {
 				var target = (Pawn)hit.transform.FindServerActorUpwards();

@@ -27,9 +27,9 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public virtual T SpawnAndFireProjectile<T>(World world, Vector3 pos, Vector3 velocity, Actor instigator, Actor owner, Team team) where T: Projectile {
+		public virtual T SpawnAndFireProjectile<T>(World world, Vector3 pos, Vector3 velocity, Pawn target, Actor instigator, Actor owner, Team team) where T: Projectile {
 			var projectile = (T)world.Spawn(projectileClass, null, default(SpawnParameters));
-			projectile.Spawn(this, pos, velocity, instigator, owner, team);
+			projectile.Spawn(this, pos, velocity, target, instigator, owner, team);
 			return projectile;
 		}
 	}

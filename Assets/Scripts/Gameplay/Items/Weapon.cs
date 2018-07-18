@@ -158,7 +158,15 @@ namespace Bowhead {
 			}
 			
 			if (data.attacks[attackHand].projectile != null) {
-				data.attacks[attackHand].projectile.SpawnAndFireProjectile<Actors.Projectile>(owner.world, owner.position + new Vector3(0, 0.5f, 0), new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw)) * data.attacks[attackHand].projectileSpeed, null, owner, owner.team);
+				var target = GetProjectileTarget(owner, owner.yaw, data.attacks[attackHand].projectile.lifetime * data.attacks[attackHand].projectileSpeed);
+				Vector3 dir;
+				if (target != null) {
+					dir = (target.waistPosition() - owner.headPosition()).normalized;
+				} else {
+					dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
+				}
+
+				data.attacks[attackHand].projectile.SpawnAndFireProjectile<Actors.Projectile>(owner.world, owner.headPosition(), dir * data.attacks[attackHand].projectileSpeed, target, null, owner, owner.team);
 			}
 
 			if (data.attacks[attackHand].spell != WeaponData.Spell.None) {
@@ -169,6 +177,39 @@ namespace Bowhead {
 			owner.useWater(data.attacks[attackHand].waterUse);
 
         }
+
+		public Pawn GetProjectileTarget(Pawn owner, float yaw, float range) {
+			Pawn bestTarget = null;
+			float maxDist = range;
+			float maxTargetAngle = 30 * Mathf.Deg2Rad;
+
+			float bestTargetAngle = maxTargetAngle;
+			foreach (var c in owner.world.GetActorIterator<Actors.Pawn>()) {
+				if (c.active) {
+					if (c.team != owner.team) {
+						var diff = c.position - owner.position;
+						float dist = diff.magnitude;
+						if (dist < maxDist) {
+							float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
+
+							float yawDiff = Mathf.Abs(Utils.SignedMinAngleDelta(angleToEnemy * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg)) * Mathf.Deg2Rad;
+
+							float collisionRadius = 0.5f;
+
+							// take the target's radius into account based on how far away they are
+							yawDiff = Mathf.Max(0.001f, yawDiff - Mathf.Atan2(collisionRadius, dist));
+
+							if (yawDiff < bestTargetAngle) {
+								bestTarget = c;
+								bestTargetAngle = yawDiff;
+							}
+						}
+					}
+				}
+			}
+			return bestTarget;
+
+		}
 
 		private void ActivateSpell(Pawn owner) {
 			if (data.attacks[attackHand].spell == WeaponData.Spell.Heal) {
