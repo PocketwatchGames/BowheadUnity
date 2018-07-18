@@ -12,7 +12,7 @@ using UnityEngine;
 
 public partial class World {
 	public sealed class WorldFile : IDisposable {
-		const int VERSION = 3;
+		const int VERSION = 4;
 
 		struct ChunkFile_t {
 			public const int SIZE_ON_DISK = 8*4;
@@ -223,7 +223,7 @@ public partial class World {
 				try {
 					File.Delete(path + ".cdf");
 				} catch (Exception e) {
-					UnityEngine.Debug.LogException(e);
+					Debug.LogException(e);
 				}
 			}
 		}
@@ -294,6 +294,27 @@ public partial class World {
 		};
 
 		public static unsafe PinnedChunkData_t DecompressChunkData(byte* ptr, int len, PinnedChunkData_t chunk, ChunkMeshGen.FinalMeshVerts_t verts) {
+			var src = ptr;
+
+			{
+				var decorationCount = *((int*)src);
+				src += 4;
+
+				for (int i = 0; i < decorationCount; ++i) {
+					var d = default(Decoration_t);
+					d.pos.x = *((float*)src);
+					src += 4;
+					d.pos.y = *((float*)src);
+					src += 4;
+					d.pos.z = *((float*)src);
+					src += 4;
+					d.type = (EDecorationType) (*((int*)src));
+					src += 4;
+
+					chunk.AddDecoration(d);
+				}
+			}
+
 			if ((chunk.flags&EChunkFlags.SOLID) == 0) {
 				// empty chunk
 				chunk.voxeldata.Broadcast(EVoxelBlockType.Air);
@@ -308,9 +329,7 @@ public partial class World {
 
 				return chunk;
 			}
-
-			var src = ptr;
-
+			
 			{
 				var voxeldata = chunk.voxeldata;
 				var count = chunk.voxeldata.length;
@@ -319,7 +338,7 @@ public partial class World {
 				}
 			}
 
-			src = ptr + chunk.voxeldata.length;		
+			src += chunk.voxeldata.length;		
 			
 			for (int i = 0; i < verts.counts.Length; ++i) {
 				verts.counts[i] = *((int*)src);
@@ -369,6 +388,18 @@ public partial class World {
 		}
 
 		static void WriteChunkDataToFile(BinaryWriter file, Streaming.IChunkIO chunk) {
+			{
+				var decorationCount = chunk.decorationCount;
+				file.Write(decorationCount);
+				for (int i = 0; i < decorationCount; ++i) {
+					var d = chunk.decorations[i];
+					file.Write(d.pos.x);
+					file.Write(d.pos.y);
+					file.Write(d.pos.z);
+					file.Write((int)d.type);
+				}
+			}
+
 			var numVoxels = chunk.voxeldata.Length;
 			for (int i = 0; i < numVoxels; ++i) {
 				file.Write(chunk.voxeldata[i].raw);

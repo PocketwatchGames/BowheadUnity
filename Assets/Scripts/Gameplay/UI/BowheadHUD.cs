@@ -98,7 +98,7 @@ namespace Bowhead.Client.UI {
 
 		private void OnExplore(Vector2 pos, float radius) {
 			var chunkPos = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.y)));
-            _worldmap.SetOrigin((int)pos.x, (int)pos.y);
+            _worldmap.SetOrigin(chunkPos.cx, chunkPos.cy);
             _worldmap.RevealArea(new Vector2(pos.x, pos.y), radius);
 			if (GameManager.instance.clientData.mapFlagIconPrefab != null) {
 				var marker = CreateMapMarker(GameManager.instance.clientData.mapFlagIconPrefab, EMapMarkerStyle.Normal);
