@@ -530,9 +530,9 @@ namespace Bowhead.Actors {
 				driver?.MountMoved();
 			}
 
-			while (!world.IsBlockLoaded(footPosition())) {
+			if (!world.IsBlockLoaded(footPosition())) {
 				velocity = Vector3.zero;
-				SetPosition(new Vector3(position.x, position.y + 1, position.z));
+				SetPosition(spawnPosition);
 			}
         }
 
