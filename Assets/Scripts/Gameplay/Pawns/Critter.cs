@@ -90,7 +90,7 @@ namespace Bowhead.Actors {
                 if (i != null) {
                     var worldItem = WorldItemData.Get("Chest").Spawn<WorldItem>(world, position, yaw, this, null, team);
 					worldItem.item = i;
-                    worldItem.velocity = new Vector3(UnityEngine.Random.Range(-10f, 10f), UnityEngine.Random.Range(-10f, 10f), 18);
+                    worldItem.velocity = new Vector3(UnityEngine.Random.Range(-5f, 5f), 12, UnityEngine.Random.Range(-5f, 5f));
                 }
             }
 

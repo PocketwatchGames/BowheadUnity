@@ -32,7 +32,7 @@ namespace Bowhead {
 			return castTime == 0 && activeTime == 0 && cooldown <= data.attacks[attackHand].cooldownNextAttackQueueTime;
 		}
 
-		public override void OnSlotChange(int newSlot, Pawn owner) {
+		public override void OnSlotChange(int newSlot, int oldSlot, Pawn owner) {
             castTime = 0;
             chargeTime = 0;
 			activeTime = 0;

@@ -15,7 +15,7 @@ namespace Bowhead {
 		}
 
         virtual public void Tick(float dt, Actors.Pawn actor) {}
-        public virtual void OnSlotChange(int newSlot, Actors.Pawn owner) {}
+        public virtual void OnSlotChange(int newSlot, int oldSlot, Actors.Pawn owner) {}
     }
 
 	public abstract class Item<T, D> : Item where T : Item<T, D> where D : ItemData {

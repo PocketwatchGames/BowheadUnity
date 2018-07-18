@@ -61,11 +61,11 @@ namespace Bowhead {
                 if (time <= 0) {
                     if (data.maxStaminaBonus > 0) {
                         owner.maxStamina -= data.maxStaminaBonus;
-                        owner.stamina = Mathf.Max(owner.stamina, owner.maxStamina);
+                        owner.stamina = Mathf.Min(owner.stamina, owner.maxStamina);
                     }
                     if (data.maxHealthBonus > 0) {
                         owner.maxHealth -= data.maxHealthBonus;
-                        owner.health = Mathf.Max(owner.health, owner.maxHealth);
+                        owner.health = Mathf.Min(owner.health, owner.maxHealth);
                     }
 					if (data.damageMultiplier > 0) {
 						owner.damageMultiplier -= data.damageMultiplier;

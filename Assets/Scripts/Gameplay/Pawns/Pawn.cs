@@ -1245,12 +1245,13 @@ namespace Bowhead.Actors {
         }
 
         virtual public void SetInventorySlot(int index, Item item) {
-
+			int oldSlot = -1;
             if (item != null) {
                 // remove the item from its current slot first
                 for (int i = 0; i < MaxInventorySize; i++) {
                     if (GetInventorySlot(i) == item) {
-                        SetInventorySlot(i, null);
+						oldSlot = i;
+						SetInventorySlot(i, null);
                         break;
                     }
                 }
@@ -1258,7 +1259,7 @@ namespace Bowhead.Actors {
 
             _inventory[index] = item;
 
-            item?.OnSlotChange(index, this);
+            item?.OnSlotChange(index, oldSlot, this);
         }
 
         public Item GetInventorySlot(int index) {

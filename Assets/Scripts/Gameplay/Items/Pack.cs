@@ -19,7 +19,7 @@ namespace Bowhead {
 			contained.Clear();
         }
 
-        public override void OnSlotChange(int newSlot, Pawn owner) {
+        public override void OnSlotChange(int newSlot, int oldSlot, Pawn owner) {
             if (_mesh != null) {
                 GameObject.Destroy(_mesh);
             }
