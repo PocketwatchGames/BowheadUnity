@@ -27,7 +27,7 @@ namespace Bowhead {
 		public void Play() {
 			if (soundCue != null) {
 				if (GameManager.instance.inMainMenu || ((GameManager.instance.clientWorld != null) && !GameManager.instance.clientWorld.isTraveling)) {
-					var src = positional ? GameManager.instance.Play(transform.position, soundCue) : GameManager.instance.Play(gameObject, soundCue);
+					var src = positional ? GameManager.instance.PlaySound(transform.position, soundCue) : GameManager.instance.PlaySound(gameObject, soundCue);
 					if (src != null) {
 						_source = src;
 					}

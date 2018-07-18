@@ -215,7 +215,7 @@ namespace Bowhead {
 							}
 						}
 						
-						GameManager.instance.Play(position, _contact.soundCue);
+						GameManager.instance.PlaySound(position, _contact.soundCue);
 						
 						if (GameManager.instance.clientWorld != null) {
 							//GameManager.instance.clientWorld.RenderBloodSplats(position, _contact.bloodSplatterRadius, _contact.bloodSplatterSize, _contact.bloodSplatterCount);

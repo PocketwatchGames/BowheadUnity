@@ -142,22 +142,15 @@ namespace Bowhead {
 
 		static Assembly[] _moduleAssemblies;
 
-		//struct LoadingScreenState {
-		//	public int loadingTipIndex;
-		//	public List<int> loadingTipIndexes;
-		//	public float loadingTipTime;
-		//	public string levelText;
+		struct LoadingScreenState {
+			public GameObject root;
+			public RawImage background;
 
-		//	public GameObject root;
-		//	public LoadingText text;
-		//	public LoadingTips tips;
-		//	public RawImage background;
+			public int cameraElements;
+			public Camera mainCamera;
+		}
 
-		//	public int cameraElements;
-		//	public Camera mainCamera;
-		//}
-
-		//LoadingScreenState loadingScreenState;
+		LoadingScreenState _loadingScreenState;
 
 		void EnableAll() {
 			foreach (var component in GetComponents<MonoBehaviour>()) {
@@ -623,7 +616,7 @@ namespace Bowhead {
 #endif
 		}
 
-		public void PlayPortWorld() {
+		public static void PlayPortWorld() {
 			Host("PortWorld", 7777, 1);
 		}
 
@@ -914,7 +907,7 @@ namespace Bowhead {
 		void TravelToMainMenu() {
 			Debug.Log("TravelToMainMenu");
 #if !DEDICATED_SERVER
-			//loadingScreenState.root.SetActive(false);
+			_loadingScreenState.root.SetActive(false);
 #endif
 			UnloadGame();
 
@@ -1040,11 +1033,11 @@ namespace Bowhead {
 		}
 		
 		void GetLoadingScreenElements() {
-			//Assert.IsNotNull(loadingScreenState.root);
+			Assert.IsNotNull(_loadingScreenState.root);
 			//loadingScreenState.background = loadingScreenState.root.transform.Find("Panel").GetComponent<RawImage>();
 			//loadingScreenState.text = loadingScreenState.root.transform.Find("Panel/Prompt").GetComponent<LoadingText>();
 			//loadingScreenState.tips = loadingScreenState.root.transform.Find("Panel/Tips").GetComponent<LoadingTips>();
-			//CaptureLoadingScreenCameraMask();
+			CaptureLoadingScreenCameraMask();
 		}
 
 		public void SetLoadingScreenText(string text) {
@@ -1054,14 +1047,12 @@ namespace Bowhead {
 		}
 
 		void CaptureLoadingScreenCameraMask() {
-			//loadingScreenState.mainCamera = GameObject.FindGameObjectWithTag(Tags.MainCamera).GetComponent<Camera>();
-			//loadingScreenState.cameraElements = loadingScreenState.mainCamera.cullingMask;
+			_loadingScreenState.mainCamera = GameObject.FindGameObjectWithTag(Tags.MainCamera).GetComponent<Camera>();
+			_loadingScreenState.cameraElements = _loadingScreenState.mainCamera.cullingMask;
 		}
 
 		void OpenLoadingScreen() {
-			//loadingScreenState.root.SetActive(true);
-			//loadingScreenState.text.Init();
-			//loadingScreenState.tips.Init();
+			_loadingScreenState.root.SetActive(true);
 
 			var level = travelLevel;
 #if UNITY_EDITOR
@@ -1075,13 +1066,13 @@ namespace Bowhead {
 				level = level.Substring(0, startIndex);
 			}
 
-			//loadingScreenState.background.texture = Resources.Load<Texture2D>(level + "/LoadingScreen");
+			//_loadingScreenState.background.texture = Resources.Load<Texture2D>(level + "/LoadingScreen");
 		}
 
 		public void CloseLoadingScreen() {
-			//loadingScreenState.root.SetActive(false);
+			_loadingScreenState.root.SetActive(false);
 			//loadingScreenState.background.texture = null;
-			//loadingScreenState.mainCamera.cullingMask = loadingScreenState.cameraElements;
+			_loadingScreenState.mainCamera.cullingMask = _loadingScreenState.cameraElements;
 		}
 
 		void CreateInGameUI() {
@@ -1141,9 +1132,9 @@ namespace Bowhead {
 					}
 
 					if (_client != null) {
-						//loadingScreenState.root.SetActive(true);
+						_loadingScreenState.root.SetActive(true);
 						CaptureLoadingScreenCameraMask();
-                        //loadingScreenState.mainCamera.cullingMask = Layers.UIMask;
+                        _loadingScreenState.mainCamera.cullingMask = Layers.UIMask;
 					}
 
 #if BACKEND_SERVER
@@ -1351,7 +1342,7 @@ namespace Bowhead {
 			if (!PIEServerOnly) {
 				_client.NotifySceneLoaded();
 				OpenLoadingScreen();
-				//loadingScreenState.mainCamera.cullingMask = Layers.UIMask;
+				_loadingScreenState.mainCamera.cullingMask = Layers.UIMask;
 			}
 #endif
 		}
@@ -1383,13 +1374,13 @@ namespace Bowhead {
 
 				staticData.physicalContactMatrix.ClientPrecache();
 
-				//var loadingCanvas = Instantiate(clientData.loadingCanvasPrefab);
-				//loadingCanvas.name = "LoadingCanvas";
-				//loadingCanvas.transform.SetParent(transform, false);
-				//loadingCanvas.transform.SetSiblingIndex(1);
-				//loadingCanvas.SetActive(false);
+				var loadingCanvas = Instantiate(clientData.loadingCanvasPrefab);
+				loadingCanvas.name = "LoadingCanvas";
+				loadingCanvas.transform.SetParent(transform, false);
+				loadingCanvas.transform.SetSiblingIndex(1);
+				loadingCanvas.SetActive(false);
 
-				//loadingScreenState.root = loadingCanvas;
+				_loadingScreenState.root = loadingCanvas;
 				GetLoadingScreenElements();
 
 				
@@ -1987,21 +1978,21 @@ namespace Bowhead {
 			}
 		}
 
-		public AudioSource Play(Actor instigator, SoundCue sound) {
+		public AudioSource PlaySound(Actor instigator, SoundCue sound) {
 			if (!(dedicatedServer || batchMode)) {
 				return _soundManager.Play(instigator, sound, timeSinceStart, randomNumber, randomNumber, randomNumber, randomNumber, randomNumber);
 			}
 			return null;
 		}
 
-		public AudioSource Play(Vector3 position, SoundCue sound) {
+		public AudioSource PlaySound(Vector3 position, SoundCue sound) {
 			if (!(dedicatedServer || batchMode)) {
 				return _soundManager.Play(position, sound, timeSinceStart, randomNumber, randomNumber, randomNumber, randomNumber, randomNumber);
 			}
 			return null;
 		}
 
-		public AudioSource Play(GameObject instigator, SoundCue sound) {
+		public AudioSource PlaySound(GameObject instigator, SoundCue sound) {
 			if (!(dedicatedServer || batchMode)) {
 				return _soundManager.Play(instigator, sound, timeSinceStart, randomNumber, randomNumber, randomNumber, randomNumber, randomNumber);
             }

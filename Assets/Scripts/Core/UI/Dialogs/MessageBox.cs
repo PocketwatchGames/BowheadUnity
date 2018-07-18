@@ -60,7 +60,7 @@ namespace Bowhead.Client.UI {
 			}
 
 			if ((mb._sounds != null) && (typeIndex < mb._sounds.Length)) {
-				GameManager.instance.Play(Vector3.zero, mb._sounds[typeIndex]);
+				GameManager.instance.PlaySound(Vector3.zero, mb._sounds[typeIndex]);
 			}
 
 			return mb;
