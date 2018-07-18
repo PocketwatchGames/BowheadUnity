@@ -25,6 +25,7 @@ namespace Bowhead {
 			public float damage;
 			public float stun;
 			public bool interrupt;
+			public Actors.PawnData.DamageType damageType;
 		}
 
 		[System.Serializable]

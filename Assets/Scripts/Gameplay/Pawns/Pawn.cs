@@ -1119,17 +1119,19 @@ namespace Bowhead.Actors {
 		}
 
 
-        public void Damage(float d) {
+        public void Damage(float d, PawnData.DamageType t) {
             health = health - d;
 
-            var blood = GameObject.Instantiate<ParticleSystem>(data.bloodParticle, go.transform);
-            blood.transform.localPosition = waistPosition() - rigidBody.position;
+			if (t == PawnData.DamageType.Blade) {
+				var blood = GameObject.Instantiate<ParticleSystem>(data.bloodParticle, go.transform);
+				blood.transform.localPosition = waistPosition() - rigidBody.position;
+			}
 
             GameManager.instance.clientWorld.OnDamage(this, d);
         }
 
 		public void Hit(Projectile projectile, Actor owner) {
-			Damage(projectile.data.damage);
+			Damage(projectile.data.damage, projectile.data.damageType);
 
 			onHit?.Invoke(owner as Pawn);
 		}
@@ -1164,7 +1166,7 @@ namespace Bowhead.Actors {
 			}
 
             if (remainingDamage > 0) {
-                Damage(remainingDamage);
+                Damage(remainingDamage, attackResult.damageType);
             }
 
             if (remainingStun > 0) {

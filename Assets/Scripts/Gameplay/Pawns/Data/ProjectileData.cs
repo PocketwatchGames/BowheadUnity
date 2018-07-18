@@ -10,6 +10,7 @@ namespace Bowhead.Actors {
 
 		public float lifetime;
 		public float damage;
+		public PawnData.DamageType damageType;
 
 		public Type projectileClass { get; private set; }
 

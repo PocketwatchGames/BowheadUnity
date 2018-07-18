@@ -381,17 +381,20 @@ namespace Bowhead.Actors {
 			PickUp(ItemData.Get("Rapier").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
             PickUp(ItemData.Get("Buckler").CreateItem());
-            PickUp(ItemData.Get("PoisonPotion").CreateItem());
+			PickUp(ItemData.Get("PoisonPotion").CreateItem());
+			PickUp(ItemData.Get("PoisonPotion").CreateItem());
+			PickUp(ItemData.Get("PoisonPotion").CreateItem());
+			PickUp(ItemData.Get("PoisonPotion").CreateItem());
 
-            //Equip(new game.items.Clothing("Cloak"));
-            //AddInventory(new Clothing("Backpack"));
-            //Equip(new game.items.Weapon("PickAxe"));
-            //Equip(new game.items.Parachute("Parachute"));
-            //AddInventory(new Jetpack("Jetpack"));
-            //SetMapPos(new Vector2(spawnPoint.X, spawnPoint.Z));
-            //int exploreSize = 1024;
-            //Explore(this, new EventArgsExplore(){ region = new Rectangle((int)(mapPos.X - exploreSize / 2), (int)(mapPos.Y - exploreSize / 2), exploreSize, exploreSize) });
-            Respawn();
+			//Equip(new game.items.Clothing("Cloak"));
+			//AddInventory(new Clothing("Backpack"));
+			//Equip(new game.items.Weapon("PickAxe"));
+			//Equip(new game.items.Parachute("Parachute"));
+			//AddInventory(new Jetpack("Jetpack"));
+			//SetMapPos(new Vector2(spawnPoint.X, spawnPoint.Z));
+			//int exploreSize = 1024;
+			//Explore(this, new EventArgsExplore(){ region = new Rectangle((int)(mapPos.X - exploreSize / 2), (int)(mapPos.Y - exploreSize / 2), exploreSize, exploreSize) });
+			Respawn();
 		}
 
 		protected override void Dispose(bool disposing) {
@@ -455,7 +458,7 @@ namespace Bowhead.Actors {
             if (fallSpeed > data.fallDamageSpeed) {
                 d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * gameMode.GetTerrainData(position).fallDamage * data.maxHealth;
                 if (d > 0) {
-                    Damage(d);
+                    Damage(d, PawnData.DamageType.Falling);
                     useStamina((float)d);
                     stun((float)d);
                 }

@@ -4,6 +4,15 @@ using UnityEngine;
 namespace Bowhead.Actors {
 
     public abstract class PawnData : EntityData {
+
+		public enum DamageType {
+			Blade,
+			Bludgeon,
+			Falling,
+			Poison,
+			Fire
+		}
+
 		[Header("Basic")]
 		public GameObject_WRef mapMarker;
 		public Client.UI.EMapMarkerStyle mapMarkerStyle;

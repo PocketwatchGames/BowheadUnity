@@ -91,6 +91,14 @@ namespace Bowhead.Client.UI {
             if (target != _player) {
                 return;
             }
+
+			foreach (var s in GetComponentsInChildren<StatusEffectHUD>()) {
+				if (s.statusEffectType == e.data) {
+					s.Init(e);
+					return;
+				}
+			}
+
 			var hud = Instantiate<StatusEffectHUD>(_statusEffectPrefab, _statusEffectContainer.transform);
 			hud.Init(e);
 		}

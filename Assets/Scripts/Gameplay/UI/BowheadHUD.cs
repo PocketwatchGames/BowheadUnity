@@ -107,6 +107,9 @@ namespace Bowhead.Client.UI {
 
         private void OnDamage(Pawn target, float damage)
         {
+			if (damage < 0.5f) {
+				return;
+			}
             var damageHUD = GameObject.Instantiate<DamageHUD>(GameManager.instance.clientData.damageHUDPrefab, _pawnHUDs.transform);
             damageHUD.Init(damage, 1.5f, target);
         }

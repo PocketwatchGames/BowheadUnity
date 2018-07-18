@@ -20,3 +20,4 @@ MonoBehaviour:
     PublicKeyToken=null
   lifetime: 0.5
   damage: 50
+  damageType: 4

@@ -13,3 +13,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 28
+  healthPerSecond: -1
+  maxHealthBonus: 0
+  staminaPerSecond: 0
+  maxStaminaBonus: 0
+  damageMultiplier: 0
