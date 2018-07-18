@@ -448,12 +448,16 @@ public partial class World {
 							job.subJobHandle = default(JobHandle);
 							job.hasSubJob = false;
 							job.chunk.hasVoxelData = true;
+							job.chunk.chunkData.Unpin();
 							job.flags &= ~EJobFlags.VOXELS;
-							if (!job.chunk.hasLoaded) {
-								onChunkVoxelsLoaded?.Invoke(job.chunk);
+							Release(job.chunk);
+							if (job.chunk.refCount > 0) {
+								if (!job.chunk.hasLoaded) {
+									onChunkVoxelsLoaded?.Invoke(job.chunk);
+								}
+								onChunkVoxelsUpdated?.Invoke(job.chunk);
+								job.chunk.InvokeVoxelsUpdated();
 							}
-							onChunkVoxelsUpdated?.Invoke(job.chunk);
-							job.chunk.InvokeVoxelsUpdated();
 						}
 					}
 

@@ -348,6 +348,7 @@ namespace Bowhead.Client.UI {
 					var chunk = _streaming.GetChunk(pos);
 					if (chunk != null) {
 						AddChunkToTile(tile, chunk);
+						_streaming.Release(chunk);
 					}
 				}
 			}

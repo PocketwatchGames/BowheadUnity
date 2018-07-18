@@ -100,7 +100,7 @@ public partial class World {
 
 	public static partial class ChunkMeshGen {
 		const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
-		const int BANK_SIZE = 16;
+		const int BANK_SIZE = 24;
 		
 		const int BORDER_SIZE = 2;
 		const int NUM_VOXELS_XZ = VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE*2;

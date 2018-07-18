@@ -419,15 +419,15 @@ public partial class World {
 			var totalVerts = 0;
 			var totalIndices = 0;
 
-			for (int layer = 0; layer < World.ChunkLayers.Length; ++layer) {
-				if ((flags & ((World.EChunkFlags)((int)World.EChunkFlags.LAYER_DEFAULT << layer))) != 0) {
+			for (int layer = 0; layer < ChunkLayers.Length; ++layer) {
+				if ((flags & ((EChunkFlags)((int)EChunkFlags.LAYER_DEFAULT << layer))) != 0) {
 					var numLayerVerts = verts.counts[layer*3+0];
 					if (numLayerVerts > 0) {
 						totalVerts += numLayerVerts;
 
 						var maxSubmesh = verts.counts[layer*3+2];
 						for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
-							var numSubmeshVerts = verts.submeshes[(layer*World.MAX_CHUNK_LAYERS)+submesh];
+							var numSubmeshVerts = verts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
 							totalIndices += numSubmeshVerts;
 						}
 					}
