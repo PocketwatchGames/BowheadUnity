@@ -9,8 +9,13 @@ using System.Collections.Generic;
 public static partial class WorldUtils {
 	#region get block
 
+	public static bool IsBlockLoaded(this World world, Vector3 pos) {
+		Voxel_t voxel;
+		return world.worldStreaming.GetVoxelAt(World.Vec3ToWorld(pos), out voxel);
+	}
+
 	public static EVoxelBlockType GetBlock(this World world, Vector3 pos) {
-		
+
 		Voxel_t voxel;
 		if (world.worldStreaming.GetVoxelAt(World.Vec3ToWorld(pos), out voxel)) {
 			return voxel.type;
@@ -18,6 +23,7 @@ public static partial class WorldUtils {
 
 		return EVoxelBlockType.Air;
 	}
+
 
 	public static EVoxelBlockType GetBlock(this World world, float x, float y, float z) {
 		return world.GetBlock(new Vector3(x, y, z));

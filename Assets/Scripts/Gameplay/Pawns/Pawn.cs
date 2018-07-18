@@ -295,6 +295,10 @@ namespace Bowhead.Actors {
 
             if (active) {
 
+				if (!world.IsBlockLoaded(footPosition())) {
+					return;
+				}
+
 				float dt = world.deltaTime;
 
 				PreSimulate(dt);
@@ -525,6 +529,11 @@ namespace Bowhead.Actors {
 				go.transform.SetPositionAndRotation(position, Quaternion.AngleAxis(yaw * Mathf.Rad2Deg, Vector3.up));
 				driver?.MountMoved();
 			}
+
+			while (!world.IsBlockLoaded(footPosition())) {
+				velocity = Vector3.zero;
+				SetPosition(new Vector3(position.x, position.y + 1, position.z));
+			}
         }
 
 		virtual protected void SetActivity(Activity a) {
@@ -622,6 +631,7 @@ namespace Bowhead.Actors {
                 velDiff *= velDiff.magnitude; // drag is exponential -- thanks zeno!!!
                 velocity += velDiff * dt * getHorizontalAirFriction();
             }
+
         }
 
         private void UpdateGround(float dt, Input_t input) {
