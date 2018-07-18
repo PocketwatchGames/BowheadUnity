@@ -245,8 +245,10 @@ namespace Bowhead.Actors {
 									_adjustYaw = desiredYaw;
 								}
 							}
-						}
-						else {
+						} else if (_target.stance == Player.Stance.Combat) {
+							_adjustYaw = _target.yaw;
+							_isAdjustingYaw = true;
+						} else {
 							_isAdjustingYaw = false;
 							_adjustYaw = -1000;
 						}
