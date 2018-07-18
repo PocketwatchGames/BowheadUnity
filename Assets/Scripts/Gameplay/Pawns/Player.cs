@@ -193,12 +193,17 @@ namespace Bowhead.Actors {
 
 		}
 
-		Vector3 lastForward = Vector3.forward;
 
 		public override Input_t GetInput(float dt) {
             Input_t input = base.GetInput(dt);
 
-			for (int i = 0; i < (int)InputType.Count; i++) {
+            Vector3 forward = Vector3.forward;
+            if (Client.Actors.ClientPlayerController.localPlayer != null) {
+                float cameraYaw = Client.Actors.ClientPlayerController.localPlayer.cameraController.GetYaw();
+                forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Cos(cameraYaw));
+            }
+
+            for (int i = 0; i < (int)InputType.Count; i++) {
                 if ((cur.buttons & (0x1 << i)) != 0) {
                     if ((last.buttons & (0x1 << i)) == 0) {
                         input.inputs[i] = InputState.JustPressed;
@@ -216,27 +221,17 @@ namespace Bowhead.Actors {
                     }
                 }
             }
-
-			Vector3 forward = Vector3.forward;
-			if (Client.Actors.ClientPlayerController.localPlayer != null) {
-				float cameraYaw = Client.Actors.ClientPlayerController.localPlayer.cameraController.GetYaw();
-				forward = new Vector3(Mathf.Sin(cameraYaw), 0, Mathf.Cos(cameraYaw));
-			}
-			
-			var right = Vector3.Cross(Vector3.up, forward);
+            var right = Vector3.Cross(Vector3.up, forward);
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
 
 			if (canStrafe) {
 				if (cur.lookFwd != 0 || cur.lookRight != 0) {
-					var lastRight = Vector3.Cross(Vector3.up, lastForward);
-					input.look += lastForward * (float)cur.lookFwd / 127f;
-					input.look += lastRight * (float)cur.lookRight / 127f;
-				} else {
-					lastForward = forward;
-					if (input.movement != Vector3.zero && Input.GetJoystickNames().Length > 0) {
-						input.look = input.movement.normalized;
-					}
+					input.look += forward * (float)cur.lookFwd / 127f;
+					input.look += right * (float)cur.lookRight / 127f;
+				}
+				else if (input.movement != Vector3.zero && Input.GetJoystickNames().Length > 0) {
+					input.look = input.movement.normalized;
 				}
 			}
 			else {
