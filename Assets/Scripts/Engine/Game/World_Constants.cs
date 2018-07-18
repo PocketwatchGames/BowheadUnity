@@ -271,11 +271,11 @@ public partial class World {
 	public const int MAX_CHUNK_SUBMESHES = 3;
 	
 	public const int VOXEL_CHUNK_VIS_MAX_XZ = 16;
-	public const int VOXEL_CHUNK_VIS_MAX_Y_UP = 1;
-	public const int VOXEL_CHUNK_VIS_MAX_Y_DOWN = 1;
+	public const int VOXEL_CHUNK_VIS_MAX_Y_UP = 2;
+	public const int VOXEL_CHUNK_VIS_MAX_Y_DOWN = 2;
 	public const int VOXEL_CHUNK_VIS_MAX_Y = VOXEL_CHUNK_VIS_MAX_Y_UP + VOXEL_CHUNK_VIS_MAX_Y_DOWN;
 	public const int VOXEL_CHUNK_SIZE_XZ = 16;
-	public const int VOXEL_CHUNK_SIZE_Y = 128;
+	public const int VOXEL_CHUNK_SIZE_Y = 64;
 	public const int VOXELS_PER_CHUNK = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_Y;
 	public const int VOXELS_PER_CHUNK_XZ = VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ;
 

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
-#define DISABLE
+//#define DISABLE
 
 using System;
 using System.Threading;
@@ -12,7 +12,7 @@ using UnityEngine;
 
 public partial class World {
 	public sealed class WorldFile : IDisposable {
-		const int VERSION = 4;
+		const int VERSION = 5;
 
 		struct ChunkFile_t {
 			public const int SIZE_ON_DISK = 8*4;
