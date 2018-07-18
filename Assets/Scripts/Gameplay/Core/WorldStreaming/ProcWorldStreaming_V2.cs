@@ -108,15 +108,17 @@ namespace Bowhead {
 						int plateauElevation;
 						GenerateElevation(ref noise, xpos, zpos, out plateauElevation, out slopedElevation);
 
-						if (plateauElevation < v3.y)
-							continue;
+						if (plateauElevation < v3.y) {
+							for (int y = 0; y < VOXEL_CHUNK_SIZE_Y; ++y) {
+								var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+								chunk.voxeldata[ofs] = EVoxelBlockType.Air;
+							}
+						} else {
+							AssignBlocks(ref chunk, ref noise, ref solid, v3, x, z, plateauElevation);
 
-
-						AssignBlocks(ref chunk, ref noise, ref solid, v3, x, z, plateauElevation);
-
-
-						CreateRivers(ref chunk, ref noise, v3, x, z, plateauElevation);
-						hasRoad = CreateRoads(ref chunk, ref noise, v3, x, z, plateauElevation);
+							CreateRivers(ref chunk, ref noise, v3, x, z, plateauElevation);
+							hasRoad = CreateRoads(ref chunk, ref noise, v3, x, z, plateauElevation);
+						}
 
 					}
 				}
@@ -185,7 +187,7 @@ namespace Bowhead {
 							int cy = (int)(i - v3.y);
 							if (cy >= 0 && cy < VOXEL_CHUNK_SIZE_Y) {
 								float temperature = GetTemperature(ref noise, x, i, z);
-								int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + ((int)(i - v3.y) * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+								int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + (cy * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 								if (IsFrozen(temperature, GetHumidity(ref noise, x, z))) {
 									chunk.voxeldata[ofs] = EVoxelBlockType.Ice;
 								}
@@ -224,7 +226,7 @@ namespace Bowhead {
 							int cy = (int)(i - v3.y);
 							if (cy >= 0 && cy < VOXEL_CHUNK_SIZE_Y) {
 								float temperature = GetTemperature(ref noise, x, i, z);
-								int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + ((int)(i - v3.y) * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+								int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + (cy * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 								chunk.voxeldata[ofs] = EVoxelBlockType.Dirt;
 							}
 						}
