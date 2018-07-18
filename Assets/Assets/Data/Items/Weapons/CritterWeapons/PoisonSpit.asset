@@ -23,9 +23,9 @@ MonoBehaviour:
   attacks:
   - chargeTime: 0
     maxCharge: 0
-    castTime: 0
+    castTime: 0.5
     activeTime: 0
-    cooldown: 0.5
+    cooldown: 1.5
     cooldownNextAttackQueueTime: 0.1
     range: 0
     radius: 0
@@ -34,8 +34,8 @@ MonoBehaviour:
     moveSpeedWhileCharging: 0
     moveSpeedWhileFullyCharged: 0
     canMoveDuringCooldown: 1
-    canMoveDuringCast: 1
-    canMoveDuringActive: 1
+    canMoveDuringCast: 0
+    canMoveDuringActive: 0
     unblockable: 0
     interruptOnHit: 0
     canBackstab: 0
