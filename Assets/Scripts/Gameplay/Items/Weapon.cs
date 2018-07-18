@@ -10,6 +10,7 @@ namespace Bowhead {
         #region State
 
         public int attackHand;
+		public float attackCharge;
         public float castTime;
 		public float activeTime;
 		public float parryTime;
@@ -91,7 +92,8 @@ namespace Bowhead {
 			}
 
             castTime = data.attacks[attackHand].castTime;
-            chargeTime = 0;
+			attackCharge = chargeTime;
+			chargeTime = 0;
             if (castTime <= 0) {
                 Activate(owner);
             }
@@ -120,7 +122,7 @@ namespace Bowhead {
 					attackType = data.attacks[attackHand].attackResult;
 				}
 
-				if (enemy.Hit(owner, this, attackType, GetMultiplier(owner), !data.attacks[attackHand].unblockable)) {
+				if (enemy.Hit(owner, this, attackType, GetMultiplier(owner, attackCharge), !data.attacks[attackHand].unblockable)) {
 					Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
 					if (data.attacks[attackHand].interruptOnHit) {
 						Interrupt(owner);
@@ -337,19 +339,19 @@ namespace Bowhead {
 
         }
 
-		public float GetChargeMultiplier(Pawn owner) {
-			if (data.attacks[attackHand].chargeTime > 0 && chargeTime > 0) {
+		public float GetChargeMultiplier(Pawn owner, float charge) {
+			if (data.attacks[attackHand].chargeTime > 0 && attackCharge > 0) {
 				if (owner.activity == Pawn.Activity.Falling) {
 					return 2;
 				}
-				return Mathf.Clamp(Mathf.FloorToInt(chargeTime / data.attacks[attackHand].chargeTime) * 2, 1, data.attacks[attackHand].maxCharge);
+				return Mathf.Clamp(Mathf.FloorToInt(charge / data.attacks[attackHand].chargeTime) * 2, 1, data.attacks[attackHand].maxCharge);
 			}
 			return 1;
 		}
 
-		public float GetMultiplier(Pawn owner) {
+		public float GetMultiplier(Pawn owner, float charge) {
 			float m = owner.damageMultiplier;
-			float chargeMultiplier = GetChargeMultiplier(owner);
+			float chargeMultiplier = GetChargeMultiplier(owner, charge);
 			if (chargeMultiplier > 1) {
 				return m * chargeMultiplier;
 			}

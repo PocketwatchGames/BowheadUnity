@@ -44,7 +44,7 @@ namespace Bowhead {
         }
 
         static bool UseFood(Loot item, Pawn owner) {
-            if (owner.health >= owner.maxHealth) {
+            if (owner.health >= owner.maxHealth && item.data.statusEffect == null) {
                 return false;
             }
             owner.health = Mathf.Min(owner.health + item.data.power, owner.maxHealth);

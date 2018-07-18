@@ -40,6 +40,9 @@ namespace Bowhead {
                 owner.maxHealth += data.maxHealthBonus;
                 owner.health += data.maxHealthBonus;
             }
+			if (data.damageMultiplier > 0) {
+				owner.damageMultiplier += data.damageMultiplier;
+			}
         }
         public void Tick(float dt, Pawn owner) {
             if (time > 0)
@@ -64,8 +67,11 @@ namespace Bowhead {
                         owner.maxHealth -= data.maxHealthBonus;
                         owner.health = Mathf.Max(owner.health, owner.maxHealth);
                     }
-                }
-            }
+					if (data.damageMultiplier > 0) {
+						owner.damageMultiplier -= data.damageMultiplier;
+					}
+				}
+			}
         }
 	}
 

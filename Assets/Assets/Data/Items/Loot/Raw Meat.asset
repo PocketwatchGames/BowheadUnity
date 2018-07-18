@@ -18,3 +18,5 @@ MonoBehaviour:
   useType: 1
   power: 50
   stackSize: 4
+  statusEffect: {fileID: 11400000, guid: 9fb0287b590637e44b36d20cdf9e35c2, type: 2}
+  statusEffectTime: 300
