@@ -6,7 +6,8 @@ namespace Bowhead.Actors {
 
     public enum ECritterBehaviorType {
         Flee,
-        Attack
+        MeleeAttack,
+		RangedAttack
     }
 
     abstract public class CritterBehavior {
@@ -16,10 +17,12 @@ namespace Bowhead.Actors {
             switch (t) {
                 case ECritterBehaviorType.Flee:
                     return new CritterBehaviorFlee();
-                case ECritterBehaviorType.Attack:
-                    return new CritterBehaviorAttack();
-            }
-            return null;
+				case ECritterBehaviorType.MeleeAttack:
+					return new CritterBehaviorMeleeAttack();
+				case ECritterBehaviorType.RangedAttack:
+					return new CritterBehaviorRangedAttack();
+			}
+			return null;
         }
     }
 
@@ -42,17 +45,25 @@ namespace Bowhead.Actors {
 
         }
     }
-    public class CritterBehaviorAttack : CritterBehavior {
-        override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
-            input.movement = Vector3.zero;
-            input.inputs[(int)InputType.Jump] = InputState.Released;
-            input.inputs[(int)InputType.AttackRight] = InputState.Released;
+	public class CritterBehaviorMeleeAttack : CritterBehavior {
+		override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
 
-            if (c.hasLastKnownPosition) {
-                var diff = c.rigidBody.position - c.lastKnownPosition;
+			var weapon = c.GetInventorySlot(0) as Weapon;
+			float minRange = 2;
+			float maxRange = 5;
+			float fleeRange = 5;
+			float fleeStaminaLimit = 20;
+			float enemyElevationDeltaToJump = 3;
 
-				if (c.stamina < 20) {
-					var desiredPos = c.lastKnownPosition + diff.normalized * 5;
+			input.movement = Vector3.zero;
+			input.inputs[(int)InputType.Jump] = InputState.Released;
+			input.inputs[(int)InputType.AttackRight] = InputState.Released;
+
+			if (c.hasLastKnownPosition) {
+				var diff = c.rigidBody.position - c.lastKnownPosition;
+
+				if (c.stamina < fleeStaminaLimit) {
+					var desiredPos = c.lastKnownPosition + diff.normalized * fleeRange;
 					var move = desiredPos - c.position;
 					move.y = 0;
 
@@ -64,7 +75,7 @@ namespace Bowhead.Actors {
 				}
 				else {
 
-					if (diff.y <= -3) {
+					if (diff.y <= -enemyElevationDeltaToJump) {
 						if (c.canJump && c.activity == Pawn.Activity.OnGround) {
 							input.inputs[(int)InputType.Jump] = InputState.JustPressed;
 						}
@@ -73,7 +84,7 @@ namespace Bowhead.Actors {
 					if (diff == Vector3.zero) {
 						diff.x = 1;
 					}
-					var desiredPos = c.lastKnownPosition + diff.normalized * 5;
+					var desiredPos = c.lastKnownPosition + diff.normalized * maxRange;
 					var move = desiredPos - c.position;
 					move.y = 0;
 
@@ -81,8 +92,7 @@ namespace Bowhead.Actors {
 
 
 					if (c.CanSee(c.gameMode.players[0].playerPawn) > 0) {
-						var weapon = c.GetInventorySlot(0) as Weapon;
-						if (dist > 2 && dist < 5 && c.canAttack && c.activity == Pawn.Activity.OnGround && weapon.CanCast()) {
+						if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround && weapon.CanCast()) {
 							input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
 						}
 						else {
@@ -91,8 +101,72 @@ namespace Bowhead.Actors {
 					}
 					input.look = -diff;
 				}
-            }
+			}
 
-        }
-    }
+		}
+
+
+	}
+	public class CritterBehaviorRangedAttack : CritterBehavior {
+		override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
+
+			var weapon = c.GetInventorySlot(0) as Weapon;
+			float minRange = 2;
+			float maxRange = 10;
+			float fleeRange = 10;
+			float fleeStaminaLimit = 20;
+			float enemyElevationDeltaToJump = 3;
+
+			input.movement = Vector3.zero;
+			input.inputs[(int)InputType.Jump] = InputState.Released;
+			input.inputs[(int)InputType.AttackRight] = InputState.Released;
+
+			if (c.hasLastKnownPosition) {
+				var diff = c.rigidBody.position - c.lastKnownPosition;
+
+				if (c.stamina < fleeStaminaLimit) {
+					var desiredPos = c.lastKnownPosition + diff.normalized * fleeRange;
+					var move = desiredPos - c.position;
+					move.y = 0;
+
+					float dist = diff.magnitude;
+
+					input.movement = move.normalized;
+					input.look = -diff;
+
+				}
+				else {
+
+					if (diff.y <= -enemyElevationDeltaToJump) {
+						if (c.canJump && c.activity == Pawn.Activity.OnGround) {
+							input.inputs[(int)InputType.Jump] = InputState.JustPressed;
+						}
+					}
+					diff.y = 0;
+					if (diff == Vector3.zero) {
+						diff.x = 1;
+					}
+					var desiredPos = c.lastKnownPosition + diff.normalized * maxRange;
+					var move = desiredPos - c.position;
+					move.y = 0;
+
+					float dist = diff.magnitude;
+
+
+					if (c.CanSee(c.gameMode.players[0].playerPawn) > 0) {
+						if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround && weapon.CanCast()) {
+							input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
+						}
+						else {
+							input.movement = move.normalized;
+						}
+					}
+					input.look = -diff;
+				}
+			}
+
+		}
+
+
+	}
 }

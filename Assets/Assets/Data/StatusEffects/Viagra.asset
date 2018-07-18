@@ -9,13 +9,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8954b09d4253f0e4ba5e6c3592201819, type: 3}
-  m_Name: Poison
+  m_Name: Viagra
   m_EditorClassIdentifier: 
   version: 0
-  _index: 28
-  healthPerSecond: -1
+  _index: 36
+  healthPerSecond: 0
   maxHealthBonus: 0
   staminaPerSecond: 0
-  maxStaminaBonus: 0
+  maxStaminaBonus: 20
   damageMultiplier: 0
-  canStack: 1
+  canStack: 0

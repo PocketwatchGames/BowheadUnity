@@ -12,9 +12,11 @@ public class StatusEffectHUD : MonoBehaviour {
 	private List<StatusEffect> _statusEffects = new List<StatusEffect>();
 
 	public void Init(StatusEffect e) {
-		statusEffectType = e.data;
-		_statusEffects.Add(e);
-        nameText.text = GetText();
+		if (!_statusEffects.Contains(e)) {
+			statusEffectType = e.data;
+			_statusEffects.Add(e);
+		}
+		nameText.text = GetText();
 		slider.value = GetMaxTime();
 	}
 	

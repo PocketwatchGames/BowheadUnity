@@ -26,6 +26,8 @@ namespace Bowhead {
 			public float stun;
 			public bool interrupt;
 			public Actors.PawnData.DamageType damageType;
+			public StatusEffectData statusEffect;
+			public float statusEffectTime;
 		}
 
 		[System.Serializable]

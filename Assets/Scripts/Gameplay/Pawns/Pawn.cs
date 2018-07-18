@@ -1131,7 +1131,37 @@ namespace Bowhead.Actors {
         }
 
 		public void Hit(Projectile projectile, Actor owner) {
-			Damage(projectile.data.damage, projectile.data.damageType);
+
+			if (dodgeTimer > 0) {
+				return;
+			}
+
+			float remainingStun = projectile.data.stun;
+			float remainingDamage = projectile.data.damage;
+
+
+			//// Check if we're blocking with shield
+			//if (projectile.data.canBlock) {
+			//	foreach (var w in getInventory()) {
+			//		var shield = w as Weapon;
+			//		if (shield != null) {
+			//			shield.Defend(this, attacker, weapon, ref remainingStun, ref remainingDamage);
+			//		}
+			//	}
+			//}
+
+			if (remainingDamage > 0) {
+				Damage(remainingDamage, projectile.data.damageType);
+			}
+
+			if (remainingStun > 0) {
+				stun(remainingStun);
+			}
+
+
+			if (projectile.data.statusEffect != null) {
+				AddStatusEffect(projectile.data.statusEffect, projectile.data.statusEffectTime);
+			}
 
 			onHit?.Invoke(owner as Pawn);
 		}
@@ -1173,8 +1203,12 @@ namespace Bowhead.Actors {
                 stun(remainingStun);
             }
 
+			if (attackResult.statusEffect != null) {
+				AddStatusEffect(attackResult.statusEffect, attackResult.statusEffectTime);
+			}
 
-            if (attackResult.interrupt) {
+
+			if (attackResult.interrupt) {
 				foreach (var i in getInventory()) {
 					var w = i as Weapon;
 					if (w != null) {
@@ -1272,10 +1306,21 @@ namespace Bowhead.Actors {
         }
 
 		public void AddStatusEffect(StatusEffectData data, float time) {
-			var e = StatusEffect.Create(data, time);
-			statusEffects.Add(e);
-			e.Apply(this);
-            GameManager.instance.clientWorld.OnStatusEffectAdded(this, e);
+			StatusEffect se = null;
+			if (!data.canStack) {
+				se = statusEffects.Find(e => e.data == data);
+			}
+
+			if (se == null) {
+				se = StatusEffect.Create(data, time);
+				statusEffects.Add(se);
+				se.Apply(this);
+			}
+			else {
+				se.totalTime = Mathf.Max(se.totalTime, time);
+				se.time = Mathf.Max(se.time, time);
+			}
+            GameManager.instance.clientWorld.OnStatusEffectAdded(this, se);
 		}
     }
 }

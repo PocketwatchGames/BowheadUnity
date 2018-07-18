@@ -18,3 +18,4 @@ MonoBehaviour:
   staminaPerSecond: 0
   maxStaminaBonus: 0
   damageMultiplier: 1.25
+  canStack: 0

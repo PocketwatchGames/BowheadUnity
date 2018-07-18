@@ -9,58 +9,61 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c384a6b4c08e5e479f79662660fc81f, type: 3}
-  m_Name: SpellHeal
+  m_Name: Rapier
   m_EditorClassIdentifier: 
   version: 0
-  _index: 5
-  description: Healing spell
-  monetaryValue: 10
+  _index: 13
+  description: Fast single handed weapon
+  monetaryValue: 35
   prefab:
-    _assetPath: 
-    _editorPath: 
-  hand: 3
-  moveSpeedChargeDelay: 0
+    _assetPath: Items/Sword
+    _editorPath: Assets/Assets/Prefabs/Resources/Items/Sword.prefab
+  hand: 1
+  moveSpeedChargeDelay: 0.2
   attacks:
-  - chargeTime: 0
-    castTime: 0
-    activeTime: 0
-    cooldown: 0.5
+  - chargeTime: 0.5
+    maxCharge: 8
+    castTime: 0.05
+    activeTime: 0.1
+    cooldown: 0.1
     cooldownNextAttackQueueTime: 0.1
-    range: 0
-    radius: 0
-    staminaUse: 0
-    stepDistance: 0
-    canRunWhileCharging: 1
-    canMoveDuringCooldown: 1
-    canMoveDuringCast: 1
-    canMoveDuringActive: 1
+    range: 1.5
+    radius: 0.25
+    staminaUse: 20
+    stepDistance: 1
+    moveSpeedWhileCharging: 0.8
+    moveSpeedWhileFullyCharged: 0.25
+    canMoveDuringCooldown: 0
+    canMoveDuringCast: 0
+    canMoveDuringActive: 0
     unblockable: 0
-    spell: 1
-    spellPower: 1
-    waterUse: 10
+    interruptOnHit: 1
+    canBackstab: 1
+    spell: 0
+    spellPower: 0
+    waterUse: 0
     projectile: {fileID: 0}
     projectileSpeed: 0
     attackResult:
-      knockback: 0
-      damage: 0
-      stun: 0
+      knockback: 0.1
+      damage: 5
+      stun: 5
       interrupt: 0
-      staminaDrain: 0
+      damageType: 0
     backstabResult:
       knockback: 0
-      damage: 0
-      stun: 0
-      interrupt: 0
-      staminaDrain: 0
+      damage: 10
+      stun: 50
+      interrupt: 1
+      damageType: 0
     canDefend: 0
-    canRunWhileDefending: 0
     defendAngleRange: 0
     defendResult:
       knockback: 0
       damage: 0
       stun: 0
       interrupt: 0
-      staminaDrain: 0
+      damageType: 0
       stunAbsorb: 0
       damageAbsorb: 0
       staminaUse: 0
@@ -71,7 +74,7 @@ MonoBehaviour:
       damage: 0
       stun: 0
       interrupt: 0
-      staminaDrain: 0
+      damageType: 0
       stunAbsorb: 0
       damageAbsorb: 0
       staminaUse: 0

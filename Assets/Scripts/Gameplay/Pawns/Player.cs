@@ -381,6 +381,9 @@ namespace Bowhead.Actors {
 			PickUp(ItemData.Get("Rapier").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
             PickUp(ItemData.Get("Buckler").CreateItem());
+			PickUp(ItemData.Get("Stamina Potion").CreateItem());
+			PickUp(ItemData.Get("Stamina Potion").CreateItem());
+			PickUp(ItemData.Get("Stamina Potion").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));

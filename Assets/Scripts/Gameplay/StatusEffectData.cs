@@ -17,7 +17,7 @@ namespace Bowhead {
         public float maxStaminaBonus;
 
         public float damageMultiplier;
-
+		public bool canStack;
     }
 
     public abstract class StatusEffectData<T, D> : StatusEffectData where T : StatusEffect, new() where D : StatusEffectData<T, D>, new()

@@ -256,15 +256,18 @@ namespace Bowhead.Server {
 		public void SpawnRandomCritter() {
 
 			if (numCritters < 100) {
-				var bunnyData = CritterData.Get("bunny");
-				var wolfData = CritterData.Get("wolf");
+				var critterTypes = new List<CritterData> {
+					CritterData.Get("bunny"),
+					CritterData.Get("wolf"),
+					CritterData.Get("cobra"),
+				};
 				foreach (var player in world.GetActorIterator<Player>()) {
 					Vector3 pos = player.position;
 					pos.y = 1000;
 					pos.x += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
 					pos.z += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
 
-					SpawnCritter((UnityEngine.Random.value < 0.5f) ? wolfData : bunnyData, pos, UnityEngine.Random.Range(0,360)*Mathf.Deg2Rad, monsterTeam);
+					SpawnCritter(critterTypes[UnityEngine.Random.Range(0,critterTypes.Count)], pos, UnityEngine.Random.Range(0,360)*Mathf.Deg2Rad, monsterTeam);
 					break;
 				}
 			}

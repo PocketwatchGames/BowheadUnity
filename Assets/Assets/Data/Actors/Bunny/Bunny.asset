@@ -13,15 +13,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 0
+  mapMarker:
+    _assetPath: 
+    _editorPath: 
   height: 1
   maxHealth: 30
   maxWater: 0
   maxStamina: 20
+  minStamina: 0
   recoveryTime: 1
   staminaRechargeTime: 3
+  staminaRechargeTimeDuringRecovery: 0
   dodgeTime: 0
-  stunLimit: 1
-  stunRecoveryTime: 3
+  postStunInvincibilityTime: 0
   backStabAngle: 90
   runSound: 0
   sprintSound: 0
@@ -51,8 +55,6 @@ MonoBehaviour:
   climbAttachCooldown: 0
   bouyancy: 20
   swimJumpSpeed: 60
-  swimSinkAcceleration: 0
-  swimJumpBoostAcceleration: 0
   swimAcceleration: 15
   swimMaxSpeed: 10
   swimDragVertical: 5
@@ -60,8 +62,8 @@ MonoBehaviour:
   _critterClass: Bowhead.Actors.Critter, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   prefab:
-    _assetPath: Actors/Bunny
-    _editorPath: Assets/Assets/Prefabs/Resources/Actors/Bunny.prefab
+    _assetPath: Actors/Critters/Bunny
+    _editorPath: Assets/Assets/Prefabs/Resources/Actors/Critters/Bunny.prefab
   waryLimit: 1
   investigateLimit: 3
   visionWeight: 2

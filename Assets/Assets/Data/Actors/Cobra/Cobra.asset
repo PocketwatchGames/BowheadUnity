@@ -9,15 +9,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 20b7cacce8e11b348a6038eb11e97760, type: 3}
-  m_Name: Wolf
+  m_Name: Cobra
   m_EditorClassIdentifier: 
   version: 0
-  _index: 2
+  _index: 34
   mapMarker:
     _assetPath: 
     _editorPath: 
   height: 1
-  maxHealth: 100
+  maxHealth: 40
   maxWater: 0
   maxStamina: 50
   minStamina: -25
@@ -42,7 +42,7 @@ MonoBehaviour:
   sprintSpeed: 9
   sprintStaminaUse: 0
   sprintGracePeriodTime: 0
-  groundMaxSpeed: 9
+  groundMaxSpeed: 4
   groundWindDrag: 0.01
   gravity: -30
   fallJumpTime: 0
@@ -62,14 +62,14 @@ MonoBehaviour:
   _critterClass: Bowhead.Actors.Critter, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   prefab:
-    _assetPath: Actors/Critters/Wolf
-    _editorPath: Assets/Assets/Prefabs/Resources/Actors/Critters/Wolf.prefab
+    _assetPath: Actors/Critters/Cobra
+    _editorPath: Assets/Assets/Prefabs/Resources/Actors/Critters/Cobra.prefab
   waryLimit: 1
   investigateLimit: 3
-  visionWeight: 2
-  smellWeight: 1
-  hearingWeight: 1
-  dayVisionDistance: 20
+  visionWeight: 1
+  smellWeight: 3
+  hearingWeight: 2
+  dayVisionDistance: 10
   nightVisionDistance: 10
   visionAngleExponent: 2
   visionDistanceExponent: 0.5
@@ -84,5 +84,5 @@ MonoBehaviour:
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
-  panicBehavior: 1
-  defaultLoadout: {fileID: 11400000, guid: aed3b51089462144abc792f1413f0c29, type: 2}
+  panicBehavior: 2
+  defaultLoadout: {fileID: 11400000, guid: 67bcee8cf8ef006468f40aa809231c3f, type: 2}
