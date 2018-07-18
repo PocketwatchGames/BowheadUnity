@@ -158,7 +158,10 @@ namespace Bowhead {
 			}
 			
 			if (data.attacks[attackHand].projectile != null) {
-				var target = GetProjectileTarget(owner, owner.yaw, data.attacks[attackHand].projectile.lifetime * data.attacks[attackHand].projectileSpeed);
+				Pawn target = null;
+				if (data.attacks[attackHand].heatSeeking) {
+					target = GetProjectileTarget(owner, owner.yaw, data.attacks[attackHand].projectile.lifetime * data.attacks[attackHand].projectileSpeed);
+				}
 				Vector3 dir;
 				if (target != null) {
 					dir = (target.waistPosition() - owner.headPosition()).normalized;

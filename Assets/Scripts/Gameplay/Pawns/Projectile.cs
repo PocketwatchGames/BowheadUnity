@@ -42,10 +42,10 @@ namespace Bowhead.Actors {
 			float dt = world.deltaTime;
 			Vector3 move;
 			if (target != null) {
-				move = (target.position - position) * dt / Mathf.Max(dt, lifetime);
-			} else {
-				move = velocity * dt;
+				float speed = velocity.magnitude;
+				velocity = (target.position - position).normalized * speed;
 			}
+			move = velocity * dt;
 			RaycastHit hit;
 			if (Physics.Raycast(position,move.normalized,out hit,move.magnitude)) {
 				var target = (Pawn)hit.transform.FindServerActorUpwards();

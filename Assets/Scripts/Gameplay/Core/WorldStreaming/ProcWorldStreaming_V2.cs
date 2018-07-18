@@ -372,7 +372,7 @@ namespace Bowhead {
 					}
 				}
 
-				int voxelsPerTower = 600;
+				int voxelsPerTower = 500;
 				Vector2Int towerRegion = new Vector2Int(Mathf.FloorToInt((chunkPos.x*VOXEL_CHUNK_SIZE_XZ)/ voxelsPerTower), Mathf.FloorToInt((chunkPos.z * VOXEL_CHUNK_SIZE_XZ) / voxelsPerTower));
 				Vector2Int towerWorldPosition = new Vector2Int(towerRegion.x*voxelsPerTower+(int)(GetWhiteNoise(ref noise, towerRegion.x, 0, towerRegion.y) * voxelsPerTower), towerRegion.y * voxelsPerTower + (int)(GetWhiteNoise(ref noise, towerRegion.x+100, 0, towerRegion.y) * voxelsPerTower));
 				var towerChunkPos = new Vector2Int(towerWorldPosition.x / VOXEL_CHUNK_SIZE_XZ, towerWorldPosition.y / VOXEL_CHUNK_SIZE_XZ);
@@ -383,13 +383,13 @@ namespace Bowhead {
 					for (int y = VOXEL_CHUNK_SIZE_Y - 1; y >= 0; --y) {
 						var ofs = x + (z * VOXEL_CHUNK_SIZE_XZ) + (y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 						var bt = chunk.voxeldata[ofs].type;
-						if (bt != EVoxelBlockType.Air) {
+						if (bt != EVoxelBlockType.Air && bt != EVoxelBlockType.Leaves && bt != EVoxelBlockType.Needles && bt != EVoxelBlockType.Wood && bt != EVoxelBlockType.Water) {
 							ConstructTower(ref noise, chunkPos, x, y, z, towerHeight, ref chunk);
 							break;
 						}
 					}
 				}
-				else if (hasRoad && GetWhiteNoise(ref noise, chunkPos.x + 63452, 0, chunkPos.z) < 0.003f) {
+				else if (hasRoad && GetWhiteNoise(ref noise, chunkPos.x + 63452, 0, chunkPos.z) < 0.01f) {
 					int x = 8;
 					int z = 8;
 					for (int y = VOXEL_CHUNK_SIZE_Y - 1; y >= 0; --y) {

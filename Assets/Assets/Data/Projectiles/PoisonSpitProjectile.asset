@@ -14,8 +14,8 @@ MonoBehaviour:
   version: 0
   _index: 33
   prefab:
-    _assetPath: PoisonSpitProjectilePrefab
-    _editorPath: Assets/Assets/Prefabs/Resources/PoisonSpitProjectilePrefab.prefab
+    _assetPath: Projectiles/PoisonSpitProjectilePrefab
+    _editorPath: Assets/Assets/Prefabs/Resources/Projectiles/PoisonSpitProjectilePrefab.prefab
   _projectileClass: Bowhead.Actors.Projectile, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   lifetime: 0.5

@@ -14,10 +14,13 @@ MonoBehaviour:
   version: 0
   _index: 7
   prefab:
-    _assetPath: MagicMissile
-    _editorPath: Assets/Assets/Prefabs/Resources/MagicMissile.prefab
+    _assetPath: Projectiles/MagicMissile
+    _editorPath: Assets/Assets/Prefabs/Resources/Projectiles/MagicMissile.prefab
   _projectileClass: Bowhead.Actors.Projectile, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   lifetime: 0.5
   damage: 50
+  stun: 0
   damageType: 4
+  statusEffect: {fileID: 0}
+  statusEffectTime: 0

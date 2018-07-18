@@ -12,7 +12,7 @@ using UnityEngine;
 
 public partial class World {
 	public sealed class WorldFile : IDisposable {
-		const int VERSION = 2;
+		const int VERSION = 3;
 
 		struct ChunkFile_t {
 			public const int SIZE_ON_DISK = 8*4;

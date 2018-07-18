@@ -42,6 +42,7 @@ MonoBehaviour:
     spell: 0
     spellPower: 0
     waterUse: 10
+    heatSeeking: 1
     projectile: {fileID: 11400000, guid: 3153fb8bcefe50a44af717fe0aa81363, type: 2}
     projectileSpeed: 20
     attackResult:
@@ -50,12 +51,16 @@ MonoBehaviour:
       stun: 0
       interrupt: 0
       damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
     backstabResult:
       knockback: 0
       damage: 0
       stun: 0
       interrupt: 0
       damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
     canDefend: 0
     defendAngleRange: 0
     defendResult:
@@ -64,6 +69,8 @@ MonoBehaviour:
       stun: 0
       interrupt: 0
       damageType: 4
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
       stunAbsorb: 0
       damageAbsorb: 0
       staminaUse: 0
@@ -75,6 +82,8 @@ MonoBehaviour:
       stun: 0
       interrupt: 0
       damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
       stunAbsorb: 0
       damageAbsorb: 0
       staminaUse: 0

@@ -14,14 +14,15 @@ MonoBehaviour:
   version: 0
   _index: 16
   prefab:
-    _assetPath: TreasureChest
-    _editorPath: Assets/Assets/Prefabs/Resources/TreasureChest.prefab
+    _assetPath: WorldItems/TreasureChest
+    _editorPath: Assets/Assets/Prefabs/Resources/WorldItems/TreasureChest.prefab
   _itemClass: Bowhead.Actors.WorldItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   mapMarker:
-    _assetPath: MapTreasureMarker
-    _editorPath: Assets/Assets/Prefabs/Resources/MapTreasureMarker.prefab
+    _assetPath: MapMarkers/MapTreasureMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MapMarkers/MapTreasureMarker.prefab
   mapMarkerStyle: 0
+  range: 0
   _items:
   - itemClass: {fileID: 11400000, guid: 3471146c30911b549b389996ec6ea3ec, type: 2}
     count:

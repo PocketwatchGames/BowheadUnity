@@ -36,9 +36,8 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4116871573200354}
-  - component: {fileID: 65899032400752814}
   m_Layer: 0
-  m_Name: MagicMissile
+  m_Name: PoisonSpitProjectilePrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -81,7 +80,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1293156638551388}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -35026.188, y: 18017.262, z: -4479.269}
+  m_LocalPosition: {x: 59.177418, y: -19.875242, z: -4479.269}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4591622245239276}
@@ -144,18 +143,6 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1491359372772778}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!65 &65899032400752814
-BoxCollider:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1293156638551388}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!198 &198838672130282674
 ParticleSystem:
   m_ObjectHideFlags: 1
@@ -1365,7 +1352,7 @@ ParticleSystem:
       maxColor: {r: 1, g: 1, b: 1, a: 1}
       maxGradient:
         serializedVersion: 2
-        key0: {r: 0.7075472, g: 0.30109936, b: 0.110137075, a: 0}
+        key0: {r: 0.0564088, g: 0.764151, b: 0, a: 0}
         key1: {r: 0.6666667, g: 0.28627452, b: 0.10196079, a: 0.43529412}
         key2: {r: 0, g: 0, b: 0, a: 0}
         key3: {r: 0, g: 0, b: 0, a: 0}
