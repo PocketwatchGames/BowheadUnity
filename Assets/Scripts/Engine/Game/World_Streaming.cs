@@ -922,7 +922,7 @@ public partial class World {
 				var yorg = curPos.cy - yDown;
 				var zorg = curPos.cz - xzSize;
 
-				var yScale = (uint)(Mathf.Max(VOXEL_CHUNK_SIZE_Y, VOXEL_CHUNK_SIZE_XZ) / VOXEL_CHUNK_SIZE_XZ);
+				uint yScale = 1;// (uint)(Mathf.Max(VOXEL_CHUNK_SIZE_Y, VOXEL_CHUNK_SIZE_XZ) / VOXEL_CHUNK_SIZE_XZ);
 								
 				for (int y = 0; y < yDim; ++y) {
 
