@@ -32,6 +32,8 @@ namespace Bowhead {
 		public bool isNight => hours >= 7;
 		public bool isDay => !isNight;
 
+		public float timeOfDay { get { return (float)hours / 24 + (float)minutes / (24 * 60) + (float)seconds / (24 * 60 * 60); } }
+
 		public static GameTime FromSeconds(int seconds) {
 			var gt = default(GameTime);
 
