@@ -11,6 +11,7 @@ namespace Bowhead.Actors {
 		public float lifetime;
 		public float damage;
 		public float stun;
+		public bool heatSeeking;
 		public PawnData.DamageType damageType;
 		public StatusEffectData statusEffect;
 		public float statusEffectTime;

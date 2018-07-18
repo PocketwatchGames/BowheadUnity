@@ -41,7 +41,7 @@ namespace Bowhead.Actors {
 
 			float dt = world.deltaTime;
 			Vector3 move;
-			if (target != null) {
+			if (target != null && data.heatSeeking) {
 				float speed = velocity.magnitude;
 				velocity = (target.position - position).normalized * speed;
 			}

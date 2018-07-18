@@ -21,6 +21,7 @@ MonoBehaviour:
   lifetime: 0.5
   damage: 50
   stun: 0
+  heatSeeking: 1
   damageType: 4
   statusEffect: {fileID: 0}
   statusEffectTime: 0

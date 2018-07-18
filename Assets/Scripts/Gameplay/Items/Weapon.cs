@@ -159,7 +159,7 @@ namespace Bowhead {
 			
 			if (data.attacks[attackHand].projectile != null) {
 				Pawn target = null;
-				if (data.attacks[attackHand].heatSeeking) {
+				if (data.attacks[attackHand].canTarget) {
 					target = GetProjectileTarget(owner, owner.yaw, data.attacks[attackHand].projectile.lifetime * data.attacks[attackHand].projectileSpeed);
 				}
 				Vector3 dir;

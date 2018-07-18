@@ -62,7 +62,7 @@ namespace Bowhead {
 			public Spell spell;
 			public float spellPower;
 			public float waterUse;
-			public bool heatSeeking;
+			public bool canTarget;
 			public Actors.ProjectileData projectile;
 			public float projectileSpeed;
 			public AttackResult attackResult;

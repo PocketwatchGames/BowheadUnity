@@ -1268,6 +1268,13 @@ namespace Bowhead.Actors {
         virtual protected void Die() {
             alive = false;
 			position += new Vector3(0, data.height, 0);
+
+			for (int i = 0; i < MaxInventorySize; i++) {
+				var w = GetInventorySlot(i) as Weapon;
+				if (w != null) {
+					w.Interrupt(this);
+				}
+			}
 		}
 
 		virtual protected bool SetMount(Pawn m) {
