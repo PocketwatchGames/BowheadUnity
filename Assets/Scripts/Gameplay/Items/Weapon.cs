@@ -403,6 +403,7 @@ namespace Bowhead {
 				remainingStun = Mathf.Max(0, remainingStun - data.attacks[attackHand].parryResult.stunAbsorb);
 				attacker.Hit(owner, this, data.attacks[attackHand].defendResult, 1, false);
 			}
+            owner.sprintGracePeriodTime = 0;
 
         }
 

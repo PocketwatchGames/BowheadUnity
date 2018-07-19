@@ -639,7 +639,8 @@ namespace Bowhead.Actors {
 
 			bool jumped = false;
 			if (canJump) {
-				if (input.IsPressed(InputType.Jump)) {
+
+                if (input.IsPressed(InputType.Jump)) {
 					sprintTimer = sprintTimer += dt;
 					if (sprintTimer > data.sprintTime) {
 						sprintGracePeriodTime = data.sprintGracePeriodTime;
@@ -1086,27 +1087,33 @@ namespace Bowhead.Actors {
 			water = Mathf.Max(0, water - w);
 		}
 
-		void jump(Vector3 dir) {
+        void jump(Vector3 dir)
+        {
             useStamina(data.jumpStaminaUse);
 
-			float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-			float launchSpeedXZ;
-			if (sprintGracePeriodTime > 0) {
-				launchSpeedXZ = data.sprintSpeed;
-			}
-			else {
-				launchSpeedXZ = curSpeedXZ;
-			}
+            float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
+            float launchSpeedXZ;
+            if (sprintGracePeriodTime > 0) {
+                launchSpeedXZ = data.sprintSpeed;
+            } else {
+                launchSpeedXZ = curSpeedXZ;
+            }
 
-			float jumpSpeedXZ = Mathf.Sqrt(dir.x * dir.x + dir.z * dir.z);
-			velocity += dir;
-			float combinedSpeedXZ =curSpeedXZ + jumpSpeedXZ;
+            float jumpSpeedXZ = Mathf.Sqrt(dir.x * dir.x + dir.z * dir.z);
+            velocity += dir;
+            float combinedSpeedXZ = curSpeedXZ + jumpSpeedXZ;
 
 
-			float velY = velocity.y;
+            float velY = velocity.y;
             float newSpeedXZ = Mathf.Min(launchSpeedXZ, combinedSpeedXZ);
             velocity = velocity.normalized * newSpeedXZ;
             velocity.y = velY;
+        }
+        protected void dodge(Vector3 dir)
+        {
+            useStamina(data.jumpStaminaUse);
+            velocity += dir * data.sprintSpeed;
+            dodgeTimer = dodgeTimer + data.dodgeTime;
         }
 
         public void stun(float s) {

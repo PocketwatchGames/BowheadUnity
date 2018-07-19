@@ -284,15 +284,25 @@ namespace Bowhead.Actors {
 				itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
 			}
 			if (canAttack) {
-				if (itemLeft != null) {
-					if (itemLeft.CanCast()) {
-						if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
-							itemLeft.Attack(this);
-							isCasting = true;
-						}
-					}
-				}
-				if (itemRight != null) {
+                if (itemLeft != null) {
+                    if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
+                        itemLeft.parryTime = 0;
+                        if (itemLeft.chargeTime < data.sprintGracePeriodTime) {
+                            if (canJump) {
+                                dodgeTimer = dodgeTimer + data.dodgeTime;
+                                var jumpDir = input.movement;
+                                dodge(jumpDir);
+                            }
+                        }
+                        else { 
+                            if (itemLeft.CanCast()) {
+                                itemLeft.Attack(this);
+                                isCasting = true;
+                            }
+                        }
+                    }
+                }
+                if (itemRight != null) {
 					if (itemRight.CanCast()) {
 						if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
 							itemRight.Attack(this);
