@@ -15,6 +15,27 @@ using Unity.Collections.LowLevel.Unsafe;
 public partial class World {
 	public sealed class Streaming : IDisposable {
 
+		public struct CountersTotal_t {
+			public uint completedJobs;
+			public long chunksGenerated;
+			public long totalTime;
+			public long copyTime;
+			public ChunkTimingData_t chunkTiming;
+		};
+
+		public struct CountersThisFrame_t {
+			public uint submittedJobs;
+			public uint pendingJobs;
+			public uint completedJobs;
+			public uint chunksGenerated;
+			public uint chunksCopiedToScene;
+			public long chunkSceneCopyTime;
+			public ChunkTimingData_t chunkTiming;
+		};
+
+		public CountersThisFrame_t countersThisFrame;
+		public CountersTotal_t countersTotal;
+
 		public enum EAsyncChunkReadResult {
 			Pending,
 			Success,
@@ -132,8 +153,26 @@ public partial class World {
 			return data;
 		}
 
+		long lastTick;
+
 		public void Tick() {
 
+			var tick = Utils.ReadTimestamp();
+
+			if (lastTick == 0) {
+				lastTick = tick;
+			}
+
+			var deltaTick = tick - lastTick;
+
+			lastTick = tick;
+
+			if (_usedJobData != null) {
+				countersTotal.totalTime += deltaTick;
+			}
+			
+			countersThisFrame = default(CountersThisFrame_t);
+			
 			var anyLoading = false;
 
 			foreach (var volume in _streamingVolumes) {
@@ -166,6 +205,10 @@ public partial class World {
 			_loading = anyLoading;
 
 			CompleteJobs();
+
+			for (var j = _usedJobData; j != null; j = j.next) {
+				++countersThisFrame.pendingJobs;
+			}
 
 #if DEBUG_DRAW
 			if (debugDraw) {
@@ -329,6 +372,7 @@ public partial class World {
 		void QueueJobData(ChunkJobData jobData) {
 			jobData.next = _usedJobData;
 			_usedJobData = jobData;
+			++countersThisFrame.submittedJobs;
 		}
 
 		bool ScheduleGenVoxelsJob(Chunk chunk) {
@@ -343,6 +387,12 @@ public partial class World {
 			jobData.chunk = chunk;
 			jobData.hasSubJob = false;
 			chunk.jobData = jobData;
+
+			{
+				var timing = default(ChunkTimingData_t);
+				timing.latency = Utils.ReadTimestamp();
+				chunk.chunkData.timing[0] = timing;
+			}
 
 #if DEBUG_DRAW
 			chunk.dbgDraw.state = EDebugDrawState.GENERATING_VOXELS;
@@ -368,12 +418,14 @@ public partial class World {
 				chunk.jobData.chunk = chunk;
 				chunk.jobData.hasSubJob = false;
 			}
-
 			
 			chunk.jobData.flags = EJobFlags.TRIS;
 
 			if (!(existingJob || chunk.hasVoxelData)) {
 				AddRef(chunk);
+				var timing = default(ChunkTimingData_t);
+				timing.latency = Utils.ReadTimestamp();
+				chunk.chunkData.timing[0] = timing;
 				chunk.jobData.flags |= EJobFlags.VOXELS;
 				chunk.chunkData.Pin();
 				chunk.jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
@@ -381,6 +433,10 @@ public partial class World {
 				chunk.jobData.hasSubJob = true;
 			} else if (existingJob) {
 				chunk.jobData.flags |= EJobFlags.VOXELS;
+			} else { // just measure timing from tris gen
+				var timing = chunk.chunkData.timing[0];
+				timing.latency = Utils.ReadTimestamp();
+				chunk.chunkData.timing[0] = timing;
 			}
 
 			chunk.jobData.jobData.voxelStorage.Pin();
@@ -402,7 +458,9 @@ public partial class World {
 				}
 			}
 
-			chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, JobHandle.CombineDependencies(dependancies));
+			unsafe {
+				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, chunk.chunkData.pinnedTimingData, JobHandle.CombineDependencies(dependancies));
+			}
 			dependancies.Dispose();
 
 #if DEBUG_DRAW
@@ -458,6 +516,8 @@ public partial class World {
 								onChunkVoxelsUpdated?.Invoke(job.chunk);
 								job.chunk.InvokeVoxelsUpdated();
 							}
+							++countersThisFrame.completedJobs;
+							++countersTotal.completedJobs;
 						}
 					}
 
@@ -541,6 +601,14 @@ public partial class World {
 							Release(neighbor);
 						}
 					}
+
+					var timing = chunk.chunkData.timing[0];
+					timing.latency = Utils.ReadTimestamp() - timing.latency;
+
+					++countersTotal.chunksGenerated;
+					countersTotal.chunkTiming += timing;
+					++countersThisFrame.chunksGenerated;
+					countersThisFrame.chunkTiming += timing;
 				}
 			}
 
@@ -565,12 +633,17 @@ public partial class World {
 					chunk.InvokeVoxelsUpdated();
 				}
 				if (chunk.hasTrisData) {
+					var start = Utils.ReadTimestamp();
 					CopyToMesh(job, chunk);
+					var total = Utils.ReadTimestamp() - start;
+					countersThisFrame.chunkSceneCopyTime += total;
+					countersTotal.copyTime += total;
 					if (!chunk.hasLoaded) {
 						onChunkLoaded?.Invoke(chunk);
 					}
 					onChunkTrisUpdated?.Invoke(chunk);
 					chunk.InvokeTrisUpdated();
+					++countersThisFrame.chunksCopiedToScene;
 				}
 			}
 
@@ -578,6 +651,9 @@ public partial class World {
 			job.mmappedChunkData = null;
 
 			_flush = saveFlush;
+
+			++countersTotal.completedJobs;
+			++countersThisFrame.completedJobs;
 		}
 
 		void CopyToMesh(ChunkJobData jobData, Chunk chunk) {
@@ -1117,6 +1193,7 @@ public partial class World {
 
 			chunk.chunkData.flags[0] = EChunkFlags.NONE;
 			chunk.chunkData.decorationCount[0] = 0;
+			chunk.chunkData.timing[0] = default(ChunkTimingData_t);
 
 			AddChunkToHash(chunk);
 			chunk.refCount = 1;

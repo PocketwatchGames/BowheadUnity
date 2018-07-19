@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
-#define BOUNDS_CHECK
+//#define BOUNDS_CHECK
 //#define NO_SMOOTHING
 
 using System;
@@ -14,6 +14,22 @@ using UnityEngine;
 using static UnityEngine.Debug;
 
 public partial class World {
+	public struct ChunkTimingData_t {
+		public long latency;
+		public long voxelTime;
+		public long verts1;
+		public long verts2;
+
+		public static ChunkTimingData_t operator + (ChunkTimingData_t a, ChunkTimingData_t b) {
+			var z = default(ChunkTimingData_t);
+			z.latency = a.latency + b.latency;
+			z.voxelTime = a.voxelTime + b.voxelTime;
+			z.verts1 = a.verts1 + b.verts1;
+			z.verts2 = a.verts2 + b.verts2;
+			return z;
+		}
+	};
+
 	public struct PinnedChunkData_t {
 		public ChunkStorageArray1D_t voxeldata;
 		public DecorationStorageArray1D_t decorations;
@@ -21,7 +37,10 @@ public partial class World {
 		public unsafe EChunkFlags* pinnedFlags;
 		[NativeDisableUnsafePtrRestriction]
 		public unsafe int* pinnedDecorationCount;
+		[NativeDisableUnsafePtrRestriction]
+		public unsafe ChunkTimingData_t* pinnedTiming;
 		public EChunkFlags flags;
+		public ChunkTimingData_t timing;
 		public int decorationCount;
 		public int valid;
 
@@ -111,16 +130,20 @@ public partial class World {
 			public ChunkStorageArray1D_t pinnedBlockData;
 			public DecorationStorageArray1D_t pinnedDecorationData;
 			public unsafe int* pinnedDecorationCount;
+			public unsafe ChunkTimingData_t* pinnedTimingData;
 			public unsafe EChunkFlags* pinnedFlags;
 			public Voxel_t[] voxeldata;
 			public EChunkFlags[] flags;
 			public Decoration_t[] decorations;
 			public int[] decorationCount;
+			public ChunkTimingData_t[] timing;
 
 			GCHandle _pinnedBlockData;
 			GCHandle _pinnedDecorationData;
 			GCHandle _pinnedDecorationCount;
 			GCHandle _pinnedFlags;
+			GCHandle _pinnedTiming;
+
 			int _pinCount;
 
 			public static ChunkData_t New() {
@@ -128,7 +151,8 @@ public partial class World {
 					voxeldata = new Voxel_t[VOXELS_PER_CHUNK],
 					decorations = new Decoration_t[Decoration_t.MAX_DECORATIONS_PER_CHUNK],
 					decorationCount = new int[1],
-					flags = new EChunkFlags[1]
+					flags = new EChunkFlags[1],
+					timing = new ChunkTimingData_t[1]
 				};
 			}
 
@@ -141,11 +165,13 @@ public partial class World {
 					_pinnedDecorationData = GCHandle.Alloc(decorations, GCHandleType.Pinned);
 					_pinnedDecorationCount = GCHandle.Alloc(decorationCount, GCHandleType.Pinned);
 					_pinnedFlags = GCHandle.Alloc(flags, GCHandleType.Pinned);
+					_pinnedTiming = GCHandle.Alloc(timing, GCHandleType.Pinned);
 					unsafe {
 						pinnedBlockData = ChunkStorageArray1D_t.New((Voxel_t*)_pinnedBlockData.AddrOfPinnedObject().ToPointer(), voxeldata.Length);
 						pinnedDecorationData = DecorationStorageArray1D_t.New((Decoration_t*)_pinnedDecorationData.AddrOfPinnedObject().ToPointer(), decorations.Length);
 						pinnedDecorationCount = (int*)_pinnedDecorationCount.AddrOfPinnedObject().ToPointer();
 						pinnedFlags = (EChunkFlags*)_pinnedFlags.AddrOfPinnedObject().ToPointer();
+						pinnedTimingData = (ChunkTimingData_t*)_pinnedTiming.AddrOfPinnedObject().ToPointer();
 					}
 				}
 			}
@@ -161,6 +187,7 @@ public partial class World {
 					_pinnedDecorationData.Free();
 					_pinnedDecorationCount.Free();
 					_pinnedFlags.Free();
+					_pinnedTiming.Free();
 
 					pinnedBlockData = default(ChunkStorageArray1D_t);
 					pinnedDecorationData = default(DecorationStorageArray1D_t);
@@ -168,6 +195,7 @@ public partial class World {
 					unsafe {
 						pinnedDecorationCount = null;
 						pinnedFlags = null;
+						pinnedTimingData = null;
 					}
 				}
 			}
@@ -181,8 +209,10 @@ public partial class World {
 					decorations = chunk.pinnedDecorationData,
 					pinnedDecorationCount = chunk.pinnedDecorationCount,
 					pinnedFlags = chunk.pinnedFlags,
+					pinnedTiming = chunk.pinnedTimingData,
 					decorationCount = chunk.decorationCount[0],
 					flags = chunk.flags[0],
+					timing = chunk.timing[0],
 					valid = 1
 				};
 			}
@@ -1011,15 +1041,26 @@ public partial class World {
 		struct GenerateFinalVertices_t : IJob {
 			SmoothingVertsIn_t smoothVerts;
 			FinalMeshVerts_t finalVerts;
+			[NativeDisableUnsafePtrRestriction]
+			unsafe ChunkTimingData_t* timing;
 
-			public static GenerateFinalVertices_t New(SmoothingVertsIn_t inVerts, FinalMeshVerts_t outVerts) {
+			public unsafe static GenerateFinalVertices_t New(SmoothingVertsIn_t inVerts, FinalMeshVerts_t outVerts, ChunkTimingData_t* timing) {
 				return new GenerateFinalVertices_t {
 					smoothVerts = inVerts,
-					finalVerts = outVerts
+					finalVerts = outVerts,
+					timing = timing
 				};
 			}
 
 			public void Execute() {
+				var start = Utils.ReadTimestamp();
+				Run();
+				unsafe {
+					timing->verts2 = Utils.ReadTimestamp() - start;
+				}
+			}
+
+			void Run() {
 				finalVerts.Init();
 
 				var numIndices = smoothVerts.counts[0];
@@ -1806,14 +1847,23 @@ public partial class World {
 			}
 
 			public void Execute() {
-
-				_smoothVerts.Init();
-
-				_numVoxels = 0;
+				var start = Utils.ReadTimestamp();
 
 				var chunk = _area[1 + Y_PITCH + Z_PITCH];
 				chunk.flags = chunk.pinnedFlags[0];
+				chunk.timing = chunk.pinnedTiming[0];
 
+				Run(chunk);
+
+				chunk.timing.verts1 = Utils.ReadTimestamp() - start;
+				chunk.pinnedTiming[0] = chunk.timing;
+			}
+
+			void Run(PinnedChunkData_t chunk) {
+				_smoothVerts.Init();
+
+				_numVoxels = 0;
+								
 				if ((chunk.flags & EChunkFlags.SOLID) == 0) {
 					// no solid blocks in this chunk it can't have any visible faces.
 					_smoothVerts.Finish();
@@ -2172,11 +2222,10 @@ public partial class World {
 			return createGenVoxelsJob(pos, NewPinnedChunkData_t(chunkData));
 		}
 
-		public static JobHandle ScheduleGenTrisJob(ref CompiledChunkData jobData, JobHandle dependsOn = default(JobHandle)) {
+		public unsafe static JobHandle ScheduleGenTrisJob(ref CompiledChunkData jobData, ChunkTimingData_t* timing, JobHandle dependsOn = default(JobHandle)) {
 			var genChunkVerts = GenerateChunkVerts_t.New(jobData.smoothVerts, jobData.voxelStorage.voxels, jobData.neighbors, tableStorage).Schedule(dependsOn);
-			return GenerateFinalVertices_t.New(SmoothingVertsIn_t.New(jobData.smoothVerts), jobData.outputVerts).Schedule(genChunkVerts);
+			return GenerateFinalVertices_t.New(SmoothingVertsIn_t.New(jobData.smoothVerts), jobData.outputVerts, timing).Schedule(genChunkVerts);
 		}
-
 		
 	}
 };

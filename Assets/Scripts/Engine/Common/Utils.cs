@@ -1087,18 +1087,22 @@ public static class Utils {
 		return ((double)System.Diagnostics.Stopwatch.GetTimestamp() / (double)System.Diagnostics.Stopwatch.Frequency);
 	}
 
-	static readonly long StopWatchFrequencyPerTick = System.Diagnostics.Stopwatch.Frequency;
-	static readonly long StopWatchFrequencyPerMilli = StopWatchFrequencyPerTick / 1000;
-	static readonly long StopWatchFrequencePerMicro = StopWatchFrequencyPerTick / 1000000;
+	public static readonly long TimestampFrequencyPerTick = System.Diagnostics.Stopwatch.Frequency;
+	public static readonly long TimestampFrequencyPerMilli = TimestampFrequencyPerTick / 1000;
+	public static readonly long TimestampFrequencyPerMicro = TimestampFrequencyPerTick / 1000000;
 
 	public static uint ReadMilliseconds() {
 		var ticks = System.Diagnostics.Stopwatch.GetTimestamp();
-		return (uint)((ticks / StopWatchFrequencyPerMilli) & uint.MaxValue);
+		return (uint)((ticks / TimestampFrequencyPerMilli) & uint.MaxValue);
 	}
 
 	public static uint ReadMicroseconds() {
 		var ticks = System.Diagnostics.Stopwatch.GetTimestamp();
-		return (uint)((ticks / StopWatchFrequencePerMicro) & uint.MaxValue);
+		return (uint)((ticks / TimestampFrequencyPerMicro) & uint.MaxValue);
+	}
+
+	public static long ReadTimestamp() {
+		return System.Diagnostics.Stopwatch.GetTimestamp();
 	}
 
 	public static void FadeOutAndStop(this AudioSource source, float fadeOutTime) {

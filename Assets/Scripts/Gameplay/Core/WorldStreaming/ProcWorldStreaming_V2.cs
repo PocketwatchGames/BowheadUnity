@@ -12,15 +12,25 @@ namespace Bowhead {
 			bool checkSolid;
 
 			public void Execute() {
+
+				unsafe {
+					chunk.timing = chunk.pinnedTiming[0];
+				}
+
+				var start = Utils.ReadTimestamp();
+
 				chunk = GenerateVoxels(cpos, chunk);
 
 				if (checkSolid && IsSolidXZPlane(chunk)) {
 					chunk.flags |= EChunkFlags.SOLID_XZ_PLANE;
 				}
 
+				chunk.timing.voxelTime = Utils.ReadTimestamp() - start;
+
 				unsafe {
 					chunk.pinnedDecorationCount[0] = chunk.decorationCount;
 					chunk.pinnedFlags[0] = chunk.flags;
+					chunk.pinnedTiming[0] = chunk.timing;
 				}
 			}
 

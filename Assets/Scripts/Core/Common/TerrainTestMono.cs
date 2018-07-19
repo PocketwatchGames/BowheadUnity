@@ -18,7 +18,7 @@ public class TerrainTestMono : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		World.Streaming.StaticInit();
-		MainThreadTaskQueue.maxFrameTimeMicroseconds = 4000;
+		MainThreadTaskQueue.maxFrameTimeMicroseconds = int.MaxValue;
 
 		_chunkStreaming = Bowhead.WorldStreaming.NewProceduralWorldStreaming(0, _generator);
 
