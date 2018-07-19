@@ -20,11 +20,11 @@ public class World_ChunkComponent : MonoBehaviour {
 	}
 
 	public void UpdateCollider() {
-		//if (_meshCollider != null) {
-		//	Utils.DestroyComponent(_meshCollider);
-		//}
-		//_meshCollider = gameObject.AddComponent<MeshCollider>();
-		//_meshCollider.sharedMesh = mesh;
+		if (_meshCollider != null) {
+			Utils.DestroyComponent(_meshCollider);
+		}
+		_meshCollider = gameObject.AddComponent<MeshCollider>();
+		_meshCollider.sharedMesh = mesh;
 
 		if (gameObject.layer == Layers.Water) {
 			GetComponent<MeshRenderer>().sharedMaterial = _water;
@@ -33,9 +33,9 @@ public class World_ChunkComponent : MonoBehaviour {
 
 	public void Clear() {
 		mesh.Clear();
-		//if (_meshCollider != null) {
-		//	Utils.DestroyComponent(_meshCollider);
-		//	_meshCollider = null;
-		//}
+		if (_meshCollider != null) {
+			Utils.DestroyComponent(_meshCollider);
+			_meshCollider = null;
+		}
 	}
 }

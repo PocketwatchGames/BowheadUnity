@@ -406,7 +406,7 @@ MonoBehaviour:
   hotKeyShift: 0
   hotKeyAlt: 0
   keepAlive: 0
-  operationMode: 1
+  operationMode: 2
   forceFrameRate: 0
   forcedFrameRate: -1
   background: 1

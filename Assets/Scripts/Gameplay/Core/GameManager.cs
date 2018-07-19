@@ -421,10 +421,6 @@ namespace Bowhead {
 			_fpsCounter = GetComponent<AFPSCounter>();
 			_soundManager = GetComponent<SoundManager>();
 
-#if UNITY_EDITOR
-			_fpsCounter.OperationMode = OperationMode.Normal;
-#endif
-
 			_clientObjectGroup = GameObject.Find("ClientGameObjects");
 			if (_clientObjectGroup == null) {
 				_clientObjectGroup = new GameObject("ClientGameObjects");

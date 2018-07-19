@@ -81,15 +81,17 @@ public class PlayerHUD : MonoBehaviour {
 	void OnGUI() {
 
 		if (_target != null) {
-			if (Input.GetKeyDown(KeyCode.F3)) {
-				showDebug = !showDebug;
+			if (Event.current.type == EventType.KeyDown) {
+				if (Event.current.keyCode == KeyCode.F3) {
+					showDebug = !showDebug;
+				}
 			}
 
 			if (showDebug) {
 				var streaming = _target.world.worldStreaming;
 
 				GUI.contentColor = Color.gray;
-				GUI.Box(new Rect(0, 0, 700, 300), string.Empty);
+				GUI.Box(new Rect(0, 0, 800, 280), string.Empty);
 				GUI.contentColor = Color.yellow;
 				GUILayout.BeginHorizontal();
 				GUILayout.Space(10);
@@ -115,9 +117,9 @@ public class PlayerHUD : MonoBehaviour {
 				{
 					var timing = streaming.countersTotal.chunkTiming;
 					GUILayout.Label("Total:");
-					GUILayout.Label("All Time (us): "  + streaming.countersTotal.totalTime/div + " | Generated: " + streaming.countersTotal.chunksGenerated + " | Copy: " + streaming.countersTotal.copyTime / div + " | CompletedJobs: " + streaming.countersTotal.completedJobs);
-					GUILayout.Label("Chunk (Total us): Latency: " + timing.latency/div + " | GenVoxels: " + timing.voxelTime/div + " | GenVerts: " + timing.verts1/div + " | SmoothVerts: " + timing.verts2/div);
-					GUILayout.Label("Chunk (Avg us)  : Latency: " + timing.latency/div2 + " | GenVoxels: " + timing.voxelTime/div2 + " | GenVerts: " + timing.verts1/div2 + " | SmoothVerts: " + timing.verts2/div2);
+					GUILayout.Label("Time (seconds): " + streaming.countersTotal.totalTime/Utils.TimestampFrequencyPerMilli/1000f + " Generated: " + streaming.countersTotal.chunksGenerated + " | CompletedJobs: " + streaming.countersTotal.completedJobs);
+					GUILayout.Label("Chunk (Total us): Latency: " + timing.latency/div + " | GenVoxels: " + timing.voxelTime/div + " | GenVerts: " + timing.verts1/div + " | SmoothVerts: " + timing.verts2/div + " | Copy: " + streaming.countersTotal.copyTime / div);
+					GUILayout.Label("Chunk (Avg us)  : Latency: " + timing.latency/div2 + " | GenVoxels: " + timing.voxelTime/div2 + " | GenVerts: " + timing.verts1/div2 + " | SmoothVerts: " + timing.verts2/div2 + " | Copy: " + streaming.countersTotal.copyTime / div2);
 				}
 
 				GUILayout.EndVertical();

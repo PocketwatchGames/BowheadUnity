@@ -75,7 +75,7 @@ public partial class World {
 			}
 		}
 #else
-		const int MAX_STREAMING_CHUNKS = 8;
+		const int MAX_STREAMING_CHUNKS = 16;
 #endif
 		public delegate JobHandle CreateGenVoxelsJobDelegate(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
 		public delegate void ChunkGeneratedDelegate(IChunk chunk);
