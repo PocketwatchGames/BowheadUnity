@@ -29,7 +29,7 @@ MonoBehaviour:
       x: 25
       y: 100
     probability: 10
-  - itemClass: {fileID: 11400000, guid: 3cb8976245727274a9669f3751ec78f2, type: 2}
+  - itemClass: {fileID: 11400000, guid: a828a11cb2188564892bcad07625ac80, type: 2}
     count:
       x: 1
       y: 1
@@ -49,7 +49,7 @@ MonoBehaviour:
       x: 1
       y: 1
     probability: 1
-  - itemClass: {fileID: 11400000, guid: 1d4256ad6b874c441bea840879926b1b, type: 2}
+  - itemClass: {fileID: 11400000, guid: 9b9a9ecbf6b5fa74ead39921393ebbaf, type: 2}
     count:
       x: 1
       y: 1

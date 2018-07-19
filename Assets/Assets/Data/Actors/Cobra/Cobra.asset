@@ -16,6 +16,7 @@ MonoBehaviour:
   mapMarker:
     _assetPath: 
     _editorPath: 
+  mapMarkerStyle: 0
   height: 1
   maxHealth: 40
   maxWater: 0
@@ -69,8 +70,8 @@ MonoBehaviour:
   visionWeight: 1
   smellWeight: 3
   hearingWeight: 2
-  dayVisionDistance: 10
-  nightVisionDistance: 10
+  dayVisionDistance: 15
+  nightVisionDistance: 15
   visionAngleExponent: 2
   visionDistanceExponent: 0.5
   visionAngleRange: 55

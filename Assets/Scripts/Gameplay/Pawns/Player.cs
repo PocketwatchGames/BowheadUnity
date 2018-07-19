@@ -95,9 +95,9 @@ namespace Bowhead.Actors {
 			if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRanged;
 			}
-			//if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
-			//	cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
-			//}
+			if (Input.GetButton("ShoulderLeft") || Input.GetAxis("ShoulderLeft") != 0) {
+				cmd.buttons |= 1 << (int)InputType.AttackArmor;
+			}
 			if (Input.GetButton("Interact")) {
                 cmd.buttons |= 1 << (int)InputType.Interact;
             }
@@ -283,7 +283,6 @@ namespace Bowhead.Actors {
 			else {
 				itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
 			}
-			Weapon itemRanged = GetInventorySlot((int)InventorySlot.RANGED) as Weapon;
 			if (canAttack) {
 				if (itemLeft != null) {
 					if (itemLeft.CanCast()) {
@@ -328,6 +327,7 @@ namespace Bowhead.Actors {
 					}
 				}
 
+				Weapon itemRanged = GetInventorySlot((int)InventorySlot.RANGED) as Weapon;
 				if (itemRanged != null) {
 					if (itemRanged.CanCast()) {
 						if (input.IsPressed(InputType.AttackRanged)) {
@@ -340,6 +340,22 @@ namespace Bowhead.Actors {
 								isCasting = true;
 							}
 							itemRanged.chargeTime = 0;
+						}
+					}
+				}
+				Weapon itemArmor = GetInventorySlot((int)InventorySlot.CLOTHING) as Weapon;
+				if (itemArmor != null) {
+					if (itemArmor.CanCast()) {
+						if (input.IsPressed(InputType.AttackArmor)) {
+							itemArmor.Charge(dt, 0);
+							isCasting = true;
+						}
+						else {
+							if (input.inputs[(int)InputType.AttackArmor] == InputState.JustReleased) {
+								itemArmor.Attack(this);
+								isCasting = true;
+							}
+							itemArmor.chargeTime = 0;
 						}
 					}
 				}
@@ -382,6 +398,7 @@ namespace Bowhead.Actors {
 			PickUp(ItemData.Get("Rapier").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
             PickUp(ItemData.Get("Buckler").CreateItem());
+			PickUp(ItemData.Get("Chainmail").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
@@ -512,10 +529,6 @@ namespace Bowhead.Actors {
                 return false;
             }
 
-            if (item is Clothing && GetInventorySlot((int)InventorySlot.CLOTHING) == null) {
-                SetInventorySlot((int)InventorySlot.CLOTHING, item);
-                return true;
-            }
 
             Weapon weapon;
             if ((weapon = item as Weapon) != null) {
@@ -531,10 +544,13 @@ namespace Bowhead.Actors {
 				else if (weapon.data.hand == WeaponData.Hand.RIGHT) {
 					slot = (int)InventorySlot.RIGHT_HAND;
 				}
-				else if (weapon.data.hand == WeaponData.Hand.RANGED) { 
+				else if (weapon.data.hand == WeaponData.Hand.RANGED) {
 					slot = (int)InventorySlot.RANGED;
 				}
-                if (slot >= 0 && GetInventorySlot(slot) == null) {
+				else if (weapon.data.hand == WeaponData.Hand.ARMOR) {
+					slot = (int)InventorySlot.CLOTHING;
+				}
+				if (slot >= 0 && GetInventorySlot(slot) == null) {
                     SetInventorySlot(slot, item);
                     return true;
                 }
@@ -590,8 +606,7 @@ namespace Bowhead.Actors {
                 return false;
             }
 
-            if (item is Clothing
-                || item is Pack
+            if (item is Pack
                 || item is Weapon) {
                 return Equip(item);
             }
@@ -634,24 +649,6 @@ namespace Bowhead.Actors {
 
 			//////////////////
 			// EQUIP
-            Clothing clothing;
-            if ((clothing = item as Clothing) != null) {
-                if (GetInventorySlot((int)InventorySlot.CLOTHING) == null) {
-                    SetInventorySlot((int)InventorySlot.CLOTHING, item);
-                    return true;
-                }
-                else {
-                    if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
-                        if (GetInventorySlot((int)InventorySlot.CLOTHING) != null) {
-                            SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.CLOTHING));
-                        }
-                        SetInventorySlot((int)InventorySlot.CLOTHING, item);
-                        return true;
-                    }
-                }
-                return false;
-            }
-
             Weapon weapon;
             if ((weapon = item as Weapon) != null) {
 
@@ -667,6 +664,24 @@ namespace Bowhead.Actors {
 								SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.RANGED));
 							}
 							SetInventorySlot((int)InventorySlot.RANGED, item);
+							return true;
+						}
+					}
+					return false;
+				}
+
+				// clothing
+				if (weapon.data.hand == WeaponData.Hand.ARMOR) {
+					if (GetInventorySlot((int)InventorySlot.CLOTHING) == null) {
+						SetInventorySlot((int)InventorySlot.CLOTHING, item);
+						return true;
+					}
+					else {
+						if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
+							if (GetInventorySlot((int)InventorySlot.CLOTHING) != null) {
+								SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.CLOTHING));
+							}
+							SetInventorySlot((int)InventorySlot.CLOTHING, item);
 							return true;
 						}
 					}

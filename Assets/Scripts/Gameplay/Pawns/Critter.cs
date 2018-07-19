@@ -340,7 +340,7 @@ namespace Bowhead.Actors {
 			panic = 1;
 		}
 
-        float CanSmell(Player player) {
+        public float CanSmell(Player player) {
             float basicSmellDist = 1;
 
             var diff = position - player.position;
@@ -365,7 +365,7 @@ namespace Bowhead.Actors {
 
             return Math.Max(smell, windCarrySmell);
         }
-		float CanHear(Pawn player) {
+		public float CanHear(Pawn player) {
 			if (player.mount != null) {
 				player = player.mount;
 			}

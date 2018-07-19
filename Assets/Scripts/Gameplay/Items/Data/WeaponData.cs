@@ -10,7 +10,8 @@ namespace Bowhead {
             LEFT,
             RIGHT,
             BOTH,
-            RANGED
+            RANGED,
+			ARMOR
         }
 
 		public enum Spell {
@@ -83,6 +84,8 @@ namespace Bowhead {
 		public GameObject_WRef prefab;
         public Hand hand;
 		public float moveSpeedChargeDelay = 0.2f;
+		public float maxHealthBonus;
+		public float maxStaminaBonus;
 
 		public AttackData[] attacks;
 

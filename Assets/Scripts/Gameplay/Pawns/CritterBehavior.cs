@@ -152,8 +152,8 @@ namespace Bowhead.Actors {
 
 					float dist = diff.magnitude;
 
-
-					if (c.CanSee(c.gameMode.players[0].playerPawn) > 0) {
+					var player = c.gameMode.players[0].playerPawn;
+					if (c.CanSee(player) > 0 || c.CanSmell(player) > 0 || c.CanHear(player) > 0) {
 						if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround && weapon.CanCast()) {
 							input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
 						}

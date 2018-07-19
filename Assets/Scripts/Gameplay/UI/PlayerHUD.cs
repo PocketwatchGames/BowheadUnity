@@ -35,7 +35,7 @@ public class PlayerHUD : MonoBehaviour {
 		float wm = 0;
 		for (int i=0;i<Player.MaxInventorySize;i++) {
 			var weapon = _target.GetInventorySlot(i) as Bowhead.Weapon;
-			if (weapon != null) {
+			if (weapon != null && weapon.chargeTime > 0) {
 				wm = Mathf.Max(wm, weapon.GetChargeMultiplier(_target, weapon.chargeTime));
 			}
 		}

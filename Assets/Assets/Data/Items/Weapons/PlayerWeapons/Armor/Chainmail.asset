@@ -9,53 +9,60 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c384a6b4c08e5e479f79662660fc81f, type: 3}
-  m_Name: SpellHeal
+  m_Name: Chainmail
   m_EditorClassIdentifier: 
   version: 0
-  _index: 5
-  description: Healing spell
-  monetaryValue: 10
+  _index: 18
+  description: 
+  monetaryValue: 0
   prefab:
     _assetPath: 
     _editorPath: 
-  hand: 3
-  moveSpeedChargeDelay: 0
+  hand: 4
+  moveSpeedChargeDelay: 0.2
+  maxHealthBonus: 50
+  maxStaminaBonus: 0
   attacks:
   - chargeTime: 0
     maxCharge: 0
-    castTime: 0
-    activeTime: 0
-    cooldown: 0.5
-    cooldownNextAttackQueueTime: 0.1
+    castTime: 0.2
+    activeTime: 0.5
+    cooldown: 2
+    cooldownNextAttackQueueTime: 0
     range: 0
-    radius: 0
-    staminaUse: 0
+    radius: 4
+    staminaUse: 10
     stepDistance: 0
-    moveSpeedWhileCharging: 0
+    moveSpeedWhileCharging: 0.8
     moveSpeedWhileFullyCharged: 0
     canMoveDuringCooldown: 1
-    canMoveDuringCast: 1
-    canMoveDuringActive: 1
+    canMoveDuringCast: 0
+    canMoveDuringActive: 0
     unblockable: 0
     interruptOnHit: 0
     canBackstab: 0
-    spell: 1
-    spellPower: 1
-    waterUse: 10
+    spell: 0
+    spellPower: 0
+    waterUse: 5
+    canTarget: 0
     projectile: {fileID: 0}
     projectileSpeed: 0
     attackResult:
-      knockback: 0
+      knockback: 5
       damage: 0
-      stun: 0
-      interrupt: 0
-      damageType: 0
+      stun: 10
+      interrupt: 1
+      damageType: 1
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
     backstabResult:
       knockback: 0
       damage: 0
       stun: 0
       interrupt: 0
       damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
     canDefend: 0
     defendAngleRange: 0
     defendResult:
@@ -64,6 +71,8 @@ MonoBehaviour:
       stun: 0
       interrupt: 0
       damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
       stunAbsorb: 0
       damageAbsorb: 0
       staminaUse: 0
@@ -75,6 +84,8 @@ MonoBehaviour:
       stun: 0
       interrupt: 0
       damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
       stunAbsorb: 0
       damageAbsorb: 0
       staminaUse: 0

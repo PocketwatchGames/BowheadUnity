@@ -32,6 +32,9 @@ namespace Bowhead {
 			return castTime == 0 && activeTime == 0 && cooldown <= data.attacks[attackHand].cooldownNextAttackQueueTime;
 		}
 
+
+
+
 		public override void OnSlotChange(int newSlot, int oldSlot, Pawn owner) {
             castTime = 0;
             chargeTime = 0;
@@ -49,7 +52,27 @@ namespace Bowhead {
 					UpdateAnimation(owner);
                 }
             }
-        }
+
+			if (oldSlot < (int)Player.InventorySlot.PACK) {
+				if (data.maxStaminaBonus > 0) {
+					owner.maxStamina -= data.maxStaminaBonus;
+					owner.stamina = Mathf.Min(owner.stamina, owner.maxStamina);
+				}
+				if (data.maxHealthBonus > 0) {
+					owner.maxHealth -= data.maxHealthBonus;
+					owner.health = Mathf.Min(owner.health, owner.maxHealth);
+				}
+			}
+			if (newSlot < (int)Player.InventorySlot.PACK) {
+				if (data.maxStaminaBonus > 0) {
+					owner.maxStamina += data.maxStaminaBonus;
+				}
+				if (data.maxHealthBonus > 0) {
+					owner.maxHealth += data.maxHealthBonus;
+				}
+			}
+
+		}
 		public void Charge(float dt, int hand) {
 
 			if (hand >= data.attacks.Length) {
