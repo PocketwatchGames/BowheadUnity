@@ -879,23 +879,12 @@ public partial class World {
 			public WorldChunkPos_t nextPos;
 			public Streaming streaming;
 
-			int IVolume.xzSize {
-				get {
-					return xzSize;
-				}
-			}
+			int IVolume.xzSize => xzSize;
+			int IVolume.yUp => yUp;
+			int IVolume.yDown => yDown;
 
-			int IVolume.yUp {
-				get {
-					return yUp;
-				}
-			}
-
-			int IVolume.yDown {
-				get {
-					return yDown;
-				}
-			}
+			int IVolume.totalChunkCount => count;
+			int IVolume.loadedChunkCount => loadNext;
 
 			WorldChunkPos_t IVolume.position {
 				get {
@@ -990,6 +979,8 @@ public partial class World {
 			int xzSize { get; }
 			int yUp { get; }
 			int yDown { get; }
+			int totalChunkCount { get; }
+			int loadedChunkCount { get; }
 		};
 
 		public interface IChunk {

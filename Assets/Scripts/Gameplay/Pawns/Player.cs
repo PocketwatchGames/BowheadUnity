@@ -411,6 +411,8 @@ namespace Bowhead.Actors {
 			Respawn();
 		}
 
+		public World.Streaming.IVolume worldStreaming => _worldStreaming;
+
 		protected override void Dispose(bool disposing) {
 			base.Dispose(disposing);
 			if (_worldStreaming != null) {

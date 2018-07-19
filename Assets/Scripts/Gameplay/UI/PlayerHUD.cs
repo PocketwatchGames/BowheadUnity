@@ -18,6 +18,7 @@ public class PlayerHUD : MonoBehaviour {
 
     private Player _target;
 	private float _changeTimerWater, _changeTimerHealth;
+	float totalTime;
 
     void LateUpdate()
     {
@@ -70,9 +71,18 @@ public class PlayerHUD : MonoBehaviour {
 		_changeTimerHealth = Mathf.Max(0, _changeTimerHealth - Time.deltaTime);
 		_changeTimerWater = Mathf.Max(0, _changeTimerWater - Time.deltaTime);
 
+		if (_target.worldStreaming.loadedChunkCount < _target.worldStreaming.totalChunkCount) {
+			totalTime += Time.deltaTime;
+		}
 	}
 
 
+	void OnGUI() {
+
+		if (_target != null) {
+			GUILayout.Label("Chunk Debug: " + _target.worldStreaming.loadedChunkCount + "/" + _target.worldStreaming.totalChunkCount + " " + totalTime + " second(s).");
+		}
+	}
 
 
 	public void SetTarget(Player p)
