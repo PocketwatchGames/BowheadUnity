@@ -6,13 +6,13 @@ using System.Collections;
 namespace Bowhead {
 	public class ClientMonoBehaviour : MonoBehaviourEx {
 
-		enum EWhenRunOnServer {
+		protected enum EWhenRunOnServer {
 			DestroyComponent,
 			DestroyGameObject
 		}
 
 		[SerializeField]
-		EWhenRunOnServer _whenRunOnServer;
+		protected EWhenRunOnServer _whenRunOnServer;
 
 		void Start() {
 			if (GameManager.instance.clientWorld == null) {
