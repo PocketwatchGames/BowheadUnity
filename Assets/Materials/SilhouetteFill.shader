@@ -18,9 +18,10 @@
 			{
 				Ref 1
 				Comp NotEqual
-				Pass Keep
+				Pass Replace
 				ZFail Keep
 			}
+			Blend SrcAlpha OneMinusSrcAlpha
 
 			CGPROGRAM
 			#pragma vertex vert
