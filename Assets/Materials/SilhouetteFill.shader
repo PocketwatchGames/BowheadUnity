@@ -2,6 +2,7 @@
 {
 	Properties
 	{
+		_MainTex("", 2D) = "white" {}
 		_Color ("Color", Color) = (1,1,1,1)
 	}
 	SubShader
@@ -37,7 +38,11 @@
 			struct v2f
 			{
 				float4 vertex : SV_POSITION;
+				float4 screenPos : TEXTURE0;
 			};
+
+			sampler2D _MainTex;
+			float4 _MainTex_ST;
 
 			fixed4 _Color;
 			
@@ -45,12 +50,16 @@
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
+				o.screenPos = o.vertex;
+				o.screenPos.y *= _ProjectionParams.x;
+				o.screenPos.xy = TRANSFORM_TEX(o.screenPos.xy, _MainTex);
 				return o;
 			}
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				return _Color;
+				float2 uv = (i.screenPos.xy / i.screenPos.w) * 0.5f + 0.5f;
+				return _Color * tex2D(_MainTex, uv);
 			}
 			ENDCG
 		}
