@@ -109,10 +109,13 @@ namespace Bowhead {
 		public Material silhouetteStencil;
 		public Material silhouetteFill;
         public DamageIndicator damageIndicatorPrefab;
+        public WorldHUD worldHUDPrefab;
 		public PawnHUD critterHudPrefab;
         public PlayerHUD playerHudPrefab;
         public WeaponChargeHUD weaponChargePrefab;
         public DamageHUD damageHUDPrefab;
+        public DirectionPreview directionPreviewPrefab;
+
         public bool isDualAnalogAiming;
 
 		public Canvas dialogDarkenCanvasPrefab;
