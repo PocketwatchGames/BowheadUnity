@@ -74,7 +74,12 @@ namespace Bowhead.Actors {
             Vector2 look;
             if (Input.GetJoystickNames().Length == 0)
             {
-                look = new Vector2(Input.GetAxis("MouseAxis1"), Input.GetAxis("MouseAxis2"));
+                look = new Vector2(Input.GetAxis("MouseAxis1"), -Input.GetAxis("MouseAxis2"));
+                if (look != Vector2.zero) {
+                    look.Normalize();
+                } else {
+                    look = new Vector2(Mathf.Cos(yaw), -Mathf.Sin(yaw));
+                }
             }
             else {
                 look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
