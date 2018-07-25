@@ -59,10 +59,11 @@ namespace Bowhead {
 				return _mode;
 			}
 			set {
+				var wasEnabled = enabled;
 				if (_mode != value) {
 					_mode = value;
 					enabled = _mode != Mode.Off;
-					if (enabled) {
+					if (enabled && wasEnabled) {
 						SetDirty();
 					}
 				}

@@ -36,8 +36,9 @@ namespace Bowhead {
 		}
 
 		public void RemoveRenderer(SilhouetteRenderer r) {
-			_renderers.Remove(r);
-			_dirty = false;
+			if (_renderers.Remove(r)) {
+				_dirty = true;
+			}
 		}
 
 		public void SetDirty() {

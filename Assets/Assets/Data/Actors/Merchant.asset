@@ -17,6 +17,7 @@ MonoBehaviour:
     _assetPath: MapMarkers/MapFlagMarker
     _editorPath: Assets/Assets/Prefabs/Resources/MapMarkers/MapFlagMarker.prefab
   mapMarkerStyle: 0
+  defaultSilhouetteMode: 2
   height: 3
   maxHealth: 100
   maxWater: 0
@@ -65,6 +66,7 @@ MonoBehaviour:
   prefab:
     _assetPath: Actors/NPC
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/NPC.prefab
+  silhouetteDistanceThreshold: 10
   waryLimit: 0
   investigateLimit: 0
   visionWeight: 2
