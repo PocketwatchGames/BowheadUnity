@@ -31,6 +31,8 @@ MonoBehaviour:
   cameraData: {fileID: 11400000, guid: 9f5732a9f5058c0418bd06e7d5567846, type: 2}
   damageIndicatorPrefab: {fileID: 114126637162118058, guid: a944dab8f4adb1546844427b8483b470,
     type: 2}
+  worldHUDPrefab: {fileID: 114473802706628340, guid: d95421c0413dc2c4aa7c14e1bc4e5e4e,
+    type: 2}
   critterHudPrefab: {fileID: 114538792139021752, guid: 7e0094bb443e9be4384385e0d360801e,
     type: 2}
   playerHudPrefab: {fileID: 114773707752257948, guid: 9feb1d324adb7f24aa71aa15501b1391,
@@ -38,6 +40,8 @@ MonoBehaviour:
   weaponChargePrefab: {fileID: 114941436716662276, guid: 6871fdeecd0cd6942a256764f5cead43,
     type: 2}
   damageHUDPrefab: {fileID: 114778370284363310, guid: b334024714589fc4db1781e269cde89a,
+    type: 2}
+  directionPreviewPrefab: {fileID: 114308667210803786, guid: 2828d6d684d38d94dbb034260d667517,
     type: 2}
   isDualAnalogAiming: 1
   dialogDarkenCanvasPrefab: {fileID: 0}

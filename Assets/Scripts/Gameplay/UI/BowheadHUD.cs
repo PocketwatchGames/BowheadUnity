@@ -11,7 +11,7 @@ namespace Bowhead.Client.UI {
 		Map _worldmap;
         Compass _compass;
 
-		GameObject _pawnHUDs;
+        GameObject _pawnHUDs;
         GameObject _playerHUD;
         WeaponChargeHUD _weaponChargeLeft, _weaponChargeRight;
 
@@ -59,8 +59,11 @@ namespace Bowhead.Client.UI {
 			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
 			_weaponChargeLeft = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
 			_weaponChargeRight = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
-			_pawnHUDs = new GameObject();
+			_pawnHUDs = new GameObject("PawnHuds");
 			_pawnHUDs.transform.parent = hudCanvas.transform;
+
+            _playerHUD = new GameObject("PlayerHud");
+            _playerHUD.transform.parent = worldHUDCanvas.transform;
 
 			_worldmap.transform.SetAsLastSibling(); // keep world-map on top of everything.
 			_worldmap.gameObject.SetActive(false);
@@ -89,6 +92,8 @@ namespace Bowhead.Client.UI {
 
             var playerHUD = GameObject.Instantiate<PlayerHUD>(GameManager.instance.clientData.playerHudPrefab, _pawnHUDs.transform);
             playerHUD.SetTarget(player);
+            var directionPreview = GameObject.Instantiate<DirectionPreview>(GameManager.instance.clientData.directionPreviewPrefab, _playerHUD.transform);
+            directionPreview.SetTarget(player);
         }
 
         public void OnCritterActive(Critter critter) {
