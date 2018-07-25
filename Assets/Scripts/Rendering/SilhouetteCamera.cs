@@ -40,12 +40,22 @@ namespace Bowhead {
 			_dirty = false;
 		}
 
+		public void SetDirty() {
+			_dirty = true;
+		}
+
 		void OnPreRender() {
 			if (_dirty) {
-				_stencil?.Dispose();
-				_stencil = null;
-				_fill?.Dispose();
-				_fill = null;
+				if (_stencil != null) {
+					_camera.RemoveCommandBuffer(CameraEvent.AfterForwardAlpha, _stencil);
+					_stencil.Dispose();
+					_stencil = null;
+				}
+				if (_fill != null) {
+					_camera.RemoveCommandBuffer(CameraEvent.BeforeImageEffects, _fill);
+					_fill.Dispose();
+					_fill = null;
+				}
 
 				if ((_renderers != null) && (_renderers.Count > 0)) {
 					_stencil = new CommandBuffer() {
@@ -60,7 +70,9 @@ namespace Bowhead {
 
 					foreach (var r in _renderers) {
 						r.AddRenderer(_stencil, stencil);
-						r.AddRenderer(_fill, fill);
+						if (r.mode == SilhouetteRenderer.Mode.On) {
+							r.AddRenderer(_fill, fill);
+						}
 					}
 
 					_camera.AddCommandBuffer(CameraEvent.AfterForwardAlpha, _stencil);

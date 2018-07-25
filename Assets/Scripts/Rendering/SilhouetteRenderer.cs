@@ -7,8 +7,15 @@ using UnityEngine.Rendering;
 
 namespace Bowhead {
 	public sealed class SilhouetteRenderer : MonoBehaviour {
+		public enum Mode {
+			Off,
+			Blocking,
+			On
+		};
+
 		Renderer[] _rs;
 		int[] _subMeshCount;
+		Mode _mode;
 
 		public void AddRenderer(CommandBuffer cmdBuffer, Material m) {
 			if (_rs == null) {
@@ -29,6 +36,14 @@ namespace Bowhead {
 			}
 		}
 
+		public void SetDirty() {
+			_rs = null;
+			_subMeshCount = null;
+			if (isActiveAndEnabled) {
+				SilhouetteCamera.instance.SetDirty();
+			}
+		}
+
 		void OnEnable() {
 			SilhouetteCamera.instance.AddRenderer(this);	
 		}
@@ -36,6 +51,21 @@ namespace Bowhead {
 		void OnDisable() {
 			if (SilhouetteCamera.instance != null) {
 				SilhouetteCamera.instance.RemoveRenderer(this);
+			}
+		}
+
+		public Mode mode {
+			get {
+				return _mode;
+			}
+			set {
+				if (_mode != value) {
+					_mode = value;
+					enabled = _mode != Mode.Off;
+					if (enabled) {
+						SetDirty();
+					}
+				}
 			}
 		}
 	}

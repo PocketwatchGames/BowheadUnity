@@ -439,12 +439,12 @@ namespace Bowhead.Actors {
             mapPos = p;
         }
 
-        #endregion
+		#endregion
 
-        #region Tick
+		#region Tick
 
 
-        void UpdateStats(float dt) {
+		void UpdateStats(float dt) {
             //float time = dt / 60 / 24;
             //float sleep = 0;
 

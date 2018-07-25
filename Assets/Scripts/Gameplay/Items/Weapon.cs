@@ -32,9 +32,6 @@ namespace Bowhead {
 			return castTime == 0 && activeTime == 0 && cooldown <= data.attacks[attackHand].cooldownNextAttackQueueTime;
 		}
 
-
-
-
 		public override void OnSlotChange(int newSlot, int oldSlot, Pawn owner) {
             castTime = 0;
             chargeTime = 0;
@@ -50,6 +47,7 @@ namespace Bowhead {
                     var prefab = data.prefab.Load();
                     _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
 					UpdateAnimation(owner);
+					owner.SetSilhouetteDirty();
                 }
             }
 
