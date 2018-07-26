@@ -4,6 +4,9 @@
 	{
 		_MainTex("", 2D) = "white" {}
 		_Color ("Color", Color) = (1,1,1,1)
+		_Ref ("Ref", Int) = 1
+		_ReadMask ("ReadMask", Int) = 255
+		_WriteMask ("WriteMask", Int) = 255
 	}
 	SubShader
 	{
@@ -17,10 +20,12 @@
 			ColorMask RGBA
 			Stencil
 			{
-				Ref 1
+				Ref [_Ref]
 				Comp NotEqual
 				Pass Replace
 				ZFail Keep
+				ReadMask [_ReadMask]
+				WriteMask [_WriteMask]
 			}
 			Blend SrcAlpha OneMinusSrcAlpha
 
