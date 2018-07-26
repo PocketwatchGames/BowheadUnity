@@ -186,7 +186,7 @@ namespace Bowhead.Actors {
 				return;
 			}
 
-			if (IsPanicked()) {
+			if (wary > 0 || IsPanicked()) {
 				if (_defaultSilhouetteMode != SilhouetteRenderer.Mode.On) {
 					_defaultSilhouetteMode = SilhouetteRenderer.Mode.On;
 					silhouetteMode = SilhouetteRenderer.Mode.On;
