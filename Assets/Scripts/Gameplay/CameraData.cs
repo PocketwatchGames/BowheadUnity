@@ -18,4 +18,8 @@ public class CameraData : ScriptableObject {
 	public float turnAccelerationSlowTime = 0.75f;
 	public float leashFollowVelocityRateExplore = 0.15f;
 	public float leashFollowVelocityRateCombat = 0.35f;
+	public float friction = 10.0f;
+	public float combatPitch = 45.0f;
+	public float combatFOV = 55;
+	public float exploreFOV = 65;
 }

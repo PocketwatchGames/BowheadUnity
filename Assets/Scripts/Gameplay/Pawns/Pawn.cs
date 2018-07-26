@@ -101,7 +101,7 @@ namespace Bowhead.Actors {
 		protected event Action<Pawn> onHit;
 
 		Client.UI.IMapMarker _marker;
-		        
+		SilhouetteRenderer _silhouetteRenderer;
         #endregion
 
 
@@ -165,6 +165,8 @@ namespace Bowhead.Actors {
             base.OnGameObjectAttached();
 
             rigidBody = go.GetComponent<Rigidbody>();
+			_silhouetteRenderer = go.GetComponent<SilhouetteRenderer>();
+			silhouetteMode = defaultSilhouetteMode;
         }
 
         public void UpdatePlayerCmd(PlayerCmd_t cmd) {
@@ -993,7 +995,7 @@ namespace Bowhead.Actors {
 
 			for (int i=0;i<Player.MaxInventorySize;i++) {
 				var weapon = GetInventorySlot(i) as Weapon;
-				if (weapon != null) {
+				if (weapon != null && weapon.data.attacks.Length > 0) {
 					if (weapon.data.attacks[weapon.attackHand].maxCharge > 0 && weapon.GetMultiplier(this, weapon.chargeTime) >= weapon.data.attacks[weapon.attackHand].maxCharge) {
 						maxSpeed *= weapon.data.attacks[weapon.attackHand].moveSpeedWhileFullyCharged;
 					}
@@ -1294,34 +1296,42 @@ namespace Bowhead.Actors {
             if (m?.driver != null) {
                 return false;
             }
+
+			if (m == mount) {
+				return true;
+			}
+
             if (mount != null) {
-                mount.driver = null;
+				if (mount.driver != null) {
+					mount.driver.silhouetteMode = mount.driver.defaultSilhouetteMode;
+				}
+				mount.driver = null;
+				mount.silhouetteMode = mount.defaultSilhouetteMode;
+				mount.SetSilhouetteDirty();
             }
 
             mount = m;
 
 			skidding = false;
 
-            if (mount != null) {
-                mount.driver = this;
+			if (mount != null) {
+				mount.SetSilhouetteDirty();
+				mount.silhouetteMode = SilhouetteRenderer.Mode.On;
+				mount.driver = this;
+				silhouetteMode = defaultSilhouetteMode;
+				go.transform.parent = mount.go.transform;
+                go.transform.localPosition = new Vector3(0,1.0f,0);
+				go.transform.localRotation = Quaternion.identity;
+            } else {
+				silhouetteMode = defaultSilhouetteMode;
+				go.transform.parent = null;
             }
 
 			if (this is Player) {
 				(this as Player).stance = Player.Stance.Explore;
 			}
-
-
-			if (mount != null) {
-                go.transform.parent = mount.go.transform;
-                go.transform.localPosition = new Vector3(0,1.0f,0);
-				go.transform.localRotation = Quaternion.identity;
-            }
-            else {
-                go.transform.parent = null;
-            }
-
-
-            return true;
+			
+			return true;
         }
 
 		public void AddStatusEffect(StatusEffectData data, float time) {
@@ -1340,6 +1350,29 @@ namespace Bowhead.Actors {
 				se.time = Mathf.Max(se.time, time);
 			}
             GameManager.instance.clientWorld.OnStatusEffectAdded(this, se);
+		}
+
+		public void SetSilhouetteDirty() {
+			if (_silhouetteRenderer != null) {
+				_silhouetteRenderer.SetDirty();
+			}
+		}
+
+		public SilhouetteRenderer.Mode silhouetteMode {
+			get {
+				return (_silhouetteRenderer != null) ? _silhouetteRenderer.mode : SilhouetteRenderer.Mode.Off;
+			}
+			set {
+				if (_silhouetteRenderer != null) {
+					_silhouetteRenderer.mode = value;
+				}
+			}
+		}
+
+		protected virtual SilhouetteRenderer.Mode defaultSilhouetteMode {
+			get {
+				return data.defaultSilhouetteMode;
+			}
 		}
     }
 }

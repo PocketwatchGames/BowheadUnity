@@ -4,8 +4,7 @@ using UnityEngine;
 using System;
 
 namespace Bowhead.Actors {
-
-
+	
     public class Critter : Pawn<Critter, CritterData> {
 
 		public override System.Type serverType => typeof(Critter);
@@ -32,9 +31,12 @@ namespace Bowhead.Actors {
 
 		#region core
 
+		SilhouetteRenderer.Mode _defaultSilhouetteMode;
+
 		public override void Spawn(EntityData d, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
 			base.Spawn(d, pos, yaw, instigator, owner, team);
 			behaviorPanic = CritterBehavior.Create(data.panicBehavior);
+			_defaultSilhouetteMode = SilhouetteRenderer.Mode.Off;
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
             position = pos;
 			this.yaw = yaw;
@@ -152,6 +154,8 @@ namespace Bowhead.Actors {
                 SetActive(spawnPosition);
             }
 
+			UpdateSilhouette();
+
 			var head = go.GetChildComponent<MeshRenderer>("Head");
 			if (head != null) {
 				if (dodgeTimer > 0) {
@@ -173,6 +177,48 @@ namespace Bowhead.Actors {
 
 
 		}
+
+		void UpdateSilhouette() {
+			if (driver != null) {
+				return;
+			}
+			if (data.defaultSilhouetteMode == SilhouetteRenderer.Mode.Off) {
+				return;
+			}
+
+			if (wary > 0 || IsPanicked()) {
+				if (_defaultSilhouetteMode != SilhouetteRenderer.Mode.On) {
+					_defaultSilhouetteMode = SilhouetteRenderer.Mode.On;
+					silhouetteMode = SilhouetteRenderer.Mode.On;
+				}
+				return;
+			}
+
+			var checkDist = data.silhouetteDistanceThreadholdSq;
+			if (checkDist <= 0) {
+				return;
+			}
+
+			float closest = float.MaxValue;
+
+			foreach (var player in world.GetActorIterator<Player>()) {
+				var d = GetSqDistanceTo(player);
+				closest = Mathf.Min(d, closest);
+			}
+
+			var mode = SilhouetteRenderer.Mode.Off;
+
+			if (closest < data.silhouetteDistanceThreadholdSq) {
+				mode = data.defaultSilhouetteMode;
+			}
+
+			if (mode != _defaultSilhouetteMode) {
+				_defaultSilhouetteMode = mode;
+				silhouetteMode = mode;
+			}
+		}
+
+		protected override SilhouetteRenderer.Mode defaultSilhouetteMode => _defaultSilhouetteMode;
 
 		void CheckDespawn(float maxDist) {
 			float closestDist = maxDist;
@@ -263,32 +309,8 @@ namespace Bowhead.Actors {
 				return input;
 			}
 
-
-			foreach (var p in world.GetActorIterator<Player>()) {
-
-                if (p.team == team) {
-                    continue;
-                }
-
-				canSmell = CanSmell(p);
-				canHear = CanHear(p);
-				canSee = CanSee(p);
-
-				float awareness = (canSee * data.visionWeight + canSmell * data.smellWeight + canHear * data.hearingWeight) / (data.visionWeight + data.smellWeight + data.hearingWeight);
-
-                float waryIncrease = IsPanicked() ? data.waryIncreaseAtMaxAwarenessWhilePanicked : data.waryIncreaseAtMaxAwareness;
-                waryIncrease *= awareness;
-                if (awareness > 0) {
-					SetWary(wary + dt * waryIncrease, p);
-				}
-                else {
-                    panic = Math.Max(0, panic - dt / data.panicCooldownTime);
-                    wary = Math.Max(0, wary - dt / data.waryCooldownTime);
-
-                }
-
-            }
-
+			UpdatePanic(dt);
+			
             input.look = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
             if (IsPanicked()) {
                 if (behaviorPanic != null) {
@@ -318,7 +340,37 @@ namespace Bowhead.Actors {
             return input;
         }
 
-		private void OnAudioEvent(Pawn origin, float loudness) {
+		protected virtual void UpdatePanic(float dt) {
+			UpdatePanic<Player>(dt);
+		}
+
+		protected void UpdatePanic<T>(float dt) where T: Pawn {
+			foreach (var p in world.GetActorIterator<T>()) {
+
+				if (p.team == team) {
+					continue;
+				}
+
+				canSmell = CanSmell(p);
+				canHear = CanHear(p);
+				canSee = CanSee(p);
+
+				float awareness = (canSee * data.visionWeight + canSmell * data.smellWeight + canHear * data.hearingWeight) / (data.visionWeight + data.smellWeight + data.hearingWeight);
+
+				float waryIncrease = IsPanicked() ? data.waryIncreaseAtMaxAwarenessWhilePanicked : data.waryIncreaseAtMaxAwareness;
+				waryIncrease *= awareness;
+				if (awareness > 0) {
+					SetWary(wary + dt * waryIncrease, p);
+				} else {
+					panic = Math.Max(0, panic - dt / data.panicCooldownTime);
+					wary = Math.Max(0, wary - dt / data.waryCooldownTime);
+
+				}
+
+			}
+		}
+
+		protected virtual void OnAudioEvent(Pawn origin, float loudness) {
 
 			Player player = origin as Player;
 			if (player == null) {
@@ -335,12 +387,12 @@ namespace Bowhead.Actors {
 			SetWary(wary + playerSound, origin);
 		}
 
-		private void OnHit(Pawn attacker) {
+		protected virtual void OnHit(Pawn attacker) {
 			SetWary(data.investigateLimit, attacker);
 			panic = 1;
 		}
 
-        public float CanSmell(Player player) {
+        public float CanSmell(Pawn player) {
             float basicSmellDist = 1;
 
             var diff = position - player.position;
@@ -397,7 +449,7 @@ namespace Bowhead.Actors {
 
             return playerSound;
         }
-        public float CanSee(Player player) {
+        public float CanSee(Pawn player) {
             var diff = player.position - position;
             float dist = diff.magnitude;
 

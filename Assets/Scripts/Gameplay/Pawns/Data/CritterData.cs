@@ -11,6 +11,7 @@ namespace Bowhead.Actors {
 		string _critterClass;
 
 		public GameObject_WRef prefab;
+		public float silhouetteDistanceThreshold;
 		public float waryLimit;
 		public float investigateLimit;
 		public float visionWeight;
@@ -37,6 +38,8 @@ namespace Bowhead.Actors {
 
 		public Type critterClass { get; private set; }
 
+		float _silhouetteDistanceSq;
+
 		public override void OnAfterDeserialize() {
 			base.OnAfterDeserialize();
 
@@ -45,6 +48,8 @@ namespace Bowhead.Actors {
 			} else {
 				critterClass = Type.GetType(_critterClass);
 			}
+
+			_silhouetteDistanceSq = silhouetteDistanceThreshold*silhouetteDistanceThreshold;
 		}
 
 		public T Spawn<T>(World world, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) where T: Critter {
@@ -78,5 +83,6 @@ namespace Bowhead.Actors {
 			return Spawn<Critter>(world, pos, yaw, null, null, team);
 		}
 
+		public float silhouetteDistanceThreadholdSq => _silhouetteDistanceSq;
 	};
 }

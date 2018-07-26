@@ -29,11 +29,8 @@ namespace Bowhead {
 		}
 
 		public bool CanCast() {
-			return castTime == 0 && activeTime == 0 && cooldown <= data.attacks[attackHand].cooldownNextAttackQueueTime;
+			return castTime == 0 && activeTime == 0 && data.attacks.Length > 0 && cooldown <= data.attacks[attackHand].cooldownNextAttackQueueTime;
 		}
-
-
-
 
 		public override void OnSlotChange(int newSlot, int oldSlot, Pawn owner) {
             castTime = 0;
@@ -50,6 +47,7 @@ namespace Bowhead {
                     var prefab = data.prefab.Load();
                     _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
 					UpdateAnimation(owner);
+					owner.SetSilhouetteDirty();
                 }
             }
 
@@ -75,6 +73,10 @@ namespace Bowhead {
 		}
 		public void Charge(float dt, int hand) {
 
+			if (data.attacks.Length == 0) {
+				return;
+			}
+
 			if (hand >= data.attacks.Length) {
 				hand = 0;
 			}
@@ -84,7 +86,7 @@ namespace Bowhead {
 			}
 			attackHand = hand;
 
-			if (hand == 0 && data.attacks[attackHand].canParry && chargeTime == 0) {
+			if (attackHand == 0 && data.attacks[attackHand].canParry && chargeTime == 0) {
 				parryTime = data.attacks[attackHand].parryTime;
 			}
 
@@ -98,6 +100,11 @@ namespace Bowhead {
 
 
 		public bool Attack(Pawn owner) {
+
+			if (data.attacks.Length == 0) {
+				return false;
+			}
+
             if (!CanCast()) {
                 return false;
             }

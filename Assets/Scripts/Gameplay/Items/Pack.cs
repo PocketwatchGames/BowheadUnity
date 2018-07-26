@@ -26,6 +26,7 @@ namespace Bowhead {
             if (data.prefab != null && owner != null && newSlot >= 0) {
                 var prefab = data.prefab.Load();
                 _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
+				owner.SetSilhouetteDirty();
             }
         }
 

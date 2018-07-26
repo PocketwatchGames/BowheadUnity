@@ -13,10 +13,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 3
+  mapMarker:
+    _assetPath: 
+    _editorPath: 
+  mapMarkerStyle: 0
+  defaultSilhouetteMode: 2
   height: 3
   maxHealth: 100
   maxWater: 0
   maxStamina: 200
+  minStamina: 0
   recoveryTime: 1
   staminaRechargeTime: 3
   staminaRechargeTimeDuringRecovery: 0
@@ -55,11 +61,12 @@ MonoBehaviour:
   swimMaxSpeed: 10
   swimDragVertical: 2
   swimDragHorizontal: 0.25
-  _critterClass: Bowhead.Actors.Critter, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+  _critterClass: Bowhead.Actors.Horse, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   prefab:
     _assetPath: Actors/Horse
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Horse.prefab
+  silhouetteDistanceThreshold: 10
   waryLimit: 0
   investigateLimit: 0
   visionWeight: 2

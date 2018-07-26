@@ -16,6 +16,7 @@ namespace Bowhead.Actors {
 		[Header("Basic")]
 		public GameObject_WRef mapMarker;
 		public Client.UI.EMapMarkerStyle mapMarkerStyle;
+		public SilhouetteRenderer.Mode defaultSilhouetteMode;
 		public float height;
         public float maxHealth;
 		public float maxWater;
