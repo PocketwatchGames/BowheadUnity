@@ -9,14 +9,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f071e989e1573314c849b22c07ccccbe, type: 3}
-  m_Name: LeashCamera
+  m_Name: ExploreCamera
   m_EditorClassIdentifier: 
-  lookAtFriction: 10
-  lookAtAcceleration: 20
-  lookAtLeadDist: 5
-  cameraFriction: 10
+  allowLook: 1
+  lookAtFriction: 20
+  lookAtAcceleration: 100
+  lookAtLeadDist: 0
+  friction: 50
+  leashFollowVelocityRate: 1
   minDistance: 10
-  maxDistance: 20
+  maxDistance: 15
+  pitch: 45
+  fov: 55
+  allowRotation: 1
   turnStopTime: 0.05
   turnAcceleration: 2000
   turnMaxSpeed: 360
