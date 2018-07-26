@@ -5,19 +5,21 @@ using UnityEngine;
 namespace Bowhead.Actors {
     public sealed class CameraController {
 
-        public CameraData data;
+		public CameraData exploreData;
+		public CameraData combatData;
 
-        private float _yaw;
+		private CameraData data;
+
+		private float _yaw;
         private float _pitch;
 		private Vector2 _angularVelocity;
 
 		private Vector2 _angleCorrectionVelocity;
-		private float _desiredFOV, _fovVelocity, _fovAcceleration;
+		private float _fovVelocity, _fovAcceleration;
 
         private Player _target;
         private Vector3 _position;
         private bool _isLooking;
-        private bool _mouseLookActive;
         private float _shakeTime;
         private float _shakeTimeTotal;
         private float _shakeAngleMag;
@@ -39,9 +41,11 @@ namespace Bowhead.Actors {
 
 		Camera _camera;
 
-		public CameraController(Camera camera, CameraData d) {
+		public CameraController(Camera camera, CameraData cData, CameraData eData) {
 			_camera = camera;
-            data = d;
+			combatData = cData;
+			exploreData = eData;
+            data = combatData;
 			Init();
 		}
         
@@ -89,7 +93,7 @@ namespace Bowhead.Actors {
             _isLooking = false;
 
 
-            if (_mouseLookActive) {
+            if (data.allowLook) {
                 var m = Input.mousePosition;
                 var mouseDelta = m - _oldMousePosition;
 
@@ -140,9 +144,9 @@ namespace Bowhead.Actors {
 
 			
 
-			if (!_mouseLookActive) {
+			if (!data.allowLook) {
 				var curAngles = new Vector2(_yaw, _pitch);
-				var desiredAngles = new Vector2(_yaw, Mathf.Deg2Rad * data.combatPitch);
+				var desiredAngles = new Vector2(_yaw, Mathf.Deg2Rad * data.pitch);
 				float angleCorrectionAcceleration = 2;
 				float angleCorrectionTime = 2;
 				var desiredVelocity = (desiredAngles - curAngles) / angleCorrectionTime;
@@ -150,12 +154,9 @@ namespace Bowhead.Actors {
 				curAngles += _angleCorrectionVelocity * dt;
 				_yaw = curAngles.x;
 				_pitch = curAngles.y;
-				_desiredFOV = data.combatFOV;
 			}
-			else {
-				_desiredFOV = data.exploreFOV;
-			}
-            if (_target != null) {
+
+			if (_target != null) {
 				SetMouseLookActive(_target.stance == Player.Stance.Explore);
 
 
@@ -193,7 +194,7 @@ namespace Bowhead.Actors {
                     diff *= minDist;
                     var desiredCameraMove = (_lookAt + diff) - _position;
 
-                    _cameraVelocity -= _cameraVelocity * data.cameraFriction * dt;
+                    _cameraVelocity -= _cameraVelocity * data.friction * dt;
                     _cameraVelocity += desiredCameraMove * dt;
 
                     _position += _cameraVelocity * dt;
@@ -256,23 +257,15 @@ namespace Bowhead.Actors {
 						if (_isAdjustingYaw) {
 							float adjustYawAcceleration = 5;
 
-							float turnToYaw = _adjustYaw-Mathf.Sign(Utils.SignedMinAngleDelta(_adjustYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) * 40 * Mathf.Deg2Rad;
+							float turnToYaw = _adjustYaw - Mathf.Sign(Utils.SignedMinAngleDelta(_adjustYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) * 40 * Mathf.Deg2Rad;
 							float desiredVelocity = Utils.SignedMinAngleDelta(turnToYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg) * Mathf.Deg2Rad * 2;
-							_adjustYawVelocity += (desiredVelocity - _adjustYawVelocity) *dt * adjustYawAcceleration;
-							_yaw = Utils.NormalizeAngle((_yaw +_adjustYawVelocity * dt) * Mathf.Rad2Deg)*Mathf.Deg2Rad;
+							_adjustYawVelocity += (desiredVelocity - _adjustYawVelocity) * dt * adjustYawAcceleration;
+							_yaw = Utils.NormalizeAngle((_yaw + _adjustYawVelocity * dt) * Mathf.Rad2Deg) * Mathf.Deg2Rad;
 						}
 
 						// Mario style leash camera
-						float leashFollowVelocityRate;
-						if (_mouseLookActive) {
-							leashFollowVelocityRate = data.leashFollowVelocityRateExplore;
-						}
-						else {
-							leashFollowVelocityRate = data.leashFollowVelocityRateCombat;
-						}
-						{
-
-							_position += _target.velocity * leashFollowVelocityRate * dt;
+						if (data.allowRotation) {
+							_position += _target.velocity * data.leashFollowVelocityRate * dt;
 
 							diff = _position - _lookAt;
 							diff.y = 0;
@@ -318,7 +311,7 @@ namespace Bowhead.Actors {
 
             }
 
-			_fovVelocity += ((_desiredFOV - _camera.fieldOfView) - _fovVelocity) * _fovAcceleration * dt;
+			_fovVelocity += ((data.fov - _camera.fieldOfView) - _fovVelocity) * _fovAcceleration * dt;
 			_camera.fieldOfView += _fovVelocity * dt;
 
 
@@ -326,20 +319,20 @@ namespace Bowhead.Actors {
         }
 
 		private void SetMouseLookActive(bool a) {
-			if (a == _mouseLookActive) {
+			var newMode = a ? exploreData : combatData;
+			if (data == newMode) {
 				return;
 			}
 			_turnAccelerationTimer = 0;
-			_mouseLookActive = a;
+			data = newMode;
 		}
 
-        void Init() {
+		void Init() {
             _position = Vector3.zero;
 
             _yaw = 0f;
             _pitch = 45f * Mathf.Deg2Rad;
 
-			_desiredFOV = 55;
 			_fovVelocity = 0;
 			_fovAcceleration = 10;
 		}
