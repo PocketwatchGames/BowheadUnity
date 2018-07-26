@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: TerrainMaterial
+  m_Name: TerrainDefault
   m_Shader: {fileID: 4800000, guid: 9960fe4ad03963d448d4ca8bbc5497d3, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4

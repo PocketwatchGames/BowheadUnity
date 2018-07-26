@@ -454,12 +454,17 @@ namespace Bowhead.Actors {
 		public override void SetPosition(Vector3 p) {
 			base.SetPosition(p);
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(p));
-			
+			if (XRayCamera.instance != null) {
+				XRayCamera.instance.origin = p;
+			}
 		}
 
 		protected override void MountMoved() {
 			base.MountMoved();
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(mount.position));
+			if (XRayCamera.instance != null) {
+				XRayCamera.instance.origin = mount.position;
+			}
 		}
 
 		override public void LandOnGround() {
