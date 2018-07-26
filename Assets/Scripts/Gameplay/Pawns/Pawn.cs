@@ -592,13 +592,14 @@ namespace Bowhead.Actors {
                 fallJumpTimer = Math.Max(0, fallJumpTimer - dt);
 
 				if (input.IsPressed(InputType.Jump)) {
-					sprintTimer = sprintTimer += dt;
-				}
-				else if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
                     if (canJump) {
-                        var jumpDir = input.movement * data.sprintSpeed;
-                        jumpDir.y += getGroundJumpVelocity();
-                        jump(jumpDir);
+						if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+							var jumpDir = input.movement * data.sprintSpeed;
+							jumpDir.y += getGroundJumpVelocity();
+							jump(jumpDir);
+						}
+						else {
+						}
                     }
                     fallJumpTimer = 0;
 					sprintTimer = 0;
@@ -643,28 +644,28 @@ namespace Bowhead.Actors {
 
 				if (input.IsPressed(InputType.Dodge)) {
 					if (dodgeCooldown == 0) {
-						if (sprintTimer == 0) {
-							dodgeTimer = dodgeTimer + data.dodgeTime;
-						}
 						sprintTimer = sprintTimer += dt;
 					}
 				}
 				else {
 					if (sprintTimer > 0) {
-						dodgeCooldown = data.dodgeCooldown;
 						if (sprintTimer < data.sprintTime) {
 							if (canJump) {
 								dodgeTimer = dodgeTimer + data.dodgeTime;
-								var jumpDir = input.movement;
+								Vector3 jumpDir;
+								if (input.movement == Vector3.zero) {
+									jumpDir = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
+								} else {
+									jumpDir = input.movement.normalized;
+								}
 								dodge(jumpDir);
+								dodgeCooldown = data.dodgeCooldown;
 							}
 						}
 					}
-					else {
-						dodgeCooldown = Mathf.Max(0, dodgeCooldown - dt);
-					}
 					sprintTimer = 0;
 				}
+				dodgeCooldown = Mathf.Max(0, dodgeCooldown - dt);
 
 
 				if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
@@ -900,12 +901,13 @@ namespace Bowhead.Actors {
                 SetPosition(new Vector3(position.x, floorPosition, position.z));
             }
             else {
+
 				Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
 				velocity = climbingInput * data.climbSpeed;
 				Vector3 move = velocity * dt;
                 Vector3 newPosition = position + move;
 
-                if (move.magnitude > 0) {
+                if (!input.IsPressed(InputType.Dodge) && move.magnitude > 0) {
 
                     bool isOpen = CanMoveTo(move, true, ref newPosition);
 					if (isOpen) {

@@ -21,7 +21,7 @@ MonoBehaviour:
   maxDistance: 20
   pitch: 60
   fov: 75
-  allowRotation: 1
+  allowRotation: 0
   turnStopTime: 0
   turnAcceleration: 1000
   turnMaxSpeed: 90
