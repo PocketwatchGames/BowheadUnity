@@ -89,11 +89,12 @@ namespace Bowhead.Actors {
 
 
 			if (Input.GetButton("Jump")) {
-                cmd.buttons |= 1 << (int)InputType.Jump;
-            }
-            if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
-                cmd.buttons |= 1 << (int)InputType.AttackLeft;
-            }
+				cmd.buttons |= 1 << (int)InputType.Jump;
+			}
+			if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
+				cmd.buttons |= 1 << (int)InputType.Dodge;
+//				cmd.buttons |= 1 << (int)InputType.AttackArmor;
+			}
 			if (Input.GetButton("AttackRight") || Input.GetAxis("RightTrigger") != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
 			}
@@ -101,7 +102,7 @@ namespace Bowhead.Actors {
 				cmd.buttons |= 1 << (int)InputType.AttackRanged;
 			}
 			if (Input.GetButton("ShoulderLeft") || Input.GetAxis("ShoulderLeft") != 0) {
-				cmd.buttons |= 1 << (int)InputType.AttackArmor;
+				cmd.buttons |= 1 << (int)InputType.AttackLeft;
 			}
 			if (Input.GetButton("Interact")) {
                 cmd.buttons |= 1 << (int)InputType.Interact;

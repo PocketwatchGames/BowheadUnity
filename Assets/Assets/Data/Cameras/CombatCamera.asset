@@ -13,17 +13,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allowLook: 0
   lookAtFriction: 15
-  lookAtAcceleration: 50
+  lookAtAcceleration: 100
   lookAtLeadDist: 1
   friction: 20
-  leashFollowVelocityRate: 0
+  leashFollowVelocityRate: 0.5
   minDistance: 15
   maxDistance: 20
   pitch: 60
   fov: 75
-  allowRotation: 0
-  turnStopTime: 0.05
-  turnAcceleration: 2000
-  turnMaxSpeed: 360
-  turnAccelerationFirstTime: 360
+  allowRotation: 1
+  turnStopTime: 0
+  turnAcceleration: 1000
+  turnMaxSpeed: 90
+  turnAccelerationFirstTime: 90
   turnAccelerationSlowTime: 0.75
