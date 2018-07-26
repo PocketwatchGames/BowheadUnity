@@ -142,7 +142,7 @@ namespace Bowhead.Actors {
 
 			if (!_mouseLookActive) {
 				var curAngles = new Vector2(_yaw, _pitch);
-				var desiredAngles = new Vector2(_yaw, Mathf.Deg2Rad * 45);
+				var desiredAngles = new Vector2(_yaw, Mathf.Deg2Rad * data.combatPitch);
 				float angleCorrectionAcceleration = 2;
 				float angleCorrectionTime = 2;
 				var desiredVelocity = (desiredAngles - curAngles) / angleCorrectionTime;
@@ -150,10 +150,10 @@ namespace Bowhead.Actors {
 				curAngles += _angleCorrectionVelocity * dt;
 				_yaw = curAngles.x;
 				_pitch = curAngles.y;
-				_desiredFOV = 55;
+				_desiredFOV = data.combatFOV;
 			}
 			else {
-				_desiredFOV = 65;
+				_desiredFOV = data.exploreFOV;
 			}
             if (_target != null) {
 				SetMouseLookActive(_target.stance == Player.Stance.Explore);
@@ -169,6 +169,9 @@ namespace Bowhead.Actors {
 					var desiredTargetOffset = playerMovement.normalized * data.lookAtLeadDist;
 					_targetOffsetVelocity = _targetOffsetVelocity + ((desiredTargetOffset - _targetOffsetPosition) - _targetOffsetVelocity) * dt * 10;
 					_targetOffsetPosition += _targetOffsetVelocity * dt;
+				}
+				else {
+					_targetOffsetVelocity = Vector3.zero;
 				}
 
 				Vector3 lookAtDiff = (avgPlayerPosition + _targetOffsetPosition) - _lookAt;
@@ -208,7 +211,6 @@ namespace Bowhead.Actors {
 					}
 					else {
 
-						float cameraFriction = 10f;
 
 						_playerPosition = avgPlayerPosition;
 
@@ -231,7 +233,7 @@ namespace Bowhead.Actors {
 
 						var desiredCameraMove = (_lookAt + diff) - _position;
 
-						_cameraVelocity -= _cameraVelocity * cameraFriction * dt;
+						_cameraVelocity -= _cameraVelocity * data.friction * dt;
 						_cameraVelocity += desiredCameraMove * dt;
 
 						_position += _cameraVelocity * dt;
