@@ -40,6 +40,7 @@ namespace Bowhead.Actors {
         public float walkSpeed;
         public float walkStartTime;
         public float walkStopTime;
+		public float dodgeCooldown;
 		public float sprintTime;
 		public float sprintSpeed;
 		public float sprintStaminaUse;
