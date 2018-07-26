@@ -13,7 +13,6 @@ namespace Bowhead.Actors {
     }
     public enum InputType {
         Jump,
-		Dodge,
         Interact,
         Use,
         AttackLeft,
@@ -69,12 +68,12 @@ namespace Bowhead.Actors {
         public float recoveryTimer;
 		public float stunInvulnerabilityTimer;
         public float dodgeTimer;
-		public float dodgeCooldown;
 		public float damageMultiplier;
 
 		[Header("Gameplay")]
         public Activity activity;
 		public float sprintTimer;
+		public float sprintGracePeriodTime;
 		public Vector3 climbingNormal;
 		public Vector3 climbingAttachPoint;
 		public float climbingAttachCooldown;
@@ -592,21 +591,22 @@ namespace Bowhead.Actors {
                 fallJumpTimer = Math.Max(0, fallJumpTimer - dt);
 
 				if (input.IsPressed(InputType.Jump)) {
+					sprintTimer = sprintTimer += dt;
+				}
+				else if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
                     if (canJump) {
-						if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
-							var jumpDir = input.movement * data.sprintSpeed;
-							jumpDir.y += getGroundJumpVelocity();
-							jump(jumpDir);
-						}
-						else {
-						}
+                        var jumpDir = input.movement * data.sprintSpeed;
+                        jumpDir.y += getGroundJumpVelocity();
+                        jump(jumpDir);
                     }
                     fallJumpTimer = 0;
 					sprintTimer = 0;
+					sprintGracePeriodTime = 0;
                 }
             }
 			else {
 				sprintTimer = 0;
+				sprintGracePeriodTime = 0;
 			}
 
 			velocity.y += data.gravity * dt;
@@ -642,44 +642,35 @@ namespace Bowhead.Actors {
 			bool jumped = false;
 			if (canJump) {
 
-				if (input.IsPressed(InputType.Dodge)) {
-					if (dodgeCooldown == 0) {
-						sprintTimer = sprintTimer += dt;
+				if (input.IsPressed(InputType.Jump)) {
+					sprintTimer = sprintTimer += dt;
+					if (sprintTimer > data.sprintTime) {
+						sprintGracePeriodTime = data.sprintGracePeriodTime;
+					}
+					if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+						dodgeTimer = dodgeTimer + data.dodgeTime;
 					}
 				}
 				else {
-					if (sprintTimer > 0) {
-						if (sprintTimer < data.sprintTime) {
-							if (canJump) {
-								dodgeTimer = dodgeTimer + data.dodgeTime;
-								Vector3 jumpDir;
-								if (input.movement == Vector3.zero) {
-									jumpDir = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
-								} else {
-									jumpDir = input.movement.normalized;
-								}
-								dodge(jumpDir);
-								dodgeCooldown = data.dodgeCooldown;
-							}
+					if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
+						if (canJump) {
+							var jumpDir = input.movement * data.sprintSpeed;
+							jumpDir.y += getGroundJumpVelocity();
+							jump(jumpDir);
+							jumped = true;
 						}
+						fallJumpTimer = 0;
 					}
 					sprintTimer = 0;
-				}
-				dodgeCooldown = Mathf.Max(0, dodgeCooldown - dt);
-
-
-				if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
-					var jumpDir = input.movement * data.sprintSpeed;
-					jumpDir.y += getGroundJumpVelocity();
-					jump(jumpDir);
-					jumped = true;
-					fallJumpTimer = 0;
+					sprintGracePeriodTime = Mathf.Max(0, sprintGracePeriodTime - dt);
 				}
 			}
 			else {
 				sprintTimer = 0;
+				sprintGracePeriodTime = 0;
 				dodgeTimer = 0;
 			}
+
 			if (!jumped) {
 				fallJumpTimer = data.fallJumpTime;
 			}
@@ -783,7 +774,12 @@ namespace Bowhead.Actors {
 
 			Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
 
-			maxHorizontalSpeed = horizontalVel.magnitude;
+			if (sprintGracePeriodTime > 0) {
+				maxHorizontalSpeed = Mathf.Max(maxHorizontalSpeed, horizontalVel.magnitude);
+			}
+			else {
+				maxHorizontalSpeed = horizontalVel.magnitude;
+			}
 
 			if (data.sprintTime > 0 && sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
 				useStamina(data.sprintStaminaUse * dt);
@@ -793,6 +789,7 @@ namespace Bowhead.Actors {
         private void UpdateSwimming(float dt, Input_t input) {
 
 			sprintTimer = 0;
+			sprintGracePeriodTime = 0;
 			skidding = false;
 
 
@@ -843,9 +840,10 @@ namespace Bowhead.Actors {
             maxHorizontalSpeed = data.sprintSpeed;
 
 			sprintTimer = 0;
+			sprintGracePeriodTime = 0;
 			skidding = false;
 
-			if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+            if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
 				if (activity != Activity.Falling) {
 					climbingAttachCooldown = data.climbAttachCooldown;
 				}
@@ -872,6 +870,7 @@ namespace Bowhead.Actors {
 							jumpDir += input.movement * data.groundMaxSpeed;
 							jumpDir.y = data.jumpSpeed;
 							maxHorizontalSpeed = data.sprintSpeed;
+							sprintGracePeriodTime = 0.1f;
 						}
 					}
                     jump(jumpDir);
@@ -897,13 +896,12 @@ namespace Bowhead.Actors {
                 SetPosition(new Vector3(position.x, floorPosition, position.z));
             }
             else {
-
 				Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
 				velocity = climbingInput * data.climbSpeed;
 				Vector3 move = velocity * dt;
                 Vector3 newPosition = position + move;
 
-                if (!input.IsPressed(InputType.Dodge) && move.magnitude > 0) {
+                if (move.magnitude > 0) {
 
                     bool isOpen = CanMoveTo(move, true, ref newPosition);
 					if (isOpen) {
@@ -1088,19 +1086,17 @@ namespace Bowhead.Actors {
 			water = Mathf.Max(0, water - w);
 		}
 
-		protected void dodge(Vector3 dir) {
-			useStamina(data.jumpStaminaUse);
-			velocity += dir * data.sprintSpeed;
-			dodgeTimer = dodgeTimer + data.dodgeTime;
-		}
-
-
 		void jump(Vector3 dir) {
             useStamina(data.jumpStaminaUse);
 
 			float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 			float launchSpeedXZ;
-			launchSpeedXZ = curSpeedXZ;
+			if (sprintGracePeriodTime > 0) {
+				launchSpeedXZ = data.sprintSpeed;
+			}
+			else {
+				launchSpeedXZ = curSpeedXZ;
+			}
 
 			float jumpSpeedXZ = Mathf.Sqrt(dir.x * dir.x + dir.z * dir.z);
 			velocity += dir;
