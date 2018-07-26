@@ -190,7 +190,7 @@ namespace Bowhead.Actors {
                 canAttack = false;
             }
 
-            if (activity == Activity.Swimming || activity == Activity.Climbing) {
+            if (activity == Activity.Swimming || activity == Activity.Climbing || dodgeCooldown > 0) {
                 canAttack = false;
             }
 
@@ -230,6 +230,9 @@ namespace Bowhead.Actors {
             var right = Vector3.Cross(Vector3.up, forward);
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
+			if (input.movement.magnitude > 1) {
+				input.movement.Normalize();
+			}
 
 			if (canStrafe) {
 				if (cur.lookFwd != 0 || cur.lookRight != 0) {

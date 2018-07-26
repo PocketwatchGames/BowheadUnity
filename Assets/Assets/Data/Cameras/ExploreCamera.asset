@@ -16,11 +16,11 @@ MonoBehaviour:
   lookAtAcceleration: 100
   lookAtLeadDist: 0
   friction: 50
-  leashFollowVelocityRate: 1
-  minDistance: 10
-  maxDistance: 15
+  leashFollowVelocityRate: 0.25
+  minDistance: 15
+  maxDistance: 25
   pitch: 45
-  fov: 55
+  fov: 75
   allowRotation: 1
   turnStopTime: 0.05
   turnAcceleration: 2000

@@ -735,19 +735,15 @@ namespace Bowhead.Actors {
 
 					desiredAcceleration *= getGroundAcceleration() * block.accelerationModifier;
 
-					// For stopping
-					if (desiredVel == Vector3.zero && velocity.magnitude < data.walkSpeed) {
+					if (desiredVel.magnitude <= data.walkSpeed && !skidding) {
 						// walk acceleration is linear
-						desiredAcceleration = desiredAcceleration.normalized * data.walkSpeed * block.accelerationModifier / data.walkStartTime;
+						desiredAcceleration = desiredAcceleration.normalized*Mathf.Min(slideThreshold, data.walkSpeed * block.accelerationModifier / data.walkStartTime);
 					}
-
-
-					if (desiredAcceleration.magnitude > slideThreshold) {
+					else if (desiredAcceleration.magnitude > slideThreshold) {
 						// if we're sprinting and we change direction quickly, start sliding
 						if (velocity.magnitude > data.groundMaxSpeed * block.speedModifier) {
 							skidding = true;
 						}
-
 					}
 					else {
 						skidding = false;
