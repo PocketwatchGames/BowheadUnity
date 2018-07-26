@@ -995,7 +995,7 @@ namespace Bowhead.Actors {
 
 			for (int i=0;i<Player.MaxInventorySize;i++) {
 				var weapon = GetInventorySlot(i) as Weapon;
-				if (weapon != null) {
+				if (weapon != null && weapon.data.attacks.Length > 0) {
 					if (weapon.data.attacks[weapon.attackHand].maxCharge > 0 && weapon.GetMultiplier(this, weapon.chargeTime) >= weapon.data.attacks[weapon.attackHand].maxCharge) {
 						maxSpeed *= weapon.data.attacks[weapon.attackHand].moveSpeedWhileFullyCharged;
 					}
