@@ -21,6 +21,9 @@ MonoBehaviour:
   maxDistance: 25
   pitch: 45
   fov: 75
+  climbingYawMaxAngle: 30
+  climbingYawAdjustmentAcceleration: 30
+  climbingYawTurnSpeed: 10
   allowRotation: 1
   turnStopTime: 0.05
   turnAcceleration: 2000

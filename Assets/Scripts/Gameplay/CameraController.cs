@@ -255,11 +255,10 @@ namespace Bowhead.Actors {
 						}
 
 						if (_isAdjustingYaw) {
-							float adjustYawAcceleration = 5;
 
-							float turnToYaw = _adjustYaw - Mathf.Sign(Utils.SignedMinAngleDelta(_adjustYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) * 40 * Mathf.Deg2Rad;
-							float desiredVelocity = Utils.SignedMinAngleDelta(turnToYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg) * Mathf.Deg2Rad * 2;
-							_adjustYawVelocity += (desiredVelocity - _adjustYawVelocity) * dt * adjustYawAcceleration;
+							float turnToYaw = _adjustYaw - Mathf.Sign(Utils.SignedMinAngleDelta(_adjustYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) * data.climbingYawMaxAngle * Mathf.Deg2Rad;
+							float desiredVelocity = Utils.SignedMinAngleDelta(turnToYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg) * Mathf.Deg2Rad * data.climbingYawTurnSpeed;
+							_adjustYawVelocity += (desiredVelocity - _adjustYawVelocity) * dt * data.climbingYawAdjustmentAcceleration;
 							_yaw = Utils.NormalizeAngle((_yaw + _adjustYawVelocity * dt) * Mathf.Rad2Deg) * Mathf.Deg2Rad;
 						}
 

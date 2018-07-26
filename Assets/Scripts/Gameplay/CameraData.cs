@@ -18,6 +18,10 @@ public class CameraData : ScriptableObject {
 	public float pitch = 45.0f;
 	public float fov = 55;
 
+	public float climbingYawMaxAngle = 40;
+	public float climbingYawAdjustmentAcceleration = 20;
+	public float climbingYawTurnSpeed = 2;
+
 	[Header("Turning")]
 	public bool allowRotation = true;
 	public float turnStopTime = 0.1f;
