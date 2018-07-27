@@ -57,7 +57,7 @@ Material:
     m_Floats:
     - _BumpScale: 1
     - _Cutoff: 0.5
-    - _CylinderSizeSq: 1
+    - _CylinderSizeSq: 1.6899998
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _GlossMapScale: 1
@@ -73,8 +73,8 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _ClipPlane0: {r: -0.198238, g: -0.6317188, b: -0.7494218, a: -36.85251}
+    - _ClipPlane0: {r: 0.6706364, g: 0, b: 0.7417862, a: 38.991146}
     - _Color: {r: 1, g: 1, b: 1, a: 0.49019608}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Left: {r: 0.7494218, g: 0, b: -0.198238, a: 2.6563647}
-    - _Up: {r: 0.12523067, g: -0.6009313, b: 0.47342384, a: -8.087857}
+    - _Left: {r: -0.427022, g: 0, b: 0.38606343, a: 2.5099814}
+    - _Up: {r: -0.31567794, g: -0.33139277, b: -0.3491691, a: -29.289639}

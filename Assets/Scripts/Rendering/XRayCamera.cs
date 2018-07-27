@@ -61,11 +61,14 @@ namespace Bowhead {
 			SetFloat(ShaderID.CylinderSizeSq, _cylinderSize*_cylinderSize);
 
 			var fwd = (origin - transform.position).normalized;
+			var fwdNoY = fwd;
+			fwdNoY.y = 0;
+			fwdNoY.Normalize();
 
 			var left = Vector3.Cross(fwd, Vector3.up);
 			var up = Vector3.Cross(fwd, left);
 
-			SetVector(ShaderID.ClipPlane0, new Vector4(fwd.x, fwd.y, fwd.z, Vector3.Dot(fwd, origin) + _fwdClipOffset));
+			SetVector(ShaderID.ClipPlane0, new Vector4(fwdNoY.x, fwdNoY.y, fwdNoY.z, Vector3.Dot(fwdNoY, origin) + _fwdClipOffset));
 			SetVector(ShaderID.ClipPlane1, new Vector4(0, -1, 0, -origin.y - _yClipOffset));
 			SetVector(ShaderID.Up, new Vector4(up.x, up.y, up.z, Vector3.Dot(up, origin)));
 			SetVector(ShaderID.Left, new Vector4(left.x, left.y, left.z, Vector3.Dot(left, origin)));

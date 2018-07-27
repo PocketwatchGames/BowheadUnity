@@ -221,9 +221,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _whenRunOnServer: 0
   _xrayClip: {fileID: 2100000, guid: b73a05023ac536b4b8cf8eefe89f3da4, type: 2}
-  _fwdClipOffset: 1
-  _yClipOffset: 0.1
-  _cylinderSize: 1
+  _fwdClipOffset: -1
+  _yClipOffset: -0.9
+  _cylinderSize: 2
   origin: {x: 0, y: 0, z: 0}
 --- !u!1 &399884924
 GameObject:
