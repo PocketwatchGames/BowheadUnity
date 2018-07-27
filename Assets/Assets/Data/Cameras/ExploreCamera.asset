@@ -26,7 +26,8 @@ MonoBehaviour:
   climbingYawTurnSpeed: 10
   allowRotation: 1
   turnStopTime: 0.05
-  turnAcceleration: 2000
+  turnAcceleration: 100
   turnMaxSpeed: 360
-  turnAccelerationFirstTime: 360
+  turnAccelerationFirstTime: 60
   turnAccelerationSlowTime: 0.75
+  turnAccelerationSlowResetTime: 8

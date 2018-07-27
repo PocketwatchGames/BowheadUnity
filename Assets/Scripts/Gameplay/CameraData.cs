@@ -28,5 +28,6 @@ public class CameraData : ScriptableObject {
 	public float turnAcceleration = 360;
 	public float turnMaxSpeed = 360;
 	public float turnAccelerationFirstTime = 360;
-	public float turnAccelerationSlowTime = 0.75f;
+	public float turnAccelerationSlowTime = 0.5f;
+	public float turnAccelerationSlowResetTime = 20;
 }

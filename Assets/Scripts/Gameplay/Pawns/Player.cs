@@ -19,6 +19,7 @@ namespace Bowhead.Actors {
         [Header("Player")]
         public Vector3 spawnPoint;
         public Vector2 mapPos;
+		public Stance desiredStance;
 		public Stance stance;
 		public Pawn tradePartner;
 
@@ -77,14 +78,18 @@ namespace Bowhead.Actors {
                 look = new Vector2(Input.GetAxis("MouseAxis1"), -Input.GetAxis("MouseAxis2"));
                 if (look != Vector2.zero) {
                     look.Normalize();
-                } else {
-                    look = new Vector2(Mathf.Cos(yaw), -Mathf.Sin(yaw));
                 }
             }
             else {
                 look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
-            }
-            cmd.lookFwd = (sbyte)(-look.y * 127);
+				if (look.magnitude > 0.5f) {
+					look.Normalize();
+				}
+				else {
+					look = Vector2.zero;
+				}
+			}
+			cmd.lookFwd = (sbyte)(-look.y * 127);
 			cmd.lookRight = (sbyte)(look.x * 127);
 
 
@@ -238,8 +243,11 @@ namespace Bowhead.Actors {
 					input.look += forward * (float)cur.lookFwd / 127f;
 					input.look += right * (float)cur.lookRight / 127f;
 				}
-				else if (input.movement != Vector3.zero && Input.GetJoystickNames().Length > 0) {
-					input.look = input.movement.normalized;
+				else {
+					input.look = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
+					//if (input.movement != Vector3.zero && Input.GetJoystickNames().Length > 0) {
+					//	input.look = input.movement.normalized;
+					//}
 				}
 			}
 			else {
@@ -280,6 +288,7 @@ namespace Bowhead.Actors {
 				else {
 					stance = Stance.Combat;
 				}
+				desiredStance = stance;
 			}
 
 			bool isCasting = false;
@@ -393,6 +402,7 @@ namespace Bowhead.Actors {
 
 			attackTargetPreview = null;
 			stance = Stance.Explore;
+			desiredStance = Stance.Explore;
 
 			// JOSEPH: this will be better once this is moved into new Actor framework, for now HACK
 			_worldStreaming = GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);

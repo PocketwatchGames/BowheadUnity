@@ -38,6 +38,7 @@ namespace Bowhead.Actors {
 		private float _adjustYawVelocity;
 		private bool _isAdjustingYaw;
 		private float _turnAccelerationTimer;
+		private float _turnAccelerationResetTimer;
 
 		Camera _camera;
 
@@ -92,14 +93,17 @@ namespace Bowhead.Actors {
 
             _isLooking = false;
 
-
-            if (data.allowLook) {
+			if (data.allowLook) {
                 var m = Input.mousePosition;
                 var mouseDelta = m - _oldMousePosition;
 
                 Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
 
 				if (gamepad == Vector2.zero) {
+					_turnAccelerationResetTimer = Mathf.Max(0, _turnAccelerationResetTimer - dt);
+					if (_turnAccelerationResetTimer <= 0) {
+						_turnAccelerationTimer = 0;
+					}
 					if (_angularVelocity.magnitude < 0.1f) {
 						_angularVelocity = Vector2.zero;
 					}
@@ -107,6 +111,7 @@ namespace Bowhead.Actors {
 						_angularVelocity = -_angularVelocity * dt * data.turnStopTime;
 					}
 				} else {
+					_turnAccelerationResetTimer = data.turnAccelerationSlowResetTime;
 					_turnAccelerationTimer += dt;
 					float acceleration;
 					if (_turnAccelerationTimer < data.turnAccelerationSlowTime) {

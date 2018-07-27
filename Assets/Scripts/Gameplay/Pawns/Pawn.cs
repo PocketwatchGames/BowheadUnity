@@ -541,6 +541,15 @@ namespace Bowhead.Actors {
 
 		virtual protected void SetActivity(Activity a) {
 			activity = a;
+			Player p;
+			if ((p = this as Player) != null) {
+				if (activity == Activity.Climbing || activity == Activity.Swimming) {
+					p.stance = Player.Stance.Explore;
+				}
+				else if (mount == null) {
+					p.stance = p.desiredStance;
+				}
+			}
 		}
 
 		protected virtual void MountMoved() {
@@ -1324,8 +1333,15 @@ namespace Bowhead.Actors {
 				go.transform.parent = null;
             }
 
-			if (this is Player) {
-				(this as Player).stance = Player.Stance.Explore;
+			Player p;
+			if ((p = (this as Player)) != null) {
+				if (mount != null) {
+					p.stance = Player.Stance.Explore;
+				}
+				else {
+					p.stance = Player.Stance.Combat;
+					p.desiredStance = Player.Stance.Combat;
+				}
 			}
 			
 			return true;

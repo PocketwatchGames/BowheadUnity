@@ -94,4 +94,6 @@ MonoBehaviour:
   windSpeedBreezy: 8
   maxWindSpeedVariance: 100
   minWindSpeedVariance: 10
+  smellDisperseAngle: 60
+  smellDisperseAnglePower: 2
   secondsPerHour: 60
