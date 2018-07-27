@@ -414,11 +414,15 @@ namespace Bowhead.Actors {
 		public World.Streaming.IVolume worldStreaming => _worldStreaming;
 
 		protected override void Dispose(bool disposing) {
-			base.Dispose(disposing);
 			if (_worldStreaming != null) {
 				_worldStreaming.Dispose();
 				_worldStreaming = null;
 			}
+			if (_xrayChunk != null) {
+				world.worldStreaming.Release(_xrayChunk);
+			}
+
+			base.Dispose(disposing);
 		}
 
 		public void Respawn() {
@@ -453,18 +457,12 @@ namespace Bowhead.Actors {
 
 		public override void SetPosition(Vector3 p) {
 			base.SetPosition(p);
-			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(p));
-			if (XRayCamera.instance != null) {
-				XRayCamera.instance.origin = p;
-			}
+			UpdateStreaming(p);
 		}
 
 		protected override void MountMoved() {
 			base.MountMoved();
-			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(mount.position));
-			if (XRayCamera.instance != null) {
-				XRayCamera.instance.origin = mount.position;
-			}
+			UpdateStreaming(mount.position);
 		}
 
 		override public void LandOnGround() {
@@ -489,6 +487,38 @@ namespace Bowhead.Actors {
 
             OnLand?.Invoke(d);
         }
+
+		World.Streaming.IChunk _xrayChunk;
+
+		void UpdateStreaming(Vector3 p) {
+			if (XRayCamera.instance != null) {
+				XRayCamera.instance.origin = p + Vector3.up;
+			}
+
+			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(p));
+
+			var chunk = world.worldStreaming.GetChunk(_worldStreaming.position);
+			if (chunk != _xrayChunk) {
+				if (_xrayChunk != null) {
+					if (_xrayChunk.component != null) {
+						var rs = _xrayChunk.component.GetComponentsInAllChildren<Renderer>();
+						foreach (var r in rs) {
+							XRayCamera.RemoveXRayRenderer(r);
+						}
+					}
+					world.worldStreaming.Release(_xrayChunk);
+				}
+				_xrayChunk = chunk;
+				if (_xrayChunk.component != null) {
+					var rs = _xrayChunk.component.GetComponentsInAllChildren<Renderer>();
+					foreach (var r in rs) {
+						XRayCamera.AddXRayRenderer(r);
+					}
+				}
+			} else if (chunk != null) {
+				world.worldStreaming.Release(chunk);
+			}
+		}
 
         override protected void Die() {
             health = maxHealth;

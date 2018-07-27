@@ -108,6 +108,7 @@ namespace Bowhead {
         public CameraData cameraData;
 		public Material silhouetteStencil;
 		public Material silhouetteFill;
+		public Material[] xrayMaterials;
         public DamageIndicator damageIndicatorPrefab;
 		public PawnHUD critterHudPrefab;
         public PlayerHUD playerHudPrefab;

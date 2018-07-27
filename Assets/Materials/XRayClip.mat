@@ -24,9 +24,9 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _ReadMask: 255
-    - _Ref: 1
+    - _Ref: 2
     - _WriteMask: 255
     m_Colors:
-    - _ClipPlane0: {r: 0, g: -1, b: 0, a: -32}
-    - _ClipPlane1: {r: -0.7946886, g: 0, b: 0.60701734, a: -0.57467055}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _ClipPlane0: {r: -1, g: 0, b: 0, a: -14.590645}
+    - _ClipPlane1: {r: 0, g: 0, b: 1, a: 32.11867}
+    - _Color: {r: 0.9716981, g: 0, b: 0, a: 0.1764706}

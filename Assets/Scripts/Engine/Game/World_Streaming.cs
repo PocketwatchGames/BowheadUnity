@@ -841,6 +841,7 @@ public partial class World {
 			EChunkFlags IChunk.flags => chunkData.flags[0];
 			Decoration_t[] IChunk.decorations => chunkData.decorations;
 			int IChunk.decorationCount => chunkData.decorationCount[0];
+			World_ChunkComponent IChunk.component => goChunk;
 
 			EChunkFlags IChunkIO.flags {
 				get {
@@ -1069,6 +1070,7 @@ public partial class World {
 			Voxel_t[] voxeldata { get; }
 			Decoration_t[] decorations { get; }
 			int decorationCount { get; }
+			World_ChunkComponent component { get; }
 			event ChunkGeneratedDelegate onChunkVoxelsLoaded;
 			event ChunkGeneratedDelegate onChunkVoxelsUpdated;
 			event ChunkGeneratedDelegate onChunkTrisUpdated;

@@ -31,6 +31,9 @@ MonoBehaviour:
   cameraData: {fileID: 11400000, guid: 9f5732a9f5058c0418bd06e7d5567846, type: 2}
   silhouetteStencil: {fileID: 2100000, guid: adcc579234c3b1443b9ae78036518af6, type: 2}
   silhouetteFill: {fileID: 2100000, guid: e108a9570123b4542a7e10c8fc75c211, type: 2}
+  xrayMaterials:
+  - {fileID: 2100000, guid: f41d80efdaa48c240be21f819c2dcc42, type: 2}
+  - {fileID: 2100000, guid: a42887ae7d1a1b540a40ab5e91eade23, type: 2}
   damageIndicatorPrefab: {fileID: 114126637162118058, guid: a944dab8f4adb1546844427b8483b470,
     type: 2}
   critterHudPrefab: {fileID: 114538792139021752, guid: 7e0094bb443e9be4384385e0d360801e,

@@ -6,7 +6,7 @@ Shader "Unlit/XRayClip"
 	{
 		_MainTex("", 2D) = "white" {}
 		_Color ("Color", Color) = (1,1,1,1)
-		_Ref ("Ref", Int) = 1
+		_Ref ("Ref", Int) = 2
 		_ReadMask ("ReadMask", Int) = 255
 		_WriteMask ("WriteMask", Int) = 255
 		_ClipPlane0("ClipPlane0", Vector) = (1,0,0,0)
@@ -19,26 +19,27 @@ Shader "Unlit/XRayClip"
 
 		Pass
 		{
-			//ZWrite On
-			//ZTest Greater
-			//ZTest Less
-			//ColorMask RGBA
+			ZWrite Off
+			Fog{ Mode off }
+			ZTest Greater
+			ColorMask RGBA
 			Cull Front
-			//Stencil
-			//{
-			//	Ref [_Ref]
-			//	//Comp NotEqual
-			//	Comp Always
-			//	Pass Replace
-			//	ZFail Keep
-			//	ReadMask [_ReadMask]
-			//	WriteMask [_WriteMask]
-			//}
-			//Blend SrcAlpha OneMinusSrcAlpha
-
+			Blend SrcAlpha OneMinusSrcAlpha
+			Stencil
+			{
+				Ref [_Ref]
+				Comp NotEqual
+				Pass Replace
+				ZFail Keep
+				ReadMask [_ReadMask]
+				WriteMask [_WriteMask]
+			}
+			
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
+			#pragma fragmentoption ARB_precision_hint_fastest
+			#pragma target 2.0
 						
 			#include "UnityCG.cginc"
 
@@ -74,13 +75,12 @@ Shader "Unlit/XRayClip"
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				float d = dot(i.worldPos, _ClipPlane0.xyz) - _ClipPlane0.w;
-				clip(d);
-				d = dot(i.worldPos, _ClipPlane1.xyz) - _ClipPlane1.w;
-				clip(d);
+				float da = dot(i.worldPos, _ClipPlane0.xyz) - _ClipPlane0.w;
+				float db = dot(i.worldPos, _ClipPlane1.xyz) - _ClipPlane1.w;
+				clip(((da < 0) && (db < 0)) ? -1 : 1);
 
 				float2 uv = (i.screenPos.xy / i.screenPos.w) * 0.5f + 0.5f;
-				return float4(1, 0, 0, 1);//_Color * tex2D(_MainTex, uv);
+				return _Color * tex2D(_MainTex, uv);
 			}
 			ENDCG
 		}
