@@ -37,9 +37,10 @@ MonoBehaviour:
   jumpStaminaUse: 10
   groundAcceleration: 6
   crouchSpeed: 3.5
-  walkSpeed: 3.5
+  walkSpeed: 7
   walkStartTime: 0.1
   walkStopTime: 0.1
+  dodgeCooldown: 0.5
   sprintTime: 0.25
   sprintSpeed: 12
   sprintStaminaUse: 50

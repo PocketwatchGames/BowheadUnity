@@ -5,21 +5,28 @@ using UnityEngine;
 [CreateAssetMenuAttribute(menuName = "CameraData")]
 public class CameraData : ScriptableObject {
 
-    public float lookAtFriction = 10f;
+	public bool allowLook;
+	public float lookAtFriction = 10f;
     public float lookAtAcceleration = 20;
     public float lookAtLeadDist = 5;
-    public float cameraFriction = 10f;
-    public float minDistance = 20;
-    public float maxDistance = 40;
+	public float friction = 10.0f;
+	public float leashFollowVelocityRate = 0.15f;
+
+	public float minDistance;
+	public float maxDistance;
+
+	public float pitch = 45.0f;
+	public float fov = 55;
+
+	public float climbingYawMaxAngle = 40;
+	public float climbingYawAdjustmentAcceleration = 20;
+	public float climbingYawTurnSpeed = 2;
+
+	[Header("Turning")]
+	public bool allowRotation = true;
 	public float turnStopTime = 0.1f;
 	public float turnAcceleration = 360;
 	public float turnMaxSpeed = 360;
 	public float turnAccelerationFirstTime = 360;
 	public float turnAccelerationSlowTime = 0.75f;
-	public float leashFollowVelocityRateExplore = 0.15f;
-	public float leashFollowVelocityRateCombat = 0.35f;
-	public float friction = 10.0f;
-	public float combatPitch = 45.0f;
-	public float combatFOV = 55;
-	public float exploreFOV = 65;
 }

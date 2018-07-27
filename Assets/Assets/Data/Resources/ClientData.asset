@@ -28,13 +28,16 @@ MonoBehaviour:
     type: 2}
   hudButtonHintPrefab: {fileID: 114042321560627920, guid: 70f2a471b6a3a4049853a27d48744fbb,
     type: 2}
-  cameraData: {fileID: 11400000, guid: 9f5732a9f5058c0418bd06e7d5567846, type: 2}
+  cameraDataCombat: {fileID: 11400000, guid: 99cc1cd2bfc73e044ab34ce49baa1070, type: 2}
+  cameraDataExplore: {fileID: 11400000, guid: 9f5732a9f5058c0418bd06e7d5567846, type: 2}
   silhouetteStencil: {fileID: 2100000, guid: adcc579234c3b1443b9ae78036518af6, type: 2}
   silhouetteFill: {fileID: 2100000, guid: e108a9570123b4542a7e10c8fc75c211, type: 2}
   xrayMaterials:
   - {fileID: 2100000, guid: f41d80efdaa48c240be21f819c2dcc42, type: 2}
   - {fileID: 2100000, guid: a42887ae7d1a1b540a40ab5e91eade23, type: 2}
   damageIndicatorPrefab: {fileID: 114126637162118058, guid: a944dab8f4adb1546844427b8483b470,
+    type: 2}
+  worldHUDPrefab: {fileID: 114473802706628340, guid: d95421c0413dc2c4aa7c14e1bc4e5e4e,
     type: 2}
   critterHudPrefab: {fileID: 114538792139021752, guid: 7e0094bb443e9be4384385e0d360801e,
     type: 2}
@@ -43,6 +46,8 @@ MonoBehaviour:
   weaponChargePrefab: {fileID: 114941436716662276, guid: 6871fdeecd0cd6942a256764f5cead43,
     type: 2}
   damageHUDPrefab: {fileID: 114778370284363310, guid: b334024714589fc4db1781e269cde89a,
+    type: 2}
+  directionPreviewPrefab: {fileID: 114308667210803786, guid: 2828d6d684d38d94dbb034260d667517,
     type: 2}
   isDualAnalogAiming: 1
   dialogDarkenCanvasPrefab: {fileID: 0}

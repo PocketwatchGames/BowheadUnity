@@ -35,8 +35,8 @@ MonoBehaviour:
     stepDistance: 1
     moveSpeedWhileCharging: 0.8
     moveSpeedWhileFullyCharged: 0.25
-    canMoveDuringCooldown: 0
-    canMoveDuringCast: 0
+    canMoveDuringCooldown: 1
+    canMoveDuringCast: 1
     canMoveDuringActive: 0
     unblockable: 0
     interruptOnHit: 1

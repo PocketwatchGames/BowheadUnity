@@ -148,7 +148,7 @@ namespace Bowhead.Client.Actors {
 			GameManager.instance.StartPlayOnAwakeSounds();
 			gameState.hud.OnLevelStart();
 			_camera = Camera.main;
-			_cameraController = new CameraController(_camera, GameManager.instance.clientData.cameraData);
+			_cameraController = new CameraController(_camera, GameManager.instance.clientData.cameraDataCombat, GameManager.instance.clientData.cameraDataExplore);
 			_cameraController.SetTarget(playerPawn);
             rpc_Server_ClientHasLoaded.Invoke();
 

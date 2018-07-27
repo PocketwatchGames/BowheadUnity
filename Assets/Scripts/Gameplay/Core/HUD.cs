@@ -22,15 +22,17 @@ namespace Bowhead.Client.UI {
 		GameState _gameState;
 		ClientWorld _world;
 		GameObject _hudRoot;
-		Canvas _hudCanvas;
-				
-		public HUD(ClientWorld world, GameState gameState) {
+        Canvas _hudCanvas;
+        WorldHUD _worldHUDCanvas;
+
+        public HUD(ClientWorld world, GameState gameState) {
 			_world = world;
 			_gameState = gameState;
-			_hudCanvas = GameObject.Instantiate(GameManager.instance.clientData.hudCanvasPrefab);
-		}
+            _hudCanvas = GameObject.Instantiate(GameManager.instance.clientData.hudCanvasPrefab);
+            _worldHUDCanvas = GameObject.Instantiate(GameManager.instance.clientData.worldHUDPrefab);
+        }
 
-		public virtual void Initialize() {}
+        public virtual void Initialize() {}
 
 		public virtual void OnLevelStart() { }
 
@@ -139,13 +141,18 @@ namespace Bowhead.Client.UI {
 			}
 		}
 
-		public Canvas hudCanvas {
-			get {
-				return _hudCanvas;
-			}
-		}
+        public Canvas hudCanvas {
+            get {
+                return _hudCanvas;
+            }
+        }
+        public WorldHUD worldHUDCanvas {
+            get {
+                return _worldHUDCanvas;
+            }
+        }
 
-		public Rect screenBounds {
+        public Rect screenBounds {
 			get {
 				return new Rect(0, 0, Screen.width, Screen.height);
 			}

@@ -9,8 +9,6 @@ namespace Bowhead {
 	[RequireComponent(typeof(Camera))]
 	public sealed class XRayCamera : ClientMonoBehaviour {
 		[SerializeField]
-		Material _xrayClip;
-		[SerializeField]
 		float _fwdClipOffset;
 		[SerializeField]
 		float _yClipOffset;
@@ -29,7 +27,6 @@ namespace Bowhead {
 
 		static readonly Color CLEAR_COLOR = new Color(0, 0, 0, 0);
 
-		int SHADER_CLIP1;
 		bool _dirty;
 		CommandBuffer _cmdBuff;
 		List<Renderer> _renderList;

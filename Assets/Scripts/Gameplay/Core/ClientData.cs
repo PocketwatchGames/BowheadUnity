@@ -105,15 +105,19 @@ namespace Bowhead {
         public Canvas hudCanvasPrefab;
 		public Client.UI.InventoryPanel hudInventoryPanelPrefab;
         public Client.UI.ButtonHint hudButtonHintPrefab;
-        public CameraData cameraData;
+		public CameraData cameraDataCombat;
+		public CameraData cameraDataExplore;
 		public Material silhouetteStencil;
 		public Material silhouetteFill;
 		public Material[] xrayMaterials;
         public DamageIndicator damageIndicatorPrefab;
+        public WorldHUD worldHUDPrefab;
 		public PawnHUD critterHudPrefab;
         public PlayerHUD playerHudPrefab;
         public WeaponChargeHUD weaponChargePrefab;
         public DamageHUD damageHUDPrefab;
+        public DirectionPreview directionPreviewPrefab;
+
         public bool isDualAnalogAiming;
 
 		public Canvas dialogDarkenCanvasPrefab;

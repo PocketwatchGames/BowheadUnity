@@ -74,7 +74,12 @@ namespace Bowhead.Actors {
             Vector2 look;
             if (Input.GetJoystickNames().Length == 0)
             {
-                look = new Vector2(Input.GetAxis("MouseAxis1"), Input.GetAxis("MouseAxis2"));
+                look = new Vector2(Input.GetAxis("MouseAxis1"), -Input.GetAxis("MouseAxis2"));
+                if (look != Vector2.zero) {
+                    look.Normalize();
+                } else {
+                    look = new Vector2(Mathf.Cos(yaw), -Mathf.Sin(yaw));
+                }
             }
             else {
                 look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
@@ -224,6 +229,9 @@ namespace Bowhead.Actors {
             var right = Vector3.Cross(Vector3.up, forward);
             input.movement += forward * (float)cur.fwd / 127f;
             input.movement += right * (float)cur.right / 127f;
+			if (input.movement.magnitude > 1) {
+				input.movement.Normalize();
+			}
 
 			if (canStrafe) {
 				if (cur.lookFwd != 0 || cur.lookRight != 0) {
@@ -897,9 +905,6 @@ namespace Bowhead.Actors {
 
 		protected override void SetActivity(Activity a) {
 			base.SetActivity(a);
-			if (a == Activity.Climbing) {
-				stance = Stance.Explore;
-			}
 		}
 
 		void Interact() {
