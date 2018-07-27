@@ -411,9 +411,15 @@ namespace Bowhead.Actors {
             float windCarrySmell = 0;
             if (dist < maxWindCarryDist && wind != Vector3.zero) {
                 windCarrySmell = 1f - dist / maxWindCarryDist;
-                float windCarryAngleDot = Vector3.Dot(wind.normalized, diff.normalized);
-                windCarrySmell *= windCarryAngleDot;
-            }
+				float angleDiff = Mathf.Abs(Mathf.DeltaAngle(Mathf.Rad2Deg * Mathf.Atan2(diff.z, diff.x), Mathf.Rad2Deg * Mathf.Atan2(wind.z, wind.x)));
+				float maxAngle = gameMode.data.smellDisperseAngle;
+				if (angleDiff < maxAngle) {
+					windCarrySmell *= Mathf.Pow((maxAngle - angleDiff)/ maxAngle, gameMode.data.smellDisperseAnglePower);
+				}
+				else {
+					windCarrySmell = 0;
+				}
+			}
 
             return Math.Max(smell, windCarrySmell);
         }
