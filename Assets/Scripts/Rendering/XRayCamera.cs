@@ -10,9 +10,7 @@ namespace Bowhead {
 		[SerializeField]
 		Material _xrayClip;
 		[SerializeField]
-		float _yOffset;
-		[SerializeField]
-		float _backClipOffset;
+		float _clipOffset;
 
 		Camera _camera;
 
@@ -30,13 +28,21 @@ namespace Bowhead {
 		}
 
 		void OnPreCull() {
-			_xrayClip.SetVector(SHADER_CLIP0, new Vector4(0, -1, 0, -origin.y - _yOffset));
-			{
-				Vector3 fwd = -transform.forward;
-				fwd.y = 0;
-				fwd = fwd.normalized;
-				Vector4 plane = new Vector4(fwd.x, fwd.y, fwd.z, Vector3.Dot(fwd, origin) - _backClipOffset);
-				_xrayClip.SetVector(SHADER_CLIP1, plane);
+			Vector3 fwd = -transform.forward;
+			fwd.y = 0;
+			
+			if (fwd.x != 0) {
+				var n = 1 * Mathf.Sign(fwd.x);
+				_xrayClip.SetVector(SHADER_CLIP0, new Vector4(n, 0, 0, (origin.x * n) + _clipOffset));
+			} else {
+				_xrayClip.SetVector(SHADER_CLIP0, new Vector4(0, 0, 0, 1));
+			}
+
+			if (fwd.z != 0) {
+				var n = 1 * Mathf.Sign(fwd.z);
+				_xrayClip.SetVector(SHADER_CLIP1, new Vector4(0, 0, n, (origin.z * n) + _clipOffset));
+			} else {
+				_xrayClip.SetVector(SHADER_CLIP1, new Vector4(0, 0, 0, 1));
 			}
 		}
 

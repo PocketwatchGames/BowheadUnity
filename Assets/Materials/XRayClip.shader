@@ -74,9 +74,9 @@ Shader "Unlit/XRayClip"
 			
 			fixed4 frag (v2f i) : SV_Target
 			{
-				//float d = dot(i.worldPos, _ClipPlane0.xyz) - _ClipPlane0.w;
-				//clip(d);
-				float d = dot(i.worldPos, _ClipPlane1.xyz) - _ClipPlane1.w;
+				float d = dot(i.worldPos, _ClipPlane0.xyz) - _ClipPlane0.w;
+				clip(d);
+				d = dot(i.worldPos, _ClipPlane1.xyz) - _ClipPlane1.w;
 				clip(d);
 
 				float2 uv = (i.screenPos.xy / i.screenPos.w) * 0.5f + 0.5f;
