@@ -380,6 +380,9 @@ namespace Bowhead {
         }
         public void Defend(Pawn owner, Pawn attacker, Weapon attackerWeapon, ref float remainingStun, ref float remainingDamage) {
 
+			if (data.attacks.Length == 0) {
+				return;
+			}
 			bool isParry = data.attacks[attackHand].canParry && parryTime > 0;
 			bool isDefend = data.attacks[attackHand].canDefend && chargeTime > 0;
 			if (!isParry && !isDefend) {

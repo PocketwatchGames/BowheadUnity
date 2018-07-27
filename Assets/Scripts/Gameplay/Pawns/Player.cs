@@ -870,9 +870,6 @@ namespace Bowhead.Actors {
 
 		protected override void SetActivity(Activity a) {
 			base.SetActivity(a);
-			if (a == Activity.Climbing) {
-				stance = Stance.Explore;
-			}
 		}
 
 		void Interact() {

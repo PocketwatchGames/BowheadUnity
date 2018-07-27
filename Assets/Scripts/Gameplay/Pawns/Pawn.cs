@@ -1068,7 +1068,6 @@ namespace Bowhead.Actors {
         }
 
 		public void useStamina(float s) {
-			return;
 			if (stamina <= 0)
 				return;
 			stamina = Mathf.Max(data.minStamina, stamina - s);
