@@ -50,6 +50,8 @@ namespace Bowhead {
 			public float range;
 			public float radius;
 			public float staminaUse;
+			public float dodgeSpeed;
+			public float dodgeTime;
 			public float stepDistance;
 			public float moveSpeedWhileCharging;
 			public float moveSpeedWhileFullyCharged;

@@ -32,12 +32,14 @@ MonoBehaviour:
     range: 1.5
     radius: 0.25
     staminaUse: 20
-    stepDistance: 1
+    dodgeSpeed: 0
+    dodgeTime: 0
+    stepDistance: 0
     moveSpeedWhileCharging: 0.8
     moveSpeedWhileFullyCharged: 0.25
     canMoveDuringCooldown: 1
     canMoveDuringCast: 1
-    canMoveDuringActive: 0
+    canMoveDuringActive: 1
     unblockable: 0
     interruptOnHit: 1
     canBackstab: 1

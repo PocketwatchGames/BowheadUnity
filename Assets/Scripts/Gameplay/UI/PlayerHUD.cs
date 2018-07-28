@@ -36,8 +36,11 @@ public class PlayerHUD : MonoBehaviour {
 		float wm = 0;
 		for (int i=0;i<Player.MaxInventorySize;i++) {
 			var weapon = _target.GetInventorySlot(i) as Bowhead.Weapon;
-			if (weapon != null && weapon.chargeTime > 0) {
-				wm = Mathf.Max(wm, weapon.GetChargeMultiplier(_target, weapon.chargeTime));
+			if (weapon != null && weapon.data.attacks.Length > 0) {
+				float curChargeMultiplier = weapon.GetMultiplier(_target, weapon.chargeTime);
+				if (weapon.chargeTime > 0 && (weapon.chargeTime >= weapon.data.attacks[weapon.attackHand].chargeTime || curChargeMultiplier > 1)) {
+					wm = Mathf.Max(wm, curChargeMultiplier);
+				}
 			}
 		}
 		if (wm <= 1) {

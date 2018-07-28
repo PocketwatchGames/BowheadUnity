@@ -121,6 +121,14 @@ namespace Bowhead {
 				return false;
 			}
 
+			if (chargeTime < data.attacks[attackHand].chargeTime) {
+				if (data.attacks[attackHand].dodgeSpeed > 0 && data.attacks[attackHand].dodgeTime > 0) {
+//					owner.Dodge(new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw)));
+					owner.Dodge(owner.velocity.normalized * data.attacks[attackHand].dodgeSpeed, data.attacks[attackHand].dodgeTime);
+					parryTime = 0;
+				}
+			}
+
             castTime = data.attacks[attackHand].castTime;
 			attackCharge = chargeTime;
 			chargeTime = 0;
@@ -206,8 +214,8 @@ namespace Bowhead {
 				ActivateSpell(owner);
 			}
 
-			owner.useStamina(data.attacks[attackHand].staminaUse);
-			owner.useWater(data.attacks[attackHand].waterUse);
+			owner.UseStamina(data.attacks[attackHand].staminaUse);
+			owner.UseWater(data.attacks[attackHand].waterUse);
 
         }
 
@@ -402,13 +410,13 @@ namespace Bowhead {
 			}
 
             if (isParry) {
-				owner.useStamina(data.attacks[attackHand].parryResult.staminaUse);
+				owner.UseStamina(data.attacks[attackHand].parryResult.staminaUse);
 				remainingDamage = Mathf.Max(0, remainingDamage - data.attacks[attackHand].parryResult.damageAbsorb);
 				remainingStun = Mathf.Max(0, remainingStun - data.attacks[attackHand].parryResult.stunAbsorb);
 				attacker.Hit(owner, this, data.attacks[attackHand].parryResult, 1, false);
             }
 			else if (isDefend) {
-				owner.useStamina(data.attacks[attackHand].parryResult.staminaUse);
+				owner.UseStamina(data.attacks[attackHand].parryResult.staminaUse);
 				remainingDamage = Mathf.Max(0, remainingDamage - data.attacks[attackHand].parryResult.damageAbsorb);
 				remainingStun = Mathf.Max(0, remainingStun - data.attacks[attackHand].parryResult.stunAbsorb);
 				attacker.Hit(owner, this, data.attacks[attackHand].defendResult, 1, false);
@@ -417,18 +425,24 @@ namespace Bowhead {
         }
 
 		public float GetChargeMultiplier(Pawn owner, float charge) {
-			if (data.attacks[attackHand].chargeTime > 0 && attackCharge > 0) {
-				if (owner.activity == Pawn.Activity.Falling) {
-					return 2;
-				}
-				return Mathf.Clamp(Mathf.FloorToInt(charge / data.attacks[attackHand].chargeTime) * 2, 1, data.attacks[attackHand].maxCharge);
-			}
 			return 1;
 		}
 
 		public float GetMultiplier(Pawn owner, float charge) {
 			float m = owner.damageMultiplier;
-			float chargeMultiplier = GetChargeMultiplier(owner, charge);
+
+			float chargeMultiplier = 1;
+
+			if (owner.sprintTimer > 0) {
+				chargeMultiplier = 2;
+			}
+			else if (owner.activity == Pawn.Activity.Falling) {
+				chargeMultiplier = 2;
+			}
+			else if (data.attacks[attackHand].chargeTime > 0 && attackCharge > 0) {
+				chargeMultiplier = Mathf.Clamp(Mathf.FloorToInt(charge / data.attacks[attackHand].chargeTime) * 2, 1, data.attacks[attackHand].maxCharge);
+			}
+		
 			if (chargeMultiplier > 1) {
 				return m * chargeMultiplier;
 			}

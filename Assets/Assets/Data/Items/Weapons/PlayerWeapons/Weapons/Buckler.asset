@@ -23,7 +23,7 @@ MonoBehaviour:
   maxHealthBonus: 0
   maxStaminaBonus: 0
   attacks:
-  - chargeTime: 0
+  - chargeTime: 0.25
     maxCharge: 0
     castTime: 0
     activeTime: 0
@@ -32,6 +32,8 @@ MonoBehaviour:
     range: 0
     radius: 0
     staminaUse: 0
+    dodgeSpeed: 16
+    dodgeTime: 0.4
     stepDistance: 0
     moveSpeedWhileCharging: 0.75
     moveSpeedWhileFullyCharged: 0

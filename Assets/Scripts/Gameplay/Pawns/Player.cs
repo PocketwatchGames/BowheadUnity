@@ -66,6 +66,14 @@ namespace Bowhead.Actors {
 			SetReplicates(true);
 		}
 
+		public void SetStance(Stance s) {
+			stance = s;
+			desiredStance = s;
+		}
+		public void SetStanceTemporary(Stance s) {
+			stance = s;
+		}
+
         private void RecordInputDevices() {
             PlayerCmd_t cmd = new PlayerCmd_t();
             Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal"), Input.GetAxis("MoveVertical"));
@@ -270,6 +278,7 @@ namespace Bowhead.Actors {
 				var diff = tradePartner.position - position;
 				if (diff.magnitude > data.tradePartnerCancelDistance) {
 					tradePartner = null;
+					SetStance(desiredStance);
 				}
 			}
 
@@ -283,12 +292,11 @@ namespace Bowhead.Actors {
 					SetMount(null);
 				}
 				else if (stance == Stance.Combat) {
-					stance = Stance.Explore;
+					SetStance(Stance.Explore);
 				}
 				else {
-					stance = Stance.Combat;
+					SetStance(Stance.Combat);
 				}
-				desiredStance = stance;
 			}
 
 			bool isCasting = false;
@@ -383,7 +391,7 @@ namespace Bowhead.Actors {
 			if (isCasting) {
 				SetMount(null);
 				tradePartner = null;
-				stance = Stance.Combat;
+				SetStance(Stance.Combat);
 			}
 
             base.Simulate(dt, input);
@@ -401,8 +409,7 @@ namespace Bowhead.Actors {
             AttachExternalGameObject(gameObject);
 
 			attackTargetPreview = null;
-			stance = Stance.Explore;
-			desiredStance = Stance.Explore;
+			SetStance(Stance.Combat);
 
 			// JOSEPH: this will be better once this is moved into new Actor framework, for now HACK
 			_worldStreaming = GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);
@@ -496,8 +503,8 @@ namespace Bowhead.Actors {
                 d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * gameMode.GetTerrainData(position).fallDamage * data.maxHealth;
                 if (d > 0) {
                     Damage(d, PawnData.DamageType.Falling);
-                    useStamina((float)d);
-                    stun((float)d);
+                    UseStamina((float)d);
+                    Stun((float)d);
                 }
             }
 
@@ -942,7 +949,7 @@ namespace Bowhead.Actors {
 					else {
 						tradePartner = critter;
 					}
-					stance = Stance.Explore;
+					SetStanceTemporary(Stance.Explore);
 				}
             }
             else if (targetPos.HasValue) {

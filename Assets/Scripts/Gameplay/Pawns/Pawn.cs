@@ -377,7 +377,11 @@ namespace Bowhead.Actors {
 			}
 
             if (canTurn) {
-                if (activity == Activity.Climbing) {
+				if (sprintTimer > data.sprintTime) {
+					if (input.movement.magnitude > 0) {
+						yaw = Mathf.Atan2(input.movement.x, input.movement.z);
+					}
+				} else if (activity == Activity.Climbing) {
                     yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
                 }
                 else {
@@ -544,10 +548,9 @@ namespace Bowhead.Actors {
 			Player p;
 			if ((p = this as Player) != null) {
 				if (activity == Activity.Climbing || activity == Activity.Swimming) {
-					p.stance = Player.Stance.Explore;
-				}
-				else if (mount == null) {
-					p.stance = p.desiredStance;
+					p.SetStanceTemporary(Player.Stance.Explore);
+				} else if (mount == null && p.tradePartner == null) {
+					p.SetStance(p.desiredStance);
 				}
 			}
 		}
@@ -606,7 +609,7 @@ namespace Bowhead.Actors {
                     if (canJump) {
                         var jumpDir = input.movement * data.sprintSpeed;
                         jumpDir.y += getGroundJumpVelocity();
-                        jump(jumpDir);
+                        Jump(jumpDir);
                     }
                     fallJumpTimer = 0;
 					sprintTimer = 0;
@@ -665,7 +668,7 @@ namespace Bowhead.Actors {
 						if (canJump) {
 							var jumpDir = input.movement * data.sprintSpeed;
 							jumpDir.y += getGroundJumpVelocity();
-							jump(jumpDir);
+							Jump(jumpDir);
 							jumped = true;
 						}
 						fallJumpTimer = 0;
@@ -791,7 +794,7 @@ namespace Bowhead.Actors {
 			}
 
 			if (data.sprintTime > 0 && sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
-				useStamina(data.sprintStaminaUse * dt);
+				UseStamina(data.sprintStaminaUse * dt);
 			}
         }
 
@@ -806,7 +809,7 @@ namespace Bowhead.Actors {
 				if (canJump) {
 					var jumpDir = input.movement * data.sprintSpeed;
 					jumpDir.y += data.swimJumpSpeed;
-					jump(jumpDir);
+					Jump(jumpDir);
 				}
 			}
 			velocity.y += data.gravity * dt;
@@ -899,7 +902,7 @@ namespace Bowhead.Actors {
 									sprintGracePeriodTime = 0.1f;
 								}
 							}
-							jump(jumpDir);
+							Jump(jumpDir);
 							return;
 						}
 					}
@@ -1076,7 +1079,7 @@ namespace Bowhead.Actors {
             //return p + (interpolateFrom - p) * interpolateTime / interpolateTimeTotal;
         }
 
-		public void useStamina(float s) {
+		public void UseStamina(float s) {
 			if (stamina <= 0)
 				return;
 			stamina = Mathf.Max(data.minStamina, stamina - s);
@@ -1088,42 +1091,46 @@ namespace Bowhead.Actors {
 				recoveryTimer = data.recoveryTime;
 			}
 		}
-		public void useWater(float w) {
+		public void UseWater(float w) {
 			if (water <= 0)
 				return;
 			water = Mathf.Max(0, water - w);
 		}
 
-		void jump(Vector3 dir) {
-            useStamina(data.jumpStaminaUse);
+		void Jump(Vector3 dir) {
+			UseStamina(data.jumpStaminaUse);
 
 			float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 			float launchSpeedXZ;
 			if (sprintGracePeriodTime > 0) {
 				launchSpeedXZ = data.sprintSpeed;
-			}
-			else {
+			} else {
 				launchSpeedXZ = curSpeedXZ;
 			}
 
 			float jumpSpeedXZ = Mathf.Sqrt(dir.x * dir.x + dir.z * dir.z);
 			velocity += dir;
-			float combinedSpeedXZ =curSpeedXZ + jumpSpeedXZ;
+			float combinedSpeedXZ = curSpeedXZ + jumpSpeedXZ;
 
 
 			float velY = velocity.y;
-            float newSpeedXZ = Mathf.Min(launchSpeedXZ, combinedSpeedXZ);
-            velocity = velocity.normalized * newSpeedXZ;
-            velocity.y = velY;
-        }
+			float newSpeedXZ = Mathf.Min(launchSpeedXZ, combinedSpeedXZ);
+			velocity = velocity.normalized * newSpeedXZ;
+			velocity.y = velY;
+		}
+		public void Dodge(Vector3 dir, float time) {
+			UseStamina(data.jumpStaminaUse);
+			dodgeTimer = time;
+			velocity = dir;
+		}
 
-        public void stun(float s) {
+		public void Stun(float s) {
             // Can't stun further if already stunned
             if (recovering || stunInvulnerabilityTimer > 0) {
                 return;
             }
 
-			useStamina(s);
+			UseStamina(s);
             if (recovering) {
 				foreach (var i in getInventory()) {
 					var w = i as Weapon;
@@ -1174,7 +1181,7 @@ namespace Bowhead.Actors {
 			}
 
 			if (remainingStun > 0) {
-				stun(remainingStun);
+				Stun(remainingStun);
 			}
 
 
@@ -1219,7 +1226,7 @@ namespace Bowhead.Actors {
             }
 
             if (remainingStun > 0) {
-                stun(remainingStun);
+                Stun(remainingStun);
             }
 
 			if (attackResult.statusEffect != null) {
@@ -1336,11 +1343,10 @@ namespace Bowhead.Actors {
 			Player p;
 			if ((p = (this as Player)) != null) {
 				if (mount != null) {
-					p.stance = Player.Stance.Explore;
+					p.SetStanceTemporary(Player.Stance.Explore);
 				}
 				else {
-					p.stance = Player.Stance.Combat;
-					p.desiredStance = Player.Stance.Combat;
+					p.SetStance(Player.Stance.Combat);
 				}
 			}
 			
