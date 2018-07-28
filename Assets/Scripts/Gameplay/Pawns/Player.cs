@@ -312,8 +312,10 @@ namespace Bowhead.Actors {
 				if (itemLeft != null) {
 					if (itemLeft.CanCast()) {
 						if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
-							itemLeft.Attack(this);
-							isCasting = true;
+							if (itemLeft.chargeTime < itemLeft.data.jabChargeTime) {
+								itemLeft.Attack(this);
+								isCasting = true;
+							}
 						}
 					}
 				}

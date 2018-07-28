@@ -39,7 +39,7 @@ namespace Bowhead.Actors {
                 input.movement = diff.normalized;
                 input.look = input.movement;
             }
-            if (c.canJump && c.activity == Pawn.Activity.OnGround && c.sprintTimer == 0) {
+            if (c.canJump && c.activity == Pawn.Activity.OnGround) {
                 input.inputs[(int)InputType.Jump] = InputState.JustPressed;
             }
 

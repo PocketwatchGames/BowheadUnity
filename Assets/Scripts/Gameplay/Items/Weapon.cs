@@ -13,7 +13,6 @@ namespace Bowhead {
 		public float attackCharge;
         public float castTime;
 		public float activeTime;
-		public float parryTime;
 		public float chargeTime;
 		public float cooldown;
 		public bool attackWhenCooldownComplete;
@@ -82,13 +81,8 @@ namespace Bowhead {
 			}
 			if (attackHand != hand) {
 				chargeTime = 0;
-				parryTime = 0;
 			}
 			attackHand = hand;
-
-			if (attackHand == 0 && data.attacks[attackHand].canParry && chargeTime == 0) {
-				parryTime = data.attacks[attackHand].parryTime;
-			}
 
 			attackWhenCooldownComplete = false;
 			if (CanCast()) {
@@ -117,16 +111,8 @@ namespace Bowhead {
 			hitTargets.Clear();
 
 
-			if (data.attacks[attackHand].waterUse > owner.water) {
+			if (data.waterUse > owner.water) {
 				return false;
-			}
-
-			if (chargeTime < data.attacks[attackHand].chargeTime) {
-				if (data.attacks[attackHand].dodgeSpeed > 0 && data.attacks[attackHand].dodgeTime > 0) {
-//					owner.Dodge(new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw)));
-					owner.Dodge(owner.velocity.normalized * data.attacks[attackHand].dodgeSpeed, data.attacks[attackHand].dodgeTime);
-					parryTime = 0;
-				}
 			}
 
             castTime = data.attacks[attackHand].castTime;
@@ -195,10 +181,10 @@ namespace Bowhead {
 				activeTime = data.attacks[attackHand].activeTime;
 			}
 			
-			if (data.attacks[attackHand].projectile != null) {
+			if (data.projectile != null) {
 				Pawn target = null;
-				if (data.attacks[attackHand].canTarget) {
-					target = GetProjectileTarget(owner, owner.yaw, data.attacks[attackHand].projectile.lifetime * data.attacks[attackHand].projectileSpeed);
+				if (data.canTarget) {
+					target = GetProjectileTarget(owner, owner.yaw, data.projectile.lifetime * data.projectileSpeed);
 				}
 				Vector3 dir;
 				if (target != null) {
@@ -207,15 +193,15 @@ namespace Bowhead {
 					dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
 				}
 
-				data.attacks[attackHand].projectile.SpawnAndFireProjectile<Actors.Projectile>(owner.world, owner.headPosition(), dir * data.attacks[attackHand].projectileSpeed, target, null, owner, owner.team);
+				data.projectile.SpawnAndFireProjectile<Actors.Projectile>(owner.world, owner.headPosition(), dir * data.projectileSpeed, target, null, owner, owner.team);
 			}
 
-			if (data.attacks[attackHand].spell != WeaponData.Spell.None) {
+			if (data.spell != WeaponData.Spell.None) {
 				ActivateSpell(owner);
 			}
 
 			owner.UseStamina(data.attacks[attackHand].staminaUse);
-			owner.UseWater(data.attacks[attackHand].waterUse);
+			owner.UseWater(data.waterUse);
 
         }
 
@@ -253,8 +239,8 @@ namespace Bowhead {
 		}
 
 		private void ActivateSpell(Pawn owner) {
-			if (data.attacks[attackHand].spell == WeaponData.Spell.Heal) {
-				owner.health = Mathf.Min(owner.maxHealth, owner.health + data.attacks[attackHand].spellPower);
+			if (data.spell == WeaponData.Spell.Heal) {
+				owner.health = Mathf.Min(owner.maxHealth, owner.health + data.spellPower);
 			}
 		}
 
@@ -270,9 +256,6 @@ namespace Bowhead {
 					owner.canTurn = false;
 				}
 			}
-			if (parryTime > 0) {
-				parryTime = Mathf.Max(0, parryTime - dt);
-			}
 
 			if (activeTime > 0) {
 				activeTime = Mathf.Max(0, activeTime - dt);
@@ -283,7 +266,7 @@ namespace Bowhead {
 				}
 			}
 
-			if (parryTime <= 0 && activeTime <= 0) {
+			if (activeTime <= 0) {
 				if (cooldown > 0) {
 					cooldown = Mathf.Max(0, cooldown - dt);
 					if (cooldown > 0 && !data.attacks[attackHand].canMoveDuringCooldown) {
@@ -306,12 +289,6 @@ namespace Bowhead {
 			var mesh = _mesh?.GetChildComponent<MeshRenderer>("Mesh");
 			if (mesh != null) {
 				mesh.material.color = Color.white;
-
-				if (parryTime > 0) {
-					if (data.attacks[attackHand].canParry) {
-						mesh.material.color = Color.red;
-					}
-				}
 			}
 
 		}
@@ -348,11 +325,7 @@ namespace Bowhead {
 
 			Vector3 pos = new Vector3((data.hand == WeaponData.Hand.RIGHT || attackHand==1) ? 0.35f : -0.35f, 0, 0);
 
-			if (parryTime > 0) {
-				_mesh.transform.localRotation = Quaternion.Euler(0, 0, 0);
-				pos += new Vector3(0, 1, 0.5f);
-			}
-			else if (chargeTime > 0) {
+			if (chargeTime > 0) {
 				_mesh.transform.localRotation = Quaternion.Euler(-45, 0, 0);
 				pos += new Vector3(0, 1.5f, 0.25f);
 			}
@@ -388,12 +361,8 @@ namespace Bowhead {
         }
         public void Defend(Pawn owner, Pawn attacker, Weapon attackerWeapon, ref float remainingStun, ref float remainingDamage) {
 
-			if (data.attacks.Length == 0) {
-				return;
-			}
-			bool isParry = data.attacks[attackHand].canParry && parryTime > 0;
-			bool isDefend = data.attacks[attackHand].canDefend && chargeTime > 0;
-			if (!isParry && !isDefend) {
+			bool isDefend = (data.hand == WeaponData.Hand.LEFT || (data.hand==WeaponData.Hand.BOTH && attackHand == 0)) && chargeTime > 0;
+			if (!isDefend) {
 				return;
 			}
 
@@ -405,22 +374,14 @@ namespace Bowhead {
 				dirToEnemy.Normalize();
 			}
 			float angleToEnemy = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) * Mathf.Rad2Deg, owner.yaw * Mathf.Rad2Deg))*Mathf.Rad2Deg;
-			if (angleToEnemy > data.attacks[attackHand].defendAngleRange*Mathf.Deg2Rad && Mathf.PI * 2 - angleToEnemy > data.attacks[attackHand].defendAngleRange * Mathf.Deg2Rad) {
+			if (angleToEnemy > data.blockAngleRange*Mathf.Deg2Rad && Mathf.PI * 2 - angleToEnemy > data.blockAngleRange * Mathf.Deg2Rad) {
 				return;
 			}
 
-            if (isParry) {
-				owner.UseStamina(data.attacks[attackHand].parryResult.staminaUse);
-				remainingDamage = Mathf.Max(0, remainingDamage - data.attacks[attackHand].parryResult.damageAbsorb);
-				remainingStun = Mathf.Max(0, remainingStun - data.attacks[attackHand].parryResult.stunAbsorb);
-				attacker.Hit(owner, this, data.attacks[attackHand].parryResult, 1, false);
-            }
-			else if (isDefend) {
-				owner.UseStamina(data.attacks[attackHand].parryResult.staminaUse);
-				remainingDamage = Mathf.Max(0, remainingDamage - data.attacks[attackHand].parryResult.damageAbsorb);
-				remainingStun = Mathf.Max(0, remainingStun - data.attacks[attackHand].parryResult.stunAbsorb);
-				attacker.Hit(owner, this, data.attacks[attackHand].defendResult, 1, false);
-			}
+			owner.UseStamina(data.blockResult.staminaUse);
+			remainingDamage = Mathf.Max(0, remainingDamage - data.blockResult.damageAbsorb);
+			remainingStun = Mathf.Max(0, remainingStun - data.blockResult.stunAbsorb);
+			attacker.Hit(owner, this, data.blockResult, 1, false);
 
         }
 
@@ -433,10 +394,10 @@ namespace Bowhead {
 
 			float chargeMultiplier = 1;
 
-			if (owner.sprintTimer > 0) {
-				chargeMultiplier = 2;
-			}
-			else if (owner.activity == Pawn.Activity.Falling) {
+			//if (owner.sprintTimer > 0) {
+			//	chargeMultiplier = 2;
+			//}
+			if (owner.activity == Pawn.Activity.Falling) {
 				chargeMultiplier = 2;
 			}
 			else if (data.attacks[attackHand].chargeTime > 0 && attackCharge > 0) {

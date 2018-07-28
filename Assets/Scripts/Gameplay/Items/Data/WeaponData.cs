@@ -50,8 +50,6 @@ namespace Bowhead {
 			public float range;
 			public float radius;
 			public float staminaUse;
-			public float dodgeSpeed;
-			public float dodgeTime;
 			public float stepDistance;
 			public float moveSpeedWhileCharging;
 			public float moveSpeedWhileFullyCharged;
@@ -61,25 +59,8 @@ namespace Bowhead {
 			public bool unblockable;
 			public bool interruptOnHit;
 			public bool canBackstab;
-
-			public Spell spell;
-			public float spellPower;
-			public float waterUse;
-			public bool canTarget;
-			public Actors.ProjectileData projectile;
-			public float projectileSpeed;
 			public AttackResult attackResult;
 			public AttackResult backstabResult;
-
-			[Header("Defend")]
-			public bool canDefend;
-			public float defendAngleRange;
-			public DefendResult defendResult;
-
-			[Header("Parry")]
-			public bool canParry;
-			public float parryTime;
-			public DefendResult parryResult;
 
 		}
 
@@ -91,5 +72,22 @@ namespace Bowhead {
 
 		public AttackData[] attacks;
 
+		[Header("Spells")]
+		public Spell spell;
+		public float spellPower;
+		public float waterUse;
+		public bool canTarget;
+		public Actors.ProjectileData projectile;
+		public float projectileSpeed;
+
+		[Header("Defend")]
+		public float blockAngleRange;
+		public DefendResult blockResult;
+
+		public float sprintTime;
+		public float sprintSpeed;
+		public float sprintStaminaUse;
+
+		public float jabChargeTime;
 	}
 }

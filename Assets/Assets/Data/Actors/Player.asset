@@ -35,15 +35,12 @@ MonoBehaviour:
     type: 2}
   jumpSpeed: 13
   jumpStaminaUse: 10
+  jumpHorizontalSpeed: 12
   groundAcceleration: 16
   crouchSpeed: 3.5
   walkSpeed: 7
   walkStartTime: 0.1
   walkStopTime: 0.1
-  sprintTime: 0.25
-  sprintSpeed: 12
-  sprintStaminaUse: 50
-  sprintGracePeriodTime: 0.4
   groundMaxSpeed: 7
   groundWindDrag: 0.01
   gravity: -40

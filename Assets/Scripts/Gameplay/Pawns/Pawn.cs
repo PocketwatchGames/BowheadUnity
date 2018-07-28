@@ -72,8 +72,6 @@ namespace Bowhead.Actors {
 
 		[Header("Gameplay")]
         public Activity activity;
-		public float sprintTimer;
-		public float sprintGracePeriodTime;
 		public Vector3 climbingNormal;
 		public Vector3 climbingAttachPoint;
 		public float climbingAttachCooldown;
@@ -377,11 +375,7 @@ namespace Bowhead.Actors {
 			}
 
             if (canTurn) {
-				if (sprintTimer > data.sprintTime) {
-					if (input.movement.magnitude > 0) {
-						yaw = Mathf.Atan2(input.movement.x, input.movement.z);
-					}
-				} else if (activity == Activity.Climbing) {
+				if (activity == Activity.Climbing) {
                     yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
                 }
                 else {
@@ -602,24 +596,15 @@ namespace Bowhead.Actors {
 			if (fallJumpTimer > 0) {
                 fallJumpTimer = Math.Max(0, fallJumpTimer - dt);
 
-				if (input.IsPressed(InputType.Jump)) {
-					sprintTimer = sprintTimer += dt;
-				}
-				else if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
+				if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
                     if (canJump) {
-                        var jumpDir = input.movement * data.sprintSpeed;
+                        var jumpDir = input.movement * data.jumpHorizontalSpeed;
                         jumpDir.y += getGroundJumpVelocity();
                         Jump(jumpDir);
                     }
                     fallJumpTimer = 0;
-					sprintTimer = 0;
-					sprintGracePeriodTime = 0;
                 }
             }
-			else {
-				sprintTimer = 0;
-				sprintGracePeriodTime = 0;
-			}
 
 			velocity.y += data.gravity * dt;
 
@@ -654,32 +639,17 @@ namespace Bowhead.Actors {
 			bool jumped = false;
 			if (canJump) {
 
-				if (input.IsPressed(InputType.Jump)) {
-					sprintTimer = sprintTimer += dt;
-					if (sprintTimer > data.sprintTime) {
-						sprintGracePeriodTime = data.sprintGracePeriodTime;
-					}
-					if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
-						dodgeTimer = dodgeTimer + data.dodgeTime;
-					}
-				}
-				else {
-					if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
-						if (canJump) {
-							var jumpDir = input.movement * data.sprintSpeed;
-							jumpDir.y += getGroundJumpVelocity();
-							Jump(jumpDir);
-							jumped = true;
-						}
+				if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+					if (canJump) {
+						var jumpDir = input.movement * data.jumpHorizontalSpeed;
+						jumpDir.y += getGroundJumpVelocity();
+						Jump(jumpDir);
+						jumped = true;
 						fallJumpTimer = 0;
 					}
-					sprintTimer = 0;
-					sprintGracePeriodTime = Mathf.Max(0, sprintGracePeriodTime - dt);
 				}
 			}
 			else {
-				sprintTimer = 0;
-				sprintGracePeriodTime = 0;
 				dodgeTimer = 0;
 			}
 
@@ -784,30 +754,21 @@ namespace Bowhead.Actors {
 
 
 
-			Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
+			maxHorizontalSpeed = new Vector2(velocity.x, velocity.z).magnitude;
 
-			if (sprintGracePeriodTime > 0) {
-				maxHorizontalSpeed = Mathf.Max(maxHorizontalSpeed, horizontalVel.magnitude);
-			}
-			else {
-				maxHorizontalSpeed = horizontalVel.magnitude;
-			}
-
-			if (data.sprintTime > 0 && sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
-				UseStamina(data.sprintStaminaUse * dt);
+			var defensiveWeapon = GetDefensiveWeapon();
+			if (defensiveWeapon != null && defensiveWeapon.chargeTime > 0 && input.movement != Vector3.zero) {
+				UseStamina(defensiveWeapon.data.sprintStaminaUse * dt);
 			}
         }
 
         private void UpdateSwimming(float dt, Input_t input) {
 
-			sprintTimer = 0;
-			sprintGracePeriodTime = 0;
 			skidding = false;
-
 
 			if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
 				if (canJump) {
-					var jumpDir = input.movement * data.sprintSpeed;
+					var jumpDir = input.movement * data.jumpHorizontalSpeed;
 					jumpDir.y += data.swimJumpSpeed;
 					Jump(jumpDir);
 				}
@@ -849,10 +810,8 @@ namespace Bowhead.Actors {
 
         private void UpdateClimbing(float dt, Input_t input) {
 
-            maxHorizontalSpeed = data.sprintSpeed;
+            maxHorizontalSpeed = data.jumpHorizontalSpeed;
 
-			sprintTimer = 0;
-			sprintGracePeriodTime = 0;
 			skidding = false;
 
 
@@ -870,91 +829,88 @@ namespace Bowhead.Actors {
             else {
 
 
-				if (!input.IsPressed(InputType.Jump)) {
-
-					if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
-						if (activity != Activity.Falling) {
-							climbingAttachCooldown = data.climbAttachCooldown;
-						}
-						SetActivity(Activity.Falling);
-
-						Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
-						if (canJump) {
-							Vector3 jumpDir = Vector3.zero;
-							if (climbingInput.y < 0) {
-								// Push away from wall
-								jumpDir += input.movement * Mathf.Max(data.groundMaxSpeed, data.sprintSpeed);
-								jumpDir.y += data.jumpSpeed;
-								maxHorizontalSpeed = data.sprintSpeed;
-
-							}
-							else {
-								if (climbingInput.y > 0) {
-									// jumping up jumps away from the wall slightly so we don't reattach right away
-									jumpDir += climbingInput * data.jumpSpeed;
-									jumpDir += climbingNormal * data.jumpSpeed / 4;
-								}
-								else if (climbingInput.y >= 0) {
-									// left right jumps get a vertical boost
-									jumpDir += input.movement * data.groundMaxSpeed;
-									jumpDir.y = data.jumpSpeed;
-									maxHorizontalSpeed = data.sprintSpeed;
-									sprintGracePeriodTime = 0.1f;
-								}
-							}
-							Jump(jumpDir);
-							return;
-						}
+				if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+					if (activity != Activity.Falling) {
+						climbingAttachCooldown = data.climbAttachCooldown;
 					}
-					else {
-						Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
-						velocity = climbingInput * data.climbSpeed;
-						Vector3 move = velocity * dt;
-						Vector3 newPosition = position + move;
+					SetActivity(Activity.Falling);
 
-						if (move.magnitude > 0) {
+					Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
+					if (canJump) {
+						Vector3 jumpDir = Vector3.zero;
+						if (climbingInput.y < 0) {
+							// Push away from wall
+							jumpDir += input.movement * Mathf.Max(data.groundMaxSpeed, data.jumpHorizontalSpeed);
+							jumpDir.y += data.jumpSpeed;
+							maxHorizontalSpeed = data.jumpHorizontalSpeed;
 
-							bool isOpen = CanMoveTo(move, true, ref newPosition);
-							if (isOpen) {
-								if (IsClimbPosition(newPosition, -climbingNormal * data.climbWallRange)) {
-									climbingAttachPoint = newPosition;
-									SetPosition(newPosition);
+						}
+						else {
+							if (climbingInput.y > 0) {
+								// jumping up jumps away from the wall slightly so we don't reattach right away
+								jumpDir += climbingInput * data.jumpSpeed;
+								jumpDir += climbingNormal * data.jumpSpeed / 4;
+							}
+							else if (climbingInput.y >= 0) {
+								// left right jumps get a vertical boost
+								jumpDir += input.movement * data.groundMaxSpeed;
+								jumpDir.y = data.jumpSpeed;
+								maxHorizontalSpeed = data.jumpHorizontalSpeed;
+							}
+						}
+						Jump(jumpDir);
+						return;
+					}
+				}
+				else {
+					Vector3 climbingInput = getClimbingVector(input.movement, climbingNormal);
+					velocity = climbingInput * data.climbSpeed;
+					Vector3 move = velocity * dt;
+					Vector3 newPosition = position + move;
 
-								}
-								//else if (move.y > 0)
-								//{
-								//	move.y++;
-								//	move += -climbingNormal*data.WallJumpRange;
-								//	if (tryMoveTo(move, true, dt, newPosition, interpolate))
-								//	{
-								//		moved = true;
-								//		interpolate = true;
-								//	}
-								//}
-								else {
-									velocity = Vector3.zero;
-									if (move.magnitude > 0 && (move.x != 0 || move.z != 0)) {
-										Vector3 newWallNormal = move.normalized;
-										move += -climbingNormal * data.climbWallRange;
-										bool isWrapAroundOpen = CanMoveTo(move, true, ref newPosition);
-										if (isWrapAroundOpen && IsClimbPosition(newPosition, -newWallNormal * data.climbWallRange)) {
-											climbingNormal = newWallNormal;
-											climbingAttachPoint = newPosition;
-											SetPosition(newPosition);
-										}
+					if (move.magnitude > 0) {
+
+						bool isOpen = CanMoveTo(move, true, ref newPosition);
+						if (isOpen) {
+							if (IsClimbPosition(newPosition, -climbingNormal * data.climbWallRange)) {
+								climbingAttachPoint = newPosition;
+								SetPosition(newPosition);
+
+							}
+							//else if (move.y > 0)
+							//{
+							//	move.y++;
+							//	move += -climbingNormal*data.WallJumpRange;
+							//	if (tryMoveTo(move, true, dt, newPosition, interpolate))
+							//	{
+							//		moved = true;
+							//		interpolate = true;
+							//	}
+							//}
+							else {
+								velocity = Vector3.zero;
+								if (move.magnitude > 0 && (move.x != 0 || move.z != 0)) {
+									Vector3 newWallNormal = move.normalized;
+									move += -climbingNormal * data.climbWallRange;
+									bool isWrapAroundOpen = CanMoveTo(move, true, ref newPosition);
+									if (isWrapAroundOpen && IsClimbPosition(newPosition, -newWallNormal * data.climbWallRange)) {
+										climbingNormal = newWallNormal;
+										climbingAttachPoint = newPosition;
+										SetPosition(newPosition);
 									}
 								}
 							}
-							else {
-								velocity = Vector3.zero;
-								if (IsClimbPosition(newPosition, move.normalized * data.climbWallRange)) {
-									climbingAttachPoint = newPosition;
-									SetPosition(newPosition);
-								}
+						}
+						else {
+							velocity = Vector3.zero;
+							if (IsClimbPosition(newPosition, move.normalized * data.climbWallRange)) {
+								climbingAttachPoint = newPosition;
+								SetPosition(newPosition);
 							}
 						}
 					}
 				}
+				
 			}
 
 			if (!IsClimbPosition(climbingAttachPoint, -climbingNormal * data.climbWallRange)) {
@@ -988,13 +944,24 @@ namespace Bowhead.Actors {
             //	v -= (getWeight() - data.BodyWeight) / 50f;
             return v;
         }
-        public float getGroundMaxSpeed() {
+		public Weapon GetDefensiveWeapon() {
+			Weapon weapon;
+			if ((weapon = GetInventorySlot((int)Player.InventorySlot.LEFT_HAND) as Weapon) != null) {
+				return weapon;
+			}
+			if (((weapon = GetInventorySlot((int)Player.InventorySlot.RIGHT_HAND) as Weapon) != null) && weapon.data.hand == WeaponData.Hand.BOTH) {
+				return weapon;
+			}
+			return null;
+		}
+		public float getGroundMaxSpeed() {
 			float maxSpeed = data.groundMaxSpeed;
 
 			if (canRun) {
 				if (canSprint) {
-					if (sprintTimer > 0 && data.sprintTime > 0) {
-						maxSpeed = data.sprintSpeed;
+					var weapon = GetDefensiveWeapon();
+					if (weapon != null && weapon.chargeTime > 0 && weapon.attackHand == 0) {
+						maxSpeed *= weapon.data.sprintSpeed;
 					}
 				}
             }
@@ -1101,12 +1068,6 @@ namespace Bowhead.Actors {
 			UseStamina(data.jumpStaminaUse);
 
 			float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-			float launchSpeedXZ;
-			if (sprintGracePeriodTime > 0) {
-				launchSpeedXZ = data.sprintSpeed;
-			} else {
-				launchSpeedXZ = curSpeedXZ;
-			}
 
 			float jumpSpeedXZ = Mathf.Sqrt(dir.x * dir.x + dir.z * dir.z);
 			velocity += dir;
@@ -1114,7 +1075,7 @@ namespace Bowhead.Actors {
 
 
 			float velY = velocity.y;
-			float newSpeedXZ = Mathf.Min(launchSpeedXZ, combinedSpeedXZ);
+			float newSpeedXZ = Mathf.Min(curSpeedXZ, combinedSpeedXZ);
 			velocity = velocity.normalized * newSpeedXZ;
 			velocity.y = velY;
 		}
