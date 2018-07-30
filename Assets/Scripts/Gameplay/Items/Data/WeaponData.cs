@@ -84,9 +84,7 @@ namespace Bowhead {
 		public float blockAngleRange;
 		public DefendResult blockResult;
 
-		public float sprintTime;
 		public float sprintSpeed;
-		public float sprintStaminaUse;
 
 		public float jabChargeTime;
 	}

@@ -43,8 +43,12 @@ namespace Bowhead.Actors {
         public float walkStopTime;
 		public float groundMaxSpeed;
         public float groundWindDrag;
+		public float sprintTime;
+		public float sprintSpeed;
+		public float sprintStaminaUse;
+		public float sprintGracePeriodTime;
 
-        [Header("Falling")]
+		[Header("Falling")]
         public float gravity;
         public float fallJumpTime;
         public float fallAcceleration;
