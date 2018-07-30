@@ -184,7 +184,7 @@ namespace Bowhead {
 			if (data.projectile != null) {
 				Pawn target = null;
 				if (data.canTarget) {
-					target = GetProjectileTarget(owner, owner.yaw, data.projectile.lifetime * data.projectileSpeed);
+					target = owner.GetAttackTarget(owner.yaw, data.projectile.lifetime * data.projectileSpeed, 60 * Mathf.Deg2Rad, null);
 				}
 				Vector3 dir;
 				if (target != null) {

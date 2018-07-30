@@ -20,8 +20,10 @@ namespace Bowhead.Actors {
         public Vector3 spawnPoint;
         public Vector2 mapPos;
 		public Pawn tradePartner;
+		public float lockHoldTime;
+		public float lockAngle;
 
-        [Header("Inventory")]
+		[Header("Inventory")]
         public int money;
         public WeightClass weight;
         public float dropTimer;
@@ -94,21 +96,24 @@ namespace Bowhead.Actors {
 			if (Input.GetButton("A")) {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
-            if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
-                cmd.buttons |= 1 << (int)InputType.AttackLeft;
+            if (Input.GetButton("B")) {
+                cmd.buttons |= 1 << (int)InputType.Lock;
             }
 			if (Input.GetButton("AttackRight") || Input.GetAxis("RightTrigger") != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
 			}
-			if (Input.GetButton("Y")) {
-				cmd.buttons |= 1 << (int)InputType.AttackArmor;
+			if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
+				cmd.buttons |= 1 << (int)InputType.AttackLeft;
 			}
 			if (Input.GetButton("X")) {
+				cmd.buttons |= 1 << (int)InputType.Interact;
+			}
+			if (Input.GetButton("ShoulderRight")) {
 				cmd.buttons |= 1 << (int)InputType.AttackRanged;
 			}
-			if (Input.GetButton("B")) {
-                cmd.buttons |= 1 << (int)InputType.Interact;
-            }
+			if (Input.GetButton("ShoulderLeft")) {
+				cmd.buttons |= 1 << (int)InputType.AttackRanged;
+			}
 
 			UpdatePlayerCmd(cmd);
         }
@@ -232,10 +237,48 @@ namespace Bowhead.Actors {
 				input.movement.Normalize();
 			}
 
+			Vector3 moveDir;
 			if (input.movement != Vector3.zero) {
-				input.look = input.movement.normalized;
+				moveDir = input.movement.normalized;
+			} else {
+				moveDir = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
 			}
 
+			if (!IsValidAttackTarget(target)) {
+				target = null;
+			}
+
+			if (mount != null) {
+				input.look = moveDir;
+			} else if (tradePartner !=null) {
+				var lookDir = (tradePartner.position - position);
+				lookDir.y = 0;
+				input.look = lookDir.normalized;
+			} else if (input.IsPressed(InputType.Lock)) {
+				lockHoldTime += dt;
+				lockAngle = yaw;
+				input.look = new Vector3(Mathf.Sin(lockAngle), 0, Mathf.Cos(lockAngle));
+			} else {
+				if (input.inputs[(int)InputType.Lock] == InputState.JustReleased) {
+					if (lockHoldTime < data.lockHoldTime) {
+						var newTarget = GetAttackTarget(Mathf.Atan2(moveDir.x, moveDir.z), 20, 360 * Mathf.Deg2Rad, target);
+						target = newTarget;
+					} else {
+						target = null;
+					}
+				}
+
+				if (target != null) {
+					var lookDir = (target.position - position);
+					lookDir.y = 0;
+					input.look = lookDir.normalized;
+				} else {
+					input.look = moveDir;
+				}
+
+				lockHoldTime = 0;
+			}
+			
             return input;
         }
 
@@ -255,6 +298,13 @@ namespace Bowhead.Actors {
 
 			if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
 				Interact();
+			}
+
+			if (input.inputs[(int)InputType.Lock] == InputState.JustPressed) {
+				tradePartner = null;
+				if (mount != null) {
+					SetMount(null);
+				}
 			}
 
 			bool isCasting = false;
@@ -328,28 +378,11 @@ namespace Bowhead.Actors {
 						}
 					}
 				}
-				Weapon itemArmor = GetInventorySlot((int)InventorySlot.CLOTHING) as Weapon;
-				if (itemArmor != null) {
-					if (itemArmor.CanCast()) {
-						if (input.IsPressed(InputType.AttackArmor)) {
-							itemArmor.Charge(dt, 0);
-							isCasting = true;
-						}
-						else {
-							if (input.inputs[(int)InputType.AttackArmor] == InputState.JustReleased) {
-								itemArmor.Attack(this);
-								isCasting = true;
-							}
-							itemArmor.chargeTime = 0;
-						}
-					}
-				}
 			}
 
-			attackTargetPreview = GetAttackTarget(yaw);
+			attackTargetPreview = GetAttackTarget(yaw, 20, 360 * Mathf.Deg2Rad, null);
 
 			if (isCasting) {
-				SetMount(null);
 				tradePartner = null;
 			}
 
@@ -853,17 +886,7 @@ namespace Bowhead.Actors {
 
 		void Interact() {
 
-			if (tradePartner != null) {
-				tradePartner = null;
-				return;
-			}
-			if (mount != null) {
-				SetMount(null);
-				return;
-			}
-
-
-			Entity target;
+            Entity target;
             string interaction;
 			Vector3? targetPos;
             GetInteractTarget(out target, out targetPos, out interaction);
@@ -915,67 +938,9 @@ namespace Bowhead.Actors {
             }
         }
 
-        bool IsValidAttackTarget(Pawn actor) {
-            if ((actor == null) || actor.pendingKill)
-                return false;
-            var diff = actor.position - position;
-            if (diff.magnitude > 20) {
-                return false;
-            }
-            return true;
-        }
-
-        Pawn GetAttackTarget(float yaw) {
-
-            float maxDist = 10;
-            float maxTargetAngle = Mathf.PI;
-
-            Pawn bestTarget = null;
-            float bestTargetAngle = maxTargetAngle;
-            foreach (var c in world.GetActorIterator<Critter>()) {
-                if (c.active) {
-                    if (c.team != this.team) {
-                        var diff = c.position - position;
-                        float dist = diff.magnitude;
-                        if (dist < maxDist) {
-                            float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
-
-                            float yawDiff = Mathf.Abs(Utils.SignedMinAngleDelta(angleToEnemy * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg))*Mathf.Deg2Rad;
-
-                            float collisionRadius = 0.5f;
-
-                            // take the target's radius into account based on how far away they are
-                            yawDiff = Math.Max(0.001f, yawDiff - Mathf.Atan2(collisionRadius, dist));
-
-                            float distT = Mathf.Pow(dist / maxDist, 2);
-                            yawDiff *= distT;
-
-                            if (yawDiff < bestTargetAngle) {
-                                bestTarget = c;
-                                bestTargetAngle = yawDiff;
-                            }
-                        }
-                    }
-                }
-            }
-            return bestTarget;
-        }
-
-
         public void GetInteractTarget(out Entity target, out Vector3? targetPos, out string interactionType) {
 
             interactionType = null;
-			interactionType = "";
-			targetPos = Vector3.zero;
-			if (mount != null) {
-				target = mount;
-				return;
-			}
-			if (tradePartner != null) {
-				target = tradePartner;
-				return;
-			}
-
 
             float closestDist = 2;
             Entity closestItem = null;

@@ -60,7 +60,7 @@ MonoBehaviour:
   spell: 0
   spellPower: 1
   waterUse: 10
-  canTarget: 0
+  canTarget: 1
   projectile: {fileID: 11400000, guid: 3153fb8bcefe50a44af717fe0aa81363, type: 2}
   projectileSpeed: 20
   blockAngleRange: 0

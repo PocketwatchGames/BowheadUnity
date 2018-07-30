@@ -139,7 +139,7 @@ namespace Bowhead.Client.UI {
 			else {
 				_interactHint.SetTarget(target);
 			}
-			_interactHint.SetButton("B");
+			_interactHint.SetButton("X");
             _interactHint.SetHint(interaction);
 
 			if (Input.GetButtonDown("Start")) {

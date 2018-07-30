@@ -18,7 +18,7 @@ namespace Bowhead.Actors {
         AttackLeft,
 		AttackRight,
 		AttackRanged,
-		AttackArmor,
+		Lock,
 		Count
 	}
 
@@ -88,6 +88,7 @@ namespace Bowhead.Actors {
         public bool canSwim;
         public bool canTurn;
         public bool canAttack;
+		public Pawn target;
         public Pawn mount;
         public Pawn driver;
 		public List<StatusEffect> statusEffects = new List<StatusEffect>();
@@ -1341,6 +1342,48 @@ namespace Bowhead.Actors {
 			}
             GameManager.instance.clientWorld.OnStatusEffectAdded(this, se);
 		}
+
+		protected bool IsValidAttackTarget(Pawn actor) {
+			if ((actor == null) || actor.pendingKill || !actor.alive)
+				return false;
+			var diff = actor.position - position;
+			if (diff.magnitude > 20) {
+				return false;
+			}
+			return true;
+		}
+
+		public Pawn GetAttackTarget(float angle, float range, float maxAngle, Pawn exclude) {
+			Pawn bestTarget = null;
+
+			float bestTargetAngle = maxAngle;
+			foreach (var c in world.GetActorIterator<Actors.Pawn>()) {
+				if (c.active && c != exclude) {
+					if (c.team != team) {
+						var diff = c.position - position;
+						float dist = diff.magnitude;
+						if (dist < range) {
+							float angleToEnemy = Mathf.Atan2(diff.x, diff.z);
+
+							float yawDiff = Mathf.Abs(Utils.SignedMinAngleDelta(angleToEnemy * Mathf.Rad2Deg, angle * Mathf.Rad2Deg)) * Mathf.Deg2Rad;
+
+							float collisionRadius = 0.5f;
+
+							// take the target's radius into account based on how far away they are
+							yawDiff = Mathf.Max(0.001f, yawDiff - Mathf.Atan2(collisionRadius, dist));
+
+							if (yawDiff < bestTargetAngle) {
+								bestTarget = c;
+								bestTargetAngle = yawDiff;
+							}
+						}
+					}
+				}
+			}
+			return bestTarget;
+
+		}
+
 
 		public void SetSilhouetteDirty() {
 			if (_silhouetteRenderer != null) {
