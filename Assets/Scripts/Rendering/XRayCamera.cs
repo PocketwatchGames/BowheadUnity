@@ -62,8 +62,8 @@ namespace Bowhead {
 			fwdNoY.y = 0;
 			fwdNoY.Normalize();
 
-			var left = Vector3.Cross(fwd, Vector3.up);
-			var up = Vector3.Cross(fwd, left);
+			var left = Vector3.Cross(fwd, Vector3.up).normalized;
+			var up = Vector3.Cross(fwd, left).normalized;
 
 			SetVector(ShaderID.ClipPlane0, new Vector4(fwdNoY.x, fwdNoY.y, fwdNoY.z, Vector3.Dot(fwdNoY, origin) + _fwdClipOffset));
 			SetVector(ShaderID.ClipPlane1, new Vector4(0, -1, 0, -origin.y - _yClipOffset));
