@@ -78,7 +78,6 @@ namespace Bowhead.Actors {
         public float fallJumpTimer;
         public float maxHorizontalSpeed;
         public bool skidding;
-        public bool canStrafe;
         public bool canMove;
         public bool canRun;
         public bool canJump;
@@ -112,11 +111,6 @@ namespace Bowhead.Actors {
 			Swimming,
 			Climbing,
 			OnGround,
-		}
-
-		public enum Stance {
-			Combat,
-			Explore,
 		}
 
 		public struct PlayerCmd_t {
@@ -378,7 +372,7 @@ namespace Bowhead.Actors {
 				if (activity == Activity.Climbing) {
                     yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
                 }
-                else {
+                else if (GetDefensiveWeapon()?.chargeTime == 0) {
 					if (input.look != Vector3.zero) {
 						yaw = Mathf.Atan2(input.look.x, input.look.z);
 					}
@@ -539,14 +533,6 @@ namespace Bowhead.Actors {
 
 		virtual protected void SetActivity(Activity a) {
 			activity = a;
-			Player p;
-			if ((p = this as Player) != null) {
-				if (activity == Activity.Climbing || activity == Activity.Swimming) {
-					p.SetStanceTemporary(Player.Stance.Explore);
-				} else if (mount == null && p.tradePartner == null) {
-					p.SetStance(p.desiredStance);
-				}
-			}
 		}
 
 		protected virtual void MountMoved() {
@@ -1300,16 +1286,6 @@ namespace Bowhead.Actors {
 				silhouetteMode = defaultSilhouetteMode;
 				go.transform.parent = null;
             }
-
-			Player p;
-			if ((p = (this as Player)) != null) {
-				if (mount != null) {
-					p.SetStanceTemporary(Player.Stance.Explore);
-				}
-				else {
-					p.SetStance(Player.Stance.Combat);
-				}
-			}
 			
 			return true;
         }

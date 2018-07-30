@@ -19,8 +19,6 @@ namespace Bowhead.Actors {
         [Header("Player")]
         public Vector3 spawnPoint;
         public Vector2 mapPos;
-		public Stance desiredStance;
-		public Stance stance;
 		public Pawn tradePartner;
 
         [Header("Inventory")]
@@ -64,14 +62,6 @@ namespace Bowhead.Actors {
 
 		public Player() {
 			SetReplicates(true);
-		}
-
-		public void SetStance(Stance s) {
-			stance = s;
-			desiredStance = s;
-		}
-		public void SetStanceTemporary(Stance s) {
-			stance = s;
 		}
 
         private void RecordInputDevices() {
@@ -191,7 +181,6 @@ namespace Bowhead.Actors {
 			canSwim = weight < WeightClass.HEAVY;
             canClimbWell = weight < WeightClass.MEDIUM;
             canTurn = true;
-            canStrafe = stance == Stance.Combat;
 
             if (recovering) {
 				canRun = false;
@@ -246,22 +235,8 @@ namespace Bowhead.Actors {
 				input.movement.Normalize();
 			}
 
-			if (canStrafe) {
-				if (cur.lookFwd != 0 || cur.lookRight != 0) {
-					input.look += forward * (float)cur.lookFwd / 127f;
-					input.look += right * (float)cur.lookRight / 127f;
-				}
-				else {
-					input.look = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
-					//if (input.movement != Vector3.zero && Input.GetJoystickNames().Length > 0) {
-					//	input.look = input.movement.normalized;
-					//}
-				}
-			}
-			else {
-				if (input.movement != Vector3.zero) {
-					input.look = input.movement.normalized;
-				}
+			if (input.movement != Vector3.zero) {
+				input.look = input.movement.normalized;
 			}
 
             return input;
@@ -278,7 +253,6 @@ namespace Bowhead.Actors {
 				var diff = tradePartner.position - position;
 				if (diff.magnitude > data.tradePartnerCancelDistance) {
 					tradePartner = null;
-					SetStance(desiredStance);
 				}
 			}
 
@@ -290,12 +264,6 @@ namespace Bowhead.Actors {
 				tradePartner = null;
 				if (mount != null) {
 					SetMount(null);
-				}
-				else if (stance == Stance.Combat) {
-					SetStance(Stance.Explore);
-				}
-				else {
-					SetStance(Stance.Combat);
 				}
 			}
 
@@ -393,7 +361,6 @@ namespace Bowhead.Actors {
 			if (isCasting) {
 				SetMount(null);
 				tradePartner = null;
-				SetStance(Stance.Combat);
 			}
 
             base.Simulate(dt, input);
@@ -411,7 +378,6 @@ namespace Bowhead.Actors {
             AttachExternalGameObject(gameObject);
 
 			attackTargetPreview = null;
-			SetStance(Stance.Combat);
 
 			// JOSEPH: this will be better once this is moved into new Actor framework, for now HACK
 			_worldStreaming = GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);
@@ -920,7 +886,6 @@ namespace Bowhead.Actors {
 					else {
 						tradePartner = critter;
 					}
-					SetStanceTemporary(Stance.Explore);
 				}
             }
             else if (targetPos.HasValue) {

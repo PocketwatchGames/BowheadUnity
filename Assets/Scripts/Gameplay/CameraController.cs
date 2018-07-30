@@ -162,7 +162,7 @@ namespace Bowhead.Actors {
 			}
 
 			if (_target != null) {
-				SetMouseLookActive(_target.stance == Player.Stance.Explore);
+				SetMouseLookActive(true);
 
 
 				float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (data.maxDistance - data.minDistance) + data.minDistance;

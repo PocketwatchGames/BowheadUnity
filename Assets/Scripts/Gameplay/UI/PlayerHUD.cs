@@ -68,8 +68,8 @@ public class PlayerHUD : MonoBehaviour {
             _staminaFill.color = mountOrTarget.recovering ? Color.yellow : Color.green;
         }
         _stamina.gameObject.SetActive(s < 1);
-        _health.gameObject.SetActive(_changeTimerHealth > 0 || (h < 1 && _target.stance == Player.Stance.Combat));
-        _water.gameObject.SetActive(_changeTimerWater > 0 || (w < 1 && _target.stance == Player.Stance.Combat));
+        _health.gameObject.SetActive(_changeTimerHealth > 0 || h < 1);
+        _water.gameObject.SetActive(_changeTimerWater > 0 || w < 1);
 
 		_changeTimerHealth = Mathf.Max(0, _changeTimerHealth - Time.deltaTime);
 		_changeTimerWater = Mathf.Max(0, _changeTimerWater - Time.deltaTime);

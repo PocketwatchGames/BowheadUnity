@@ -44,12 +44,6 @@ namespace Bowhead.Client.UI {
             _water.value = _player.water / _player.maxWater;
             _stamina.value = _player.stamina / _player.maxStamina;
 
-			if (_player.stance == Player.Stance.Combat) {
-				_buttonHintStance.SetHint("Sheathe Weapons");
-			}
-			else {
-				_buttonHintStance.SetHint("Unsheathe Weapons");
-			}
 		}
 
         public void Init(Player player) {
