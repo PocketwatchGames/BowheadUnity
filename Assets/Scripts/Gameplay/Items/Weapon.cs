@@ -50,7 +50,7 @@ namespace Bowhead {
                 }
             }
 
-			if (oldSlot < (int)Player.InventorySlot.PACK) {
+			if (oldSlot >= 0 && oldSlot < (int)Player.InventorySlot.PACK) {
 				if (data.maxStaminaBonus > 0) {
 					owner.maxStamina -= data.maxStaminaBonus;
 					owner.stamina = Mathf.Min(owner.stamina, owner.maxStamina);
