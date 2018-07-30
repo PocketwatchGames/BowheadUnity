@@ -91,7 +91,7 @@ namespace Bowhead.Actors {
 			cmd.lookRight = (sbyte)(look.x * 127);
 
 
-			if (Input.GetButton("Jump")) {
+			if (Input.GetButton("A")) {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
             if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
@@ -100,18 +100,15 @@ namespace Bowhead.Actors {
 			if (Input.GetButton("AttackRight") || Input.GetAxis("RightTrigger") != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
 			}
-			if (Input.GetButton("ShoulderRight") || Input.GetAxis("ShoulderRight") != 0) {
-				cmd.buttons |= 1 << (int)InputType.AttackRanged;
-			}
-			if (Input.GetButton("ShoulderLeft") || Input.GetAxis("ShoulderLeft") != 0) {
+			if (Input.GetButton("Y")) {
 				cmd.buttons |= 1 << (int)InputType.AttackArmor;
 			}
-			if (Input.GetButton("Interact")) {
+			if (Input.GetButton("X")) {
+				cmd.buttons |= 1 << (int)InputType.AttackRanged;
+			}
+			if (Input.GetButton("B")) {
                 cmd.buttons |= 1 << (int)InputType.Interact;
             }
-			if (Input.GetButton("Look")) {
-				cmd.buttons |= 1 << (int)InputType.Look;
-			}
 
 			UpdatePlayerCmd(cmd);
         }
@@ -258,13 +255,6 @@ namespace Bowhead.Actors {
 
 			if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
 				Interact();
-			}
-
-			if (input.inputs[(int)InputType.Look] == InputState.JustPressed) {
-				tradePartner = null;
-				if (mount != null) {
-					SetMount(null);
-				}
 			}
 
 			bool isCasting = false;
@@ -863,7 +853,17 @@ namespace Bowhead.Actors {
 
 		void Interact() {
 
-            Entity target;
+			if (tradePartner != null) {
+				tradePartner = null;
+				return;
+			}
+			if (mount != null) {
+				SetMount(null);
+				return;
+			}
+
+
+			Entity target;
             string interaction;
 			Vector3? targetPos;
             GetInteractTarget(out target, out targetPos, out interaction);
@@ -965,6 +965,17 @@ namespace Bowhead.Actors {
         public void GetInteractTarget(out Entity target, out Vector3? targetPos, out string interactionType) {
 
             interactionType = null;
+			interactionType = "";
+			targetPos = Vector3.zero;
+			if (mount != null) {
+				target = mount;
+				return;
+			}
+			if (tradePartner != null) {
+				target = tradePartner;
+				return;
+			}
+
 
             float closestDist = 2;
             Entity closestItem = null;

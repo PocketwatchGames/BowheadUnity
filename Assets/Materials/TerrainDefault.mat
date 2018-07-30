@@ -73,9 +73,9 @@ Material:
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:
-    - _ClipPlane0: {r: 0, g: 0, b: 0, a: -0.5}
-    - _ClipPlane1: {r: 0, g: -1, b: 0, a: -33}
+    - _ClipPlane0: {r: 0.43772537, g: 0, b: 0.89910877, a: 34.627316}
+    - _ClipPlane1: {r: 0, g: -1, b: 0, a: -38.01}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Left: {r: 0, g: 0, b: 0, a: 0}
-    - _Up: {r: 0, g: 0, b: 0, a: 0}
+    - _Left: {r: -0.89910877, g: 0, b: 0.43772537, a: -5.034324}
+    - _Up: {r: -0.42306295, g: -0.25665435, b: -0.8689915, a: -43.70353}

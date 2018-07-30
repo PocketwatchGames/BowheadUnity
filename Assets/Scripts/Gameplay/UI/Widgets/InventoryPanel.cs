@@ -132,7 +132,8 @@ namespace Bowhead.Client.UI {
 
 			_slots[1].SetButton("LT");
 			_slots[2].SetButton("RT");
-			_slots[3].SetButton("RB");
+			_slots[3].SetButton("X");
+	//		_slots[4].SetButton("Y");
 
 			int packSlotsRemaining = 0;
             InventoryContainer curPackContainer = null;

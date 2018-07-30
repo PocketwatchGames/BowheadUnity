@@ -75,7 +75,5 @@ MonoBehaviour:
     stunAbsorb: 15
     damageAbsorb: 10
     staminaUse: 5
-  sprintTime: 0
-  sprintSpeed: 1.7
-  sprintStaminaUse: 10
+  sprintSpeed: 0.8
   jabChargeTime: 0.25

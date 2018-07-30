@@ -19,7 +19,6 @@ namespace Bowhead.Actors {
 		AttackRight,
 		AttackRanged,
 		AttackArmor,
-		Look,
 		Count
 	}
 
@@ -372,14 +371,11 @@ namespace Bowhead.Actors {
 
             if (canTurn) {
 				if (activity == Activity.Climbing) {
-                    yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
-                }
-				else if (sprintTimer > data.sprintTime) {
+					yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
+				} else if (input.look != Vector3.zero) {
+					yaw = Mathf.Atan2(input.look.x, input.look.z);
+				} else if (input.movement != Vector3.zero) {
 					yaw = Mathf.Atan2(input.movement.x, input.movement.z);
-				} else if (GetDefensiveWeapon()?.chargeTime == 0) {
-					if (input.look != Vector3.zero) {
-						yaw = Mathf.Atan2(input.look.x, input.look.z);
-					}
 				}
 			}
 

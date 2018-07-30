@@ -43,6 +43,10 @@ MonoBehaviour:
   walkStopTime: 0.1
   groundMaxSpeed: 7
   groundWindDrag: 0.01
+  sprintTime: 0.25
+  sprintSpeed: 12
+  sprintStaminaUse: 50
+  sprintGracePeriodTime: 0.4
   gravity: -40
   fallJumpTime: 0.25
   fallAcceleration: 30
