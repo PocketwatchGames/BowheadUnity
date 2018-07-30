@@ -24,13 +24,8 @@ namespace Bowhead {
 			static public readonly int Left = Shader.PropertyToID("_Left");
 			static public readonly int CylinderSizeSq = Shader.PropertyToID("_CylinderSizeSq");
 		}
-
-		static readonly Color CLEAR_COLOR = new Color(0, 0, 0, 0);
-
-		bool _dirty;
-		CommandBuffer _cmdBuff;
-		List<Renderer> _renderList;
 		
+		public static Vector3 origin;
 		static XRayCamera _instance;
 		
 		void Awake() {
@@ -39,22 +34,6 @@ namespace Bowhead {
 		}
 
 		void OnPreCull() {
-			//Vector3 fwd = -transform.forward;
-
-			//if (fwd.x != 0) {
-			//	var n = 1 * Mathf.Sign(fwd.x);
-			//	_xrayClip.SetVector(ShaderID.ClipPlane0, new Vector4(n, 0, 0, (origin.x * n) + _clipOffset));
-			//} else {
-			//	_xrayClip.SetVector(ShaderID.ClipPlane0, new Vector4(0, 0, 0, 1));
-			//}
-
-			//if (fwd.z != 0) {
-			//	var n = 1 * Mathf.Sign(fwd.z);
-			//	_xrayClip.SetVector(ShaderID.ClipPlane1, new Vector4(0, 0, n, (origin.z * n) + _clipOffset));
-			//} else {
-			//	_xrayClip.SetVector(ShaderID.ClipPlane1, new Vector4(0, 0, 0, 1));
-			//}
-
 			SetFloat(ShaderID.CylinderSizeSq, _cylinderSize*_cylinderSize);
 
 			var fwd = (origin - transform.position).normalized;
@@ -84,74 +63,5 @@ namespace Bowhead {
 				m.SetFloat(name, f);
 			}
 		}
-
-		//void OnPreRender() {
-		//	if (_dirty) {
-		//		UpdateCommandBuffer();
-		//		_dirty = false;
-		//	}
-		//}
-		
-		void UpdateCommandBuffer() {
-			if (_cmdBuff == null) {
-				_cmdBuff = new CommandBuffer() {
-					name = "XRay"
-				};
-				_camera.AddCommandBuffer(CameraEvent.BeforeImageEffectsOpaque, _cmdBuff);
-			} else {
-				_cmdBuff.Clear();
-			}
-
-			//var xrayClip = GameManager.instance.clientData.xrayClip;
-
-			//foreach (var r in _renderList) {
-			//	_cmdBuff.DrawRenderer(r, xrayClip);
-			//}			
-		}
-
-		bool Equals(RenderTextureDescriptor x, RenderTextureDescriptor y) {
-			return (x.width == y.width) && (x.height == y.height) && (x.msaaSamples == y.msaaSamples);
-		}
-
-		RenderTextureDescriptor GetDescriptor() {
-			RenderTextureDescriptor descriptor;
-
-			var targetTexture = _camera.targetTexture;
-			if (targetTexture != null) {
-				descriptor = targetTexture.descriptor;
-			} else {
-				descriptor = new RenderTextureDescriptor(_camera.pixelWidth, _camera.pixelHeight, RenderTextureFormat.ARGB32, 24);
-			}
-
-			descriptor.colorFormat = RenderTextureFormat.ARGB32;
-			descriptor.sRGB = QualitySettings.activeColorSpace == ColorSpace.Linear;
-			descriptor.useMipMap = false;
-			descriptor.msaaSamples = 1;
-
-			return descriptor;
-		}
-
-		protected override void OnDestroy() {
-			base.OnDestroy();
-			_instance = null;
-		}
-
-		public Vector3 origin;
-
-		public static void AddXRayRenderer(Renderer r) {
-			//if (instance != null) {
-			//	instance._renderList = instance._renderList ?? new List<Renderer>();
-			//	instance._renderList.Add(r);
-			//	instance._dirty = true;
-			//}
-		}
-
-		public static void RemoveXRayRenderer(Renderer r) {
-			//if ((instance != null) && (instance._renderList != null)) {
-			//	instance._dirty = instance._renderList.Remove(r) || instance._dirty;
-			//}
-		}
-
-		public static XRayCamera instance => _instance;
 	}
 }
