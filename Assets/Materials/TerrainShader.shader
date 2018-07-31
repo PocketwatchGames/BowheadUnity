@@ -6,9 +6,10 @@
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 		_ClipPlane0("ClipPlane0", Vector) = (1,0,0,0)
 		_ClipPlane1("ClipPlane1", Vector) = (1,0,0,0)
-		_Up("Up", Vector) = (1,0,0,0)
-		_Left("Left", Vector) = (1,0,0,0)
-		_CylinderSizeSq("CylinderSize", Float) = 1
+		_ClipPlane2("ClipPlane2", Vector) = (1,0,0,0)
+		_ClipOrigin("ClipOrigin", Vector) = (1,0,0,0)
+		_ClipRegion("ClipRegion", Vector) = (1,0,0,0)
+		_WorldOrigin("WorldOrigin", Vector) = (1,0,0,0)
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
@@ -24,8 +25,9 @@
 		sampler2D _MainTex;
 
 		struct Input {
-			float2 uv_MainTex;
+			//float2 uv_MainTex;
 			float4 vertColor;
+			float4 clipPos;
 			float3 worldPos;
 		};
 
@@ -33,9 +35,10 @@
 		half _Metallic;
 		float4 _ClipPlane0;
 		float4 _ClipPlane1;
-		float4 _Up;
-		float4 _Left;
-		float _CylinderSizeSq;
+		float4 _ClipPlane2;
+		float4 _ClipOrigin;
+		float4 _WorldOrigin;
+		float4 _ClipRegion;
 		fixed4 _Color;
 
 		// Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
@@ -47,22 +50,39 @@
 
 		void vert(inout appdata_full v, out Input o) {
 			UNITY_INITIALIZE_OUTPUT(Input, o);
+			o.clipPos = UnityObjectToClipPos(v.vertex);
 			o.vertColor = v.color;
 		}
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
-			float d = dot(IN.worldPos, _ClipPlane0.xyz) - _ClipPlane0.w;
-			float d2 = dot(IN.worldPos, _ClipPlane1.xyz) - _ClipPlane1.w;
-			if ((d < 0) && (d2 < 0)) {
-				float u = dot(IN.worldPos, _Up.xyz) - _Up.w;
-				float l = dot(IN.worldPos, _Left.xyz) - _Left.w;
-				float z = u * u + l * l;
-				clip((z > _CylinderSizeSq) ? 1 : -1);
+			float3 geoNormal = -normalize(cross(ddx(IN.worldPos.xyz), ddy(IN.worldPos.xyz)));
+
+			float3 worldOrigin = _WorldOrigin + geoNormal * 1;
+
+			float3 worldDir = worldOrigin - IN.worldPos;
+			float3 worldNml = normalize(worldDir);
+			
+			float dd = dot(worldNml, geoNormal);
+
+			if (dd < 0) {
+				float worldDist = length(IN.worldPos - _WorldOrigin);
+				if (worldDist > _ClipRegion.y) {
+					IN.clipPos = IN.clipPos / IN.clipPos.w;
+
+					float2 dxy = IN.clipPos.xy - _ClipOrigin.xy;
+					dxy.y /= _ClipRegion.z;
+
+					float r = (dxy.x*dxy.x) + (dxy.y*dxy.y);
+					if (r < _ClipRegion.x) {
+						clip(-1);
+					}
+				}
+
 			}
-						
+
 			// Albedo comes from a texture tinted by color
 			fixed4 c = _Color * IN.vertColor;
-			o.Albedo = c.rgb;
+			o.Albedo = c;
 			// Metallic and smoothness come from slider variables
 			o.Metallic = _Metallic;
 			o.Smoothness = _Glossiness;

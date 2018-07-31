@@ -516,7 +516,7 @@ namespace Bowhead.Actors {
         }
 
 		void UpdateStreaming(Vector3 p) {
-			XRayCamera.origin = p + Vector3.up;
+			XRayCamera.origin = p;
 			_worldStreaming.position = World.WorldToChunk(World.Vec3ToWorld(p));
 		}
 
