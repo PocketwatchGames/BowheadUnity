@@ -1362,7 +1362,7 @@ namespace Bowhead {
 				clientData = Resources.Load<ClientData>("ClientData");
 
 				for (int i = 0; i < staticData.indexedObjects.Length; ++i) {
-					var indexed = (StaticData.Indexed)staticData.indexedObjects[i];
+					var indexed = (StaticAsset.Indexed)staticData.indexedObjects[i];
                     if (indexed != null) {
 						indexed.ClientPrecache();
 					}

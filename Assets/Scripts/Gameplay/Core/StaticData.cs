@@ -14,16 +14,7 @@ namespace Bowhead {
 
 	[CreateAssetMenu(menuName = "Bowhead/Static Data")]
 	public class StaticData : ScriptableObject, ISerializationCallbackReceiver {
-		public interface Indexed {
-			int staticIndex {
-				get;
-#if UNITY_EDITOR
-				set;
-#endif
-			}
-
-			void ClientPrecache();
-		}
+		
 		public GameObject defaultActorPrefab;
 		public World_ChunkComponent serverTerrainChunkComponent;
 		public RandomNumberTable randomNumberTable;
@@ -55,7 +46,7 @@ namespace Bowhead {
 
 			var obj = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
 			if (obj != null) {
-				var indexed = obj as Indexed;
+				var indexed = obj as StaticAsset.Indexed;
 				if (indexed != null) {
 
 					bool added = false;
@@ -130,7 +121,7 @@ namespace Bowhead {
 				progress.Close();
 
 				for (int i = 0; i < indexedObjects.Count; ++i) {
-					var obj = (Indexed)indexedObjects[i];
+					var obj = (StaticAsset.Indexed)indexedObjects[i];
 					if ((obj != null) && (obj.staticIndex != i)) {
 						indexedObjects[i] = null;
 						changed = true;
@@ -179,67 +170,14 @@ namespace Bowhead {
 		}
 	}
 
-	public abstract class StaticAsset : ScriptableObject, StaticData.Indexed {
-		[HideInInspector]
-		[SerializeField]
-		int _index;
-
-		public int staticIndex {
-			get {
-				return _index;
-			}
-#if UNITY_EDITOR
-			set {
-				_index = value;
-			}
-#endif
-		}
-
-		public virtual void ClientPrecache() { }
-	}
-
-	public abstract class StaticVersionedAsset : VersionedObject, StaticData.Indexed {
-		[HideInInspector]
-		[SerializeField]
-		int _index;
-
-		public int staticIndex {
-			get {
-				return _index;
-			}
-#if UNITY_EDITOR
-			set {
-				_index = value;
-			}
-#endif
-		}
-	}
-
-	public abstract class StaticVersionedAssetWithSerializationCallback : VersionedObjectWithSerializationCallback, StaticData.Indexed {
-		[HideInInspector]
-		[SerializeField]
-		int _index;
-
-		public int staticIndex {
-			get {
-				return _index;
-			}
-#if UNITY_EDITOR
-			set {
-				_index = value;
-			}
-#endif
-		}
-	}
-
 	public interface SerializeStaticAssetRef {
 		void Serialize(Archive archive);
 		object Copy();
 		bool Equals(SerializeStaticAssetRef other);
-    }
+	}
 
 	[ReplicatedUsing(typeof(StaticAssetRefSerializer))]
-	public struct StaticAssetRef<T> : SerializeStaticAssetRef where T : Object, StaticData.Indexed {
+	public struct StaticAssetRef<T> : SerializeStaticAssetRef where T : Object, StaticAsset.Indexed {
 		int _index;
 		T _obj;
 
@@ -289,7 +227,7 @@ namespace Bowhead {
 	}
 
 	public class StaticAssetRefSerializer : SerializableObjectNonReferenceFieldSerializer<StaticAssetRefSerializer> {
-		
+
 		public override bool Serialize(Archive archive, ISerializableObjectReferenceCollector collector, ref object field, object lastFieldState) {
 			SerializeStaticAssetRef r = (SerializeStaticAssetRef)field;
 			r.Serialize(archive);
@@ -305,7 +243,7 @@ namespace Bowhead {
 			return ((SerializeStaticAssetRef)toCopy).Copy();
 		}
 
-		public static bool Serialize<T>(Archive archive, ref T asset) where T : Object, StaticData.Indexed {
+		public static bool Serialize<T>(Archive archive, ref T asset) where T : Object, StaticAsset.Indexed {
 			StaticAssetRef<T> assetRef = asset;
 			object boxed = assetRef;
 			var r = instance.Serialize(archive, null, ref boxed, null);
