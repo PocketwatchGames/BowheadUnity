@@ -5,7 +5,7 @@ using UnityEditor;
 using System.Collections.Generic;
 
 [CustomEditor(typeof(SoundClip))]
-public class SoundClipInspector : Editor {
+public sealed class SoundClipInspector : Editor {
 
 	SerializedProperty _recycleThreshold;
 	SerializedProperty _clips;

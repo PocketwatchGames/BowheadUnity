@@ -5,7 +5,7 @@ using UnityEditor;
 using System.Collections.Generic;
 
 [CustomEditor(typeof(SoundCue))]
-public class SoundCueInspector : Editor {
+public sealed class SoundCueInspector : Editor {
 	
 
 	SerializedProperty _playChance;

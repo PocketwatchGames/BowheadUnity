@@ -57,6 +57,40 @@ public static class Utils {
 		return arr;
 	}
 
+	public static T[] Resize<T>(T[] arr, int size) {
+		if (arr == null) {
+			return new T[size];
+		}
+
+		if (arr.Length != size) {
+			var newArr = new T[size];
+			var max = Mathf.Min(size, arr.Length);
+			for (int i = 0; i < max; ++i) {
+				newArr[i] = arr[i];
+			}
+			arr = newArr;
+		}
+
+		return arr;
+	}
+
+	public static List<T> Resize<T>(List<T> arr, int size) {
+		if (arr == null) {
+			arr = new List<T>(size);
+		}
+
+		if (arr.Count != size) {
+			while (arr.Count > size) {
+				arr.RemoveAtSwap(arr.Count-1);
+			}
+			while (arr.Count < size) {
+				arr.Add(default(T));
+			}
+		}
+
+		return arr;
+	}
+
 	public static T GetAtIndexSubRangeZeroToOne<T>(this List<T> arr, int min, int max, float zeroToOne) {
 		Assert.IsTrue(zeroToOne >= 0);
 		Assert.IsTrue(zeroToOne <= 1);
@@ -252,11 +286,11 @@ public static class Utils {
 		if (capsule != null) {
 			switch (capsule.direction) {
 				case 0:
-					return capsule.height/2 * capsule.transform.localScale.x;
-                case 1:
-					return capsule.height/2 * capsule.transform.localScale.y;
+				return capsule.height/2 * capsule.transform.localScale.x;
+				case 1:
+				return capsule.height/2 * capsule.transform.localScale.y;
 				default:
-					return capsule.height/2 * capsule.transform.localScale.z;
+				return capsule.height/2 * capsule.transform.localScale.z;
 			}
 		}
 		var sphere = c as SphereCollider;
@@ -289,7 +323,7 @@ public static class Utils {
 	public static void DestroyComponent(Component c, float delay) {
 		GameObject.Destroy(c, delay);
 	}
-	
+
 	public static void SetLayerRecursive(this GameObject go, int layer, int excludeLayerMask) {
 		if (((1<<go.layer) & excludeLayerMask) == 0) {
 			go.layer = layer;
@@ -455,7 +489,7 @@ public static class Utils {
 
 	public static T GetChildComponent<T>(this Transform t, string name) {
 		var x = t.Find(name);
-		
+
 		if (x != null) {
 			return x.GetComponent<T>();
 		}
@@ -536,7 +570,7 @@ public static class Utils {
 		go.DestroyComponent<T>(0f);
 	}
 
-	public static void DestroyComponent<T>(this GameObject go, float delay) where T: Component {
+	public static void DestroyComponent<T>(this GameObject go, float delay) where T : Component {
 		var t = go.GetComponent<T>();
 		if (t != null) {
 			GameObject.Destroy(t, delay);
@@ -549,12 +583,12 @@ public static class Utils {
 		if (t.CompareTag(tag)) {
 			ttags.Add(t);
 		}
-				
+
 		for (int i = 0; i < t.childCount; ++i) {
 			var x = t.GetChild(i);
 			ttags.AddRange(x.FindTagsInHierarchy(tag));
 		}
-		
+
 		return ttags.ToArray();
 	}
 
@@ -612,7 +646,7 @@ public static class Utils {
 		go.DestroyComponentsInChildren<T>(0f);
 	}
 
-    public static void DestroyComponentsInChildren<T>(this GameObject go, float delay) where T : Object {
+	public static void DestroyComponentsInChildren<T>(this GameObject go, float delay) where T : Object {
 		var x = go.GetComponentsInChildren<T>();
 		for (int i = 0; i < x.Length; ++i) {
 			GameObject.Destroy(x[i]);
@@ -631,7 +665,7 @@ public static class Utils {
 						exclude = true;
 						break;
 					}
-                }
+				}
 			}
 
 			if (!exclude) {
@@ -648,7 +682,7 @@ public static class Utils {
 		return b / 255f;
 	}
 
-	public static bool Equals (this Color32 a, Color32 b) {
+	public static bool Equals(this Color32 a, Color32 b) {
 		return (a.a == b.a)
 			&& (a.r == b.r)
 			&& (a.g == b.g)
@@ -750,7 +784,7 @@ public static class Utils {
 			Mathf.Lerp(clientArea.yMin, clientArea.yMax, aMin.y),
 			Mathf.Lerp(clientArea.xMin, clientArea.xMax, aMax.x),
 			Mathf.Lerp(clientArea.yMin, clientArea.yMax, aMax.y)
-        );
+		);
 
 		var ofsMin = g.offsetMin;
 		var ofsMax = g.offsetMax;
@@ -762,7 +796,7 @@ public static class Utils {
 			anchors.yMax + ofsMax.y
 		);
 	}
-	
+
 	public static Rect GetCanvasPixelRect(this Canvas c) {
 		var px = c.pixelRect;
 		var scaler = c.GetComponent<CanvasScaler>();
@@ -851,11 +885,11 @@ public static class Utils {
 	public static TextureFormat ToTextureFormat(this RenderTextureFormat f) {
 		switch (f) {
 			case RenderTextureFormat.ARGB32:
-				return TextureFormat.ARGB32;
+			return TextureFormat.ARGB32;
 			case RenderTextureFormat.ARGB4444:
-				return TextureFormat.ARGB4444;
+			return TextureFormat.ARGB4444;
 			case RenderTextureFormat.RGB565:
-				return TextureFormat.RGB565;
+			return TextureFormat.RGB565;
 
 		}
 
@@ -865,11 +899,11 @@ public static class Utils {
 	public static RenderTextureFormat ToRenderTextureFormat(this TextureFormat f) {
 		switch (f) {
 			case TextureFormat.ARGB32:
-				return RenderTextureFormat.ARGB32;
+			return RenderTextureFormat.ARGB32;
 			case TextureFormat.ARGB4444:
-				return RenderTextureFormat.ARGB4444;
+			return RenderTextureFormat.ARGB4444;
 			case TextureFormat.RGB565:
-				return RenderTextureFormat.RGB565;
+			return RenderTextureFormat.RGB565;
 		}
 
 		throw new System.InvalidCastException("No conversion from TextureFormat." + f + " to RenderTextureFormat");
@@ -957,13 +991,13 @@ public static class Utils {
 		return d;
 	}
 
-    public static float SignOrZero(float a) {
-        if (a == 0)
-            return 0;
-        if (a > 0)
-            return 1;
-        return -1;
-    }
+	public static float SignOrZero(float a) {
+		if (a == 0)
+			return 0;
+		if (a > 0)
+			return 1;
+		return -1;
+	}
 
 	public static float AngleLerpShortestPath(float a, float b, float t) {
 		a = NormalizeAngle(a);
@@ -1195,7 +1229,7 @@ public static class Utils {
 
 	public static T CreateAsset<T>() where T : ScriptableObject, new() {
 		return CreateAsset<T>(SafeGetNewAssetPathFromName("New" + typeof(T).Name));
-    }
+	}
 
 	public static T CreateAsset<T>(string path) where T : ScriptableObject, new() {
 		var asset = ScriptableObject.CreateInstance<T>();
@@ -1346,6 +1380,43 @@ public static class Utils {
 		}
 
 		return newPath;
+	}
+
+	public static string GetAssetFolderPath(this Object obj) {
+		var path = AssetDatabase.GetAssetPath(obj);
+		var idx = path.LastIndexOf('/');
+		path = path.Substring(0, idx);
+		return path;
+	}
+
+	public static TextureImporterSettings GetImportSettings(this Texture2D t) {
+		var path = AssetDatabase.GetAssetPath(t);
+		var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+		var settings = new TextureImporterSettings();
+		imp.ReadTextureSettings(settings);
+		return settings;
+	}
+
+	public static void SetImportSettings(this Texture2D t, TextureImporterSettings settings) {
+		var path = AssetDatabase.GetAssetPath(t);
+		var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+		imp.SetTextureSettings(settings);
+	}
+
+	public static void ForeachSelectedAsset<T>(System.Action<T> action) where T: UnityEngine.Object {
+		var guids = Selection.assetGUIDs;
+		foreach (var guid in guids) {
+			var path = AssetDatabase.GUIDToAssetPath(guid);
+			var asset = AssetDatabase.LoadAssetAtPath<T>(path);
+			if (asset != null) {
+				action(asset);
+			}
+		}
+	}
+
+	public static void ReimportAsset(this UnityEngine.Object asset) {
+		var path = AssetDatabase.GetAssetPath(asset);
+		AssetDatabase.ImportAsset(path);
 	}
 
 #endif

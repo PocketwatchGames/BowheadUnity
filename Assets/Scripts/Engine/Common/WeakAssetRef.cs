@@ -5,6 +5,10 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 [Serializable]
 public sealed class Sprite_WRef : WeakAssetRef<Sprite> { }
 
@@ -152,9 +156,22 @@ public abstract class WeakAssetRef {
 	protected abstract void Precache();
 
 #if UNITY_EDITOR
+
 	public abstract Type inspector_assetType { get; }
 
 	public virtual void InspectorFlush() { }
+
+	public void AssignFromAsset(UnityEngine.Object asset) {
+		var editorPath = AssetDatabase.GetAssetPath(asset);
+		if (editorPath == null) {
+			throw new Exception("Asset " + asset.name + " has no path in AssetDatabase!");
+		}
+		var assetPath = Utils.GetResourceRelativePath(editorPath);
+		if (assetPath == null) {
+			throw new Exception("Asset " + asset.name + " is not in a Resources folder and cannot be assigned to a WeakAssetRef!");
+		}
+		InspectorUpdate(editorPath, assetPath);
+	}
 
 	public string inspectorAssetPath {
 		get {

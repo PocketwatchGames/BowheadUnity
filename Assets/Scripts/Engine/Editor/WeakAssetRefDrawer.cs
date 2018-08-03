@@ -1,7 +1,6 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
 using UnityEngine;
-using UnityEngine.Assertions;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Reflection;
