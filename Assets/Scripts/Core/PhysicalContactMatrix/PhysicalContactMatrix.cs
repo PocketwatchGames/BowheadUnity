@@ -39,6 +39,7 @@ namespace Bowhead {
 		}
 	}
 
+	[CreateAssetMenu(fileName = "PhysicalContactMatrix", menuName = "PhysicalContactMatrix")]
 	public class PhysicalContactMatrix : ScriptableObject
 #if UNITY_EDITOR
 		, ISerializationCallbackReceiver

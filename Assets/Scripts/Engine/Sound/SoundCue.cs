@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using UnityEditor;
 #endif
 
+[CreateAssetMenu(fileName = "SoundCue", menuName = "SoundCue")]
 public sealed class SoundCue : VersionedObject {
 	const int VERSION = 2;
 
@@ -81,11 +82,6 @@ public sealed class SoundCue : VersionedObject {
 		}
 
 		version = VERSION;
-	}
-
-	[MenuItem("Assets/Create/Engine/Sound Cue")]
-	static void CreateAsset() {
-		Utils.CreateAsset<SoundCue>();
 	}
 #endif
 }

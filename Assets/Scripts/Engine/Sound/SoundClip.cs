@@ -11,7 +11,8 @@ using UnityEditor;
 [Serializable]
 public sealed class SoundClip_WRef : WeakAssetRef<SoundClip> { }
 
-public class SoundClip : VersionedObjectWithSerializationCallback {
+[CreateAssetMenu(fileName = "SoundClip", menuName = "SoundClip")]
+public sealed class SoundClip : VersionedObjectWithSerializationCallback {
 	const int VERSION = 1;
 
 	[HideInInspector]
@@ -158,9 +159,5 @@ public class SoundClip : VersionedObjectWithSerializationCallback {
 		if (_recycleThreshold > 0) { }
 	}
 
-	[MenuItem("Assets/Create/Engine/Sound Clip")]
-	static void CreateAsset() {
-		Utils.CreateAsset<SoundClip>();
-	}
 #endif
 }

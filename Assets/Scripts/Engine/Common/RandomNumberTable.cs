@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class RandomNumberTable : ScriptableObject {
+[CreateAssetMenu(fileName = "RandomNumberTable", menuName = "RandomNumberTable")]
+public sealed class RandomNumberTable : ScriptableObject {
 	const int TABLE_SIZE = 1024*4;
 
 	[SerializeField]
@@ -55,10 +56,4 @@ public class RandomNumberTable : ScriptableObject {
 		set;
 	}
 
-#if UNITY_EDITOR
-	[UnityEditor.MenuItem("Assets/Create/Engine/Random Number Table")]
-	static void CreateTableAsset() {
-		Utils.CreateAsset<RandomNumberTable>();
-	}
-#endif
 }

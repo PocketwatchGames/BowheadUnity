@@ -1,6 +1,10 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
+using UnityEngine;
+
 namespace Bowhead {
+
+	[CreateAssetMenu(fileName = "PhysicalMaterialClass", menuName = "PhysicalMaterialClass")]
 	public class PhysicalMaterialClass : StaticVersionedAsset {
 		const int VERSION = 1;
 		public bool defaultContact;

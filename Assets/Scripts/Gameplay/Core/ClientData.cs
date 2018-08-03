@@ -5,7 +5,8 @@ using System;
 
 namespace Bowhead {
 
-	public class ClientData : ScriptableObject {
+	[CreateAssetMenu(fileName = "ClientData", menuName = "ClientData")]
+	public sealed class ClientData : ScriptableObject {
 		
 		[Serializable]
 		public struct GameSounds {
