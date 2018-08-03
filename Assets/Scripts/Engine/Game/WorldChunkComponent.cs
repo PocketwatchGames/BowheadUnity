@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
-public class World_ChunkComponent : MonoBehaviour {
+public class WorldChunkComponent : MonoBehaviour {
 	[SerializeField]
 	MeshFilter _meshFilter;
 	[SerializeField]

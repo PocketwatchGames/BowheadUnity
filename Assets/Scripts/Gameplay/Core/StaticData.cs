@@ -16,7 +16,7 @@ namespace Bowhead {
 	public class StaticData : ScriptableObject, ISerializationCallbackReceiver {
 		
 		public GameObject defaultActorPrefab;
-		public World_ChunkComponent serverTerrainChunkComponent;
+		public WorldChunkComponent serverTerrainChunkComponent;
 		public RandomNumberTable randomNumberTable;
 		public PhysicalContactMatrix physicalContactMatrix;
 

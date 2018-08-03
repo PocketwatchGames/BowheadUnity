@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class TerrainTestMono : MonoBehaviour {
 	[SerializeField]
-	World_ChunkComponent _chunkPrefab;
+	WorldChunkComponent _chunkPrefab;
 	[SerializeField]
 	bool _tick;
 	[SerializeField]

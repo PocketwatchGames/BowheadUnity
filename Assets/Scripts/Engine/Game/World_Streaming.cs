@@ -96,7 +96,7 @@ public partial class World {
 		readonly Chunk[] _chunkHash = new Chunk[CHUNK_HASH_SIZE];
 		readonly List<VolumeData> _streamingVolumes = new List<VolumeData>();
 		readonly Chunk[] _neighbors = new Chunk[27];
-		readonly World_ChunkComponent _chunkPrefab;
+		readonly WorldChunkComponent _chunkPrefab;
 		GameObject _terrainRoot;
 
 		ChunkJobData _freeJobData;
@@ -119,7 +119,7 @@ public partial class World {
 
 		public static Color32[] blockColors => ChunkMeshGen.tableStorage.blockColorsArray;
 		
-		public Streaming(World_ChunkComponent chunkPrefab, CreateGenVoxelsJobDelegate createGenVoxelsJob, MMapChunkDataDelegate chunkRead, ChunkWriteDelegate chunkWrite) {
+		public Streaming(WorldChunkComponent chunkPrefab, CreateGenVoxelsJobDelegate createGenVoxelsJob, MMapChunkDataDelegate chunkRead, ChunkWriteDelegate chunkWrite) {
 			_chunkPrefab = chunkPrefab;
 			_chunkRead = chunkRead;
 			_chunkWrite = chunkWrite;
@@ -689,7 +689,7 @@ public partial class World {
 			return dst;
 		}
 
-		World_ChunkComponent CreateChunkMeshForLayer(ref World_ChunkComponent root, Vector3 pos, int layer) {
+		WorldChunkComponent CreateChunkMeshForLayer(ref WorldChunkComponent root, Vector3 pos, int layer) {
 			if (root == null) {
 				root = GameObject.Instantiate(_chunkPrefab, pos, Quaternion.identity, _terrainRoot.transform);
 				root.gameObject.layer = ChunkLayers[layer];
@@ -698,7 +698,7 @@ public partial class World {
 				return root;
 			}
 
-			var child = root.GetChildComponent<World_ChunkComponent>(ChunkLayerNames[layer]);
+			var child = root.GetChildComponent<WorldChunkComponent>(ChunkLayerNames[layer]);
 			if (child != null) {
 				return child;
 			}
@@ -709,7 +709,7 @@ public partial class World {
 			return child;
 		}
 
-		void DestroyChunkMeshForLayer(ref World_ChunkComponent root, int layer) {
+		void DestroyChunkMeshForLayer(ref WorldChunkComponent root, int layer) {
 			if (root == null) {
 				return;
 			}
@@ -724,7 +724,7 @@ public partial class World {
 				return;
 			}
 
-			var child = root.GetChildComponent<World_ChunkComponent>(ChunkLayerNames[layer]);
+			var child = root.GetChildComponent<WorldChunkComponent>(ChunkLayerNames[layer]);
 			if (child != null) {
 				Utils.DestroyGameObject(child.gameObject);
 			}
@@ -735,7 +735,7 @@ public partial class World {
 			}
 		}
 
-		void CreateChunkMesh(ref ChunkMeshGen.CompiledChunkData jobData, ref World_ChunkComponent root, Vector3 pos, int layer, ref int baseIndex, ref int baseVertex) {
+		void CreateChunkMesh(ref ChunkMeshGen.CompiledChunkData jobData, ref WorldChunkComponent root, Vector3 pos, int layer, ref int baseIndex, ref int baseVertex) {
 			var outputVerts = jobData.outputVerts;
 
 			var vertCount = outputVerts.counts[layer*3+0];
@@ -830,7 +830,7 @@ public partial class World {
 			public bool hasLoaded;
 			public ChunkMeshGen.ChunkData_t chunkData;
 			public ChunkJobData jobData;
-			public World_ChunkComponent goChunk;
+			public WorldChunkComponent goChunk;
 			public bool didMMap;
 
 			bool IChunk.hasVoxelData => hasVoxelData;
@@ -841,7 +841,7 @@ public partial class World {
 			EChunkFlags IChunk.flags => chunkData.flags[0];
 			Decoration_t[] IChunk.decorations => chunkData.decorations;
 			int IChunk.decorationCount => chunkData.decorationCount[0];
-			World_ChunkComponent IChunk.component => goChunk;
+			WorldChunkComponent IChunk.component => goChunk;
 
 			EChunkFlags IChunkIO.flags {
 				get {
@@ -1070,7 +1070,7 @@ public partial class World {
 			Voxel_t[] voxeldata { get; }
 			Decoration_t[] decorations { get; }
 			int decorationCount { get; }
-			World_ChunkComponent component { get; }
+			WorldChunkComponent component { get; }
 			event ChunkGeneratedDelegate onChunkVoxelsLoaded;
 			event ChunkGeneratedDelegate onChunkVoxelsUpdated;
 			event ChunkGeneratedDelegate onChunkTrisUpdated;

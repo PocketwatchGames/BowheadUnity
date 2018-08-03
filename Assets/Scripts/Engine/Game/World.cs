@@ -61,7 +61,7 @@ public abstract partial class World : INetDriverCallbacks, IDisposable {
 	public World(
 		IGameInstance gameInstance,
 		Streaming sharedStreaming,
-		World_ChunkComponent chunkComponent,
+		WorldChunkComponent chunkComponent,
 		Transform sceneGroup,
 		GameObject defaultActorPrefab,
 		GetObjectPoolRootDelegate getStaticPoolRoot,

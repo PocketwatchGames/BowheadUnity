@@ -1,9 +1,6 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
 using System;
-using System.Diagnostics.Contracts;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 // A world space chunk position.

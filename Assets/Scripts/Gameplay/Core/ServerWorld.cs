@@ -14,7 +14,7 @@ namespace Bowhead.Server {
 		
 		public ServerWorld(
 			IGameInstance gameInstance,
-			World_ChunkComponent chunkComponent,
+			WorldChunkComponent chunkComponent,
 			Transform sceneGroup,
 			string serverName,
 			string serverMessage,

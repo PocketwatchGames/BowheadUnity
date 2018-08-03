@@ -128,6 +128,6 @@ namespace Bowhead {
 		public Sounds sounds;
 		public ItemQualityColors itemQualityColors;
 		public Texture2D pickupCursor;
-		public World_ChunkComponent clientTerrainChunkComponent;
+		public WorldChunkComponent clientTerrainChunkComponent;
 	}
 }

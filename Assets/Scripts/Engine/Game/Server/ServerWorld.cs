@@ -25,7 +25,7 @@ namespace Server {
 		public ServerWorld(
 			IGameInstance gameInstance,
 			Streaming sharedStreaming,
-			World_ChunkComponent chunkComponent,
+			WorldChunkComponent chunkComponent,
 			Transform sceneGroup,
 			GameObject defaultActorPrefab,
 			GetObjectPoolRootDelegate getStaticPoolRoot,

@@ -28,7 +28,7 @@ namespace Bowhead.Client {
         public ClientWorld(
 			IGameInstance gameInstance,
 			Streaming serverStreaming,
-			World_ChunkComponent chunkComponent,
+			WorldChunkComponent chunkComponent,
 			Transform sceneGroup,
 			System.Reflection.Assembly[] assemblies,
 			INetDriver driver

@@ -23,7 +23,7 @@ namespace Client {
 		public ClientWorld(
 			IGameInstance gameInstance,
 			Streaming sharedStreaming,
-			World_ChunkComponent chunkComponent,
+			WorldChunkComponent chunkComponent,
 			Transform sceneGroup,
 			GameObject defaultActorPrefab,
 			GetObjectPoolRootDelegate getStaticPoolRoot,
