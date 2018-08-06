@@ -1389,7 +1389,7 @@ public static class Utils {
 		return path;
 	}
 
-	public static TextureImporterSettings GetImportSettings(this Texture2D t) {
+	public static TextureImporterSettings GetImporterSettings(this Texture2D t) {
 		var path = AssetDatabase.GetAssetPath(t);
 		var imp = (TextureImporter)AssetImporter.GetAtPath(path);
 		var settings = new TextureImporterSettings();
@@ -1397,10 +1397,28 @@ public static class Utils {
 		return settings;
 	}
 
-	public static void SetImportSettings(this Texture2D t, TextureImporterSettings settings) {
+	public static void SetImporterSettings(this Texture2D t, TextureImporterSettings settings) {
 		var path = AssetDatabase.GetAssetPath(t);
 		var imp = (TextureImporter)AssetImporter.GetAtPath(path);
 		imp.SetTextureSettings(settings);
+	}
+
+	public static TextureImporterPlatformSettings GetImporterPlatformSettings(this Texture2D t, string platform) {
+		var path = AssetDatabase.GetAssetPath(t);
+		var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+		return imp.GetPlatformTextureSettings(platform);
+	}
+
+	public static TextureImporterPlatformSettings GetDefaultImporterPlatformSettings(this Texture2D t) {
+		var path = AssetDatabase.GetAssetPath(t);
+		var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+		return imp.GetDefaultPlatformTextureSettings();
+	}
+
+	public static void SetImporterPlatformSettings(this Texture2D t, TextureImporterPlatformSettings settings) {
+		var path = AssetDatabase.GetAssetPath(t);
+		var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+		imp.SetPlatformTextureSettings(settings);
 	}
 
 	public static void ForeachSelectedAsset<T>(System.Action<T> action) where T: UnityEngine.Object {

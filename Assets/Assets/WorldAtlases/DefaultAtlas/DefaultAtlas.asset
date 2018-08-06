@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56e42f693f47f004b843a466e93476ed, type: 3}
+  m_Name: DefaultAtlas
+  m_EditorClassIdentifier: 
+  materials:
+  - {fileID: 11400000, guid: 7fc6fc36d23501848a6a80a461ea414b, type: 2}
+  - {fileID: 11400000, guid: 80d4a356a5e41004a9144fcc3a354e58, type: 2}
+  - {fileID: 11400000, guid: 4e955129a32f2ac44b98aa7c8a754226, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  - {fileID: 11400000, guid: 22f6f9b2bcf049e428eb62a235a1375a, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
