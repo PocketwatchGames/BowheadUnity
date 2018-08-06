@@ -394,10 +394,10 @@ namespace Bowhead {
 
 			float chargeMultiplier = 1;
 
-			//if (owner.sprintTimer > 0) {
-			//	chargeMultiplier = 2;
-			//}
-			if (owner.activity == Pawn.Activity.Falling) {
+			if (Vector2.Dot(owner.velocity, new Vector2(Mathf.Sin(owner.yaw),Mathf.Cos(owner.yaw))) > owner.data.sprintDamageMultiplierSpeed) {
+				chargeMultiplier = 2;
+			}
+			else if (owner.activity == Pawn.Activity.Falling) {
 				chargeMultiplier = 2;
 			}
 			else if (data.attacks[attackHand].chargeTime > 0 && attackCharge > 0) {

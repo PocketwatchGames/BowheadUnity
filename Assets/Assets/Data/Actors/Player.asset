@@ -31,6 +31,7 @@ MonoBehaviour:
   backStabAngle: 45
   runSound: 1
   sprintSound: 2
+  sprintDamageMultiplierSpeed: 10
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
   jumpSpeed: 13

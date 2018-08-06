@@ -30,6 +30,7 @@ namespace Bowhead.Actors {
 		public float backStabAngle;
 		public float runSound;
 		public float sprintSound;
+		public float sprintDamageMultiplierSpeed;
 		public ParticleSystem bloodParticle;
 
         [Header("Ground")]
