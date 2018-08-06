@@ -53,46 +53,53 @@ public class WorldAtlasEditor : Editor {
 		}
 	}
 
-	WorldAtlasData LoadAtlasData(WorldAtlas atlas) {
+	WorldAtlasData SaveAtlasData(WorldAtlas atlas, WorldAtlasData atlasData) {
 		var path = atlas.GetAssetFolderPath();
 		path = path + "/" + atlas.name + "_AtlasData.asset";
-		var atlasData = AssetDatabase.LoadAssetAtPath<WorldAtlasData>(path);
-		if (atlasData == null) {
-			atlasData = CreateInstance<WorldAtlasData>();
+		var existing = AssetDatabase.LoadAssetAtPath<WorldAtlasData>(path);
+		if (existing != null) {
+			EditorUtility.CopySerialized(atlasData, existing);
+			EditorUtility.SetDirty(existing);
+			atlasData = existing;
+		} else {
 			AssetDatabase.CreateAsset(atlasData, path);
+			atlasData = AssetDatabase.LoadAssetAtPath<WorldAtlasData>(path);
 		}
 		return atlasData;
 	}
 
-	WorldAtlasClientData LoadAtlasClientData(WorldAtlas atlas) {
+	WorldAtlasClientData SaveAtlasClientData(WorldAtlas atlas, WorldAtlasClientData clientData) {
 		var folder = atlas.GetAssetFolderPath();
 		var path = folder + "/Resources/" + atlas.name + "_AtlasClientData.asset";
-		var atlasData = AssetDatabase.LoadAssetAtPath<WorldAtlasClientData>(path);
-		if (atlasData == null) {
-			atlasData = CreateInstance<WorldAtlasClientData>();
+		var existing = AssetDatabase.LoadAssetAtPath<WorldAtlasClientData>(path);
+		if (existing != null) {
+			EditorUtility.CopySerialized(clientData, existing);
+			EditorUtility.SetDirty(existing);
+			clientData = existing;
+		} else {
 			AssetDatabase.CreateFolder(folder, "Resources");
-			AssetDatabase.CreateAsset(atlasData, path);
+			AssetDatabase.CreateAsset(clientData, path);
+			clientData = AssetDatabase.LoadAssetAtPath<WorldAtlasClientData>(path);
 		}
-		return atlasData;
+		return clientData;
 	}
 
-	Texture2DArray SaveTextureArray(WorldAtlas atlas, Texture2DArray array, string channel) {
-		var path = atlas.GetAssetFolderPath();
-		path = path + "/" + atlas.name + "_" + channel + "TextureArray.asset";
+	void SaveTextureArray(WorldAtlas atlas, Texture2DArray array, string channel) {
+		var folder = atlas.GetAssetFolderPath();
+		var path = folder + "/TextureArrays/" + atlas.name + "_" + channel + "TextureArray.asset";
 		var existing = AssetDatabase.LoadAssetAtPath<Texture2DArray>(path);
 		if (existing != null) {
 			EditorUtility.CopySerialized(array, existing);
 			EditorUtility.SetDirty(existing);
-			array = existing;
 		} else {
+			AssetDatabase.CreateFolder(folder, "TextureArrays");
 			AssetDatabase.CreateAsset(array, path);
 		}
-		return array;
 	}
 
 	Texture2DArray LoadTextureArray(WorldAtlas atlas, string channel) {
 		var path = atlas.GetAssetFolderPath();
-		path = path + "/" + atlas.name + "_" + channel + "TextureArray.asset";
+		path = path + "/TextureArrays/" + atlas.name + "_" + channel + "TextureArray.asset";
 		return AssetDatabase.LoadAssetAtPath<Texture2DArray>(path);
 	}
 
@@ -122,6 +129,33 @@ public class WorldAtlasEditor : Editor {
 	}
 
 	void RebuildAtlasData() {
+		foreach (var obj in serializedObject.targetObjects) {
+			var atlas = (WorldAtlas)obj;
+			var atlasData = CreateInstance<WorldAtlasData>();
+			var atlasClientData = CreateInstance<WorldAtlasClientData>();
+
+			atlasClientData.terrainTextures = LoadTerrainTextures(atlas);
+			atlasClientData = SaveAtlasClientData(atlas, atlasClientData);
+
+			atlasData.atlasClientData = new WorldAtlasClientData_WRef();
+			atlasData.atlasClientData.AssignFromAsset(atlasClientData);
+			SaveAtlasData(atlas, atlasData);
+		}
+	}
+
+	WorldAtlasClientData.TerrainTextures LoadTerrainTextures(WorldAtlas atlas) {
+		WorldAtlasClientData.TerrainTextures textures;
+
+		textures.albedo = LoadTextureArray(atlas, "Albedo");
+		if (textures.albedo == null) {
+			RebuildTextureArray();
+			textures.albedo = LoadTextureArray(atlas, "Albedo");
+			if (textures.albedo == null) {
+				ThrowAssetException(atlas, "Unable to load Albedo texture array!");
+			}
+		}
+
+		return textures;
 	}
 
 	void RebuildTextureArray() {
