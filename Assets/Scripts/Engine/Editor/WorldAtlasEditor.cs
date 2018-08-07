@@ -135,6 +135,13 @@ public class WorldAtlasEditor : Editor {
 			var atlasClientData = CreateInstance<WorldAtlasClientData>();
 
 			atlasClientData.terrainTextures = LoadTerrainTextures(atlas);
+			{
+				List<WorldAtlasMaterialTextures> materials;
+				List<int> indices;
+
+				LoadTextureList(atlas, out materials, out indices);
+				atlasClientData.materialTextureArrayIndices = indices.ToArray();
+			}
 			atlasClientData = SaveAtlasClientData(atlas, atlasClientData);
 
 			atlasData.atlasClientData = new WorldAtlasClientData_WRef();

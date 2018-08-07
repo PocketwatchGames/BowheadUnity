@@ -21,6 +21,7 @@ public class WorldData : ScriptableObject {
 	}
 
 	public TerrainType[] terrainTypes;
+	public WorldAtlasData atlasData;
 
     public float windSpeedStormy;
     public float windSpeedWindy;

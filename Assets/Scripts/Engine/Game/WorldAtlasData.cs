@@ -4,6 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class WorldAtlasData : StaticAsset {
+public sealed class WorldAtlasData : ScriptableObject {
 	public WorldAtlasClientData_WRef atlasClientData;
 }
