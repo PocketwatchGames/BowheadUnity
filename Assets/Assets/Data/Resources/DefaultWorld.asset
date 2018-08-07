@@ -11,6 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c89e950dd6a51540a59f1ec19222a35, type: 3}
   m_Name: DefaultWorld
   m_EditorClassIdentifier: 
+  _index: 37
   terrainTypes:
   - name: standard
     speedModifier: 1

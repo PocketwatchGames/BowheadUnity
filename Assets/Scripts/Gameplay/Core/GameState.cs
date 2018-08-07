@@ -59,7 +59,7 @@ namespace Bowhead.Actors {
 			rpc_Multicast_SetMatchState = BindRPC<byte, bool, int>(Multicast_SetMatchState);
 		}
 
-		public void ServerSetGameMode(Server.GameMode gameMode) {
+		public virtual void ServerSetGameMode(Server.GameMode gameMode) {
 			gameModeType = gameMode.GetType();
 			_gameModeClass = gameModeType.FullName;
 			_matchPlayTime = Mathf.FloorToInt(gameMode.matchPlayTime);

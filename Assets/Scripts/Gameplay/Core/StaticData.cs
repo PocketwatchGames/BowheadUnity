@@ -121,8 +121,11 @@ namespace Bowhead {
 				progress.Close();
 
 				for (int i = 0; i < indexedObjects.Count; ++i) {
-					var obj = (StaticAsset.Indexed)indexedObjects[i];
+					var obj = indexedObjects[i] as StaticAsset.Indexed;
 					if ((obj != null) && (obj.staticIndex != i)) {
+						indexedObjects[i] = null;
+						changed = true;
+					} else if ((obj == null) && (indexedObjects[i] != null)) { // asset was static indexed but now just a ScriptableObject.
 						indexedObjects[i] = null;
 						changed = true;
 					}

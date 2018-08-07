@@ -754,6 +754,7 @@ public partial class World {
 			public NativeArray<Vector3> positions;
 			public NativeArray<Vector3> normals;
 			public NativeArray<Color32> colors;
+			public NativeArray<Color32> textureBlending;
 			[WriteOnly]
 			public NativeArray<int> indices;
 			[WriteOnly]
@@ -775,6 +776,7 @@ public partial class World {
 					positions = AllocatePersistentNoInit<Vector3>(ushort.MaxValue),
 					normals = AllocatePersistentNoInit<Vector3>(ushort.MaxValue),
 					colors = AllocatePersistentNoInit<Color32>(ushort.MaxValue),
+					textureBlending = AllocatePersistentNoInit<Color32>(ushort.MaxValue),
 					indices = AllocatePersistentNoInit<int>(ushort.MaxValue),
 					counts = AllocatePersistentNoInit<int>(3*MAX_CHUNK_LAYERS),
 					submeshes = AllocatePersistentNoInit<int>(MAX_CHUNK_SUBMESHES*MAX_CHUNK_LAYERS),
@@ -788,6 +790,7 @@ public partial class World {
 				positions.Dispose();
 				normals.Dispose();
 				colors.Dispose();
+				textureBlending.Dispose();
 				indices.Dispose();
 				counts.Dispose();
 				submeshes.Dispose();
@@ -827,14 +830,14 @@ public partial class World {
 				(a.a == b.a);
 			}
 
-			public void EmitVert(int x, int y, int z, Vector3 normal, Color32 color) {
+			public void EmitVert(int x, int y, int z, Vector3 normal, Color32 color, Color32 textureBlending) {
 				int INDEX = (y*(VOXEL_CHUNK_SIZE_XZ+1)*(VOXEL_CHUNK_SIZE_XZ+1)) + (z*(VOXEL_CHUNK_SIZE_XZ+1)) + x;
 
 				// existing vertex?
 				int vtoiCount = _vtoiCounts[INDEX];
 				for (int i = 0; i < vtoiCount; ++i) {
 					int idx = _vtoi[(INDEX*BANK_SIZE)+i];
-					if (ColorEqual(colors[idx], color) && (normals[idx] == normal)) {
+					if (ColorEqual(colors[idx], color) && ColorEqual(this.textureBlending[idx], textureBlending) && (normals[idx] == normal)) {
 						Assert((_indexCount-_layerIndexOfs) < ushort.MaxValue);
 						indices[_indexCount++] = idx - _layerVertOfs;
 						return;
@@ -848,6 +851,7 @@ public partial class World {
 				positions[_vertCount] = new Vector3(x, y, z);
 				normals[_vertCount] = normal;
 				colors[_vertCount] = color;
+				this.textureBlending[_vertCount] = textureBlending;
 
 				_vtoi[(INDEX*BANK_SIZE)+vtoiCount] = _vertCount;
 				_vtoiCounts[INDEX] = vtoiCount + 1;
@@ -877,6 +881,8 @@ public partial class World {
 			[ReadOnly]
 			public NativeArray<int> layers;
 			[ReadOnly]
+			public NativeArray<int> materials;
+			[ReadOnly]
 			public NativeArray<int> indices;
 			[ReadOnly]
 			public NativeArray<int> counts;
@@ -892,6 +898,7 @@ public partial class World {
 					smgs = smv.smgs,
 					submeshes = smv.submeshes,
 					layers = smv.layers,
+					materials = smv.materials,
 					indices = smv.indices,
 					counts = smv.counts,
 					vtoiCounts = smv.vtoiCounts
@@ -915,6 +922,8 @@ public partial class World {
 			[WriteOnly]
 			public NativeArray<int> layers;
 			[WriteOnly]
+			public NativeArray<int> materials;
+			[WriteOnly]
 			public NativeArray<int> indices;
 			[WriteOnly]
 			public NativeArray<int> counts;
@@ -937,6 +946,7 @@ public partial class World {
 					smgs = AllocatePersistentNoInit<uint>(ushort.MaxValue*BANK_SIZE),
 					submeshes = AllocatePersistentNoInit<int>(ushort.MaxValue*BANK_SIZE),
 					layers = AllocatePersistentNoInit<int>(ushort.MaxValue*BANK_SIZE),
+					materials = AllocatePersistentNoInit<int>(ushort.MaxValue*BANK_SIZE),
 					indices = AllocatePersistentNoInit<int>(ushort.MaxValue),
 					counts = AllocatePersistentNoInit<int>(3),
 					_vtoi = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES),
@@ -953,6 +963,7 @@ public partial class World {
 				smgs.Dispose();
 				submeshes.Dispose();
 				layers.Dispose();
+				materials.Dispose();
 				indices.Dispose();
 				counts.Dispose();
 				_vtoi.Dispose();
@@ -975,7 +986,7 @@ public partial class World {
 				counts[2] = _maxSubmesh;
 			}
 
-			int EmitVert(int x, int y, int z, uint smg, float smoothingFactor, Color32 color, Vector3 normal, int submesh, int layer) {
+			int EmitVert(int x, int y, int z, uint smg, float smoothingFactor, Color32 color, Vector3 normal, int submesh, int layer, int material) {
 				int INDEX = (y*(VOXEL_CHUNK_SIZE_XZ + 1)*(VOXEL_CHUNK_SIZE_XZ + 1)) + (z*(VOXEL_CHUNK_SIZE_XZ + 1)) + x;
 
 				var idx = _vtoi[INDEX] - 1;
@@ -1000,6 +1011,7 @@ public partial class World {
 				smgs[(idx*BANK_SIZE) + count] = smg;
 				submeshes[(idx*BANK_SIZE) + count] = submesh;
 				layers[(idx*BANK_SIZE) + count] = layer;
+				materials[(idx*BANK_SIZE) + count] = material;
 
 				vtoiCounts[idx] = count + 1;
 				_maxSubmesh = (submesh > _maxSubmesh) ? submesh : _maxSubmesh;
@@ -1008,22 +1020,22 @@ public partial class World {
 				return idx | (count << 24);
 			}
 
-			public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, float smoothFactor, Color32 color, int submesh, int layer, bool isBorderVoxel) {
+			public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, float smoothFactor, Color32 color, int submesh, int layer, int material, bool isBorderVoxel) {
 				var n = GetNormalAndAngles((float)x0, (float)y0, (float)z0, (float)x1, (float)y1, (float)z1, (float)x2, (float)y2, (float)z2);
 				if (isBorderVoxel) {
 					if ((x0 >= 0) && (x0 <= VOXEL_CHUNK_SIZE_XZ) && (y0 >= 0) && (y0 <= VOXEL_CHUNK_SIZE_Y) && (z0 >= 0) && (z0 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x0, y0, z0, smg, smoothFactor, color, n, submesh, layer);
+						EmitVert(x0, y0, z0, smg, smoothFactor, color, n, submesh, layer, material);
 					}
 					if ((x1 >= 0) && (x1 <= VOXEL_CHUNK_SIZE_XZ) && (y1 >= 0) && (y1 <= VOXEL_CHUNK_SIZE_Y) && (z1 >= 0) && (z1 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x1, y1, z1, smg, smoothFactor, color, n, submesh, layer);
+						EmitVert(x1, y1, z1, smg, smoothFactor, color, n, submesh, layer, material);
 					}
 					if ((x2 >= 0) && (x2 <= VOXEL_CHUNK_SIZE_XZ) && (y2 >= 0) && (y2 <= VOXEL_CHUNK_SIZE_Y) && (z2 >= 0) && (z2 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x2, y2, z2, smg, smoothFactor, color, n, submesh, layer);
+						EmitVert(x2, y2, z2, smg, smoothFactor, color, n, submesh, layer, material);
 					}
 				} else {
-					indices[_indexCount++] = EmitVert(x0, y0, z0, smg, smoothFactor, color, n, submesh, layer);
-					indices[_indexCount++] = EmitVert(x1, y1, z1, smg, smoothFactor, color, n, submesh, layer);
-					indices[_indexCount++] = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, submesh, layer);
+					indices[_indexCount++] = EmitVert(x0, y0, z0, smg, smoothFactor, color, n, submesh, layer, material);
+					indices[_indexCount++] = EmitVert(x1, y1, z1, smg, smoothFactor, color, n, submesh, layer, material);
+					indices[_indexCount++] = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, submesh, layer, material);
 				}
 			}
 
@@ -1078,9 +1090,10 @@ public partial class World {
 							Int3_t p;
 							Vector3 n;
 							Color32 c;
+							Color32 texBlend;
 
-							if (BlendVertex(layer, submesh, smoothVerts.indices[i], out p, out n, out c)) {
-								finalVerts.EmitVert(p.x, p.y, p.z, n, c);
+							if (BlendVertex(layer, submesh, smoothVerts.indices[i], out p, out n, out c, out texBlend)) {
+								finalVerts.EmitVert(p.x, p.y, p.z, n, c, texBlend);
 								++numSubmeshVerts;
 								maxLayerSubmesh = (submesh > maxLayerSubmesh) ? submesh : maxLayerSubmesh;
 							}
@@ -1093,7 +1106,7 @@ public partial class World {
 				}
 			}
 
-			bool BlendVertex(int layer, int submesh, int packedIndex, out Int3_t outPos, out Vector3 outNormal, out Color32 outColor) {
+			bool BlendVertex(int layer, int submesh, int packedIndex, out Int3_t outPos, out Vector3 outNormal, out Color32 outColor, out Color32 outTextureBlending) {
 				int index = packedIndex & (0x00ffffff);
 				int ofs = packedIndex >> 24;
 
@@ -1101,6 +1114,7 @@ public partial class World {
 					outPos = default(Int3_t);
 					outNormal = default(Vector3);
 					outColor = default(Color32);
+					outTextureBlending = default(Color32);
 					return false;
 				}
 
@@ -1108,6 +1122,7 @@ public partial class World {
 					outPos = default(Int3_t);
 					outNormal = default(Vector3);
 					outColor = default(Color32);
+					outTextureBlending = default(Color32);
 					return false;
 				}
 
@@ -1115,6 +1130,8 @@ public partial class World {
 				var summedNormal = originalNormal;
 
 				Vector4 c = (Color)smoothVerts.colors[(index*BANK_SIZE) + ofs];
+				outTextureBlending = new Color32((byte)smoothVerts.materials[(index*BANK_SIZE)+ofs], 0, 0, 0);
+
 				var smg = smoothVerts.smgs[(index*BANK_SIZE) + ofs];
 
 				float factor = 1.1f - smoothVerts.smoothFactor[(index*BANK_SIZE)+ofs];
@@ -1256,6 +1273,7 @@ public partial class World {
 			VoxelArray1D _voxels;
 			Tables _tables;
 			NativeArray<PinnedChunkData_t> _area;
+			NativeArray<int> _blockMaterials;
 
 			VoxelNeighbors_t _vn;
 			VoxelNeighborContents_t _vnc;
@@ -1263,11 +1281,12 @@ public partial class World {
 			int _numVoxels;
 			int _numTouched;
 
-			public static GenerateChunkVerts_t New(SmoothingVertsOut_t smoothVerts, VoxelArray1D voxels, NativeArray<PinnedChunkData_t> area, TableStorage tableStorage) {
+			public static GenerateChunkVerts_t New(SmoothingVertsOut_t smoothVerts, VoxelArray1D voxels, NativeArray<PinnedChunkData_t> area, TableStorage tableStorage, NativeArray<int> blockMaterials) {
 				return new GenerateChunkVerts_t {
 					_smoothVerts = smoothVerts,
 					_voxels = voxels,
 					_tables = Tables.New(tableStorage),
+					_blockMaterials = blockMaterials,
 					_area = area,
 					_vn = new VoxelNeighbors_t()
 				};
@@ -1732,6 +1751,7 @@ public partial class World {
 						float factor;
 						int submesh;
 						int layer;
+						int material = _blockMaterials[(int)_vn[i]];
 
 						GetBlockColorAndSmoothing(blocktype, out color, out smg, out factor, out submesh, out layer);
 
@@ -1746,7 +1766,7 @@ public partial class World {
 									x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
 									x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
 									x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
-									smg, factor, color, submesh, layer, isBorderVoxel
+									smg, factor, color, submesh, layer, material, isBorderVoxel
 								);
 							}
 
@@ -1807,6 +1827,7 @@ public partial class World {
 									float factor;
 									int submesh;
 									int layer;
+									int material = _blockMaterials[(int)_vn[i]];
 
 									GetBlockColorAndSmoothing(_vn[i], out color, out smg, out factor, out submesh, out layer);
 
@@ -1814,7 +1835,7 @@ public partial class World {
 										x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
 										x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
 										x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
-										smg, factor, color, submesh, layer, isBorderVoxel
+										smg, factor, color, submesh, layer, material, isBorderVoxel
 									);
 
 									// emit backface?
@@ -1823,7 +1844,7 @@ public partial class World {
 											x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
 											x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
 											x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
-											smg, factor, color, submesh, layer, isBorderVoxel
+											smg, factor, color, submesh, layer, material, isBorderVoxel
 										);
 									}
 								}
@@ -2222,8 +2243,8 @@ public partial class World {
 			return createGenVoxelsJob(pos, NewPinnedChunkData_t(chunkData));
 		}
 
-		public unsafe static JobHandle ScheduleGenTrisJob(ref CompiledChunkData jobData, ChunkTimingData_t* timing, JobHandle dependsOn = default(JobHandle)) {
-			var genChunkVerts = GenerateChunkVerts_t.New(jobData.smoothVerts, jobData.voxelStorage.voxels, jobData.neighbors, tableStorage).Schedule(dependsOn);
+		public unsafe static JobHandle ScheduleGenTrisJob(ref CompiledChunkData jobData, ChunkTimingData_t* timing, NativeArray<int> blockMaterials, JobHandle dependsOn = default(JobHandle)) {
+			var genChunkVerts = GenerateChunkVerts_t.New(jobData.smoothVerts, jobData.voxelStorage.voxels, jobData.neighbors, tableStorage, blockMaterials).Schedule(dependsOn);
 			return GenerateFinalVertices_t.New(SmoothingVertsIn_t.New(jobData.smoothVerts), jobData.outputVerts, timing).Schedule(genChunkVerts);
 		}
 		

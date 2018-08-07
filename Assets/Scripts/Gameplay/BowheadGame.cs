@@ -106,6 +106,13 @@ namespace Bowhead.Server {
 
 		public BowheadGame(ServerWorld world) : base(world) {
 			data = Resources.Load<WorldData>("DefaultWorld");
+
+			// mixed mode server owns the world instance
+			if (GameManager.instance.dedicatedServer) {
+				world.worldStreaming.SetBlockMaterialIndices(new int[WorldAtlasClientData.TEX2ARRAYINDEX_SIZE]);
+			} else {
+				world.worldStreaming.SetBlockMaterialIndices(data.atlasData.atlasClientData.Load().block2TextureSet);
+			}
 		}
 
 		public WorldData data;
@@ -416,17 +423,37 @@ namespace Bowhead.Server {
         #endregion
     }
 
-
     public class BowheadGame : BowheadGame<GSBowheadGame> {
 		public BowheadGame(ServerWorld world) : base(world) { }
 	}
 
-	public class GSBowheadGame : GameState<GSBowheadGame> {
+	public sealed class GSBowheadGame : GameState<GSBowheadGame> {
+		[Replicated(Condition = EReplicateCondition.InitialOnly)]
+		StaticAssetRef<WorldData> _data;
+
+		public override void ServerSetGameMode(GameMode gameMode) {
+			base.ServerSetGameMode(gameMode);
+			_data = ((BowheadGame)gameMode).data;
+		}
 
 		public override Type hudType => typeof(Client.UI.BowheadHUD);
 
 		protected override WorldStreaming.IWorldStreaming CreateWorldStreaming() {
 			return WorldStreaming.NewProceduralWorldStreaming(0, BowheadGame.WORLD_GENERATOR_TYPE);
+		}
+
+		public override void PostNetConstruct() {
+			base.PostNetConstruct();
+			// mixed mode server owns the world instance
+			if (!GameManager.instance.isServer) {
+				world.worldStreaming.SetBlockMaterialIndices(data.atlasData.atlasClientData.Load().block2TextureSet);
+			}
+		}
+
+		public WorldData data {
+			get {
+				return _data;
+			}
 		}
 	}
 }

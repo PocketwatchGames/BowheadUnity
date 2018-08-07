@@ -11,5 +11,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4129b2176e76c044b0c0646095d6faf, type: 3}
   m_Name: Default
   m_EditorClassIdentifier: 
-  material: {fileID: 0}
-  albedo: {fileID: 2800000, guid: 8cef3c4a4d71767458760472dfdf045b, type: 3}
+  albedo:
+    top: {fileID: 2800000, guid: 5138482bbfb5ad444ae93d3f6daae41b, type: 3}
+    sides: {fileID: 2800000, guid: 5138482bbfb5ad444ae93d3f6daae41b, type: 3}
+    bottom: {fileID: 2800000, guid: 5138482bbfb5ad444ae93d3f6daae41b, type: 3}

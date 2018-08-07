@@ -8,13 +8,16 @@ using UnityEngine;
 [Serializable]
 public sealed class WorldAtlasClientData_WRef : WeakAssetRef<WorldAtlasClientData> { };
 public sealed class WorldAtlasClientData : ScriptableObject, ISerializationCallbackReceiver {
+	public const int TEX2ARRAYINDEX_SIZE = ((int)EVoxelBlockType.NumBlockTypes - 1) * 3;
+	
 	[Serializable]
-	public struct TerrainTextures {
-		public Texture2DArray albedo;
+	public struct TerrainTextureChannel {
+		public Texture2DArray textureArray;
+		public int[] textureSet2ArrayIndex;
 	};
 
-	public TerrainTextures terrainTextures;
-	public int[] materialTextureArrayIndices;
+	public TerrainTextureChannel albedo;
+	public int[] block2TextureSet;
 
 	public void OnBeforeSerialize() {
 #if UNITY_EDITOR
@@ -27,6 +30,7 @@ public sealed class WorldAtlasClientData : ScriptableObject, ISerializationCallb
 	}
 
 	void Resize() {
-		materialTextureArrayIndices = Utils.Resize(materialTextureArrayIndices, (int)EVoxelBlockType.NumBlockTypes - 1);
+		block2TextureSet = Utils.Resize(block2TextureSet, (int)EVoxelBlockType.NumBlockTypes - 1);
+		albedo.textureSet2ArrayIndex = Utils.Resize(albedo.textureSet2ArrayIndex, TEX2ARRAYINDEX_SIZE);
 	}
 }

@@ -1,11 +1,17 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "WorldAtlastMaterialTextures", menuName = "WorldAtlasMaterialTextures")]
 public sealed class WorldAtlasMaterialTextures : ScriptableObject {
-	public Material material;
-	public Texture2D albedo;
+	
+	[Serializable]
+	public struct TextureSet {
+		public Texture2D top;
+		public Texture2D sides;
+		public Texture2D bottom;
+	};
+
+	public TextureSet albedo;
 }

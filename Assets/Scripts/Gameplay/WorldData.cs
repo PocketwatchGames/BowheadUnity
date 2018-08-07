@@ -1,8 +1,8 @@
 ﻿
 using UnityEngine;
 
-[CreateAssetMenuAttribute(menuName = "WorldData")]
-public class WorldData : ScriptableObject {
+[CreateAssetMenu(menuName = "WorldData")]
+public class WorldData : StaticAsset {
 
 
 	[System.Serializable]

@@ -103,9 +103,102 @@ public class WorldAtlasEditor : Editor {
 		return AssetDatabase.LoadAssetAtPath<Texture2DArray>(path);
 	}
 
-	void LoadTextureList(WorldAtlas atlas, out List<WorldAtlasMaterialTextures> arr, out List<int> indices) {
-		arr = new List<WorldAtlasMaterialTextures>();
-		indices = new List<int>();
+	int AddTextureIndex(List<Texture2D> arr, Texture2D t) {
+		var idx = arr.FindIndex(0, arr.Count, x => x.GetInstanceID() == t.GetInstanceID());
+		if (idx < 0) {
+			idx = arr.Count;
+			arr.Add(t);
+		}
+		return idx;
+	}
+
+	struct TextureSet {
+		public int top;
+		public int sides;
+		public int bottom;
+
+		public static int[] ToIntArray(List<TextureSet> ts) {
+			int[] arr = new int[ts.Count*3];
+
+			for (int i = 0; i < ts.Count; ++i) {
+				var ofs = i*3;
+				var s = ts[i];
+				arr[ofs+0] = s.top;
+				arr[ofs+1] = s.sides;
+				arr[ofs+2] = s.bottom;
+			}
+
+			return arr;
+		}
+
+		public static bool Equals(TextureSet a, TextureSet b) {
+			return (a.top == b.top) && (a.sides == b.sides) && (a.bottom == b.bottom);
+		}
+	};
+
+	struct TextureBundle {
+		public TextureSet albedo;
+
+		public static bool Equals(TextureBundle a, TextureBundle b) {
+			return TextureSet.Equals(a.albedo, b.albedo);
+		}
+	
+		public static int[] OptimizeShaderIndices(TextureBundle[] arr) {
+			List<int> indices = new List<int>();
+			List<TextureBundle> wkSet = new List<TextureBundle>();
+
+			foreach (var b in arr) {
+				var index = AddIndex(wkSet, b);
+				indices.Add(index);
+			}
+
+			return indices.ToArray();
+		}
+
+		public static void CopyChannelTextureSet(TextureBundle[] bundles, List<TextureSet> textureSets, Func<TextureBundle, TextureSet, TextureBundle> set) {
+			for (int i = 0; i < bundles.Length; ++i) {
+				bundles[i] = set(bundles[i], textureSets[i]);
+			}
+		}
+
+		static int AddIndex(List<TextureBundle> arr, TextureBundle bundle) {
+			var index = arr.FindIndex(0, arr.Count, x => Equals(x, bundle));
+			if (index < 0) {
+				return AddNew(arr, bundle);
+			}
+			return index;
+		}
+
+		static int AddNew(List<TextureBundle> arr, TextureBundle bundle) {
+			var index = arr.Count;
+			arr.Add(bundle);
+			return index;
+		}
+	};
+
+	void AddTextureSet(WorldAtlasMaterial atlasMaterial, List<Texture2D> arr, List<TextureSet> indices, WorldAtlasMaterialTextures.TextureSet textureSet, string channelName) {
+		if (textureSet.top == null) {
+			ThrowAssetException(atlasMaterial, "Texture set for " + channelName + " is missing 'top' texture!");
+		}
+		if (textureSet.sides == null) {
+			ThrowAssetException(atlasMaterial, "Texture set for " + channelName + " is missing 'sides' texture!");
+		}
+		if (textureSet.bottom == null) {
+			ThrowAssetException(atlasMaterial, "Texture set for " + channelName + " is missing 'bottom' texture!");
+		}
+
+		var tSet = new TextureSet() {
+			top = AddTextureIndex(arr, textureSet.top),
+			sides = AddTextureIndex(arr, textureSet.sides),
+			bottom = AddTextureIndex(arr, textureSet.bottom)
+		};
+
+		indices.Add(tSet);
+	}
+
+	void LoadTextureList(WorldAtlas atlas, out List<Texture2D> arr, out List<TextureSet> indices, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> f, string channelName) {
+		arr = new List<Texture2D>();
+		indices = new List<TextureSet>();
 
 		for (int i = 0; i < atlas.materials.Length; ++i) {
 			var m = atlas.materials[i];
@@ -115,17 +208,20 @@ public class WorldAtlasEditor : Editor {
 			}
 
 			if (m.textures != null) {
-				var idx = arr.FindIndex(0, arr.Count, x => x == m.textures);
-				if (idx >= 0) {
-					indices.Add(idx);
-				} else {
-					indices.Add(arr.Count);
-					arr.Add(m.textures);
-				}
+				AddTextureSet(m, arr, indices, f(m.textures), channelName);
 			} else {
 				ThrowAssetException(m, "Missing textures for atlas material.");
 			}
 		}
+	}
+
+	void LoadTextureChannel(WorldAtlas atlas, TextureBundle[] bundles, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> getTexSetChannel, Action<int[]> setTextureSet2ArrayIndex, Func<TextureBundle, TextureSet, TextureBundle> setBundleChannel, string channelName) {
+		List<Texture2D> textures;
+		List<TextureSet> indices;
+
+		LoadTextureList(atlas, out textures, out indices, getTexSetChannel, channelName);
+		setTextureSet2ArrayIndex(TextureSet.ToIntArray(indices));
+		TextureBundle.CopyChannelTextureSet(bundles, indices, setBundleChannel);
 	}
 
 	void RebuildAtlasData() {
@@ -134,14 +230,12 @@ public class WorldAtlasEditor : Editor {
 			var atlasData = CreateInstance<WorldAtlasData>();
 			var atlasClientData = CreateInstance<WorldAtlasClientData>();
 
-			atlasClientData.terrainTextures = LoadTerrainTextures(atlas);
-			{
-				List<WorldAtlasMaterialTextures> materials;
-				List<int> indices;
+			LoadTerrainTextures(atlas, atlasClientData);
 
-				LoadTextureList(atlas, out materials, out indices);
-				atlasClientData.materialTextureArrayIndices = indices.ToArray();
-			}
+			var bundles = new TextureBundle[atlas.materials.Length];
+			LoadTextureChannel(atlas, bundles, (x) => x.albedo, (x) => atlasClientData.albedo.textureSet2ArrayIndex = x, (b, s) => { b.albedo = s; return b; }, "Albedo");
+
+			atlasClientData.block2TextureSet = TextureBundle.OptimizeShaderIndices(bundles);
 			atlasClientData = SaveAtlasClientData(atlas, atlasClientData);
 
 			atlasData.atlasClientData = new WorldAtlasClientData_WRef();
@@ -150,48 +244,51 @@ public class WorldAtlasEditor : Editor {
 		}
 	}
 
-	WorldAtlasClientData.TerrainTextures LoadTerrainTextures(WorldAtlas atlas) {
-		WorldAtlasClientData.TerrainTextures textures;
-
-		textures.albedo = LoadTextureArray(atlas, "Albedo");
-		if (textures.albedo == null) {
+	void LoadTextureArrayChannel(WorldAtlas atlas, WorldAtlasClientData clientData, Action<WorldAtlasClientData, Texture2DArray> set, string channelName) {
+		var arr = LoadTextureArray(atlas, channelName);
+		if (arr == null) {
 			RebuildTextureArray();
-			textures.albedo = LoadTextureArray(atlas, "Albedo");
-			if (textures.albedo == null) {
-				ThrowAssetException(atlas, "Unable to load Albedo texture array!");
+			arr = LoadTextureArray(atlas, channelName);
+			if (arr == null) {
+				ThrowAssetException(atlas, "Unable to load " + channelName + " texture array!");
 			}
 		}
+		set(clientData, arr);
+	}
 
-		return textures;
+	void LoadTerrainTextures(WorldAtlas atlas, WorldAtlasClientData clientData) {
+		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.albedo.textureArray = arr, "Albedo");
+	}
+
+	void CreateColorChannelTextureArray(WorldAtlas atlas, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> f, string channelName) {
+		List<Texture2D> textures;
+		List<TextureSet> indices;
+
+		LoadTextureList(atlas, out textures, out indices, f, channelName);
+
+		if (textures.Count < 1) {
+			throw new Exception("No textures defined in atlas!");
+		}
+
+		var settings = new ImportSettings_t() {
+			alphaSource = TextureImporterAlphaSource.FromInput,
+			alphaIsTransparency = true,
+			aniso = 16,
+			filterMode = FilterMode.Trilinear,
+			mipmap = true,
+			readable = true,
+			type = TextureImporterType.Default,
+			format = TextureImporterFormat.DXT5
+		};
+
+		CreateTextureArray(atlas, settings, textures, channelName);
 	}
 
 	void RebuildTextureArray() {
 		foreach (var obj in serializedObject.targetObjects) {
 			var atlas = (WorldAtlas)obj;
 
-			List<WorldAtlasMaterialTextures> textures;
-			List<int> indices;
-
-			LoadTextureList(atlas, out textures, out indices);
-
-			if (textures.Count < 1) {
-				throw new Exception("No textures defined in atlas!");
-			}
-
-			{
-				var settings = new ImportSettings_t() {
-					alphaSource = TextureImporterAlphaSource.FromInput,
-					alphaIsTransparency = true,
-					aniso = 16,
-					filterMode = FilterMode.Trilinear,
-					mipmap = true,
-					readable = true,
-					type = TextureImporterType.Default,
-					format = TextureImporterFormat.DXT5
-				};
-
-				CreateTextureArray(atlas, settings, textures, (m) => m.albedo, "Albedo");
-			}
+			CreateColorChannelTextureArray(atlas, x => x.albedo, "Albedo");
 		}
 	}
 
@@ -287,19 +384,16 @@ public class WorldAtlasEditor : Editor {
 		}
 	}
 
-	void CheckTextureSizeAndFormatAndThrow(WorldAtlasMaterialTextures textures, ref int w, ref int h, ref int mm, ImportSettings_t settings, Texture2D channel, string channelName) {
-		if (channel == null) {
-			ThrowAssetException(textures, channelName + " channel is missing!");
-		}
+	void CheckTextureSizeAndFormatAndThrow(ref int w, ref int h, ref int mm, ImportSettings_t settings, Texture2D channel, string channelName) {
 		if (w == -1) {
 			w = channel.width;
 		} else if (w != channel.width) {
-			ThrowAssetException(textures, channelName + " channel width mismatch.");
+			ThrowAssetException(channel, channelName + " channel width mismatch.");
 		}
 		if (h == -1) {
 			h = channel.height;
 		} else if (h != channel.height) {
-			ThrowAssetException(textures, channelName + " channel height mismatch.");
+			ThrowAssetException(channel, channelName + " channel height mismatch.");
 		}
 
 		SetTextureImporterSettings(channel, settings);
@@ -307,19 +401,18 @@ public class WorldAtlasEditor : Editor {
 		if (mm == -1) {
 			mm = channel.mipmapCount;
 		} else if (mm != channel.mipmapCount) {
-			ThrowAssetException(textures, channelName + " channel mipmaps mismatch.");
+			ThrowAssetException(channel, channelName + " channel mipmaps mismatch.");
 		}
 	}
 
-	void CreateTextureArray(WorldAtlas atlas, ImportSettings_t settings, List<WorldAtlasMaterialTextures> textures, System.Func<WorldAtlasMaterialTextures, Texture2D> getChannel, string channelName) {
+	void CreateTextureArray(WorldAtlas atlas, ImportSettings_t settings, List<Texture2D> textures, string channelName) {
 
 		int w = -1;
 		int h = -1;
 		int mm = -1;
 
 		for (int i = 0; i < textures.Count; ++i) {
-			var t = getChannel(textures[i]);
-			CheckTextureSizeAndFormatAndThrow(textures[i], ref w, ref h, ref mm, settings, t, channelName);
+			CheckTextureSizeAndFormatAndThrow(ref w, ref h, ref mm, settings, textures[i], channelName);
 		}
 
 		var arr = new Texture2DArray(w, h, textures.Count, (TextureFormat)settings.format, true, false);
@@ -327,7 +420,7 @@ public class WorldAtlasEditor : Editor {
 		arr.wrapMode = TextureWrapMode.Repeat;
 
 		for (int i = 0; i < textures.Count; ++i) {
-			var t = getChannel(textures[i]);
+			var t = textures[i];
 			for (int mipNum = 0; mipNum < t.mipmapCount; ++mipNum) {
 				Graphics.CopyTexture(t, 0, mipNum, arr, i, mipNum);
 			}

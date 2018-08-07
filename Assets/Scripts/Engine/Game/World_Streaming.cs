@@ -104,6 +104,7 @@ public partial class World {
 		CreateGenVoxelsJobDelegate _createGenVoxelsJob;
 		MMapChunkDataDelegate _chunkRead;
 		ChunkWriteDelegate _chunkWrite;
+		NativeArray<int> _blockMaterialIndices;
 		bool _loading;
 		bool _flush;
 
@@ -151,6 +152,13 @@ public partial class World {
 			};
 			_streamingVolumes.Add(data);
 			return data;
+		}
+
+		public void SetBlockMaterialIndices(int[] blockMaterialIndices) {
+			_blockMaterialIndices.Dispose();
+			if ((blockMaterialIndices != null) && (blockMaterialIndices.Length > 0)) {
+				_blockMaterialIndices = new NativeArray<int>(blockMaterialIndices, Allocator.Persistent);
+			}
 		}
 
 		long lastTick;
@@ -459,7 +467,7 @@ public partial class World {
 			}
 
 			unsafe {
-				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, chunk.chunkData.pinnedTimingData, JobHandle.CombineDependencies(dependancies));
+				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, chunk.chunkData.pinnedTimingData, _blockMaterialIndices, JobHandle.CombineDependencies(dependancies));
 			}
 			dependancies.Dispose();
 
@@ -786,6 +794,8 @@ public partial class World {
 			if (_terrainRoot != null) {
 				Utils.DestroyGameObject(_terrainRoot);
 			}
+
+			_blockMaterialIndices.Dispose();
 		}
 
 		void AddRef(Chunk chunk) {
