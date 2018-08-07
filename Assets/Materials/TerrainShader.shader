@@ -55,6 +55,7 @@
 		}
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
+#if 0
 			float3 geoNormal = -normalize(cross(ddx(IN.worldPos.xyz), ddy(IN.worldPos.xyz)));
 
 			float3 worldOrigin = _WorldOrigin + geoNormal * 1;
@@ -79,6 +80,7 @@
 				}
 
 			}
+#endif
 
 			// Albedo comes from a texture tinted by color
 			fixed4 c = _Color * IN.vertColor;

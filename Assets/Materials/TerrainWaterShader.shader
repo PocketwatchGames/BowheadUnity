@@ -53,6 +53,7 @@
 		}
 
 		void surf (Input IN, inout SurfaceOutputStandard o) {
+#if 0
 			float d = dot(IN.worldPos, _ClipPlane0.xyz) - _ClipPlane0.w;
 			if (d < 0) {
 				float u = dot(IN.worldPos, _Up.xyz) - _Up.w;
@@ -60,6 +61,7 @@
 				float z = u * u + l * l;
 				clip((z > _CylinderSizeSq) ? -1 : 1);
 			}
+#endif
 
 			// Albedo comes from a texture tinted by color
 			fixed4 c = _Color * IN.vertColor;
