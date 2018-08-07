@@ -1273,6 +1273,7 @@ public partial class World {
 			VoxelArray1D _voxels;
 			Tables _tables;
 			NativeArray<PinnedChunkData_t> _area;
+			[ReadOnly]
 			NativeArray<int> _blockMaterials;
 
 			VoxelNeighbors_t _vn;
@@ -1751,7 +1752,7 @@ public partial class World {
 						float factor;
 						int submesh;
 						int layer;
-						int material = _blockMaterials[(int)_vn[i]];
+						int material = _blockMaterials[(int)blocktype - 1];
 
 						GetBlockColorAndSmoothing(blocktype, out color, out smg, out factor, out submesh, out layer);
 
@@ -1827,7 +1828,7 @@ public partial class World {
 									float factor;
 									int submesh;
 									int layer;
-									int material = _blockMaterials[(int)_vn[i]];
+									int material = _blockMaterials[(int)_vn[i] - 1];
 
 									GetBlockColorAndSmoothing(_vn[i], out color, out smg, out factor, out submesh, out layer);
 

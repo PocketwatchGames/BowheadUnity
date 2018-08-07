@@ -155,7 +155,9 @@ public partial class World {
 		}
 
 		public void SetBlockMaterialIndices(int[] blockMaterialIndices) {
-			_blockMaterialIndices.Dispose();
+			if (_blockMaterialIndices.IsCreated) {
+				_blockMaterialIndices.Dispose();
+			}
 			if ((blockMaterialIndices != null) && (blockMaterialIndices.Length > 0)) {
 				_blockMaterialIndices = new NativeArray<int>(blockMaterialIndices, Allocator.Persistent);
 			}
