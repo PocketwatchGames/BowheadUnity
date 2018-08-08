@@ -65,7 +65,7 @@ public class PlayerHUD : MonoBehaviour {
             _health.value = h;
             _water.value = w;
             _stamina.value = s;
-            _staminaFill.color = mountOrTarget.recovering ? Color.yellow : Color.green;
+            _staminaFill.color = mountOrTarget.stunned ? Color.yellow : Color.green;
         }
         _stamina.gameObject.SetActive(s < 1);
         _health.gameObject.SetActive(_changeTimerHealth > 0 || h < 1);

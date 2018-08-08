@@ -64,8 +64,8 @@ namespace Bowhead.Actors {
 		public float maxWater;
 		public float stamina;
         public float maxStamina;
-        public bool recovering;
-        public float recoveryTimer;
+        public bool stunned;
+        public float staminaRecoveryTimer;
 		public float stunInvulnerabilityTimer;
         public float dodgeTimer;
 		public float damageMultiplier;
@@ -338,23 +338,23 @@ namespace Bowhead.Actors {
                 return;
             }
 
-            if (recoveryTimer > 0) {
-                recoveryTimer = Math.Max(0, recoveryTimer - dt);
+            if (staminaRecoveryTimer > 0) {
+                staminaRecoveryTimer = Math.Max(0, staminaRecoveryTimer - dt);
             }
             else {
                 if (stamina < maxStamina) {
-					if (recovering) {
-						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTimeDuringRecovery);
+					if (stunned) {
+						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTimeDuringStun);
 					}
 					else {
 						stamina = Math.Min(maxStamina, stamina + dt * maxStamina / data.staminaRechargeTime);
 					}
 				}
                 else {
-					if (recovering) {
+					if (stunned) {
 						stunInvulnerabilityTimer = data.postStunInvincibilityTime;
 					}
-                    recovering = false;
+                    stunned = false;
                 }
             }
 
@@ -767,7 +767,7 @@ namespace Bowhead.Actors {
 			}
 
 			if (data.sprintTime > 0 && sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
-				UseStamina(data.sprintStaminaUse * dt);
+				UseStamina(data.sprintStaminaUse * dt, false);
 			}
 		}
 
@@ -1062,16 +1062,17 @@ namespace Bowhead.Actors {
             //return p + (interpolateFrom - p) * interpolateTime / interpolateTimeTotal;
         }
 
-		public void UseStamina(float s) {
-			if (stamina <= 0)
+		public void UseStamina(float s, bool allowStun) {
+			if (stunned) {
 				return;
-			stamina = Mathf.Max(data.minStamina, stamina - s);
-			if (stamina <= 0) {
-				recovering = true;
-				recoveryTimer = 0;
 			}
-			else {
-				recoveryTimer = data.recoveryTime;
+
+			stamina = Mathf.Max(data.minStamina, stamina - s);
+			if (stamina <= 0 && allowStun) {
+				stunned = true;
+				staminaRecoveryTimer = 0;
+			} else {
+				staminaRecoveryTimer = data.staminaRecoveryTime;
 			}
 		}
 		public void UseWater(float w) {
@@ -1081,7 +1082,7 @@ namespace Bowhead.Actors {
 		}
 
 		void Jump(Vector3 dir) {
-			UseStamina(data.jumpStaminaUse);
+			UseStamina(data.jumpStaminaUse, false);
 
 			float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
 			float launchSpeedXZ;
@@ -1102,19 +1103,19 @@ namespace Bowhead.Actors {
 			velocity.y = velY;
 		}
 		public void Dodge(Vector3 dir, float time) {
-			UseStamina(data.jumpStaminaUse);
+			UseStamina(data.jumpStaminaUse, false);
 			dodgeTimer = time;
 			velocity = dir;
 		}
 
 		public void Stun(float s) {
             // Can't stun further if already stunned
-            if (recovering || stunInvulnerabilityTimer > 0) {
+            if (stunned || stunInvulnerabilityTimer > 0) {
                 return;
             }
 
-			UseStamina(s);
-            if (recovering) {
+			UseStamina(s, true);
+            if (stunned) {
 				foreach (var i in getInventory()) {
 					var w = i as Weapon;
 					if (w != null) {

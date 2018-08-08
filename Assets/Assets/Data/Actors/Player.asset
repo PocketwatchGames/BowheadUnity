@@ -23,9 +23,9 @@ MonoBehaviour:
   maxWater: 100
   maxStamina: 100
   minStamina: -50
-  recoveryTime: 1
+  staminaRecoveryTime: 1
   staminaRechargeTime: 3
-  staminaRechargeTimeDuringRecovery: 2
+  staminaRechargeTimeDuringStun: 2
   dodgeTime: 0.25
   postStunInvincibilityTime: 1
   backStabAngle: 45

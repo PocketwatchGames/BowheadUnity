@@ -28,6 +28,8 @@ MonoBehaviour:
     type: 2}
   hudButtonHintPrefab: {fileID: 114042321560627920, guid: 70f2a471b6a3a4049853a27d48744fbb,
     type: 2}
+  hudLockPrefab: {fileID: 114983661258738878, guid: 8d6292b2e4f0e3d459c676ec72337ea2,
+    type: 2}
   cameraDataCombat: {fileID: 11400000, guid: 99cc1cd2bfc73e044ab34ce49baa1070, type: 2}
   cameraDataExplore: {fileID: 11400000, guid: 9f5732a9f5058c0418bd06e7d5567846, type: 2}
   silhouetteStencil: {fileID: 2100000, guid: adcc579234c3b1443b9ae78036518af6, type: 2}

@@ -108,7 +108,7 @@ namespace Bowhead.Actors {
 			canTurn = true;
             canAttack = true;
 
-            if (recovering) {
+            if (stunned) {
                 canRun = false;
 				canSprint = false;
 				canJump = false;
@@ -117,6 +117,10 @@ namespace Bowhead.Actors {
                 canAttack = false;
                 canMove = false;
 				canTurn = false;
+			}
+			if (stamina <= 0) {
+				canAttack = false;
+				canSprint = false;
 			}
 
             if (moveImpulseTimer > 0)
@@ -165,7 +169,7 @@ namespace Bowhead.Actors {
 				else if (skidding) {
 					head.material.color = Color.cyan;
 				}
-				else if (recovering) {
+				else if (stunned) {
 					head.material.color = Color.yellow;
 				}
 				else {

@@ -200,7 +200,7 @@ namespace Bowhead {
 				ActivateSpell(owner);
 			}
 
-			owner.UseStamina(data.attacks[attackHand].staminaUse);
+			owner.UseStamina(data.attacks[attackHand].staminaUse, false);
 			owner.UseWater(data.waterUse);
 
         }
@@ -378,7 +378,7 @@ namespace Bowhead {
 				return;
 			}
 
-			owner.UseStamina(data.blockResult.staminaUse);
+			owner.UseStamina(data.blockResult.staminaUse, false);
 			remainingDamage = Mathf.Max(0, remainingDamage - data.blockResult.damageAbsorb);
 			remainingStun = Mathf.Max(0, remainingStun - data.blockResult.stunAbsorb);
 			attacker.Hit(owner, this, data.blockResult, 1, false);

@@ -175,7 +175,7 @@ namespace Bowhead.Actors {
 				else if (skidding) {
 					head.material.color = Color.cyan;
 				}
-				else if (recovering) {
+				else if (stunned) {
 					head.material.color = Color.yellow;
 				}
 				else {
@@ -196,7 +196,7 @@ namespace Bowhead.Actors {
             canClimbWell = weight < WeightClass.MEDIUM;
             canTurn = true;
 
-            if (recovering) {
+            if (stunned) {
 				canRun = false;
 				canSprint = false;
 				canJump = false;
@@ -204,8 +204,12 @@ namespace Bowhead.Actors {
                 canClimbWell = false;
                 canAttack = false;
             }
+			if (stamina <= 0) {
+				canAttack = false;
+				canSprint = false;
+			}
 
-            if (activity == Activity.Swimming || activity == Activity.Climbing) {
+			if (activity == Activity.Swimming || activity == Activity.Climbing) {
                 canAttack = false;
             }
 
@@ -519,7 +523,7 @@ namespace Bowhead.Actors {
                 d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * gameMode.GetTerrainData(position).fallDamage * data.maxHealth;
                 if (d > 0) {
                     Damage(d, PawnData.DamageType.Falling);
-                    UseStamina((float)d);
+                    UseStamina((float)d, true);
                     Stun((float)d);
                 }
             }

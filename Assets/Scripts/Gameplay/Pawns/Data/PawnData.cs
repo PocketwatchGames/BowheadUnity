@@ -22,9 +22,9 @@ namespace Bowhead.Actors {
 		public float maxWater;
         public float maxStamina;
 		public float minStamina;
-        public float recoveryTime;
+        public float staminaRecoveryTime;
         public float staminaRechargeTime;
-		public float staminaRechargeTimeDuringRecovery;
+		public float staminaRechargeTimeDuringStun;
 		public float dodgeTime;
 		public float postStunInvincibilityTime;
 		public float backStabAngle;
