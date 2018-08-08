@@ -19,20 +19,27 @@ namespace Bowhead.Actors {
 
     [CreateAssetMenu(menuName = "EntityData/SpawnPoint")]
 	public sealed class SpawnPointData : StaticVersionedAsset {
+
+		[System.Serializable]
+		public class SpawnCount {
+			public EntityData _entityData;
+			public int _spawnCountMin=1;
+			public int _spawnCountMax =1;
+		}
 		[SerializeField]
 		ESpawnPointType _type;
 		[SerializeField]
-		EntityData _entityData;
+		List<SpawnCount> _entities = new List<SpawnCount>();
 
 		static List<SpawnPointData> _list = new List<SpawnPointData>();
 
-		public static SpawnPointData[] GetAllSpawnTypes<T>(ESpawnPointType type) {
+		public static SpawnPointData[] GetAllSpawnTypes(ESpawnPointType type) {
 			var objs = GameManager.instance.staticData.indexedObjects;
 
 			foreach (var obj in objs) {
 				var spawnPoint = obj as SpawnPointData;
 				if (spawnPoint != null) {
-					if ((spawnPoint._type == type) && (spawnPoint._entityData is T)) {
+					if ((spawnPoint._type == type)) {
 						_list.Add(spawnPoint);
 					}
 				}
@@ -43,8 +50,9 @@ namespace Bowhead.Actors {
 			return arr;
 		}
 
-		public T Spawn<T>(Server.GameMode gameMode, Vector3 pos, float yaw) where T: Actor {
+		public List<T> Spawn<T>(Server.GameMode gameMode, Vector3 pos, float yaw) where T: Actor {
 			Team team;
+			var spawns = new List<T>();
 			switch (_type) {
 				default:
 					team = null;
@@ -58,12 +66,17 @@ namespace Bowhead.Actors {
 					break;
 			}
 
-			var spawnFn = (ISpawnPointSupport)_entityData;
-			if (spawnFn != null) {
-				return (T)spawnFn.Spawn(gameMode.world, pos, yaw, team);
+			foreach (var s in _entities) {
+				int count = Random.Range(s._spawnCountMin, s._spawnCountMax);
+				for (int i = 0; i < count; i++) {
+					var spawnFn = (ISpawnPointSupport)s._entityData;
+					if (spawnFn != null) {
+						spawns.Add((T)spawnFn.Spawn(gameMode.world, pos + new Vector3(i*0.1f,0,0), yaw, team));
+					}
+				}
 			}
 
-			return null;
+			return spawns;
 		}
 	}
 }

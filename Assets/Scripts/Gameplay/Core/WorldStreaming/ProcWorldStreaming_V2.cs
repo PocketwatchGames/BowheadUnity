@@ -426,12 +426,18 @@ namespace Bowhead {
 							type = EDecorationType.Horse
 						}
 					);
-				}
-				else if (GetWhiteNoise(ref noise, chunkPos.x + 632, 0, chunkPos.z) < 0.01f) {
+				} else if (GetWhiteNoise(ref noise, chunkPos.x + 632, 0, chunkPos.z) < 0.01f) {
 					chunk.AddDecoration(
 						new Decoration_t() {
 							pos = chunkPos + new Vector3(VOXEL_CHUNK_SIZE_XZ / 2, VOXEL_CHUNK_SIZE_Y - 1, VOXEL_CHUNK_SIZE_XZ / 2),
 							type = EDecorationType.Chest
+						}
+					);
+				} else if (GetWhiteNoise(ref noise, chunkPos.x + 632, 0, chunkPos.z + 262) < 0.05f) {
+					chunk.AddDecoration(
+						new Decoration_t() {
+							pos = chunkPos + new Vector3(VOXEL_CHUNK_SIZE_XZ / 2, VOXEL_CHUNK_SIZE_Y - 1, VOXEL_CHUNK_SIZE_XZ / 2),
+							type = EDecorationType.MonsterSpawn
 						}
 					);
 				}

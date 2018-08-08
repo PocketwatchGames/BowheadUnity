@@ -14,4 +14,7 @@ MonoBehaviour:
   version: 0
   _index: 27
   _type: 2
-  _entityData: {fileID: 11400000, guid: 3b209cccffd56bc4fb65d727e00b54e7, type: 2}
+  _entities:
+  - _entityData: {fileID: 11400000, guid: 3b209cccffd56bc4fb65d727e00b54e7, type: 2}
+    _spawnCountMin: 1
+    _spawnCountMax: 1
