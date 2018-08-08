@@ -15,9 +15,10 @@ namespace Bowhead.Actors {
 			Explore
 		}
 
-        #region State
-        [Header("Player")]
-        public Vector3 spawnPoint;
+		#region State
+		[Header("Player")]
+		public int playerIndex;
+		public Vector3 spawnPoint;
         public Vector2 mapPos;
 		public Pawn tradePartner;
 		public float lockHoldTime;
@@ -52,8 +53,9 @@ namespace Bowhead.Actors {
 		World.Streaming.IVolume _worldStreaming;
 
         Pawn attackTargetPreview;
+		private bool _addedToCamera;
 
-        public event Action OnMoneyChange;
+		public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
         public event Action<Vector2, float> OnExplore;
 		public event Action OnInventoryChange;
@@ -68,51 +70,54 @@ namespace Bowhead.Actors {
 		}
 
         private void RecordInputDevices() {
-            PlayerCmd_t cmd = new PlayerCmd_t();
-            Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal"), Input.GetAxis("MoveVertical"));
-            cmd.fwd = (sbyte)(move.y * 127);
-            cmd.right = (sbyte)(move.x * 127);
 
-            Vector2 look;
-            if (Input.GetJoystickNames().Length == 0)
-            {
-                look = new Vector2(Input.GetAxis("MouseAxis1"), -Input.GetAxis("MouseAxis2"));
-                if (look != Vector2.zero) {
-                    look.Normalize();
-                }
-            }
-            else {
-                look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
-				if (look.magnitude > 0.5f) {
-					look.Normalize();
+			int pi = playerIndex + 1;
+
+			PlayerCmd_t cmd = new PlayerCmd_t();
+
+			if (pi == 1) {
+
+				Vector2 look;
+				if (Input.GetJoystickNames().Length == 0) {
+					look = new Vector2(Input.GetAxis("MouseAxis1"), -Input.GetAxis("MouseAxis2"));
+					if (look != Vector2.zero) {
+						look.Normalize();
+					}
+				} else {
+					look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+					if (look.magnitude > 0.5f) {
+						look.Normalize();
+					} else {
+						look = Vector2.zero;
+					}
 				}
-				else {
-					look = Vector2.zero;
-				}
+				cmd.lookFwd = (sbyte)(-look.y * 127);
+				cmd.lookRight = (sbyte)(look.x * 127);
 			}
-			cmd.lookFwd = (sbyte)(-look.y * 127);
-			cmd.lookRight = (sbyte)(look.x * 127);
 
+			Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal" + pi), Input.GetAxis("MoveVertical" + pi)); ;
+			cmd.fwd = (sbyte)(move.y * 127);
+			cmd.right = (sbyte)(move.x * 127);
 
-			if (Input.GetButton("A")) {
+			if (Input.GetButton("A" + pi)) {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
-            if (Input.GetButton("B")) {
+            if (Input.GetButton("B" + pi)) {
                 cmd.buttons |= 1 << (int)InputType.Lock;
             }
-			if (Input.GetButton("AttackRight") || Input.GetAxis("RightTrigger") != 0) {
+			if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
 			}
-			if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
+			if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackLeft;
 			}
-			if (Input.GetButton("X")) {
+			if (Input.GetButton("X" + pi)) {
 				cmd.buttons |= 1 << (int)InputType.Interact;
 			}
-			if (Input.GetButton("ShoulderRight")) {
+			if (Input.GetButton("ShoulderRight" + pi)) {
 				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
 			}
-			if (Input.GetButton("ShoulderLeft")) {
+			if (Input.GetButton("ShoulderLeft" + pi)) {
 				cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
 			}
 
@@ -123,8 +128,14 @@ namespace Bowhead.Actors {
 
 
         public override void Tick() {
-            // kinda hacky here
-            RecordInputDevices();
+
+			if (!_addedToCamera && Client.Actors.ClientPlayerController.localPlayer != null && Client.Actors.ClientPlayerController.localPlayer.cameraController != null && rigidBody != null) {
+				Client.Actors.ClientPlayerController.localPlayer.cameraController.AddTarget(this);
+				_addedToCamera = true;
+			}
+
+			// kinda hacky here
+			RecordInputDevices();
 
             base.Tick();
             if (!hasAuthority) {
@@ -410,8 +421,11 @@ namespace Bowhead.Actors {
 		// Spawning
 		////////////
 
-		public override void Spawn(EntityData d, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
-			base.Spawn(d, pos, yaw, instigator, owner, team);
+		public override void Spawn(EntityData d, int index, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
+			base.Spawn(d, index, pos, yaw, instigator, owner, team);
+
+			playerIndex = index;
+
 			var gameObject = GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null);
             AttachExternalGameObject(gameObject);
 

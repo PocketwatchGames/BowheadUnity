@@ -23,7 +23,8 @@ public class WorldData : StaticAsset {
 	public TerrainType[] terrainTypes;
 	public WorldAtlasData atlasData;
 
-    public float windSpeedStormy;
+	public bool player2;
+	public float windSpeedStormy;
     public float windSpeedWindy;
     public float windSpeedBreezy;
     public float maxWindSpeedVariance;

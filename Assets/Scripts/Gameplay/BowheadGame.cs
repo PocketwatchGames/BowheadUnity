@@ -243,12 +243,16 @@ namespace Bowhead.Server {
 
 		protected override void InitPlayerSpawn(ServerPlayerController playerController) {
 			base.InitPlayerSpawn(playerController);
-			var player = SpawnPlayer();
+			var player = SpawnPlayer(0);
 			playerController.PossessPlayerPawn(player);
+
+			if (data.player2) {
+				var player2 = SpawnPlayer(1);
+			}
 		}
 
-		Player SpawnPlayer() {
-			return PlayerData.Get("player").Spawn<Player>(world, new Vector3(16, 100, 20), 0, null, null, null);
+		Player SpawnPlayer(int index) {
+			return PlayerData.Get("player").Spawn<Player>(index, world, new Vector3(16, 100, 20), 0, null, null, null);
 		}
 
 		public Critter SpawnCritter(CritterData data, Vector3 pos, float yaw, Team team) {

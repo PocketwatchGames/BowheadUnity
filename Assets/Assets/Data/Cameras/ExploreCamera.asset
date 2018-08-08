@@ -19,6 +19,8 @@ MonoBehaviour:
   leashFollowVelocityRate: 0.25
   minDistance: 15
   maxDistance: 25
+  standardLeashDistance: 20
+  maxLeashDistance: 25
   pitch: 45
   fov: 75
   climbingYawMaxAngle: 30

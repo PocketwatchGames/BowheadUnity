@@ -32,9 +32,9 @@ namespace Bowhead.Actors {
 			}
 		}
 
-		public T Spawn<T>(World world, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) where T : Player {
+		public T Spawn<T>(int index, World world, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) where T : Player {
 			var player = (T)world.Spawn(playerClass, null, default(SpawnParameters));
-			player.Spawn(this, pos, yaw, instigator, owner, team);
+			player.Spawn(this, index, pos, yaw, instigator, owner, team);
 			return player;
 		}
 	};
