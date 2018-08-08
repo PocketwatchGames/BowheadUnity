@@ -48,6 +48,7 @@ namespace Bowhead.Actors {
 		public float sprintSpeed;
 		public float sprintStaminaUse;
 		public float sprintGracePeriodTime;
+		public float slideModifier;
 
 		[Header("Falling")]
         public float gravity;

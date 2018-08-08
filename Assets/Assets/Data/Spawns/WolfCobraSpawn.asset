@@ -9,12 +9,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d52a1a3059e4d7f408c5f9512a1fff70, type: 3}
-  m_Name: WolfSpawn
+  m_Name: WolfCobraSpawn
   m_EditorClassIdentifier: 
   version: 0
-  _index: 9
+  _index: 39
   _type: 0
   _entities:
   - _entityData: {fileID: 11400000, guid: badcad2f1b45840469a7894b0bd48558, type: 2}
     _spawnCountMin: 1
-    _spawnCountMax: 4
+    _spawnCountMax: 2
+  - _entityData: {fileID: 11400000, guid: ea0a17e12460d324ab4f0e8c8e96298f, type: 2}
+    _spawnCountMin: 1
+    _spawnCountMax: 2

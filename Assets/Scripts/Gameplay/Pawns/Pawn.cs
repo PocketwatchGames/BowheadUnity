@@ -717,7 +717,7 @@ namespace Bowhead.Actors {
 					if (desiredVel.magnitude <= data.walkSpeed && !skidding) {
 						// walk acceleration is linear
 						desiredAcceleration = desiredAcceleration.normalized * Mathf.Min(slideThreshold, data.walkSpeed * block.accelerationModifier / data.walkStartTime);
-					} else if (desiredAcceleration.magnitude > slideThreshold) {
+					} else if (desiredAcceleration.magnitude * data.slideModifier > slideThreshold) {
 						// if we're sprinting and we change direction quickly, start sliding
 						if (velocity.magnitude > data.groundMaxSpeed * block.speedModifier) {
 							skidding = true;
@@ -972,7 +972,7 @@ namespace Bowhead.Actors {
 
 			if (canRun) {
 				if (canSprint) {
-					if (sprintTimer > 0 && data.sprintTime > 0) {
+					if (sprintTimer > 0 && data.sprintSpeed > 0) {
 						maxSpeed = data.sprintSpeed;
 					}
 					var weapon = GetDefensiveWeapon();
@@ -1063,7 +1063,7 @@ namespace Bowhead.Actors {
         }
 
 		public void UseStamina(float s, bool allowStun) {
-			if (stunned) {
+			if (stunned || s <= 0) {
 				return;
 			}
 

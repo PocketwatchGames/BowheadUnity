@@ -48,6 +48,7 @@ MonoBehaviour:
   sprintSpeed: 12
   sprintStaminaUse: 50
   sprintGracePeriodTime: 0.4
+  slideModifier: 1
   gravity: -40
   fallJumpTime: 0.25
   fallAcceleration: 30
