@@ -22,14 +22,15 @@ namespace Bowhead.Actors {
 		public float maxWater;
         public float maxStamina;
 		public float minStamina;
-        public float recoveryTime;
+        public float staminaRecoveryTime;
         public float staminaRechargeTime;
-		public float staminaRechargeTimeDuringRecovery;
+		public float staminaRechargeTimeDuringStun;
 		public float dodgeTime;
 		public float postStunInvincibilityTime;
 		public float backStabAngle;
 		public float runSound;
 		public float sprintSound;
+		public float sprintDamageMultiplierSpeed;
 		public ParticleSystem bloodParticle;
 
         [Header("Ground")]
@@ -47,6 +48,7 @@ namespace Bowhead.Actors {
 		public float sprintSpeed;
 		public float sprintStaminaUse;
 		public float sprintGracePeriodTime;
+		public float slideModifier;
 
 		[Header("Falling")]
         public float gravity;

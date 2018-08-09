@@ -46,12 +46,16 @@ namespace Bowhead.Actors {
         }
     }
 	public class CritterBehaviorMeleeAttack : CritterBehavior {
+
+
+		public Vector3 desiredOffset;
+
 		override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
 
 			var weapon = c.GetInventorySlot(0) as Weapon;
 			float minRange = 2;
 			float maxRange = 5;
-			float fleeRange = 5;
+			float fleeRange = 10;
 			float fleeStaminaLimit = 20;
 			float enemyElevationDeltaToJump = 3;
 
@@ -72,8 +76,11 @@ namespace Bowhead.Actors {
 					input.movement = move.normalized;
 					input.look = -diff;
 
-				}
-				else {
+					input.inputs[(int)InputType.Jump] = InputState.Pressed;
+					desiredOffset = Vector3.zero;
+
+
+				} else {
 
 					if (diff.y <= -enemyElevationDeltaToJump) {
 						if (c.canJump && c.activity == Pawn.Activity.OnGround) {
@@ -84,22 +91,34 @@ namespace Bowhead.Actors {
 					if (diff == Vector3.zero) {
 						diff.x = 1;
 					}
-					var desiredPos = c.lastKnownPosition + diff.normalized * maxRange;
+
+					if (desiredOffset == Vector3.zero) {
+						var angle = Random.Range(0, Mathf.PI * 2);
+						desiredOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+					}
+
+					var desiredPos = c.lastKnownPosition + desiredOffset * ((maxRange-minRange)/2+minRange);
 					var move = desiredPos - c.position;
 					move.y = 0;
 
 					float dist = diff.magnitude;
 
 
-					if (c.CanSee(c.gameMode.players[0].playerPawn) > 0) {
-						if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround && weapon.CanCast()) {
-							input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
+					if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround && move.magnitude < (maxRange-minRange)/2) {
+						input.look = -diff;
+						if (weapon.CanCast()) {
+							if (c.CanSee(c.gameMode.players[0].playerPawn) > 0) {
+								input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
+								desiredOffset = Vector3.zero;
+							}
 						}
-						else {
-							input.movement = move.normalized;
+					} else {
+						input.movement = move.normalized;
+						input.look = move.normalized;
+						if (c.stamina > c.maxStamina * 0.5f) {
+							input.inputs[(int)InputType.Jump] = InputState.Pressed;
 						}
 					}
-					input.look = -diff;
 				}
 			}
 
@@ -111,7 +130,7 @@ namespace Bowhead.Actors {
 		override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
 
 			var weapon = c.GetInventorySlot(0) as Weapon;
-			float minRange = 2;
+			float minRange = 5;
 			float maxRange = 10;
 			float fleeRange = 10;
 			float fleeStaminaLimit = 20;
@@ -154,14 +173,22 @@ namespace Bowhead.Actors {
 
 					var player = c.gameMode.players[0].playerPawn;
 					if (c.CanSee(player) > 0 || c.CanSmell(player) > 0 || c.CanHear(player) > 0) {
-						if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround && weapon.CanCast()) {
-							input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
+						if (dist > minRange && dist < maxRange) {
+							if (c.canAttack && c.activity == Pawn.Activity.OnGround) {
+								input.look = -diff;
+								if (weapon.CanCast()) {
+									input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
+								}
+							}
 						}
 						else {
 							input.movement = move.normalized;
+							input.look = move.normalized;
+							if (c.stamina > c.maxStamina*0.5f) {
+								input.inputs[(int)InputType.Jump] = InputState.Pressed;
+							}
 						}
 					}
-					input.look = -diff;
 				}
 			}
 

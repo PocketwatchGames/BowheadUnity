@@ -91,6 +91,7 @@ MonoBehaviour:
     canHang: 0
     soundModifier: 1
   atlasData: {fileID: 11400000, guid: 3db0e86cbd5f229458f96df9da68b5ce, type: 2}
+  player2: 0
   windSpeedStormy: 24
   windSpeedWindy: 16
   windSpeedBreezy: 8

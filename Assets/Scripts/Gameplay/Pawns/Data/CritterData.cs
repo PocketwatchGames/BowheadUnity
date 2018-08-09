@@ -55,7 +55,7 @@ namespace Bowhead.Actors {
 		public T Spawn<T>(World world, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) where T: Critter {
 
 			var critter = (T)world.Spawn(critterClass, null, default(SpawnParameters));
-			critter.Spawn(this, pos, yaw, instigator, owner, team);
+			critter.Spawn(this, 0, pos, yaw, instigator, owner, team);
 
 			if (defaultLoadout != null) {
 				var loot = defaultLoadout.loot;

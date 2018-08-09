@@ -132,8 +132,8 @@ namespace Bowhead.Client.UI {
 
 			_slots[1].SetButton("LT");
 			_slots[2].SetButton("RT");
-			_slots[3].SetButton("LB");
-			_slots[4].SetButton("RB");
+			//_slots[3].SetButton("LB");
+			_slots[4].SetButton("Y");
 
 			int packSlotsRemaining = 0;
             InventoryContainer curPackContainer = null;
@@ -204,7 +204,10 @@ namespace Bowhead.Client.UI {
 			//selectLeft = Input.GetButtonDown("SelectLeft");
 			//selectRight = Input.GetButtonDown("SelectRight");
 
-			float dpa = Input.GetAxis("DPadX");
+			int playerIndex = 1;
+
+
+			float dpa = Input.GetAxis("DPadX" + playerIndex);
 			if (Utils.SignOrZero(dpa) != Utils.SignOrZero(_dpadXAxis)) {
 				_dpadXAxis = dpa;
 				selectLeft = _dpadXAxis < 0;
@@ -218,7 +221,7 @@ namespace Bowhead.Client.UI {
 				SelectNextInventory();
 			}
 
-			float dpy = Input.GetAxis("DPadY");
+			float dpy = Input.GetAxis("DPadY" + playerIndex);
 
 			bool usePressed = dpy < 0;
 			bool useDown = usePressed && !(_dpadYAxis < 0);

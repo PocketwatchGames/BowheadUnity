@@ -98,11 +98,11 @@ namespace Bowhead.Server {
 	public abstract class BowheadGame<T> : GameMode<T> where T : GameState<T> {
 		public const WorldStreaming.EGenerator WORLD_GENERATOR_TYPE = WorldStreaming.EGenerator.PROC_V2;
 
-		static SpawnPointData[] _monsterSpawns = SpawnPointData.GetAllSpawnTypes<CritterData>(ESpawnPointType.Monster);
-		static SpawnPointData[] _merchantSpawns = SpawnPointData.GetAllSpawnTypes<CritterData>(ESpawnPointType.Merchant);
-		static SpawnPointData[] _horseSpawns = SpawnPointData.GetAllSpawnTypes<CritterData>(ESpawnPointType.Horse);
-		static SpawnPointData[] _chestSpawns = SpawnPointData.GetAllSpawnTypes<WorldItemData>(ESpawnPointType.Chest);
-		static SpawnPointData[] _mapRevealSpawns = SpawnPointData.GetAllSpawnTypes<WorldItemData>(ESpawnPointType.MapReveal);
+		static SpawnPointData[] _monsterSpawns = SpawnPointData.GetAllSpawnTypes(ESpawnPointType.Monster);
+		static SpawnPointData[] _merchantSpawns = SpawnPointData.GetAllSpawnTypes(ESpawnPointType.Merchant);
+		static SpawnPointData[] _horseSpawns = SpawnPointData.GetAllSpawnTypes(ESpawnPointType.Horse);
+		static SpawnPointData[] _chestSpawns = SpawnPointData.GetAllSpawnTypes(ESpawnPointType.Chest);
+		static SpawnPointData[] _mapRevealSpawns = SpawnPointData.GetAllSpawnTypes(ESpawnPointType.MapReveal);
 
 		public BowheadGame(ServerWorld world) : base(world) {
 			data = Resources.Load<WorldData>("DefaultWorld");
@@ -243,12 +243,17 @@ namespace Bowhead.Server {
 
 		protected override void InitPlayerSpawn(ServerPlayerController playerController) {
 			base.InitPlayerSpawn(playerController);
-			var player = SpawnPlayer();
+			var player = SpawnPlayer(0);
 			playerController.PossessPlayerPawn(player);
+
+			if (data.player2) {
+				var player2 = SpawnPlayer(1);
+				player2.team = player.team;
+			}
 		}
 
-		Player SpawnPlayer() {
-			return PlayerData.Get("player").Spawn<Player>(world, new Vector3(16, 100, 20), 0, null, null, null);
+		Player SpawnPlayer(int index) {
+			return PlayerData.Get("player").Spawn<Player>(index, world, new Vector3(16, 100, 20), 0, null, null, null);
 		}
 
 		public Critter SpawnCritter(CritterData data, Vector3 pos, float yaw, Team team) {
@@ -268,22 +273,22 @@ namespace Bowhead.Server {
 
 		public void SpawnRandomCritter() {
 
-			if (numCritters < 100) {
-				var critterTypes = new List<CritterData> {
-					CritterData.Get("bunny"),
-					CritterData.Get("wolf"),
-					CritterData.Get("cobra"),
-				};
-				foreach (var player in world.GetActorIterator<Player>()) {
-					Vector3 pos = player.position;
-					pos.y = 1000;
-					pos.x += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
-					pos.z += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
+			//if (numCritters < 100) {
+			//	var critterTypes = new List<CritterData> {
+			//		CritterData.Get("bunny"),
+			//		CritterData.Get("wolf"),
+			//		CritterData.Get("cobra"),
+			//	};
+			//	foreach (var player in world.GetActorIterator<Player>()) {
+			//		Vector3 pos = player.position;
+			//		pos.y = 1000;
+			//		pos.x += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
+			//		pos.z += UnityEngine.Random.Range(-200f, 200f) + 0.5f;
 
-					SpawnCritter(critterTypes[UnityEngine.Random.Range(0,critterTypes.Count)], pos, UnityEngine.Random.Range(0,360)*Mathf.Deg2Rad, monsterTeam);
-					break;
-				}
-			}
+			//		SpawnCritter(critterTypes[UnityEngine.Random.Range(0,critterTypes.Count)], pos, UnityEngine.Random.Range(0,360)*Mathf.Deg2Rad, monsterTeam);
+			//		break;
+			//	}
+			//}
 		}
 		#endregion
 

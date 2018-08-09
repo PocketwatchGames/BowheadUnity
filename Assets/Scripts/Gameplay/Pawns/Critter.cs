@@ -33,8 +33,8 @@ namespace Bowhead.Actors {
 
 		SilhouetteRenderer.Mode _defaultSilhouetteMode;
 
-		public override void Spawn(EntityData d, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
-			base.Spawn(d, pos, yaw, instigator, owner, team);
+		public override void Spawn(EntityData d, int index, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
+			base.Spawn(d, index, pos, yaw, instigator, owner, team);
 			behaviorPanic = CritterBehavior.Create(data.panicBehavior);
 			_defaultSilhouetteMode = SilhouetteRenderer.Mode.Off;
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
@@ -56,6 +56,7 @@ namespace Bowhead.Actors {
             canRun = true;
             canTurn = true;
             canAttack = true;
+			canStrafe = true;
 			onHit += OnHit;
             gameMode.CritterSpawned();
 
@@ -107,8 +108,9 @@ namespace Bowhead.Actors {
 			canSprint = true;
 			canTurn = true;
             canAttack = true;
+			canStrafe = true;
 
-            if (recovering) {
+			if (stunned) {
                 canRun = false;
 				canSprint = false;
 				canJump = false;
@@ -117,6 +119,10 @@ namespace Bowhead.Actors {
                 canAttack = false;
                 canMove = false;
 				canTurn = false;
+			}
+			if (stamina <= 0) {
+				canAttack = false;
+				canSprint = false;
 			}
 
             if (moveImpulseTimer > 0)
@@ -165,7 +171,7 @@ namespace Bowhead.Actors {
 				else if (skidding) {
 					head.material.color = Color.cyan;
 				}
-				else if (recovering) {
+				else if (stunned) {
 					head.material.color = Color.yellow;
 				}
 				else {

@@ -17,7 +17,7 @@ namespace Bowhead.Actors {
 		private Vector2 _angleCorrectionVelocity;
 		private float _fovVelocity, _fovAcceleration;
 
-        private Player _target;
+        private List<Player> _targets = new List<Player>();
         private Vector3 _position;
         private bool _isLooking;
         private float _shakeTime;
@@ -62,19 +62,23 @@ namespace Bowhead.Actors {
 
 			_camera.transform.SetPositionAndRotation(pos, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
 
-            Debug.DrawLine(_target.headPosition(), _lookAt);
+//            Debug.DrawLine(_target.headPosition(), _lookAt);
         }
 
         public float GetYaw() {
             return _yaw;
         }
 
-        public void SetTarget(Player player) {
-            if (_target != null) {
-                _target.OnLand -= OnLand;
-            }
-
-            _target = player;
+		public void ClearTargets() {
+			foreach (var t in _targets) {
+				t.OnLand -= OnLand;
+			}
+		}
+		public void AddTarget(Player player) {
+			if (_targets.Count == 0) {
+				_position = player.position;
+			}
+            _targets.Add(player);
             player.OnLand += OnLand;
         }
 
@@ -88,16 +92,16 @@ namespace Bowhead.Actors {
 
 
         Vector3 _oldMousePosition;
-        void HandleInput(int playerNum, float dt) {
-			
+		void HandleInput(int playerNum, float dt) {
 
-            _isLooking = false;
+
+			_isLooking = false;
 
 			if (data.allowLook) {
-                var m = Input.mousePosition;
-                var mouseDelta = m - _oldMousePosition;
+				var m = Input.mousePosition;
+				var mouseDelta = m - _oldMousePosition;
 
-                Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+				Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
 
 				if (gamepad == Vector2.zero) {
 					_turnAccelerationResetTimer = Mathf.Max(0, _turnAccelerationResetTimer - dt);
@@ -106,8 +110,7 @@ namespace Bowhead.Actors {
 					}
 					if (_angularVelocity.magnitude < 0.1f) {
 						_angularVelocity = Vector2.zero;
-					}
-					else {
+					} else {
 						_angularVelocity = -_angularVelocity * dt * data.turnStopTime;
 					}
 				} else {
@@ -116,38 +119,43 @@ namespace Bowhead.Actors {
 					float acceleration;
 					if (_turnAccelerationTimer < data.turnAccelerationSlowTime) {
 						acceleration = data.turnAccelerationFirstTime * Mathf.Deg2Rad;
-					}
-					else {
+					} else {
 						acceleration = data.turnAcceleration * Mathf.Deg2Rad;
 					}
 
-					_angularVelocity += (gamepad* data.turnMaxSpeed * Mathf.Deg2Rad - _angularVelocity) * dt * acceleration;
+					_angularVelocity += (gamepad * data.turnMaxSpeed * Mathf.Deg2Rad - _angularVelocity) * dt * acceleration;
 				}
 				if (_angularVelocity.magnitude > data.turnMaxSpeed * Mathf.Deg2Rad) {
 					_angularVelocity = _angularVelocity.normalized * data.turnMaxSpeed * Mathf.Deg2Rad;
 				}
 
 				_yaw += _angularVelocity.x * dt;
-                _pitch += _angularVelocity.y * dt;
+				_pitch += _angularVelocity.y * dt;
 
-                _isLooking |= gamepad != Vector2.zero;
+				_isLooking |= gamepad != Vector2.zero;
 
-                float maxAngle = Mathf.PI / 2 * 0.95f;
-                float minAngle = -Mathf.PI / 2 * 0.95f;
-                if (_pitch > maxAngle)
-                    _pitch = maxAngle;
-                if (_pitch < minAngle)
+				float maxAngle = Mathf.PI / 2 * 0.95f;
+				float minAngle = -Mathf.PI / 2 * 0.95f;
+				if (_pitch > maxAngle)
+					_pitch = maxAngle;
+				if (_pitch < minAngle)
 
-                    _pitch = minAngle;
+					_pitch = minAngle;
 
 
-                _oldMousePosition = m;
-            }
-        }
+				_oldMousePosition = m;
+			} else {
+				float turn = 0;
+				if (Input.GetButton("ShoulderLeft")) {
+					turn = -1;
+				} else if (Input.GetButton("ShoulderRight")) {
+					turn = 1;
+				}
+				_yaw += turn * data.turnMaxSpeed * Mathf.Deg2Rad * dt;
+			}
+		}
 
         void Tick(float dt) {
-
-			
 
 			if (!data.allowLook) {
 				var curAngles = new Vector2(_yaw, _pitch);
@@ -161,13 +169,22 @@ namespace Bowhead.Actors {
 				_pitch = curAngles.y;
 			}
 
-			if (_target != null) {
-				SetMouseLookActive(true);
+			Vector3 avgPlayerPosition = Vector3.zero;
+			Vector3 avgPlayerVelocity = Vector3.zero;
+			foreach (var t in _targets) {
+				avgPlayerPosition += t.headPosition(t.renderPosition());
+				avgPlayerVelocity += t.velocity;
+			}
+			if (_targets.Count > 0) {
+				avgPlayerPosition /= _targets.Count;
+				avgPlayerVelocity /= _targets.Count;
 
 
-				float minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (data.maxDistance - data.minDistance) + data.minDistance;
+				float minDist = data.standardLeashDistance;
+				if (_targets.Count == 1) {
+					minDist = Mathf.Sqrt(Mathf.Max(0, _pitch) / (Mathf.PI / 2)) * (data.maxDistance - data.minDistance) + data.minDistance;
+				}
 
-                Vector3 avgPlayerPosition = _target.headPosition(_target.renderPosition());
                 bool isMoving = _playerPosition != avgPlayerPosition;
 
 				if (isMoving) {
@@ -245,8 +262,9 @@ namespace Bowhead.Actors {
 						_position += _cameraVelocity * dt;
 						_position = new Vector3(_position.x, Mathf.Max(_position.y, avgPlayerPosition.y), _position.z);
 
-						if (_target.activity == Pawn.Activity.Climbing) {
-							var desiredYaw = Mathf.Atan2(-_target.climbingNormal.x, -_target.climbingNormal.z);
+						var firstTarget = _targets[0];
+						if (_targets.Count == 1 && firstTarget.activity == Pawn.Activity.Climbing) {
+							var desiredYaw = Mathf.Atan2(-firstTarget.climbingNormal.x, -firstTarget.climbingNormal.z);
 							if (Mathf.Abs(Utils.SignedMinAngleDelta(desiredYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) >= 45) {
 								if (_isAdjustingYaw || _adjustYaw != desiredYaw) {
 									_isAdjustingYaw = true;
@@ -269,7 +287,7 @@ namespace Bowhead.Actors {
 
 						// Mario style leash camera
 						if (data.allowRotation) {
-							_position += _target.velocity * data.leashFollowVelocityRate * dt;
+							_position += avgPlayerVelocity * data.leashFollowVelocityRate * dt;
 
 							diff = _position - _lookAt;
 							diff.y = 0;
@@ -287,27 +305,31 @@ namespace Bowhead.Actors {
 					}
 				}
 
-                float horizDist = Mathf.Cos(_pitch);
+				float horizDist = Mathf.Cos(_pitch);
                 Vector3 cameraOffset = new Vector3(-Mathf.Sin(_yaw) * horizDist, Mathf.Sin(_pitch), -Mathf.Cos(_yaw) * horizDist);
                 cameraOffset *= minDist;
                 _position = _lookAt + cameraOffset;
 
+				Vector3 pos;
+				float yaw, pitch;
+				GetPositionAngles(out pos, out yaw, out pitch);
+				_camera.transform.SetPositionAndRotation(pos, Quaternion.Euler(new Vector3(pitch * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg, 0)));
 
-                //Vec2f_t maxPlayerPos = Vec2f_t(-10000, -10000);
-                //Vec2f_t minPlayerPos = Vec2f_t(10000, 10000);
-                //foreach(var p in players)
-                //{
-                //	var screenPos = camera.viewport.Project(p.waistPosition, camera.Projection, camera.View, Matrix.Identity);
-                //	maxPlayerPos.X = Math.Max(maxPlayerPos.X, screenPos.X);
-                //	maxPlayerPos.Y = Math.Max(maxPlayerPos.Y, screenPos.Y);
-                //	minPlayerPos.X = Math.Min(minPlayerPos.X, screenPos.X);
-                //	minPlayerPos.Y = Math.Min(minPlayerPos.Y, screenPos.Y);
 
-                //}
 
-                //float maxDist = (float)Math.Sqrt(Math.Pow((maxPlayerPos.X - minPlayerPos.X) / camera.viewport.Width, 2) + Math.Pow((maxPlayerPos.Y - minPlayerPos.Y) / camera.viewport.Height, 2)) * 60;
-                float maxDist = 0f;
-                float cameraDist = Mathf.Clamp(maxDist, minDist, 100f);
+				Vector2 maxPlayerPos = new Vector2(-10000, -10000);
+				Vector2 minPlayerPos = new Vector2(10000, 10000);
+				foreach (var p in _targets) {
+					var screenPos = _camera.WorldToViewportPoint(p.waistPosition());
+					maxPlayerPos.x = Mathf.Max(maxPlayerPos.x, screenPos.x);
+					maxPlayerPos.y = Mathf.Max(maxPlayerPos.y, screenPos.y);
+					minPlayerPos.x = Mathf.Min(minPlayerPos.x, screenPos.x);
+					minPlayerPos.y = Mathf.Min(minPlayerPos.y, screenPos.y);
+
+				}
+
+				float maxDist = Mathf.Min(1.0f, Mathf.Sqrt(Mathf.Pow((maxPlayerPos.x - minPlayerPos.x), 2) + Mathf.Pow((maxPlayerPos.y - minPlayerPos.y), 2))) * data.maxLeashDistance;
+                float cameraDist = Mathf.Max(maxDist, minDist);
 
                 cameraOffset = new Vector3(-Mathf.Sin(_yaw) * Mathf.Cos(_pitch), Mathf.Sin(_pitch), -Mathf.Cos(_yaw) * Mathf.Cos(_pitch));
                 cameraOffset *= cameraDist;
@@ -351,6 +373,7 @@ namespace Bowhead.Actors {
         void GetPositionAngles(out Vector3 _pos, out float _yaw, out float _pitch) {
             _pos = _position;
 
+
             //RaycastHit hit;
             //var dir = _position - _lookAt;
             //if (Physics.Raycast(_lookAt, dir.normalized, out hit, dir.magnitude, Layers.CameraTraceMask)) {
@@ -359,7 +382,12 @@ namespace Bowhead.Actors {
 			
             _yaw = this._yaw;
             _pitch = this._pitch;
-            if (_shakeTime > 0) {
+
+
+			if (_targets.Count == 0) {
+				return;
+			}
+			if (_shakeTime > 0) {
                 float rampUpTime = Mathf.Min(0.05f, _shakeTimeTotal / 2);
                 float t;
                 if (_shakeTime < rampUpTime) {
@@ -368,12 +396,13 @@ namespace Bowhead.Actors {
                 else {
                     t = 1f - (_shakeTime - rampUpTime) / (_shakeTimeTotal - rampUpTime);
                 }
-                int perlinTime = (int)(_target.world.time * 100);
-                _pos.x += t * _shakePositionMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 5422, perlinTime + 123, 0.1f);
-                _pos.y += t * _shakePositionMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 5, perlinTime + 165423, 0.1f);
-                _pos.z += t * _shakePositionMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 542462, perlinTime + 1253, 0.1f);
-                _yaw += t * _shakeAngleMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 52, perlinTime + 13, 0.1f);
-                _pitch += t * _shakeAngleMag * _target.gameMode.GetPerlinValue(perlinTime, perlinTime + 542, perlinTime + 1273, 0.1f);
+				var firstTarget = _targets[0];
+				int perlinTime = (int)(firstTarget.world.time * 100);
+                _pos.x += t * _shakePositionMag * firstTarget.gameMode.GetPerlinValue(perlinTime, perlinTime + 5422, perlinTime + 123, 0.1f);
+                _pos.y += t * _shakePositionMag * firstTarget.gameMode.GetPerlinValue(perlinTime, perlinTime + 5, perlinTime + 165423, 0.1f);
+                _pos.z += t * _shakePositionMag * firstTarget.gameMode.GetPerlinValue(perlinTime, perlinTime + 542462, perlinTime + 1253, 0.1f);
+                _yaw += t * _shakeAngleMag * firstTarget.gameMode.GetPerlinValue(perlinTime, perlinTime + 52, perlinTime + 13, 0.1f);
+                _pitch += t * _shakeAngleMag * firstTarget.gameMode.GetPerlinValue(perlinTime, perlinTime + 542, perlinTime + 1273, 0.1f);
             }
         }
 

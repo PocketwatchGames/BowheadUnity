@@ -7,7 +7,8 @@ using Bowhead.Actors;
 namespace Bowhead.Client.UI {
 	public class BowheadHUD : HUD {
 		InventoryPanel _inventory;
-        ButtonHint _interactHint;
+		ButtonHint _interactHint;
+		LockTargetHUD _lockMarker;
 		Map _worldmap;
         Compass _compass;
 
@@ -54,8 +55,9 @@ namespace Bowhead.Client.UI {
 
 		public BowheadHUD(ClientWorld world, GameState gameState) : base(world, gameState) {
 			_inventory = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPanelPrefab, hudCanvas.transform, false);
-            _interactHint = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, hudCanvas.transform, false);
-            _worldmap = GameObject.Instantiate(GameManager.instance.clientData.worldMapPrefab, hudCanvas.transform, false);
+			_interactHint = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, hudCanvas.transform, false);
+			_lockMarker = GameObject.Instantiate(GameManager.instance.clientData.hudLockPrefab, hudCanvas.transform, false);
+			_worldmap = GameObject.Instantiate(GameManager.instance.clientData.worldMapPrefab, hudCanvas.transform, false);
 			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
 			_weaponChargeLeft = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
 			_weaponChargeRight = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
@@ -71,9 +73,10 @@ namespace Bowhead.Client.UI {
 			world.CritterActiveEvent += OnCritterActive;
             world.DamageEvent += OnDamage;
             world.StatusEffectAddedEvent += OnStatusEffectAdded;
-        }
 
-        public override void OnPlayerPossessed(Player player) {
+		}
+
+		public override void OnPlayerPossessed(Player player) {
 			base.OnPlayerPossessed(player);
 			_inventory.Init(player);
             _compass.Init(Camera.main, player);
@@ -141,6 +144,19 @@ namespace Bowhead.Client.UI {
 			}
 			_interactHint.SetButton("X");
             _interactHint.SetHint(interaction);
+
+
+			float angle;
+			if (localPlayer.playerPawn.cur.fwd != 0 || localPlayer.playerPawn.cur.right != 0) {
+				angle = Mathf.Atan2(localPlayer.playerPawn.cur.right, localPlayer.playerPawn.cur.fwd);
+			} else {
+				angle = localPlayer.playerPawn.yaw;
+			}
+			var newTarget = localPlayer.playerPawn.GetAttackTarget(angle, 20, 360 * Mathf.Deg2Rad, null);
+			_lockMarker.gameObject.SetActive(newTarget != null);
+			if (newTarget != null) {
+				_lockMarker.transform.position = Camera.main.WorldToScreenPoint(newTarget.headPosition());
+			}
 
 			if (Input.GetButtonDown("Start")) {
 				ShowWorldMap(!worldMapVisible);

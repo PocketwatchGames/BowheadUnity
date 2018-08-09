@@ -15,13 +15,12 @@ namespace Bowhead.Actors {
 			Explore
 		}
 
-        #region State
-        [Header("Player")]
-        public Vector3 spawnPoint;
+		#region State
+		[Header("Player")]
+		public int playerIndex;
+		public Vector3 spawnPoint;
         public Vector2 mapPos;
 		public Pawn tradePartner;
-		public float lockHoldTime;
-		public float lockAngle;
 
 		[Header("Inventory")]
         public int money;
@@ -52,8 +51,9 @@ namespace Bowhead.Actors {
 		World.Streaming.IVolume _worldStreaming;
 
         Pawn attackTargetPreview;
+		private bool _addedToCamera;
 
-        public event Action OnMoneyChange;
+		public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
         public event Action<Vector2, float> OnExplore;
 		public event Action OnInventoryChange;
@@ -67,54 +67,58 @@ namespace Bowhead.Actors {
 			SetReplicates(true);
 		}
 
-        private void RecordInputDevices() {
-            PlayerCmd_t cmd = new PlayerCmd_t();
-            Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal"), Input.GetAxis("MoveVertical"));
-            cmd.fwd = (sbyte)(move.y * 127);
-            cmd.right = (sbyte)(move.x * 127);
 
-            Vector2 look;
-            if (Input.GetJoystickNames().Length == 0)
-            {
-                look = new Vector2(Input.GetAxis("MouseAxis1"), -Input.GetAxis("MouseAxis2"));
-                if (look != Vector2.zero) {
-                    look.Normalize();
-                }
-            }
-            else {
-                look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
-				if (look.magnitude > 0.5f) {
-					look.Normalize();
+		private void RecordInputDevices() {
+
+			int pi = playerIndex + 1;
+
+			PlayerCmd_t cmd = new PlayerCmd_t();
+
+			if (pi == 1) {
+
+				Vector2 look;
+				if (Input.GetJoystickNames().Length == 0) {
+					look = new Vector2(Input.GetAxis("MouseAxis1"), -Input.GetAxis("MouseAxis2"));
+					if (look != Vector2.zero) {
+						look.Normalize();
+					}
+				} else {
+					look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+					if (look.magnitude > 0.5f) {
+						look.Normalize();
+					} else {
+						look = Vector2.zero;
+					}
 				}
-				else {
-					look = Vector2.zero;
-				}
+				cmd.lookFwd = (sbyte)(-look.y * 127);
+				cmd.lookRight = (sbyte)(look.x * 127);
 			}
-			cmd.lookFwd = (sbyte)(-look.y * 127);
-			cmd.lookRight = (sbyte)(look.x * 127);
 
+			Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal" + pi), Input.GetAxis("MoveVertical" + pi)); ;
+			cmd.fwd = (sbyte)(move.y * 127);
+			cmd.right = (sbyte)(move.x * 127);
 
-			if (Input.GetButton("A")) {
+			if (Input.GetButton("A" + pi)) {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
-            if (Input.GetButton("B")) {
+            if (Input.GetButton("B" + pi)) {
                 cmd.buttons |= 1 << (int)InputType.Lock;
             }
-			if (Input.GetButton("AttackRight") || Input.GetAxis("RightTrigger") != 0) {
+			if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
 			}
-			if (Input.GetButton("AttackLeft") || Input.GetAxis("LeftTrigger") != 0) {
+			if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackLeft;
 			}
-			if (Input.GetButton("X")) {
+			if (Input.GetButton("X" + pi)) {
 				cmd.buttons |= 1 << (int)InputType.Interact;
 			}
-			if (Input.GetButton("ShoulderRight")) {
+			if (Input.GetButton("Y" + pi)) {
 				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
 			}
-			if (Input.GetButton("ShoulderLeft")) {
-				cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
-			}
+			//if (Input.GetButton("ShoulderLeft" + pi)) {
+			//	cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
+			//}
 
 			UpdatePlayerCmd(cmd);
         }
@@ -123,8 +127,14 @@ namespace Bowhead.Actors {
 
 
         public override void Tick() {
-            // kinda hacky here
-            RecordInputDevices();
+
+			if (!_addedToCamera && Client.Actors.ClientPlayerController.localPlayer != null && Client.Actors.ClientPlayerController.localPlayer.cameraController != null && rigidBody != null) {
+				Client.Actors.ClientPlayerController.localPlayer.cameraController.AddTarget(this);
+				_addedToCamera = true;
+			}
+
+			// kinda hacky here
+			RecordInputDevices();
 
             base.Tick();
             if (!hasAuthority) {
@@ -164,7 +174,7 @@ namespace Bowhead.Actors {
 				else if (skidding) {
 					head.material.color = Color.cyan;
 				}
-				else if (recovering) {
+				else if (stunned) {
 					head.material.color = Color.yellow;
 				}
 				else {
@@ -184,8 +194,9 @@ namespace Bowhead.Actors {
 			canSwim = weight < WeightClass.HEAVY;
             canClimbWell = weight < WeightClass.MEDIUM;
             canTurn = true;
+			canStrafe = true;
 
-            if (recovering) {
+			if (stunned) {
 				canRun = false;
 				canSprint = false;
 				canJump = false;
@@ -193,8 +204,12 @@ namespace Bowhead.Actors {
                 canClimbWell = false;
                 canAttack = false;
             }
+			if (stamina <= 0) {
+				canAttack = false;
+				canSprint = false;
+			}
 
-            if (activity == Activity.Swimming || activity == Activity.Climbing) {
+			if (activity == Activity.Swimming || activity == Activity.Climbing) {
                 canAttack = false;
             }
 
@@ -245,42 +260,30 @@ namespace Bowhead.Actors {
 				moveDir = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
 			}
 
-			if (!IsValidAttackTarget(target)) {
-				target = null;
-			}
-
-			if (mount != null) {
-				input.look = moveDir;
-			} else if (tradePartner !=null) {
-				var lookDir = (tradePartner.position - position);
-				lookDir.y = 0;
-				input.look = lookDir.normalized;
-			} else if (input.IsPressed(InputType.Lock)) {
-				lockHoldTime += dt;
-				lockAngle = yaw;
-				input.look = new Vector3(Mathf.Sin(lockAngle), 0, Mathf.Cos(lockAngle));
-			} else {
-				if (input.inputs[(int)InputType.Lock] == InputState.JustReleased) {
-					if (lockHoldTime < data.lockHoldTime) {
-						var newTarget = GetAttackTarget(Mathf.Atan2(moveDir.x, moveDir.z), 20, 360 * Mathf.Deg2Rad, target);
-						target = newTarget;
-					} else {
-						target = null;
-					}
+			if (canStrafe) {
+				if (cur.lookFwd != 0 || cur.lookRight != 0) {
+					input.look += forward * (float)cur.lookFwd / 127f;
+					input.look += right * (float)cur.lookRight / 127f;
+				} else {
+					input.look = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
+					//if (input.movement != Vector3.zero && Input.GetJoystickNames().Length > 0) {
+					//    input.look = input.movement.normalized;
+					//}
 				}
-
-				if (target != null) {
-					var lookDir = (target.position - position);
+			} else {
+				if (mount != null) {
+					input.look = moveDir;
+				} else if (tradePartner != null) {
+					var lookDir = (tradePartner.position - position);
 					lookDir.y = 0;
 					input.look = lookDir.normalized;
-				} else {
+				}
+				if (input.movement != Vector3.zero) {
 					input.look = moveDir;
 				}
-
-				lockHoldTime = 0;
 			}
-			
-            return input;
+
+			return input;
         }
 
         override public void Simulate(float dt, Input_t input) {
@@ -398,10 +401,11 @@ namespace Bowhead.Actors {
 			attackTargetPreview = GetAttackTarget(yaw, 20, 360 * Mathf.Deg2Rad, null);
 
 			if (isCasting) {
+				SetMount(null);
 				tradePartner = null;
 			}
 
-            base.Simulate(dt, input);
+			base.Simulate(dt, input);
             UpdateStats(dt);
 
         }
@@ -410,8 +414,11 @@ namespace Bowhead.Actors {
 		// Spawning
 		////////////
 
-		public override void Spawn(EntityData d, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
-			base.Spawn(d, pos, yaw, instigator, owner, team);
+		public override void Spawn(EntityData d, int index, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
+			base.Spawn(d, index, pos, yaw, instigator, owner, team);
+
+			playerIndex = index;
+
 			var gameObject = GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity, null);
             AttachExternalGameObject(gameObject);
 
@@ -505,7 +512,7 @@ namespace Bowhead.Actors {
                 d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * gameMode.GetTerrainData(position).fallDamage * data.maxHealth;
                 if (d > 0) {
                     Damage(d, PawnData.DamageType.Falling);
-                    UseStamina((float)d);
+                    UseStamina((float)d, true);
                     Stun((float)d);
                 }
             }
@@ -930,7 +937,7 @@ namespace Bowhead.Actors {
 						tradePartner = critter;
 					}
 				}
-            }
+			}
             else if (targetPos.HasValue) {
                 var block = world.GetBlock(targetPos.Value);
                 if (block == EVoxelBlockType.Water) {

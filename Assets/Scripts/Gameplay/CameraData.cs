@@ -14,6 +14,8 @@ public class CameraData : ScriptableObject {
 
 	public float minDistance;
 	public float maxDistance;
+	public float standardLeashDistance;
+	public float maxLeashDistance;
 
 	public float pitch = 45.0f;
 	public float fov = 55;

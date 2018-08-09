@@ -200,7 +200,7 @@ namespace Bowhead {
 				ActivateSpell(owner);
 			}
 
-			owner.UseStamina(data.attacks[attackHand].staminaUse);
+			owner.UseStamina(data.attacks[attackHand].staminaUse, false);
 			owner.UseWater(data.waterUse);
 
         }
@@ -378,7 +378,7 @@ namespace Bowhead {
 				return;
 			}
 
-			owner.UseStamina(data.blockResult.staminaUse);
+			owner.UseStamina(data.blockResult.staminaUse, false);
 			remainingDamage = Mathf.Max(0, remainingDamage - data.blockResult.damageAbsorb);
 			remainingStun = Mathf.Max(0, remainingStun - data.blockResult.stunAbsorb);
 			attacker.Hit(owner, this, data.blockResult, 1, false);
@@ -394,10 +394,10 @@ namespace Bowhead {
 
 			float chargeMultiplier = 1;
 
-			//if (owner.sprintTimer > 0) {
-			//	chargeMultiplier = 2;
-			//}
-			if (owner.activity == Pawn.Activity.Falling) {
+			if (Vector2.Dot(owner.velocity, new Vector2(Mathf.Sin(owner.yaw),Mathf.Cos(owner.yaw))) > owner.data.sprintDamageMultiplierSpeed) {
+				chargeMultiplier = 2;
+			}
+			else if (owner.activity == Pawn.Activity.Falling) {
 				chargeMultiplier = 2;
 			}
 			else if (data.attacks[attackHand].chargeTime > 0 && attackCharge > 0) {

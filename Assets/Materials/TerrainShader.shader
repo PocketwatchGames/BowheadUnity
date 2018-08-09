@@ -76,7 +76,7 @@
 					float2 dxy = IN.clipPos.xy - _ClipOrigin.xy;
 					dxy.y /= _ClipRegion.z;
 
-					float r = (dxy.x*dxy.x) + (dxy.y*dxy.y);
+					float r = (dxy.x*dxy.x) + (dxy.y*dxy.y);w
 					if (r < _ClipRegion.x) {
 						clip(-1);
 					}
