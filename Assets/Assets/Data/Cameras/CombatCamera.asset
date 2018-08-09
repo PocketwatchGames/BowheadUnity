@@ -19,8 +19,10 @@ MonoBehaviour:
   leashFollowVelocityRate: 0.5
   minDistance: 15
   maxDistance: 25
+  standardLeashDistance: 20
+  maxLeashDistance: 25
   pitch: 60
-  fov: 60
+  fov: 75
   climbingYawMaxAngle: 40
   climbingYawAdjustmentAcceleration: 20
   climbingYawTurnSpeed: 10
@@ -30,3 +32,4 @@ MonoBehaviour:
   turnMaxSpeed: 90
   turnAccelerationFirstTime: 90
   turnAccelerationSlowTime: 0.75
+  turnAccelerationSlowResetTime: 20

@@ -20,8 +20,6 @@ namespace Bowhead.Actors {
 		public int playerIndex;
 		public Vector3 spawnPoint;
         public Vector2 mapPos;
-		public Stance desiredStance;
-		public Stance stance;
 		public Pawn tradePartner;
 
 		[Header("Inventory")]
@@ -67,14 +65,6 @@ namespace Bowhead.Actors {
 
 		public Player() {
 			SetReplicates(true);
-		}
-
-		public void SetStance(Stance s) {
-			stance = s;
-			desiredStance = s;
-		}
-		public void SetStanceTemporary(Stance s) {
-			stance = s;
 		}
 
 
@@ -204,7 +194,7 @@ namespace Bowhead.Actors {
 			canSwim = weight < WeightClass.HEAVY;
             canClimbWell = weight < WeightClass.MEDIUM;
             canTurn = true;
-			canStrafe = stance == Stance.Combat;
+			canStrafe = true;
 
 			if (stunned) {
 				canRun = false;
@@ -307,7 +297,6 @@ namespace Bowhead.Actors {
 				var diff = tradePartner.position - position;
 				if (diff.magnitude > data.tradePartnerCancelDistance) {
 					tradePartner = null;
-					SetStance(desiredStance);
 				}
 			}
 
@@ -319,10 +308,6 @@ namespace Bowhead.Actors {
 				tradePartner = null;
 				if (mount != null) {
 					SetMount(null);
-				} else if (stance == Stance.Combat) {
-					SetStance(Stance.Explore);
-				} else {
-					SetStance(Stance.Combat);
 				}
 			}
 
@@ -418,7 +403,6 @@ namespace Bowhead.Actors {
 			if (isCasting) {
 				SetMount(null);
 				tradePartner = null;
-				SetStance(Stance.Combat);
 			}
 
 			base.Simulate(dt, input);
@@ -439,7 +423,6 @@ namespace Bowhead.Actors {
             AttachExternalGameObject(gameObject);
 
 			attackTargetPreview = null;
-			SetStance(Stance.Combat);
 
 			// JOSEPH: this will be better once this is moved into new Actor framework, for now HACK
 			_worldStreaming = GameManager.instance.serverWorld.worldStreaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);
@@ -953,7 +936,6 @@ namespace Bowhead.Actors {
 					else {
 						tradePartner = critter;
 					}
-					SetStanceTemporary(Stance.Explore);
 				}
 			}
             else if (targetPos.HasValue) {

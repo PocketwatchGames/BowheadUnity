@@ -541,14 +541,6 @@ namespace Bowhead.Actors {
 
 		virtual protected void SetActivity(Activity a) {
 			activity = a;
-			Player p;
-			if ((p = this as Player) != null) {
-				if (activity == Activity.Climbing || activity == Activity.Swimming) {
-					p.SetStanceTemporary(Player.Stance.Explore);
-				} else if (mount == null && p.tradePartner == null) {
-					p.SetStance(p.desiredStance);
-				}
-			}
 		}
 
 		protected virtual void MountMoved() {
@@ -1337,15 +1329,6 @@ namespace Bowhead.Actors {
 				silhouetteMode = defaultSilhouetteMode;
 				go.transform.parent = null;
             }
-
-			Player p;
-			if ((p = (this as Player)) != null) {
-				if (mount != null) {
-					p.SetStanceTemporary(Player.Stance.Explore);
-				} else {
-					p.SetStance(Player.Stance.Combat);
-				}
-			}
 
 			return true;
         }

@@ -317,7 +317,7 @@ namespace Bowhead {
 				return;
 			}
 
-			if (owner.activity == Pawn.Activity.Climbing || owner.activity == Pawn.Activity.Swimming || (owner is Player && (owner as Player).stance == Player.Stance.Explore)) {
+			if (owner.activity == Pawn.Activity.Climbing || owner.activity == Pawn.Activity.Swimming) {
 				_mesh.transform.localRotation = Quaternion.Euler(0, 0, 45);
 				_mesh.transform.localPosition = new Vector3(0,1f,-0.75f);
 				return;

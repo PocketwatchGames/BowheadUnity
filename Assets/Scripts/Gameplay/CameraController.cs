@@ -92,16 +92,16 @@ namespace Bowhead.Actors {
 
 
         Vector3 _oldMousePosition;
-        void HandleInput(int playerNum, float dt) {
-			
+		void HandleInput(int playerNum, float dt) {
 
-            _isLooking = false;
+
+			_isLooking = false;
 
 			if (data.allowLook) {
-                var m = Input.mousePosition;
-                var mouseDelta = m - _oldMousePosition;
+				var m = Input.mousePosition;
+				var mouseDelta = m - _oldMousePosition;
 
-                Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+				Vector2 gamepad = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
 
 				if (gamepad == Vector2.zero) {
 					_turnAccelerationResetTimer = Mathf.Max(0, _turnAccelerationResetTimer - dt);
@@ -110,8 +110,7 @@ namespace Bowhead.Actors {
 					}
 					if (_angularVelocity.magnitude < 0.1f) {
 						_angularVelocity = Vector2.zero;
-					}
-					else {
+					} else {
 						_angularVelocity = -_angularVelocity * dt * data.turnStopTime;
 					}
 				} else {
@@ -120,40 +119,43 @@ namespace Bowhead.Actors {
 					float acceleration;
 					if (_turnAccelerationTimer < data.turnAccelerationSlowTime) {
 						acceleration = data.turnAccelerationFirstTime * Mathf.Deg2Rad;
-					}
-					else {
+					} else {
 						acceleration = data.turnAcceleration * Mathf.Deg2Rad;
 					}
 
-					_angularVelocity += (gamepad* data.turnMaxSpeed * Mathf.Deg2Rad - _angularVelocity) * dt * acceleration;
+					_angularVelocity += (gamepad * data.turnMaxSpeed * Mathf.Deg2Rad - _angularVelocity) * dt * acceleration;
 				}
 				if (_angularVelocity.magnitude > data.turnMaxSpeed * Mathf.Deg2Rad) {
 					_angularVelocity = _angularVelocity.normalized * data.turnMaxSpeed * Mathf.Deg2Rad;
 				}
 
 				_yaw += _angularVelocity.x * dt;
-                _pitch += _angularVelocity.y * dt;
+				_pitch += _angularVelocity.y * dt;
 
-                _isLooking |= gamepad != Vector2.zero;
+				_isLooking |= gamepad != Vector2.zero;
 
-                float maxAngle = Mathf.PI / 2 * 0.95f;
-                float minAngle = -Mathf.PI / 2 * 0.95f;
-                if (_pitch > maxAngle)
-                    _pitch = maxAngle;
-                if (_pitch < minAngle)
+				float maxAngle = Mathf.PI / 2 * 0.95f;
+				float minAngle = -Mathf.PI / 2 * 0.95f;
+				if (_pitch > maxAngle)
+					_pitch = maxAngle;
+				if (_pitch < minAngle)
 
-                    _pitch = minAngle;
+					_pitch = minAngle;
 
 
-                _oldMousePosition = m;
-            }
-        }
+				_oldMousePosition = m;
+			} else {
+				float turn = 0;
+				if (Input.GetButton("ShoulderLeft")) {
+					turn = -1;
+				} else if (Input.GetButton("ShoulderRight")) {
+					turn = 1;
+				}
+				_yaw += turn * data.turnMaxSpeed * Mathf.Deg2Rad * dt;
+			}
+		}
 
         void Tick(float dt) {
-
-			if (_targets.Count > 0) {
-				SetMouseLookActive(_targets[0].stance == Player.Stance.Explore);
-			}
 
 			if (!data.allowLook) {
 				var curAngles = new Vector2(_yaw, _pitch);
