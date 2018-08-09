@@ -46,7 +46,7 @@ MonoBehaviour:
   groundWindDrag: 0.01
   sprintTime: 0.1
   sprintSpeed: 12
-  sprintStaminaUse: 0
+  sprintStaminaUse: 10
   sprintGracePeriodTime: 0
   slideModifier: 0.5
   gravity: -30

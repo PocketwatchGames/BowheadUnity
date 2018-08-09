@@ -145,13 +145,18 @@ namespace Bowhead.Actors {
 
 				_oldMousePosition = m;
 			} else {
-				float turn = 0;
-				if (Input.GetButton("ShoulderLeft")) {
-					turn = -1;
-				} else if (Input.GetButton("ShoulderRight")) {
-					turn = 1;
+				int delta = 0;
+				if (Input.GetButtonDown("ShoulderLeft")) {
+					delta++;
+				} else if (Input.GetButtonDown("ShoulderRight")) {
+					delta--;
 				}
-				_yaw += turn * data.turnMaxSpeed * Mathf.Deg2Rad * dt;
+				if (delta != 0) {
+					float curAngle = (Utils.NormalizeAngle(_yaw * Mathf.Rad2Deg + 45)) / (360);
+					int newDir = Mathf.FloorToInt(curAngle * 4) + delta;
+					_isAdjustingYaw = true;
+					_adjustYaw = (float)newDir / 4 * Mathf.PI * 2;
+				}
 			}
 		}
 
@@ -265,24 +270,28 @@ namespace Bowhead.Actors {
 						var firstTarget = _targets[0];
 						if (_targets.Count == 1 && firstTarget.activity == Pawn.Activity.Climbing) {
 							var desiredYaw = Mathf.Atan2(-firstTarget.climbingNormal.x, -firstTarget.climbingNormal.z);
-							if (Mathf.Abs(Utils.SignedMinAngleDelta(desiredYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) >= 45) {
+							if (Mathf.Abs(Utils.SignedMinAngleDelta(desiredYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) >= 0.1f) {
 								if (_isAdjustingYaw || _adjustYaw != desiredYaw) {
 									_isAdjustingYaw = true;
 									_adjustYaw = desiredYaw;
 								}
+							} else {
+								_isAdjustingYaw = false;
+								_adjustYaw = -1000;
 							}
-						}
-						else {
-							_isAdjustingYaw = false;
-							_adjustYaw = -1000;
 						}
 
 						if (_isAdjustingYaw) {
 
-							float turnToYaw = _adjustYaw - Mathf.Sign(Utils.SignedMinAngleDelta(_adjustYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) * data.climbingYawMaxAngle * Mathf.Deg2Rad;
+							float turnToYaw = _adjustYaw;
 							float desiredVelocity = Utils.SignedMinAngleDelta(turnToYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg) * Mathf.Deg2Rad * data.climbingYawTurnSpeed;
 							_adjustYawVelocity += (desiredVelocity - _adjustYawVelocity) * dt * data.climbingYawAdjustmentAcceleration;
 							_yaw = Utils.NormalizeAngle((_yaw + _adjustYawVelocity * dt) * Mathf.Rad2Deg) * Mathf.Deg2Rad;
+
+							if (Mathf.Abs(Mathf.DeltaAngle(_yaw* Mathf.Rad2Deg, _adjustYaw* Mathf.Rad2Deg)) < 0.1f) {
+								_adjustYaw = -10000;
+								_isAdjustingYaw = false;
+							}
 						}
 
 						// Mario style leash camera
