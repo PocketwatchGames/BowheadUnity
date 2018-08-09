@@ -248,6 +248,7 @@ namespace Bowhead.Server {
 
 			if (data.player2) {
 				var player2 = SpawnPlayer(1);
+				player2.team = player.team;
 			}
 		}
 

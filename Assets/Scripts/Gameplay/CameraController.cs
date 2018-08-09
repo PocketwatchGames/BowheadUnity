@@ -151,7 +151,9 @@ namespace Bowhead.Actors {
 
         void Tick(float dt) {
 
-			
+			if (_targets.Count > 0) {
+				SetMouseLookActive(_targets[0].stance == Player.Stance.Explore);
+			}
 
 			if (!data.allowLook) {
 				var curAngles = new Vector2(_yaw, _pitch);
@@ -174,8 +176,6 @@ namespace Bowhead.Actors {
 			if (_targets.Count > 0) {
 				avgPlayerPosition /= _targets.Count;
 				avgPlayerVelocity /= _targets.Count;
-
-				SetMouseLookActive(true);
 
 
 				float minDist = data.standardLeashDistance;

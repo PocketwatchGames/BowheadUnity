@@ -89,8 +89,8 @@ namespace Bowhead.Actors {
         public bool canSwim;
         public bool canTurn;
         public bool canAttack;
-		public Pawn target;
-        public Pawn mount;
+		public bool canStrafe;
+		public Pawn mount;
         public Pawn driver;
 		public List<StatusEffect> statusEffects = new List<StatusEffect>();
 
@@ -115,6 +115,12 @@ namespace Bowhead.Actors {
 			Climbing,
 			OnGround,
 		}
+
+		public enum Stance {
+			Combat,
+			Explore,
+		}
+
 
 		public struct PlayerCmd_t {
             public int serverTime;
@@ -374,10 +380,10 @@ namespace Bowhead.Actors {
             if (canTurn) {
 				if (activity == Activity.Climbing) {
 					yaw = Mathf.Atan2(-climbingNormal.x, -climbingNormal.z);
+				} else if (sprintTimer > data.sprintTime) {
+					yaw = Mathf.Atan2(input.movement.x, input.movement.z);
 				} else if (input.look != Vector3.zero) {
 					yaw = Mathf.Atan2(input.look.x, input.look.z);
-				} else if (input.movement != Vector3.zero) {
-					yaw = Mathf.Atan2(input.movement.x, input.movement.z);
 				}
 			}
 
@@ -535,6 +541,14 @@ namespace Bowhead.Actors {
 
 		virtual protected void SetActivity(Activity a) {
 			activity = a;
+			Player p;
+			if ((p = this as Player) != null) {
+				if (activity == Activity.Climbing || activity == Activity.Swimming) {
+					p.SetStanceTemporary(Player.Stance.Explore);
+				} else if (mount == null && p.tradePartner == null) {
+					p.SetStance(p.desiredStance);
+				}
+			}
 		}
 
 		protected virtual void MountMoved() {
@@ -1323,7 +1337,16 @@ namespace Bowhead.Actors {
 				silhouetteMode = defaultSilhouetteMode;
 				go.transform.parent = null;
             }
-			
+
+			Player p;
+			if ((p = (this as Player)) != null) {
+				if (mount != null) {
+					p.SetStanceTemporary(Player.Stance.Explore);
+				} else {
+					p.SetStance(Player.Stance.Combat);
+				}
+			}
+
 			return true;
         }
 

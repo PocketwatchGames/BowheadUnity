@@ -56,6 +56,7 @@ namespace Bowhead.Actors {
             canRun = true;
             canTurn = true;
             canAttack = true;
+			canStrafe = true;
 			onHit += OnHit;
             gameMode.CritterSpawned();
 
@@ -107,8 +108,9 @@ namespace Bowhead.Actors {
 			canSprint = true;
 			canTurn = true;
             canAttack = true;
+			canStrafe = true;
 
-            if (stunned) {
+			if (stunned) {
                 canRun = false;
 				canSprint = false;
 				canJump = false;
