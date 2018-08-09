@@ -2,6 +2,7 @@
 
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 
 public class MeshCopyHelper {
 
@@ -63,6 +64,15 @@ public class MeshCopyHelper {
 				}
 			}
 		}
+	}
+
+	public static void SetMeshUVs(Mesh mesh, int channel, Vector4[] uvs, int count) {
+		// fuck you, unity.
+		var dumbfuckList = new List<Vector4>(count);
+		foreach (var dumbFuckCopy in uvs) {
+			dumbfuckList.Add(dumbFuckCopy);
+		}
+		mesh.SetUVs(channel, dumbfuckList);
 	}
 
 	public static void SetMeshUV(Mesh mesh, int index, Vector2[] uvs, int count) {

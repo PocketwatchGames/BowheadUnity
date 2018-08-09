@@ -864,7 +864,7 @@ public partial class World {
 		public struct Int3_t {
 			public int x, y, z;
 		};
-
+		
 		struct SmoothingVertsIn_t {
 			[ReadOnly]
 			public NativeArray<Int3_t> positions;
@@ -876,8 +876,6 @@ public partial class World {
 			public NativeArray<float> smoothFactor;
 			[ReadOnly]
 			public NativeArray<uint> smgs;
-			[ReadOnly]
-			public NativeArray<int> submeshes;
 			[ReadOnly]
 			public NativeArray<int> layers;
 			[ReadOnly]
@@ -896,7 +894,6 @@ public partial class World {
 					colors = smv.colors,
 					smoothFactor = smv.smoothFactor,
 					smgs = smv.smgs,
-					submeshes = smv.submeshes,
 					layers = smv.layers,
 					materials = smv.materials,
 					indices = smv.indices,
@@ -918,8 +915,6 @@ public partial class World {
 			[WriteOnly]
 			public NativeArray<uint> smgs;
 			[WriteOnly]
-			public NativeArray<int> submeshes;
-			[WriteOnly]
 			public NativeArray<int> layers;
 			[WriteOnly]
 			public NativeArray<int> materials;
@@ -929,7 +924,6 @@ public partial class World {
 			public NativeArray<int> counts;
 			public NativeArray<int> vtoiCounts;
 
-			int _maxSubmesh;
 			int _maxLayer;
 
 			NativeArray<int> _vtoi;
@@ -944,11 +938,10 @@ public partial class World {
 					colors = AllocatePersistentNoInit<Color32>(ushort.MaxValue*BANK_SIZE),
 					smoothFactor = AllocatePersistentNoInit<float>(ushort.MaxValue*BANK_SIZE),
 					smgs = AllocatePersistentNoInit<uint>(ushort.MaxValue*BANK_SIZE),
-					submeshes = AllocatePersistentNoInit<int>(ushort.MaxValue*BANK_SIZE),
 					layers = AllocatePersistentNoInit<int>(ushort.MaxValue*BANK_SIZE),
 					materials = AllocatePersistentNoInit<int>(ushort.MaxValue*BANK_SIZE),
 					indices = AllocatePersistentNoInit<int>(ushort.MaxValue),
-					counts = AllocatePersistentNoInit<int>(3),
+					counts = AllocatePersistentNoInit<int>(2),
 					_vtoi = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES),
 					vtoiCounts = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES)
 				};
@@ -961,7 +954,6 @@ public partial class World {
 				colors.Dispose();
 				smoothFactor.Dispose();
 				smgs.Dispose();
-				submeshes.Dispose();
 				layers.Dispose();
 				materials.Dispose();
 				indices.Dispose();
@@ -973,7 +965,6 @@ public partial class World {
 			public void Init() {
 				_vertCount = 0;
 				_indexCount = 0;
-				_maxSubmesh = 0;
 				_maxLayer = 0;
 				for (int i = 0; i < _vtoi.Length; ++i) {
 					_vtoi[i] = 0;
@@ -983,10 +974,9 @@ public partial class World {
 			public void Finish() {
 				counts[0] = _indexCount;
 				counts[1] = _maxLayer;
-				counts[2] = _maxSubmesh;
 			}
 
-			int EmitVert(int x, int y, int z, uint smg, float smoothingFactor, Color32 color, Vector3 normal, int submesh, int layer, int material) {
+			int EmitVert(int x, int y, int z, uint smg, float smoothingFactor, Color32 color, Vector3 normal, int layer, int material) {
 				int INDEX = (y*(VOXEL_CHUNK_SIZE_XZ + 1)*(VOXEL_CHUNK_SIZE_XZ + 1)) + (z*(VOXEL_CHUNK_SIZE_XZ + 1)) + x;
 
 				var idx = _vtoi[INDEX] - 1;
@@ -1009,33 +999,31 @@ public partial class World {
 				colors[(idx*BANK_SIZE) + count] = color;
 				smoothFactor[(idx*BANK_SIZE) + count] = smoothingFactor;
 				smgs[(idx*BANK_SIZE) + count] = smg;
-				submeshes[(idx*BANK_SIZE) + count] = submesh;
 				layers[(idx*BANK_SIZE) + count] = layer;
 				materials[(idx*BANK_SIZE) + count] = material;
 
 				vtoiCounts[idx] = count + 1;
-				_maxSubmesh = (submesh > _maxSubmesh) ? submesh : _maxSubmesh;
 				_maxLayer = (layer > _maxLayer) ? layer : _maxLayer;
 
 				return idx | (count << 24);
 			}
 
-			public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, float smoothFactor, Color32 color, int submesh, int layer, int material, bool isBorderVoxel) {
+			public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, float smoothFactor, Color32 color, int layer, int material, bool isBorderVoxel) {
 				var n = GetNormalAndAngles((float)x0, (float)y0, (float)z0, (float)x1, (float)y1, (float)z1, (float)x2, (float)y2, (float)z2);
 				if (isBorderVoxel) {
 					if ((x0 >= 0) && (x0 <= VOXEL_CHUNK_SIZE_XZ) && (y0 >= 0) && (y0 <= VOXEL_CHUNK_SIZE_Y) && (z0 >= 0) && (z0 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x0, y0, z0, smg, smoothFactor, color, n, submesh, layer, material);
+						EmitVert(x0, y0, z0, smg, smoothFactor, color, n, layer, material);
 					}
 					if ((x1 >= 0) && (x1 <= VOXEL_CHUNK_SIZE_XZ) && (y1 >= 0) && (y1 <= VOXEL_CHUNK_SIZE_Y) && (z1 >= 0) && (z1 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x1, y1, z1, smg, smoothFactor, color, n, submesh, layer, material);
+						EmitVert(x1, y1, z1, smg, smoothFactor, color, n, layer, material);
 					}
 					if ((x2 >= 0) && (x2 <= VOXEL_CHUNK_SIZE_XZ) && (y2 >= 0) && (y2 <= VOXEL_CHUNK_SIZE_Y) && (z2 >= 0) && (z2 <= VOXEL_CHUNK_SIZE_XZ)) {
-						EmitVert(x2, y2, z2, smg, smoothFactor, color, n, submesh, layer, material);
+						EmitVert(x2, y2, z2, smg, smoothFactor, color, n, layer, material);
 					}
 				} else {
-					indices[_indexCount++] = EmitVert(x0, y0, z0, smg, smoothFactor, color, n, submesh, layer, material);
-					indices[_indexCount++] = EmitVert(x1, y1, z1, smg, smoothFactor, color, n, submesh, layer, material);
-					indices[_indexCount++] = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, submesh, layer, material);
+					indices[_indexCount++] = EmitVert(x0, y0, z0, smg, smoothFactor, color, n, layer, material);
+					indices[_indexCount++] = EmitVert(x1, y1, z1, smg, smoothFactor, color, n, layer, material);
+					indices[_indexCount++] = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, layer, material);
 				}
 			}
 
@@ -1077,48 +1065,35 @@ public partial class World {
 
 				var numIndices = smoothVerts.counts[0];
 				var maxLayer = smoothVerts.counts[1];
-				var maxSubmesh = smoothVerts.counts[2];
 
 				for (int layer = 0; layer <= maxLayer; ++layer) {
 					int maxLayerSubmesh = 0;
 					finalVerts.BeginLayer(layer);
 
-					for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
-						var numSubmeshVerts = 0;
+					var numSubmeshVerts = 0;
 
-						for (int i = 0; i < numIndices; ++i) {
-							Int3_t p;
-							Vector3 n;
-							Color32 c;
-							Color32 texBlend;
+					for (int i = 0; i < numIndices; ++i) {
+						Int3_t p;
+						Vector3 n;
+						Color32 c;
+						Color32 texBlend;
 
-							if (BlendVertex(layer, submesh, smoothVerts.indices[i], out p, out n, out c, out texBlend)) {
-								finalVerts.EmitVert(p.x, p.y, p.z, n, c, texBlend);
-								++numSubmeshVerts;
-								maxLayerSubmesh = (submesh > maxLayerSubmesh) ? submesh : maxLayerSubmesh;
-							}
+						if (BlendVertex(layer, smoothVerts.indices[i], out p, out n, out c, out texBlend)) {
+							finalVerts.EmitVert(p.x, p.y, p.z, n, c, texBlend);
+							++numSubmeshVerts;
 						}
-
-						finalVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh] = numSubmeshVerts;
 					}
 
+					finalVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+0] = numSubmeshVerts;
 					finalVerts.FinishLayer(maxLayerSubmesh);
 				}
 			}
 
-			bool BlendVertex(int layer, int submesh, int packedIndex, out Int3_t outPos, out Vector3 outNormal, out Color32 outColor, out Color32 outTextureBlending) {
+			bool BlendVertex(int layer, int packedIndex, out Int3_t outPos, out Vector3 outNormal, out Color32 outColor, out Color32 outTextureBlending) {
 				int index = packedIndex & (0x00ffffff);
 				int ofs = packedIndex >> 24;
 
 				if (smoothVerts.layers[(index*BANK_SIZE) + ofs] != layer) {
-					outPos = default(Int3_t);
-					outNormal = default(Vector3);
-					outColor = default(Color32);
-					outTextureBlending = default(Color32);
-					return false;
-				}
-
-				if (smoothVerts.submeshes[(index*BANK_SIZE) + ofs] != submesh) {
 					outPos = default(Int3_t);
 					outNormal = default(Vector3);
 					outColor = default(Color32);
@@ -1725,11 +1700,10 @@ public partial class World {
 				return i;
 			}
 
-			void GetBlockColorAndSmoothing(EVoxelBlockType blocktype, out Color32 color, out uint smg, out float smoothing, out int submesh, out int layer) {
+			void GetBlockColorAndSmoothing(EVoxelBlockType blocktype, out Color32 color, out uint smg, out float smoothing, out int layer) {
 				color = _tables.blockColors[(int)blocktype - 1];
 				smg = _tables.blockSmoothingGroups[(int)blocktype - 1];
 				smoothing = _tables.blockSmoothingFactors[(int)blocktype - 1];
-				submesh = 0;
 
 				if (blocktype == EVoxelBlockType.Water) {
 					layer = EChunkLayers.Water.ToIndex();
@@ -1754,7 +1728,7 @@ public partial class World {
 						int layer;
 						int material = _blockMaterials[(int)blocktype - 1];
 
-						GetBlockColorAndSmoothing(blocktype, out color, out smg, out factor, out submesh, out layer);
+						GetBlockColorAndSmoothing(blocktype, out color, out smg, out factor, out layer);
 
 						var v0 = GetVoxelVert(voxel, _tables.voxelFaces[i][0]);
 
@@ -1767,7 +1741,7 @@ public partial class World {
 									x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
 									x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
 									x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
-									smg, factor, color, submesh, layer, material, isBorderVoxel
+									smg, factor, color, layer, material, isBorderVoxel
 								);
 							}
 
@@ -1830,13 +1804,13 @@ public partial class World {
 									int layer;
 									int material = _blockMaterials[(int)_vn[i] - 1];
 
-									GetBlockColorAndSmoothing(_vn[i], out color, out smg, out factor, out submesh, out layer);
+									GetBlockColorAndSmoothing(_vn[i], out color, out smg, out factor, out layer);
 
 									_smoothVerts.EmitTri(
 										x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
 										x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
 										x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
-										smg, factor, color, submesh, layer, material, isBorderVoxel
+										smg, factor, color, layer, material, isBorderVoxel
 									);
 
 									// emit backface?
@@ -1845,7 +1819,7 @@ public partial class World {
 											x + _tables.voxelVerts[v2][0] - BORDER_SIZE, y + _tables.voxelVerts[v2][1] - BORDER_SIZE, z + _tables.voxelVerts[v2][2] - BORDER_SIZE,
 											x + _tables.voxelVerts[v1][0] - BORDER_SIZE, y + _tables.voxelVerts[v1][1] - BORDER_SIZE, z + _tables.voxelVerts[v1][2] - BORDER_SIZE,
 											x + _tables.voxelVerts[v0][0] - BORDER_SIZE, y + _tables.voxelVerts[v0][1] - BORDER_SIZE, z + _tables.voxelVerts[v0][2] - BORDER_SIZE,
-											smg, factor, color, submesh, layer, material, isBorderVoxel
+											smg, factor, color, layer, material, isBorderVoxel
 										);
 									}
 								}
