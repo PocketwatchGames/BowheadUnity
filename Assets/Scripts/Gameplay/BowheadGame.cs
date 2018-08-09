@@ -450,8 +450,10 @@ namespace Bowhead.Server {
 		public override void PostNetConstruct() {
 			base.PostNetConstruct();
 			// mixed mode server owns the world instance
+			var atlasClientData = data.atlasData.atlasClientData.Load();
+
 			if (!GameManager.instance.isServer) {
-				world.worldStreaming.SetBlockMaterialIndices(data.atlasData.atlasClientData.Load().block2TextureSet);
+				world.worldStreaming.SetBlockMaterialIndices(atlasClientData.block2TextureSet);
 			}
 		}
 
