@@ -78,10 +78,11 @@ namespace Bowhead.Actors {
 
 				Vector2 look;
 				if (Input.GetJoystickNames().Length == 0) {
-					look = new Vector2(Input.GetAxis("MouseAxis1"), -Input.GetAxis("MouseAxis2"));
+					look = (Input.mousePosition - new Vector3(Screen.width/2,Screen.height/2)).normalized;
 					if (look != Vector2.zero) {
 						look.Normalize();
 					}
+					look.y = -look.y;
 				} else {
 					look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
 					if (look.magnitude > 0.5f) {
@@ -102,7 +103,7 @@ namespace Bowhead.Actors {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
             if (Input.GetButton("B" + pi)) {
-                cmd.buttons |= 1 << (int)InputType.Lock;
+                cmd.buttons |= 1 << (int)InputType.Interact;
             }
 			if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
@@ -111,7 +112,7 @@ namespace Bowhead.Actors {
 				cmd.buttons |= 1 << (int)InputType.AttackLeft;
 			}
 			if (Input.GetButton("X" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.Interact;
+				cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
 			}
 			if (Input.GetButton("Y" + pi)) {
 				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
@@ -194,7 +195,7 @@ namespace Bowhead.Actors {
 			canSwim = weight < WeightClass.HEAVY;
             canClimbWell = weight < WeightClass.MEDIUM;
             canTurn = true;
-			canStrafe = true;
+			canStrafe = mount == null;
 
 			if (stunned) {
 				canRun = false;
@@ -304,13 +305,6 @@ namespace Bowhead.Actors {
 				Interact();
 			}
 
-			if (input.inputs[(int)InputType.Lock] == InputState.JustPressed) {
-				tradePartner = null;
-				if (mount != null) {
-					SetMount(null);
-				}
-			}
-
 			bool isCasting = false;
             Weapon itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
 			Weapon itemLeft;
@@ -401,7 +395,6 @@ namespace Bowhead.Actors {
 			attackTargetPreview = GetAttackTarget(yaw, 20, 360 * Mathf.Deg2Rad, null);
 
 			if (isCasting) {
-				SetMount(null);
 				tradePartner = null;
 			}
 
@@ -918,7 +911,16 @@ namespace Bowhead.Actors {
 			Vector3? targetPos;
             GetInteractTarget(out target, out targetPos, out interaction);
 
-            WorldItem worldItem;
+			if (tradePartner == target) {
+				tradePartner = null;
+				return;
+			} else if (mount == target) {
+				SetMount(null);
+				return;
+			}
+
+
+			WorldItem worldItem;
             Critter critter;
             if ((worldItem = target as WorldItem) != null && !target.pendingKill) {
                 worldItem.Interact(this);
@@ -969,7 +971,18 @@ namespace Bowhead.Actors {
 
             interactionType = null;
 
-            float closestDist = 2;
+			if (tradePartner != null) {
+				target = tradePartner;
+				targetPos = null;
+				return;
+			}
+			if (mount != null) {
+				target = mount;
+				targetPos = null;
+				return;
+			}
+
+			float closestDist = 2;
             Entity closestItem = null;
             foreach (var i in world.GetActorIterator<WorldItem>()) {
                 float dist = (i.position - rigidBody.position).magnitude;

@@ -19,7 +19,6 @@ namespace Bowhead.Actors {
 		AttackRight,
 		AttackRangedLeft,
 		AttackRangedRight,
-		Lock,
 		Count
 	}
 
