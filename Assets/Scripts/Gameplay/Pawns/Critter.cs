@@ -50,7 +50,6 @@ namespace Bowhead.Actors {
 			this.team = team;
             active = false;
             canClimb = false;
-            canClimbWell = false;
             canMove = true;
             canJump = true;
             canRun = true;
@@ -101,7 +100,6 @@ namespace Bowhead.Actors {
         public override void PreSimulate(float dt) {
 
             canClimb = false;
-            canClimbWell = false;
             canMove = true;
             canJump = true;
 			canRun = true;
@@ -115,7 +113,6 @@ namespace Bowhead.Actors {
 				canSprint = false;
 				canJump = false;
                 canClimb = false;
-                canClimbWell = false;
                 canAttack = false;
                 canMove = false;
 				canTurn = false;
@@ -425,7 +422,7 @@ namespace Bowhead.Actors {
 				}
 			}
 
-            return Math.Max(smell, windCarrySmell);
+            return Math.Max(smell, windCarrySmell) * (1.0f - player.stealthBonusSmell);
         }
 		public float CanHear(Pawn player) {
 			if (player.mount != null) {
@@ -455,7 +452,7 @@ namespace Bowhead.Actors {
                 return 0;
 
 
-			playerSound *= playerBlock.soundModifier;
+			playerSound *= playerBlock.soundModifier * (1.0f - player.stealthBonusSound);
 
             return playerSound;
         }
@@ -522,7 +519,7 @@ namespace Bowhead.Actors {
 				return 0;
 			}
 
-			return canSeeAngle * canSeeDistance;
+			return canSeeAngle * canSeeDistance * (1.0f - player.stealthBonusSight);
         }
 
 

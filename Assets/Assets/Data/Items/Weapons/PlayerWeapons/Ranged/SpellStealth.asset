@@ -9,10 +9,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c384a6b4c08e5e479f79662660fc81f, type: 3}
-  m_Name: SpellHeal
+  m_Name: SpellStealth
   m_EditorClassIdentifier: 
   version: 0
-  _index: 5
+  _index: 45
   description: Healing spell
   monetaryValue: 10
   prefab:
@@ -57,9 +57,9 @@ MonoBehaviour:
       statusEffect: {fileID: 0}
       statusEffectTime: 0
   spell: 1
-  spellPower: 50
-  statusEffect: {fileID: 11400000, guid: dac19424df206fa479e52cdbbd028d09, type: 2}
-  statusEffectTime: 2
+  spellPower: 0
+  statusEffect: {fileID: 11400000, guid: 2733a088067366149b07a8aff3d37588, type: 2}
+  statusEffectTime: 60
   waterUse: 10
   canTarget: 0
   projectile: {fileID: 0}

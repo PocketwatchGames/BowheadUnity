@@ -191,9 +191,8 @@ namespace Bowhead.Actors {
             canRun = weight < WeightClass.ENCUMBERED;
 			canJump = weight < WeightClass.ENCUMBERED;
 			canSprint = weight < WeightClass.HEAVY;
-			canClimb = weight < WeightClass.HEAVY;
-			canSwim = weight < WeightClass.HEAVY;
-            canClimbWell = weight < WeightClass.MEDIUM;
+			canSwim = true;
+			canClimb = true;
             canTurn = true;
 			canStrafe = mount == null;
 
@@ -202,7 +201,6 @@ namespace Bowhead.Actors {
 				canSprint = false;
 				canJump = false;
                 canClimb = false;
-                canClimbWell = false;
                 canAttack = false;
             }
 			if (stamina <= 0) {
@@ -942,28 +940,28 @@ namespace Bowhead.Actors {
 			}
             else if (targetPos.HasValue) {
                 var block = world.GetBlock(targetPos.Value);
-                if (block == EVoxelBlockType.Water) {
-                    Loot waterItem = null;
-                    var waterData = LootData.Get("Water");
-                    foreach (var i in getInventory()) {
-                        var other = i as Loot;
-                        if (other != null && i.data == waterData && other.count < waterData.stackSize) {
-                            waterItem = other;
-                            break;
-                        }
-                    }
-                    if (waterItem == null) {
-                        int[] newSlot = new int[1];
-                        if (FindEmptyPackSlots(1, ref newSlot)) {
-							waterItem = waterData.CreateItem();
-                            PickUp(waterItem);
-                        }
-                    }
-                    if (waterItem != null) {
-                        waterItem.count = waterData.stackSize;
-                    }
-					water = maxWater;
-                }
+     //           if (block == EVoxelBlockType.Water) {
+     //               Loot waterItem = null;
+     //               var waterData = LootData.Get("Water");
+     //               foreach (var i in getInventory()) {
+     //                   var other = i as Loot;
+     //                   if (other != null && i.data == waterData && other.count < waterData.stackSize) {
+     //                       waterItem = other;
+     //                       break;
+     //                   }
+     //               }
+     //               if (waterItem == null) {
+     //                   int[] newSlot = new int[1];
+     //                   if (FindEmptyPackSlots(1, ref newSlot)) {
+					//		waterItem = waterData.CreateItem();
+     //                       PickUp(waterItem);
+     //                   }
+     //               }
+     //               if (waterItem != null) {
+     //                   waterItem.count = waterData.stackSize;
+     //               }
+					//water = maxWater;
+     //           }
             }
         }
 
@@ -1032,10 +1030,10 @@ namespace Bowhead.Actors {
 			if (closestItem == null) {
 				var pos = footPosition() + Vector3.down;
 				var block = world.GetBlock(pos);
-				if (block == EVoxelBlockType.Water) {
-					targetPos = pos;
-					interactionType = "Collect";
-				}
+				//if (block == EVoxelBlockType.Water) {
+				//	targetPos = pos;
+				//	interactionType = "Collect";
+				//}
 			}
 
 

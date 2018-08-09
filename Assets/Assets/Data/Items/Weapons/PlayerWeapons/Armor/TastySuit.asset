@@ -9,10 +9,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c384a6b4c08e5e479f79662660fc81f, type: 3}
-  m_Name: Chainmail
+  m_Name: TastySuit
   m_EditorClassIdentifier: 
   version: 0
-  _index: 18
+  _index: 57
   description: 
   monetaryValue: 0
   prefab:
@@ -21,7 +21,7 @@ MonoBehaviour:
   hand: 4
   moveSpeedChargeDelay: 0.2
   traits:
-  - {fileID: 11400000, guid: b2c90a909179f094a9a6d3164297ceb3, type: 2}
+  - {fileID: 11400000, guid: 5ef349ad403b3b9459d733d31bcaf5c1, type: 2}
   attacks: []
   spell: 0
   spellPower: 0
@@ -41,7 +41,7 @@ MonoBehaviour:
     statusEffect: {fileID: 0}
     statusEffectTime: 0
     stunAbsorb: 5
-    damageAbsorb: 10
+    damageAbsorb: 5
     staminaUse: 0
   sprintSpeed: 0
   jabChargeTime: 0

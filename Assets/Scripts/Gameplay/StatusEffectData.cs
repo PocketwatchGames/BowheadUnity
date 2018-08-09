@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Bowhead {
 
@@ -11,13 +12,12 @@ namespace Bowhead {
 		}
 
         public float healthPerSecond;
-        public float maxHealthBonus;
+		public float staminaPerSecond;
+		public float waterPerSecond;
 
-        public float staminaPerSecond;
-        public float maxStaminaBonus;
-
-        public float damageMultiplier;
 		public bool canStack;
+
+		public List<TraitData> traits = new List<TraitData>();
     }
 
     public abstract class StatusEffectData<T, D> : StatusEffectData where T : StatusEffect, new() where D : StatusEffectData<T, D>, new()

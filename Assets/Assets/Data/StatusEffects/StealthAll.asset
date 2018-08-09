@@ -9,12 +9,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8954b09d4253f0e4ba5e6c3592201819, type: 3}
-  m_Name: Might
+  m_Name: StealthAll
   m_EditorClassIdentifier: 
   version: 0
-  _index: 31
+  _index: 52
   healthPerSecond: 0
   staminaPerSecond: 0
-  canStack: 1
+  canStack: 0
   traits:
-  - {fileID: 11400000, guid: b2c90a909179f094a9a6d3164297ceb3, type: 2}
+  - {fileID: 11400000, guid: 9659c40f0c67e364a8c09bed54eac4b9, type: 2}
+  - {fileID: 11400000, guid: b1782d9031203f14d971a78b3fe2e2b7, type: 2}
+  - {fileID: 11400000, guid: 3e1fb0fc206318e49a49b17766efb403, type: 2}

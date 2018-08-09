@@ -9,14 +9,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 13ccea68ca1be704cb6a8cf182cc7a0b, type: 3}
-  m_Name: Stamina Potion
+  m_Name: Wolf Meat
   m_EditorClassIdentifier: 
   version: 0
-  _index: 35
+  _index: 21
   description: 
-  monetaryValue: 0
-  useType: 0
-  power: 200
+  monetaryValue: 1
+  useType: 1
+  power: 50
   stackSize: 4
-  statusEffect: {fileID: 11400000, guid: 8dfe07aef4bcb54448fb05e2c5da55d2, type: 2}
+  statusEffect: {fileID: 11400000, guid: 9fb0287b590637e44b36d20cdf9e35c2, type: 2}
   statusEffectTime: 300
