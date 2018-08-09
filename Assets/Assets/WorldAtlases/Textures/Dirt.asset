@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: Dirt
   m_EditorClassIdentifier: 
   albedo:
-    top: {fileID: 2800000, guid: 6df0e60d81b01ba42b763a5653a89eb6, type: 3}
-    sides: {fileID: 2800000, guid: 6df0e60d81b01ba42b763a5653a89eb6, type: 3}
-    bottom: {fileID: 2800000, guid: 6df0e60d81b01ba42b763a5653a89eb6, type: 3}
+    top: {fileID: 2800000, guid: 7cb6a3f30606c084f98a64f52cc2a4cb, type: 3}
+    sides: {fileID: 2800000, guid: 7cb6a3f30606c084f98a64f52cc2a4cb, type: 3}
+    bottom: {fileID: 2800000, guid: 7cb6a3f30606c084f98a64f52cc2a4cb, type: 3}

@@ -111,6 +111,7 @@ namespace Bowhead {
 		public Material silhouetteStencil;
 		public Material silhouetteFill;
 		public Material[] xrayMaterials;
+		public Material[] terrainMaterials;
         public DamageIndicator damageIndicatorPrefab;
         public WorldHUD worldHUDPrefab;
 		public PawnHUD critterHudPrefab;

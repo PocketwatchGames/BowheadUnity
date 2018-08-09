@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Name: Grass
   m_EditorClassIdentifier: 
   physics: {fileID: 0}
-  textures: {fileID: 11400000, guid: 47e17bcf1b76dae4bb1d6e10ab48c745, type: 2}
+  textures: {fileID: 11400000, guid: 9b2f6dcb8028d544c8ae2251c2951394, type: 2}
