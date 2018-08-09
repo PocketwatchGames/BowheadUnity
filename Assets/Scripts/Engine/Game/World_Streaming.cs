@@ -1091,7 +1091,7 @@ public partial class World {
 		};
 
 		public interface IChunkIO : IChunk {
-			EChunkFlags flags { get; set; }
+			new EChunkFlags flags { get; set; }
 			ChunkMeshGen.FinalMeshVerts_t verts { get; }
 		};
 

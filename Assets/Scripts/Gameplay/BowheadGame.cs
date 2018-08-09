@@ -360,7 +360,7 @@ namespace Bowhead.Server {
 			return wind * currentSpeed;
 		}
 
-		new Dictionary<EVoxelBlockType, int> blockMapping = new Dictionary<EVoxelBlockType, int>() {
+		Dictionary<EVoxelBlockType, int> blockMapping = new Dictionary<EVoxelBlockType, int>() {
 				{ EVoxelBlockType.Air, 5 },
 				{ EVoxelBlockType.Dirt, 0},
 				{ EVoxelBlockType.Flowers1, 1},
