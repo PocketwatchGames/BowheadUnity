@@ -14,8 +14,8 @@ MonoBehaviour:
   version: 0
   _index: 25
   mapMarker:
-    _assetPath: MapMarkers/MapFlagMarker
-    _editorPath: Assets/Assets/Prefabs/Resources/MapMarkers/MapFlagMarker.prefab
+    _assetPath: MapMarkers/MapMerchantMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MapMarkers/MapMerchantMarker.prefab
   mapMarkerStyle: 0
   defaultSilhouetteMode: 2
   height: 3
@@ -23,29 +23,32 @@ MonoBehaviour:
   maxWater: 0
   maxStamina: 50
   minStamina: 0
-  recoveryTime: 1
+  staminaRecoveryTime: 0
   staminaRechargeTime: 3
-  staminaRechargeTimeDuringRecovery: 0
+  staminaRechargeTimeDuringStun: 0
   dodgeTime: 0
   postStunInvincibilityTime: 0
   backStabAngle: 45
   runSound: 2
   sprintSound: 4
+  sprintDamageMultiplierSpeed: 0
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
   jumpSpeed: 0
   jumpStaminaUse: 0
+  jumpHorizontalSpeed: 0
   groundAcceleration: 2
   crouchSpeed: 0
   walkSpeed: 3.5
   walkStartTime: 0.1
   walkStopTime: 0.1
+  groundMaxSpeed: 10
+  groundWindDrag: 0.01
   sprintTime: 0.25
   sprintSpeed: 14
   sprintStaminaUse: 50
   sprintGracePeriodTime: 0.4
-  groundMaxSpeed: 10
-  groundWindDrag: 0.01
+  slideModifier: 0
   gravity: -30
   fallJumpTime: 0
   fallAcceleration: 30

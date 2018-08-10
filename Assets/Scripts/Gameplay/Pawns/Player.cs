@@ -102,7 +102,7 @@ namespace Bowhead.Actors {
 			if (Input.GetButton("A" + pi)) {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
-            if (Input.GetButton("B" + pi)) {
+            if (Input.GetButton("X" + pi)) {
                 cmd.buttons |= 1 << (int)InputType.Interact;
             }
 			if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
@@ -111,11 +111,11 @@ namespace Bowhead.Actors {
 			if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackLeft;
 			}
-			if (Input.GetButton("X" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
+			if (Input.GetButton("B" + pi)) {
+				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
 			}
 			if (Input.GetButton("Y" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
+				cmd.buttons |= 1 << (int)InputType.Teleport;
 			}
 			//if (Input.GetButton("ShoulderLeft" + pi)) {
 			//	cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
@@ -301,6 +301,9 @@ namespace Bowhead.Actors {
 
 			if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
 				Interact();
+			}
+			if (input.inputs[(int)InputType.Teleport] == InputState.JustPressed) {
+				Teleport();
 			}
 
 			bool isCasting = false;
@@ -902,6 +905,12 @@ namespace Bowhead.Actors {
 			base.SetActivity(a);
 		}
 
+		void Teleport() {
+			SetMount(null);
+			tradePartner = null;
+			SetPosition(spawnPoint);
+		}
+
 		void Interact() {
 
             Entity target;
@@ -1042,6 +1051,7 @@ namespace Bowhead.Actors {
 
         public void Explore(Vector2 pos, int radius) {
             OnExplore?.Invoke(pos, radius);
+			SetSpawnPoint(position);
         }
 
         #endregion
