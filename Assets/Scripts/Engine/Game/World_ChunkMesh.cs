@@ -120,9 +120,8 @@ public partial class World {
 	public static partial class ChunkMeshGen {
 		const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
 		const int BANK_SIZE = 24;
-		const int MAX_MATERIALS_PER_EDGE = 2;
-		const int MAX_MATERIALS_PER_VERTEX = 4;
-		const int MAX_EDGES_PER_VERT = 16;
+		const int MAX_MATERIALS_PER_VERTEX = 16;
+		const int MAX_MATERIALS_PER_SUBMESH = 4;
 
 		const int BORDER_SIZE = 2;
 		const int NUM_VOXELS_XZ = VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE*2;
@@ -877,11 +876,6 @@ public partial class World {
 			public int x, y, z;
 		};
 
-		public struct Edge_t {
-			public int v0, v1;
-			public int numMaterials;
-		};
-		
 		struct SmoothingVertsIn_t {
 			[ReadOnly]
 			public NativeArray<Int3_t> positions;
@@ -902,13 +896,9 @@ public partial class World {
 			[ReadOnly]
 			public NativeArray<int> vtoiCounts;
 			[ReadOnly]
-			public NativeArray<Edge_t> edgeTable;
+			public NativeArray<int> vertMaterials;
 			[ReadOnly]
-			public NativeArray<int> edgeMaterials;
-			[ReadOnly]
-			public NativeArray<int> vtoEdge;
-			[ReadOnly]
-			public NativeArray<int> vtoEdgeCount;
+			public NativeArray<int> vertMaterialCount;
 
 			public static SmoothingVertsIn_t New(SmoothingVertsOut_t smv) {
 				return new SmoothingVertsIn_t {
@@ -921,10 +911,8 @@ public partial class World {
 					indices = smv.indices,
 					counts = smv.counts,
 					vtoiCounts = smv.vtoiCounts,
-					edgeTable = smv.edgeTable,
-					edgeMaterials = smv.edgeMaterials,
-					vtoEdge = smv.vtoEdge,
-					vtoEdgeCount = smv.vtoEdgeCount
+					vertMaterials = smv.vertMaterials,
+					vertMaterialCount = smv.vertMaterialCount
 				};
 			}
 		};
@@ -947,13 +935,10 @@ public partial class World {
 			[WriteOnly]
 			public NativeArray<int> counts; // [numIndices][maxLayers]
 			public NativeArray<int> vtoiCounts;
-			public NativeArray<Edge_t> edgeTable;
-			[WriteOnly]
-			public NativeArray<int> edgeMaterials;
-			[WriteOnly]
-			public NativeArray<int> vtoEdge;
-			public NativeArray<int> vtoEdgeCount;
 			
+			public NativeArray<int> vertMaterials;
+			public NativeArray<int> vertMaterialCount;
+						
 			int _maxLayer;
 
 			NativeArray<int> _vtoi;
@@ -973,10 +958,8 @@ public partial class World {
 					counts = AllocatePersistentNoInit<int>(2),
 					_vtoi = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES),
 					vtoiCounts = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES),
-					edgeTable = AllocatePersistentNoInit<Edge_t>(MAX_OUTPUT_VERTICES*MAX_EDGES_PER_VERT),
-					edgeMaterials = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES*MAX_EDGES_PER_VERT*MAX_MATERIALS_PER_EDGE),
-					vtoEdge = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES*MAX_EDGES_PER_VERT),
-					vtoEdgeCount = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES)
+					vertMaterials = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES*MAX_MATERIALS_PER_VERTEX),
+					vertMaterialCount = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES)
 				};
 				return verts;
 			}
@@ -992,10 +975,8 @@ public partial class World {
 				counts.Dispose();
 				_vtoi.Dispose();
 				vtoiCounts.Dispose();
-				edgeTable.Dispose();
-				edgeMaterials.Dispose();
-				vtoEdge.Dispose();
-				vtoEdgeCount.Dispose();
+				vertMaterials.Dispose();
+				vertMaterialCount.Dispose();
 			}
 
 			public void Init() {
@@ -1005,8 +986,8 @@ public partial class World {
 				for (int i = 0; i < _vtoi.Length; ++i) {
 					_vtoi[i] = 0;
 				}
-				for (int i = 0; i < vtoEdgeCount.Length; ++i) {
-					vtoEdgeCount[i] = 0;
+				for (int i = 0; i < vertMaterialCount.Length; ++i) {
+					vertMaterialCount[i] = 0;
 				}
 			}
 
@@ -1046,50 +1027,23 @@ public partial class World {
 				return idx | (count << 24);
 			}
 
-			bool EmitEdgeExisting(int v0, int v1, int layer, int material) {
-				var OFS = v0 * MAX_EDGES_PER_VERT;
-				var count = vtoEdgeCount[v0];
+			void AddVertexMaterial(int v0, int layer, int material) {
+				var count = vertMaterialCount[v0];
+				var code = material | (layer << 16);
 
+				var OFS = v0 * MAX_MATERIALS_PER_VERTEX;
 				for (int i = 0; i < count; ++i) {
-					var edge = edgeTable[OFS+i];
-					if (edge.v1 == v1) {
-						int numMats = edge.numMaterials;
-						if (numMats < MAX_MATERIALS_PER_EDGE) {
-							int MAT_OFS = (v0 * MAX_EDGES_PER_VERT * MAX_MATERIALS_PER_EDGE) + (i * MAX_MATERIALS_PER_EDGE) + numMats;
-							edgeMaterials[MAT_OFS] = material | (layer << 16);
-							++edge.numMaterials;
-							edgeTable[OFS+i] = edge;
-						}
-						return true;
+					if (vertMaterials[OFS+i] == code) {
+						return;
 					}
 				}
-				return false;
-			}
 
-			void EmitEdge(int v0, int v1, int layer, int material) {
-				// emit a shared edge
-				if (EmitEdgeExisting(v1, v0, layer, material)) {
-					return;
-				}
-
-				var OFS = v0 * MAX_EDGES_PER_VERT;
-				var count = vtoEdgeCount[v0];
-
-				if (count < MAX_EDGES_PER_VERT) {
-					edgeTable[OFS+count] = new Edge_t() {
-						v0 = v0,
-						v1 = v1,
-						numMaterials = 1
-					};
-
-					int MAT_OFS = (v0 * MAX_EDGES_PER_VERT * MAX_MATERIALS_PER_EDGE) + (count * MAX_MATERIALS_PER_EDGE);
-					edgeMaterials[MAT_OFS] = material | (layer << 16);
-
-					++count;
-					vtoEdgeCount[v0] = count;
+				if (count < MAX_MATERIALS_PER_VERTEX) {
+					vertMaterials[OFS+count] = code;
+					vertMaterialCount[v0] = count + 1;
 				}
 			}
-
+					
 			public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, float smoothFactor, Color32 color, int layer, int material, bool isBorderVoxel) {
 				var n = GetNormalAndAngles((float)x0, (float)y0, (float)z0, (float)x1, (float)y1, (float)z1, (float)x2, (float)y2, (float)z2);
 
@@ -1113,14 +1067,14 @@ public partial class World {
 					indices[_indexCount++] = v2 = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, layer);
 				}
 
-				if ((v0 != -1) && (v1 != -1)) {
-					EmitEdge(v0 & 0x00ffffff, v1 & 0x00ffffff, layer, material);
+				if (v0 != -1) {
+					AddVertexMaterial(v0 & 0x00ffffff, layer, material);
 				}
-				if ((v1 != -1) && (v2 != -1)) {
-					EmitEdge(v1 & 0x00ffffff, v2 & 0x00ffffff, layer, material);
+				if (v1 != -1) {
+					AddVertexMaterial(v1 & 0x00ffffff, layer, material);
 				}
-				if ((v2 != -1) && (v0 != -1)) {
-					EmitEdge(v2 & 0x00ffffff, v0 & 0x00ffffff, layer, material);
+				if (v2 != -1) {
+					AddVertexMaterial(v2 & 0x00ffffff, layer, material);
 				}
 			}
 
@@ -1142,6 +1096,8 @@ public partial class World {
 			unsafe ChunkTimingData_t* _timing;
 			[NativeDisableContainerSafetyRestriction]
 			NativeArray<int> _materials;
+			[NativeDisableContainerSafetyRestriction]
+			NativeArray<int> _matrefcounts;
 
 			public unsafe static GenerateFinalVertices_t New(SmoothingVertsIn_t inVerts, FinalMeshVerts_t outVerts, ChunkTimingData_t* timing) {
 				return new GenerateFinalVertices_t {
@@ -1219,73 +1175,64 @@ public partial class World {
 				return blendFactor;
 			}
 
-			Vector4 GetTriVertTexBlendFactor(TexBlend_t blend, int layer, int v0, int v1, int v2) {
+			Vector4 GetTriVertTexBlendFactor(TexBlend_t blend, int layer, int v0) {
 				var num = 0;
 
-				AddEdgeMaterials(layer, v0, v1, ref num);
-				AddEdgeMaterials(layer, v2, v0, ref num);
+				AddVertexMaterials(layer, v0, ref num);
 
-				var frac = 1f / num;
+				float total = 0f;
+				for (int i = 0; i < num; ++i) {
+					total += _matrefcounts[i];
+				}
+
 				var blendFactor = Vector4.zero;
 
 				for (int i = 0; i < num; ++i) {
+					var frac = _matrefcounts[i] / total;
 					blendFactor = SetMaterialBlendFactor(blendFactor, blend, _materials[i], frac);
 				}
 
 				return blendFactor;
 			}
 
-			bool AddVertexMaterials(int layer, int v0, ref int num) {
-				var OFS = v0 * MAX_EDGES_PER_VERT;
-				var count = _smoothVerts.vtoEdgeCount[v0];
-				var added = false;
+			void AddVertexMaterials(int layer, int v0, ref int num) {
+				var OFS = v0 * MAX_MATERIALS_PER_VERTEX;
+				var count = _smoothVerts.vertMaterialCount[v0];
 
 				for (int i = 0; i < count; ++i) {
-					var edge = _smoothVerts.edgeTable[OFS+i];
+					var code = _smoothVerts.vertMaterials[OFS+i];
 
-					int MAT_OFS = (v0 * MAX_EDGES_PER_VERT * MAX_MATERIALS_PER_EDGE) + (i * MAX_MATERIALS_PER_EDGE);
-					int numMats = edge.numMaterials;
-
-					for (int k = 0; k < numMats; ++k) {
-						var material = _smoothVerts.edgeMaterials[MAT_OFS + k];
-						var materialLayer = material >> 16;
-						if (layer == materialLayer) {
-							var m = material & 0xffff;
-							AddMaterial(m, ref num);
-							added = true;
-						}
+					var materialLayer = code >> 16;
+					if (layer == materialLayer) {
+						var m = code & 0xffff;
+						AddMaterial(m, ref num);
 					}
 				}
-
-				return added;
-			}
-
-			void AddEdgeMaterials(int layer, int v0, int v1, ref int num) {
-				if (!AddVertexMaterials(layer, v0, ref num)) {
-					AddVertexMaterials(layer, v1, ref num);
-				}
-			}
-
-			int AddEdgeMaterials(int layer, int v0, int v1, int v2) {
-				int num = 0;
-
-				AddEdgeMaterials(layer, v0, v1, ref num);
-				AddEdgeMaterials(layer, v1, v2, ref num);
-				AddEdgeMaterials(layer, v2, v0, ref num);
-
-				return num;
 			}
 
 			void AddMaterial(int m, ref int num) {
 				for (int i = 0; i < num; ++i) {
 					if (_materials[i] == m) {
+						++_matrefcounts[i];
 						return;
 					}
 				}
-				if (num < MAX_MATERIALS_PER_VERTEX) {
+
+				if (num < MAX_MATERIALS_PER_SUBMESH) {
 					_materials[num] = m;
+					_matrefcounts[num] = 1;
 					++num;
 				}
+			}
+
+			int AddVertexMaterials(int layer, int v0, int v1, int v2) {
+				int num = 0;
+
+				AddVertexMaterials(layer, v0, ref num);
+				AddVertexMaterials(layer, v1, ref num);
+				AddVertexMaterials(layer, v2, ref num);
+
+				return num;
 			}
 
 			bool AddSubmeshMaterials(ref TexBlend_t texBlend, int num) {
@@ -1305,7 +1252,8 @@ public partial class World {
 				var numIndices = _smoothVerts.counts[0];
 				var maxLayer = _smoothVerts.counts[1];
 
-				_materials = new NativeArray<int>(MAX_MATERIALS_PER_VERTEX, Allocator.Temp, NativeArrayOptions.ClearMemory);
+				_materials = new NativeArray<int>(MAX_MATERIALS_PER_SUBMESH, Allocator.Temp, NativeArrayOptions.ClearMemory);
+				_matrefcounts = new NativeArray<int>(MAX_MATERIALS_PER_SUBMESH, Allocator.Temp, NativeArrayOptions.ClearMemory);
 
 				var emitFlags = new NativeArray<int>(numIndices / 3, Allocator.Temp, NativeArrayOptions.ClearMemory);
 
@@ -1338,7 +1286,7 @@ public partial class World {
 									int packedIndex2 = _smoothVerts.indices[k+2];
 									int vertNum2 = packedIndex2 & 0x00ffffff;
 
-									var numMats = AddEdgeMaterials(layer, vertNum0, vertNum1, vertNum2);
+									var numMats = AddVertexMaterials(layer, vertNum0, vertNum1, vertNum2);
 									if (numMats > 0) {
 										if (AddSubmeshMaterials(ref texBlend, numMats)) {
 											if (numTris == 0) {
@@ -1383,7 +1331,7 @@ public partial class World {
 									int vertOfs2 = packedIndex2 >> 24;
 									int bankedIndex2 = (vertNum2*BANK_SIZE)+vertOfs2;
 
-									var numMats = AddEdgeMaterials(layer, vertNum0, vertNum1, vertNum2);
+									var numMats = AddVertexMaterials(layer, vertNum0, vertNum1, vertNum2);
 									if (numMats > 0) {
 										if (AddSubmeshMaterials(ref curBlend, numMats)) {
 											Int3_t p;
@@ -1392,15 +1340,15 @@ public partial class World {
 											Vector4 blendFactor;
 
 											BlendVertex(vertNum0, vertOfs0, bankedIndex0, out p, out n, out c);
-											blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum0, vertNum1, vertNum2);
+											blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum0);
 											_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
 
 											BlendVertex(vertNum1, vertOfs1, bankedIndex1, out p, out n, out c);
-											blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum1, vertNum2, vertNum0);
+											blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum1);
 											_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
 
 											BlendVertex(vertNum2, vertOfs2, bankedIndex2, out p, out n, out c);
-											blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum2, vertNum0, vertNum1);
+											blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum2);
 											_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
 
 											numSubmeshVerts += 3;
@@ -1421,6 +1369,7 @@ public partial class World {
 				}
 
 				_materials.Dispose();
+				_matrefcounts.Dispose();
 				emitFlags.Dispose();
 			}
 
