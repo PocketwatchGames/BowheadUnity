@@ -14,4 +14,5 @@ public sealed class WorldAtlasMaterialTextures : ScriptableObject {
 	};
 
 	public TextureSet albedo;
+	public TextureSet normals;
 }

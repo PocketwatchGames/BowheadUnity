@@ -142,9 +142,11 @@ public class WorldAtlasEditor : Editor {
 
 	struct TextureBundle {
 		public TextureSet albedo;
+		public TextureSet normals;
 
 		public static bool Equals(TextureBundle a, TextureBundle b) {
-			return TextureSet.Equals(a.albedo, b.albedo);
+			return TextureSet.Equals(a.albedo, b.albedo) &&
+				TextureSet.Equals(a.normals, b.normals);
 		}
 	
 		public static int[] OptimizeShaderIndices(TextureBundle[] arr) {
@@ -238,6 +240,7 @@ public class WorldAtlasEditor : Editor {
 
 			var bundles = new TextureBundle[atlas.materials.Length];
 			LoadTextureChannel(atlas, bundles, (x) => x.albedo, (x) => atlasClientData.albedo.textureSet2ArrayIndex = x, (b, s) => { b.albedo = s; return b; }, "Albedo");
+			LoadTextureChannel(atlas, bundles, (x) => x.normals, (x) => atlasClientData.normals.textureSet2ArrayIndex = x, (b, s) => { b.normals = s; return b; }, "Normals");
 
 			atlasClientData.block2TextureSet = TextureBundle.OptimizeShaderIndices(bundles);
 			atlasClientData.renderMaterials = atlas.renderMaterials;
@@ -264,6 +267,7 @@ public class WorldAtlasEditor : Editor {
 
 	void LoadTerrainTextures(WorldAtlas atlas, WorldAtlasClientData clientData) {
 		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.albedo.textureArray = arr, "Albedo");
+		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.normals.textureArray = arr, "Normals");
 	}
 
 	void CreateColorChannelTextureArray(WorldAtlas atlas, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> f, string channelName) {
@@ -277,13 +281,37 @@ public class WorldAtlasEditor : Editor {
 		}
 
 		var settings = new ImportSettings_t() {
-			alphaSource = TextureImporterAlphaSource.FromInput,
-			alphaIsTransparency = true,
+			alphaSource = TextureImporterAlphaSource.None,
+			alphaIsTransparency = false,
 			aniso = 16,
 			filterMode = FilterMode.Trilinear,
 			mipmap = true,
 			readable = true,
 			type = TextureImporterType.Default,
+			format = TextureImporterFormat.DXT1
+		};
+
+		CreateTextureArray(atlas, settings, textures, channelName);
+	}
+
+	void CreateColorChannelNormalsArray(WorldAtlas atlas, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> f, string channelName) {
+		List<Texture2D> textures;
+		List<TextureSet> indices;
+
+		LoadTextureList(atlas, out textures, out indices, f, channelName);
+
+		if (textures.Count < 1) {
+			throw new Exception("No textures defined in atlas!");
+		}
+
+		var settings = new ImportSettings_t() {
+			alphaSource = TextureImporterAlphaSource.FromInput,
+			alphaIsTransparency = false,
+			aniso = 16,
+			filterMode = FilterMode.Trilinear,
+			mipmap = true,
+			readable = true,
+			type = TextureImporterType.NormalMap,
 			format = TextureImporterFormat.DXT5
 		};
 
@@ -295,6 +323,7 @@ public class WorldAtlasEditor : Editor {
 			var atlas = (WorldAtlas)obj;
 
 			CreateColorChannelTextureArray(atlas, x => x.albedo, "Albedo");
+			CreateColorChannelTextureArray(atlas, x => x.normals, "Normals");
 		}
 	}
 

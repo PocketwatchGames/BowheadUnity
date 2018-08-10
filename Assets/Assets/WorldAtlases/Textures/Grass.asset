@@ -15,3 +15,7 @@ MonoBehaviour:
     top: {fileID: 2800000, guid: 2418c94a4a567db4fa00c1aed04b6281, type: 3}
     sides: {fileID: 2800000, guid: 6df0e60d81b01ba42b763a5653a89eb6, type: 3}
     bottom: {fileID: 2800000, guid: 6df0e60d81b01ba42b763a5653a89eb6, type: 3}
+  normals:
+    top: {fileID: 2800000, guid: 4f0aaa48222103643a72aaf2830e647a, type: 3}
+    sides: {fileID: 2800000, guid: 327dd72ad804706479aabe864ccb0634, type: 3}
+    bottom: {fileID: 2800000, guid: 327dd72ad804706479aabe864ccb0634, type: 3}
