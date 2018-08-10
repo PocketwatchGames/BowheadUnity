@@ -22,8 +22,8 @@
 		#pragma surface surf Standard fullforwardshadows vertex:vert
 
 		// Use shader model 3.0 target, to get nicer looking lighting
-		#pragma target 3.0
-
+		#pragma target 3.5
+		
 		#include "TerrainShader.cginc"
 
 		void vert(inout appdata_full v, out Input o) {

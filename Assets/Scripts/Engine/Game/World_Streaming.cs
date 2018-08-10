@@ -34,7 +34,7 @@ public partial class World {
 		};
 
 		static class ShaderID {
-			public static readonly int _AlbedoTextureArrayIndex = Shader.PropertyToID("_AlbedoTextureArrayIndex");
+			public static readonly int _AlbedoTextureArrayIndices = Shader.PropertyToID("_AlbedoTextureArrayIndices");
 			public static readonly int _AlbedoTextureArray = Shader.PropertyToID("_AlbedoTextureArray");
 		};
 
@@ -809,7 +809,7 @@ public partial class World {
 				staticTextureArrayIndices[i] = 0;
 			}
 
-			staticMaterialProperties.SetFloatArray(ShaderID._AlbedoTextureArrayIndex, SetTextureChannelIndices(texBlend, _clientData.albedo));
+			staticMaterialProperties.SetFloatArray(ShaderID._AlbedoTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.albedo));
 		}
 
 		void CreateChunkMesh(ref ChunkMeshGen.CompiledChunkData jobData, ref WorldChunkComponent root, Vector3 pos, int layer, ref int baseIndex, ref int baseVertex) {

@@ -1,4 +1,4 @@
-﻿Shader "Custom/TerrainShader" {
+﻿Shader "Custom/TerrainWaterShader" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
 		_AlbedoTextureArray("Albedo (RGB)", 2DArray) = "white" {}
@@ -26,7 +26,7 @@
 		#pragma surface surf Standard fullforwardshadows vertex:vert alpha:fade
 
 		// Use shader model 3.0 target, to get nicer looking lighting
-		#pragma target 3.0
+		#pragma target 3.5
 
 		#include "TerrainShader.cginc"
 

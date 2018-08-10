@@ -21,7 +21,7 @@ float4 _ClipPlane2;
 float4 _ClipOrigin;
 float4 _WorldOrigin;
 float4 _ClipRegion;
-float _AlbedoTextureArrayIndex[12];
+float _AlbedoTextureArrayIndices[12];
 fixed4 _Color;
 
 // Add instancing support for this shader. You need to check 'Enable Instancing' on materials that use the shader.
@@ -31,8 +31,24 @@ UNITY_INSTANCING_BUFFER_START(Props)
 // put more per-instance properties here
 UNITY_INSTANCING_BUFFER_END(Props)
 
-fixed4 sampleTerrainAlbedo(float3 tc, float3 absNormal, float3 signNormal, float4 texBlend) {
+fixed4 triplanarColor(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float3 tc, float3 absNormal, float3 signNormal, float4 texBlend) {
 	fixed4 color = fixed4(0, 0, 0, 0);
+
+	for (int i = 0; i < 4; ++i) {
+		fixed4 t;
+		fixed4 x = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(tc.z, tc.y, arrayIndices[i * 3 + 1])) * absNormal.x;
+		fixed4 y = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(tc.x, tc.z, arrayIndices[i * 3 + (int)(1 + signNormal.y)])) * absNormal.y;
+		fixed4 z = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(tc.x, tc.y, arrayIndices[i * 3 + 1])) * absNormal.z;
+		t = x + y + z;
+		color += t * texBlend[i];
+	}
+
+	return color;
+}
+
+fixed4 sampleTerrainAlbedo(float3 tc, float3 absNormal, float3 signNormal, float4 texBlend) {
+	return triplanarColor(UNITY_PASS_TEX2DARRAY(_AlbedoTextureArray), _AlbedoTextureArrayIndices, tc, absNormal, signNormal, texBlend);
+	/*fixed4 color = fixed4(0, 0, 0, 0);
 
 	for (int i = 0; i < 4; ++i) {
 		fixed4 t;
@@ -43,7 +59,7 @@ fixed4 sampleTerrainAlbedo(float3 tc, float3 absNormal, float3 signNormal, float
 		color += t * texBlend[i];
 	}
 	
-	return color;
+	return color;*/
 }
 
 void clip(Input IN) {
