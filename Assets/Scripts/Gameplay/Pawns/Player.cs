@@ -29,6 +29,7 @@ namespace Bowhead.Actors {
 
         [Header("Player Stats")]
         public float temperature;
+		public bool freezeMotion;
 		#endregion
 
 		public enum InventorySlot {
@@ -73,6 +74,10 @@ namespace Bowhead.Actors {
 			int pi = playerIndex + 1;
 
 			PlayerCmd_t cmd = new PlayerCmd_t();
+
+			if (freezeMotion) {
+				return;
+			}
 
 			if (pi == 1) {
 
@@ -1053,6 +1058,10 @@ namespace Bowhead.Actors {
             OnExplore?.Invoke(pos, radius);
 			SetSpawnPoint(position);
         }
+
+		public void FreezeMotion(bool f) {
+			freezeMotion = f;
+		}
 
         #endregion
     }

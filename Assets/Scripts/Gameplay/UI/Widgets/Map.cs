@@ -93,7 +93,7 @@ namespace Bowhead.Client.UI {
 		}
 
 		void Update() {
-			Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal1"), Input.GetAxis("MoveVertical1"));
+			Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal1"), Input.GetAxis("MoveVertical1")) * _visibleX * 10;
 			SetOrigin((int)(_originX + move.x), (int)(_originZ + move.y));
 
 			float zoom = Input.GetAxis("Zoom");

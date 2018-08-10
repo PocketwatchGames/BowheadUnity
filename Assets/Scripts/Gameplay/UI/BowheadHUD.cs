@@ -174,6 +174,7 @@ namespace Bowhead.Client.UI {
 
 		public override void ShowWorldMap(bool show) {
 			_worldmap.gameObject.SetActive(show);
+			localPlayer.playerPawn.FreezeMotion(show);
 		}
 
 		public override bool worldMapVisible {
