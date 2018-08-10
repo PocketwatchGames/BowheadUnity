@@ -121,6 +121,7 @@ public partial class World {
 		const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
 		const int BANK_SIZE = 24;
 		const int MAX_MATERIALS_PER_EDGE = 2;
+		const int MAX_MATERIALS_PER_VERTEX = 4;
 		const int MAX_EDGES_PER_VERT = 16;
 
 		const int BORDER_SIZE = 2;
@@ -1234,31 +1235,35 @@ public partial class World {
 				return blendFactor;
 			}
 
-			void AddOrientedEdgeMaterials(int layer, int v0, int v1, ref int num) {
+			bool AddVertexMaterials(int layer, int v0, ref int num) {
 				var OFS = v0 * MAX_EDGES_PER_VERT;
 				var count = _smoothVerts.vtoEdgeCount[v0];
+				var added = false;
 
 				for (int i = 0; i < count; ++i) {
 					var edge = _smoothVerts.edgeTable[OFS+i];
-					if (edge.v1 == v1) {
-						int MAT_OFS = (v0 * MAX_EDGES_PER_VERT * MAX_MATERIALS_PER_EDGE) + (i * MAX_MATERIALS_PER_EDGE);
-						int numMats = edge.numMaterials;
 
-						for (int k = 0; k < numMats; ++k) {
-							var material = _smoothVerts.edgeMaterials[MAT_OFS + k];
-							var materialLayer = material >> 16;
-							if (layer == materialLayer) {
-								var m = material & 0xffff;
-								AddMaterial(m, ref num);
-							}
+					int MAT_OFS = (v0 * MAX_EDGES_PER_VERT * MAX_MATERIALS_PER_EDGE) + (i * MAX_MATERIALS_PER_EDGE);
+					int numMats = edge.numMaterials;
+
+					for (int k = 0; k < numMats; ++k) {
+						var material = _smoothVerts.edgeMaterials[MAT_OFS + k];
+						var materialLayer = material >> 16;
+						if (layer == materialLayer) {
+							var m = material & 0xffff;
+							AddMaterial(m, ref num);
+							added = true;
 						}
 					}
 				}
+
+				return added;
 			}
 
 			void AddEdgeMaterials(int layer, int v0, int v1, ref int num) {
-				AddOrientedEdgeMaterials(layer, v0, v1, ref num);
-				AddOrientedEdgeMaterials(layer, v1, v0, ref num);
+				if (!AddVertexMaterials(layer, v0, ref num)) {
+					AddVertexMaterials(layer, v1, ref num);
+				}
 			}
 
 			int AddEdgeMaterials(int layer, int v0, int v1, int v2) {
@@ -1277,7 +1282,7 @@ public partial class World {
 						return;
 					}
 				}
-				if (num < MAX_MATERIALS_PER_EDGE) {
+				if (num < MAX_MATERIALS_PER_VERTEX) {
 					_materials[num] = m;
 					++num;
 				}
@@ -1300,7 +1305,7 @@ public partial class World {
 				var numIndices = _smoothVerts.counts[0];
 				var maxLayer = _smoothVerts.counts[1];
 
-				_materials = new NativeArray<int>(MAX_MATERIALS_PER_EDGE, Allocator.Temp, NativeArrayOptions.ClearMemory);
+				_materials = new NativeArray<int>(MAX_MATERIALS_PER_VERTEX, Allocator.Temp, NativeArrayOptions.ClearMemory);
 
 				var emitFlags = new NativeArray<int>(numIndices / 3, Allocator.Temp, NativeArrayOptions.ClearMemory);
 

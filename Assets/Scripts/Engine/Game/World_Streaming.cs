@@ -838,6 +838,17 @@ public partial class World {
 			for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
 				int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
 				if (numSubmeshVerts > 0) {
+					++submeshidx;
+				}
+			}
+
+			mesh.subMeshCount = submeshidx;
+
+			submeshidx = 0;
+
+			for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
+				int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
+				if (numSubmeshVerts > 0) {
 					MeshCopyHelper.SetSubMeshTris(mesh, submeshidx, Copy(staticIndices, outputVerts.indices, indexOfs+baseIndex, numSubmeshVerts), numSubmeshVerts, true, 0);
 					indexOfs += numSubmeshVerts;
 					++submeshidx;
