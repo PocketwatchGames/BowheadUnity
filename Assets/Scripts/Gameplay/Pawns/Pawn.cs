@@ -1351,12 +1351,11 @@ namespace Bowhead.Actors {
 				se = StatusEffect.Create(data, time);
 				statusEffects.Add(se);
 				se.Apply(this);
-			}
-			else {
+				GameManager.instance.clientWorld.OnStatusEffectAdded(this, se);
+			} else {
 				se.totalTime = Mathf.Max(se.totalTime, time);
 				se.time = Mathf.Max(se.time, time);
 			}
-            GameManager.instance.clientWorld.OnStatusEffectAdded(this, se);
 		}
 
 		protected bool IsValidAttackTarget(Pawn actor) {

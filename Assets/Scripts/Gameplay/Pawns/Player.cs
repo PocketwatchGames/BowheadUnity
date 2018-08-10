@@ -55,7 +55,7 @@ namespace Bowhead.Actors {
 
 		public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
-        public event Action<Vector2, float> OnExplore;
+        public event Action<Vector2, int> OnExplore;
 		public event Action OnInventoryChange;
 
 		public delegate void OnLandFn(float damage);
@@ -1040,7 +1040,7 @@ namespace Bowhead.Actors {
         }
 
 
-        public void Explore(Vector2 pos, float radius) {
+        public void Explore(Vector2 pos, int radius) {
             OnExplore?.Invoke(pos, radius);
         }
 

@@ -82,14 +82,14 @@ namespace Bowhead.Client.UI {
 			_inventory.Init(player);
             _compass.Init(Camera.main, player);
 
-			_worldmap.SetStreaming(player.world.worldStreaming);
+			_worldmap.SetStreaming(Bowhead.Server.BowheadGame.WORLD_GENERATOR_TYPE);
 			_worldmap.SetOrigin(0, 0);
 
             //_minimap.SetOrigin(0, 0);
 			player.OnExplore += OnExplore;
 
 			// for now, minimap reveal still kinda broke ass.
-			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 64);
+			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 128);
 
 			_weaponChargeLeft.SetTarget(player, 1);
 			_weaponChargeRight.SetTarget(player, 2);
@@ -105,7 +105,7 @@ namespace Bowhead.Client.UI {
 			critterHUD.SetTarget(critter);
 		}
 
-		private void OnExplore(Vector2 pos, float radius) {
+		private void OnExplore(Vector2 pos, int radius) {
 			var chunkPos = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.y)));
             _worldmap.SetOrigin(chunkPos.cx, chunkPos.cy);
             _worldmap.RevealArea(new Vector2(pos.x, pos.y), radius);

@@ -77,10 +77,10 @@ MonoBehaviour:
   hearingWeight: 1
   dayVisionDistance: 20
   nightVisionDistance: 10
-  visionAngleExponent: 2
+  visionAngleExponent: 1
   visionDistanceExponent: 0.5
-  visionAngleRange: 55
-  visionAngleRangeUp: 15
+  visionAngleRange: 90
+  visionAngleRangeUp: 25
   visionAngleRangeDown: 60
   hearingDistance: 20
   hearingDistanceExponent: 2

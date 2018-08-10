@@ -23,29 +23,32 @@ MonoBehaviour:
   maxWater: 0
   maxStamina: 20
   minStamina: 0
-  recoveryTime: 1
+  staminaRecoveryTime: 0
   staminaRechargeTime: 3
-  staminaRechargeTimeDuringRecovery: 0
+  staminaRechargeTimeDuringStun: 0
   dodgeTime: 0
   postStunInvincibilityTime: 0
   backStabAngle: 90
   runSound: 0
   sprintSound: 0
+  sprintDamageMultiplierSpeed: 0
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
   jumpSpeed: 8
   jumpStaminaUse: 0
+  jumpHorizontalSpeed: 0
   groundAcceleration: 2
   crouchSpeed: 0
   walkSpeed: 1
   walkStartTime: 0.1
   walkStopTime: 0.1
+  groundMaxSpeed: 14
+  groundWindDrag: 0.01
   sprintTime: 0.5
   sprintSpeed: 14
   sprintStaminaUse: 0
   sprintGracePeriodTime: 0
-  groundMaxSpeed: 14
-  groundWindDrag: 0.01
+  slideModifier: 0
   gravity: -30
   fallJumpTime: 0
   fallAcceleration: 30
@@ -74,11 +77,11 @@ MonoBehaviour:
   hearingWeight: 2
   dayVisionDistance: 15
   nightVisionDistance: 10
-  visionAngleExponent: 2
+  visionAngleExponent: 1
   visionDistanceExponent: 0.5
-  visionAngleRange: 60
+  visionAngleRange: 120
   visionAngleRangeUp: 60
-  visionAngleRangeDown: 45
+  visionAngleRangeDown: 60
   hearingDistance: 30
   hearingDistanceExponent: 2
   scentDistance: 0
