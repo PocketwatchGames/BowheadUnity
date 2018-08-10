@@ -55,7 +55,7 @@ namespace Bowhead.Actors {
 
 		public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
-        public event Action<Vector2, float> OnExplore;
+        public event Action<Vector2, int> OnExplore;
 		public event Action OnInventoryChange;
 
 		public delegate void OnLandFn(float damage);
@@ -78,10 +78,11 @@ namespace Bowhead.Actors {
 
 				Vector2 look;
 				if (Input.GetJoystickNames().Length == 0) {
-					look = new Vector2(Input.GetAxis("MouseAxis1"), -Input.GetAxis("MouseAxis2"));
+					look = (Input.mousePosition - new Vector3(Screen.width/2,Screen.height/2)).normalized;
 					if (look != Vector2.zero) {
 						look.Normalize();
 					}
+					look.y = -look.y;
 				} else {
 					look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
 					if (look.magnitude > 0.5f) {
@@ -102,7 +103,7 @@ namespace Bowhead.Actors {
                 cmd.buttons |= 1 << (int)InputType.Jump;
             }
             if (Input.GetButton("B" + pi)) {
-                cmd.buttons |= 1 << (int)InputType.Lock;
+                cmd.buttons |= 1 << (int)InputType.Interact;
             }
 			if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
@@ -111,7 +112,7 @@ namespace Bowhead.Actors {
 				cmd.buttons |= 1 << (int)InputType.AttackLeft;
 			}
 			if (Input.GetButton("X" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.Interact;
+				cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
 			}
 			if (Input.GetButton("Y" + pi)) {
 				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
@@ -190,18 +191,16 @@ namespace Bowhead.Actors {
             canRun = weight < WeightClass.ENCUMBERED;
 			canJump = weight < WeightClass.ENCUMBERED;
 			canSprint = weight < WeightClass.HEAVY;
-			canClimb = weight < WeightClass.HEAVY;
-			canSwim = weight < WeightClass.HEAVY;
-            canClimbWell = weight < WeightClass.MEDIUM;
+			canSwim = true;
+			canClimb = true;
             canTurn = true;
-			canStrafe = true;
+			canStrafe = mount == null;
 
 			if (stunned) {
 				canRun = false;
 				canSprint = false;
 				canJump = false;
                 canClimb = false;
-                canClimbWell = false;
                 canAttack = false;
             }
 			if (stamina <= 0) {
@@ -304,13 +303,6 @@ namespace Bowhead.Actors {
 				Interact();
 			}
 
-			if (input.inputs[(int)InputType.Lock] == InputState.JustPressed) {
-				tradePartner = null;
-				if (mount != null) {
-					SetMount(null);
-				}
-			}
-
 			bool isCasting = false;
             Weapon itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
 			Weapon itemLeft;
@@ -401,7 +393,6 @@ namespace Bowhead.Actors {
 			attackTargetPreview = GetAttackTarget(yaw, 20, 360 * Mathf.Deg2Rad, null);
 
 			if (isCasting) {
-				SetMount(null);
 				tradePartner = null;
 			}
 
@@ -918,7 +909,16 @@ namespace Bowhead.Actors {
 			Vector3? targetPos;
             GetInteractTarget(out target, out targetPos, out interaction);
 
-            WorldItem worldItem;
+			if (tradePartner == target) {
+				tradePartner = null;
+				return;
+			} else if (mount == target) {
+				SetMount(null);
+				return;
+			}
+
+
+			WorldItem worldItem;
             Critter critter;
             if ((worldItem = target as WorldItem) != null && !target.pendingKill) {
                 worldItem.Interact(this);
@@ -940,28 +940,28 @@ namespace Bowhead.Actors {
 			}
             else if (targetPos.HasValue) {
                 var block = world.GetBlock(targetPos.Value);
-                if (block == EVoxelBlockType.Water) {
-                    Loot waterItem = null;
-                    var waterData = LootData.Get("Water");
-                    foreach (var i in getInventory()) {
-                        var other = i as Loot;
-                        if (other != null && i.data == waterData && other.count < waterData.stackSize) {
-                            waterItem = other;
-                            break;
-                        }
-                    }
-                    if (waterItem == null) {
-                        int[] newSlot = new int[1];
-                        if (FindEmptyPackSlots(1, ref newSlot)) {
-							waterItem = waterData.CreateItem();
-                            PickUp(waterItem);
-                        }
-                    }
-                    if (waterItem != null) {
-                        waterItem.count = waterData.stackSize;
-                    }
-					water = maxWater;
-                }
+     //           if (block == EVoxelBlockType.Water) {
+     //               Loot waterItem = null;
+     //               var waterData = LootData.Get("Water");
+     //               foreach (var i in getInventory()) {
+     //                   var other = i as Loot;
+     //                   if (other != null && i.data == waterData && other.count < waterData.stackSize) {
+     //                       waterItem = other;
+     //                       break;
+     //                   }
+     //               }
+     //               if (waterItem == null) {
+     //                   int[] newSlot = new int[1];
+     //                   if (FindEmptyPackSlots(1, ref newSlot)) {
+					//		waterItem = waterData.CreateItem();
+     //                       PickUp(waterItem);
+     //                   }
+     //               }
+     //               if (waterItem != null) {
+     //                   waterItem.count = waterData.stackSize;
+     //               }
+					//water = maxWater;
+     //           }
             }
         }
 
@@ -969,7 +969,18 @@ namespace Bowhead.Actors {
 
             interactionType = null;
 
-            float closestDist = 2;
+			if (tradePartner != null) {
+				target = tradePartner;
+				targetPos = null;
+				return;
+			}
+			if (mount != null) {
+				target = mount;
+				targetPos = null;
+				return;
+			}
+
+			float closestDist = 2;
             Entity closestItem = null;
             foreach (var i in world.GetActorIterator<WorldItem>()) {
                 float dist = (i.position - rigidBody.position).magnitude;
@@ -1019,17 +1030,17 @@ namespace Bowhead.Actors {
 			if (closestItem == null) {
 				var pos = footPosition() + Vector3.down;
 				var block = world.GetBlock(pos);
-				if (block == EVoxelBlockType.Water) {
-					targetPos = pos;
-					interactionType = "Collect";
-				}
+				//if (block == EVoxelBlockType.Water) {
+				//	targetPos = pos;
+				//	interactionType = "Collect";
+				//}
 			}
 
 
         }
 
 
-        public void Explore(Vector2 pos, float radius) {
+        public void Explore(Vector2 pos, int radius) {
             OnExplore?.Invoke(pos, radius);
         }
 

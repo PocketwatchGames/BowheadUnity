@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace Bowhead {
 	public abstract class ItemData : EntityData {
 
 		public string description;
 		public int monetaryValue;
-
 
 
 		public Item CreateItem() {

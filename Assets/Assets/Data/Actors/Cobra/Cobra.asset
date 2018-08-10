@@ -46,7 +46,7 @@ MonoBehaviour:
   groundWindDrag: 0.01
   sprintTime: 0.1
   sprintSpeed: 9
-  sprintStaminaUse: 0
+  sprintStaminaUse: 10
   sprintGracePeriodTime: 0
   slideModifier: 0
   gravity: -30
@@ -77,10 +77,10 @@ MonoBehaviour:
   hearingWeight: 2
   dayVisionDistance: 15
   nightVisionDistance: 15
-  visionAngleExponent: 2
+  visionAngleExponent: 1
   visionDistanceExponent: 0.5
-  visionAngleRange: 55
-  visionAngleRangeUp: 15
+  visionAngleRange: 120
+  visionAngleRangeUp: 25
   visionAngleRangeDown: 60
   hearingDistance: 20
   hearingDistanceExponent: 2

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Name: WolfLoadout
   m_EditorClassIdentifier: 
   loot:
-  - {fileID: 11400000, guid: 9b9a9ecbf6b5fa74ead39921393ebbaf, type: 2}
+  - {fileID: 11400000, guid: 5cf47b3d0bb78b04bbf2451a5d0df77b, type: 2}
   inventory:
   - {fileID: 11400000, guid: 387e5ea0a396cc144bcb063f7a682f13, type: 2}

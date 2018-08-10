@@ -1,7 +1,7 @@
 ﻿Shader "Custom/TerrainShader" {
 	Properties {
 		_Color ("Color", Color) = (1,1,1,1)
-		_MainTex ("Albedo (RGB)", 2DArray) = "white" {}
+		_AlbedoTextureArray("Albedo (RGB)", 2DArray) = "white" {}
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0
 		_ClipPlane0("ClipPlane0", Vector) = (1,0,0,0)

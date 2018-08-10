@@ -236,6 +236,8 @@ public class WorldAtlasEditor : Editor {
 			LoadTextureChannel(atlas, bundles, (x) => x.albedo, (x) => atlasClientData.albedo.textureSet2ArrayIndex = x, (b, s) => { b.albedo = s; return b; }, "Albedo");
 
 			atlasClientData.block2TextureSet = TextureBundle.OptimizeShaderIndices(bundles);
+			atlasClientData.renderMaterials = atlas.renderMaterials;
+
 			atlasClientData = SaveAtlasClientData(atlas, atlasClientData);
 
 			atlasData.atlasClientData = new WorldAtlasClientData_WRef();

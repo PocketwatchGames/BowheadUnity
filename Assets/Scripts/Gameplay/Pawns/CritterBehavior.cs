@@ -76,7 +76,6 @@ namespace Bowhead.Actors {
 					input.movement = move.normalized;
 					input.look = -diff;
 
-					input.inputs[(int)InputType.Jump] = InputState.Pressed;
 					desiredOffset = Vector3.zero;
 
 

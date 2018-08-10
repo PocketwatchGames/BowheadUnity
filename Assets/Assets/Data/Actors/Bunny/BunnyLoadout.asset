@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Name: BunnyLoadout
   m_EditorClassIdentifier: 
   loot:
-  - {fileID: 11400000, guid: 5cf47b3d0bb78b04bbf2451a5d0df77b, type: 2}
+  - {fileID: 11400000, guid: 8f5ca6dc5497b374d974606dd164d8e8, type: 2}
   inventory: []

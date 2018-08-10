@@ -19,7 +19,6 @@ namespace Bowhead.Actors {
 		AttackRight,
 		AttackRangedLeft,
 		AttackRangedRight,
-		Lock,
 		Count
 	}
 
@@ -69,6 +68,9 @@ namespace Bowhead.Actors {
 		public float stunInvulnerabilityTimer;
         public float dodgeTimer;
 		public float damageMultiplier;
+		public float resistPoison;
+		public float resistFire;
+		public float resistCold;
 
 		[Header("Gameplay")]
         public Activity activity;
@@ -85,11 +87,14 @@ namespace Bowhead.Actors {
         public bool canJump;
 		public bool canClimb;
 		public bool canSprint;
-		public bool canClimbWell;
         public bool canSwim;
         public bool canTurn;
         public bool canAttack;
 		public bool canStrafe;
+		public bool[] canClimbType;
+		public float stealthBonusSound;
+		public float stealthBonusSight;
+		public float stealthBonusSmell;
 		public Pawn mount;
         public Pawn driver;
 		public List<StatusEffect> statusEffects = new List<StatusEffect>();
@@ -153,6 +158,7 @@ namespace Bowhead.Actors {
 			this.data = (PawnData)data;
 			gameMode = (Server.BowheadGame)((Server.ServerWorld)world).gameMode;
 			damageMultiplier = 1;
+			canClimbType = new bool[(int)WorldData.ClimbingType.Count];
 		}
 	
 		#region getdata
@@ -209,7 +215,7 @@ namespace Bowhead.Actors {
             if (!IsOpen(p))
                 return false;
             var handblock = gameMode.GetTerrainData(handPosition(handHoldPos));
-            bool isClimbable = canClimbWell ? handblock.canClimbLight : handblock.canClimbMedium;
+            bool isClimbable = canClimbType[(int)handblock.climbType];
             if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
 				if (isHangPosition && handblock.canHang && !WorldUtils.IsSolidBlock(world.GetBlock(p)) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(p))) && !WorldUtils.IsSolidBlock(world.GetBlock(handPosition(handHoldPos) + Vector3.up))) {
@@ -228,8 +234,7 @@ namespace Bowhead.Actors {
             if (!IsOpen(p))
                 return false;
 			var handblock = gameMode.GetTerrainData(handHoldPos);
-			Debug.Log(handblock.name);
-			bool isClimbable = canClimbWell ? handblock.canClimbLight : handblock.canClimbMedium;
+			bool isClimbable = canClimbType[(int)handblock.climbType];
 			if (!isClimbable) {
                 bool isHangPosition = Mathf.Repeat(p.y, 1f) > 0.9f;
                 if (isHangPosition
@@ -468,6 +473,9 @@ namespace Bowhead.Actors {
 			}
             else if (world.GetBlock(position) == EVoxelBlockType.Water) {
 				SetActivity(Activity.Swimming);
+				if (maxWater > 0) {
+					AddStatusEffect(StatusEffectData.Get("RefillWater"), 5);
+				}
 			}
 			else if (onGround && velocity.y <= 0) {
 				SetActivity(Activity.OnGround);
@@ -1343,12 +1351,11 @@ namespace Bowhead.Actors {
 				se = StatusEffect.Create(data, time);
 				statusEffects.Add(se);
 				se.Apply(this);
-			}
-			else {
+				GameManager.instance.clientWorld.OnStatusEffectAdded(this, se);
+			} else {
 				se.totalTime = Mathf.Max(se.totalTime, time);
 				se.time = Mathf.Max(se.time, time);
 			}
-            GameManager.instance.clientWorld.OnStatusEffectAdded(this, se);
 		}
 
 		protected bool IsValidAttackTarget(Pawn actor) {

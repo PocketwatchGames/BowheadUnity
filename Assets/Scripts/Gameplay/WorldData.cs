@@ -4,7 +4,13 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "WorldData")]
 public class WorldData : StaticAsset {
 
-
+	public enum ClimbingType {
+		Unclimbable,
+		Tree,
+		Rock,
+		Ice,
+		Count
+	}
 	[System.Serializable]
 	public class TerrainType {
 		public string name;
@@ -14,8 +20,7 @@ public class WorldData : StaticAsset {
 		public float slideFriction = 0.5f;
 		public float fallDamage = 1;
 		public bool solid;
-		public bool canClimbLight;
-		public bool canClimbMedium;
+		public ClimbingType climbType;
 		public bool canHang;
 		public float soundModifier;
 	}

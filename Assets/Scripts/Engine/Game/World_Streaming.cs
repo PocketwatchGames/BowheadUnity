@@ -33,6 +33,11 @@ public partial class World {
 			public ChunkTimingData_t chunkTiming;
 		};
 
+		static class ShaderID {
+			public static readonly int _AlbedoTextureArrayIndex = Shader.PropertyToID("_AlbedoTextureArrayIndex");
+			public static readonly int _AlbedoTextureArray = Shader.PropertyToID("_AlbedoTextureArray");
+		};
+
 		public CountersThisFrame_t countersThisFrame;
 		public CountersTotal_t countersTotal;
 
@@ -105,6 +110,8 @@ public partial class World {
 		MMapChunkDataDelegate _chunkRead;
 		ChunkWriteDelegate _chunkWrite;
 		NativeArray<int> _blockMaterialIndices;
+		WorldAtlasClientData _clientData;
+		WorldAtlas.RenderMaterials_t _materials;
 		bool _loading;
 		bool _flush;
 
@@ -161,6 +168,27 @@ public partial class World {
 			if ((blockMaterialIndices != null) && (blockMaterialIndices.Length > 0)) {
 				_blockMaterialIndices = new NativeArray<int>(blockMaterialIndices, Allocator.Persistent);
 			}
+		}
+
+		public void SetWorldAtlasClientData(WorldAtlasClientData clientData) {
+			_clientData = clientData;
+
+			if (_materials.solid) {
+				GameObject.Destroy(_materials.solid);
+			}
+			if (_materials.water) {
+				GameObject.Destroy(_materials.water);
+			}
+
+			_materials.solid = new Material(clientData.renderMaterials.solid);
+			_materials.water = new Material(clientData.renderMaterials.water);
+
+			SetMaterialTextureArray(ShaderID._AlbedoTextureArray, clientData.albedo.textureArray);
+		}
+
+		void SetMaterialTextureArray(int name, Texture2DArray texArray) {
+			_materials.solid.SetTexture(name, texArray);
+			_materials.water.SetTexture(name, texArray);
 		}
 
 		long lastTick;
@@ -683,7 +711,10 @@ public partial class World {
 		static int[] staticIndices = new int[ushort.MaxValue];
 		static Vector3[] staticVec3 = new Vector3[ushort.MaxValue];
 		static Color32[] staticColors = new Color32[ushort.MaxValue];
-
+		static Vector4[] staticVec4 = new Vector4[ushort.MaxValue];
+		static MaterialPropertyBlock staticMaterialProperties = new MaterialPropertyBlock();
+		static float[] staticTextureArrayIndices = new float[12];
+		
 		static T[] Copy<T>(NativeArray<T> src, int size) where T : struct {
 			var t = new T[size];
 			for (int i = 0; i < size; ++i) {
@@ -745,6 +776,38 @@ public partial class World {
 			}
 		}
 
+		float[] SetTextureChannelIndices(ChunkMeshGen.TexBlend_t texBlend, WorldAtlasClientData.TerrainTextureChannel channel) {
+			if (texBlend.count > 0) {
+				CopyChannelIndices(channel, 0, texBlend.x);
+			}
+			if (texBlend.count > 1) {
+				CopyChannelIndices(channel, 3, texBlend.y);
+			}
+			if (texBlend.count > 2) {
+				CopyChannelIndices(channel, 6, texBlend.z);
+			}
+			if (texBlend.count > 3) {
+				CopyChannelIndices(channel, 9, texBlend.w);
+			}
+			return staticTextureArrayIndices;
+		}
+
+		void CopyChannelIndices(WorldAtlasClientData.TerrainTextureChannel channel, int ofs, int m) {
+			staticTextureArrayIndices[ofs+0] = channel.textureSet2ArrayIndex[m*3+0];
+			staticTextureArrayIndices[ofs+1] = channel.textureSet2ArrayIndex[m*3+1];
+			staticTextureArrayIndices[ofs+2] = channel.textureSet2ArrayIndex[m*3+2];
+		}
+
+		void SetMaterialPropertyBlock(ChunkMeshGen.TexBlend_t texBlend) {
+			staticMaterialProperties.Clear();
+
+			for (int i = 0; i < staticTextureArrayIndices.Length; ++i) {
+				staticTextureArrayIndices[i] = 0;
+			}
+
+			staticMaterialProperties.SetFloatArray(ShaderID._AlbedoTextureArrayIndex, SetTextureChannelIndices(texBlend, _clientData.albedo));
+		}
+
 		void CreateChunkMesh(ref ChunkMeshGen.CompiledChunkData jobData, ref WorldChunkComponent root, Vector3 pos, int layer, ref int baseIndex, ref int baseVertex) {
 			var outputVerts = jobData.outputVerts;
 
@@ -761,6 +824,7 @@ public partial class World {
 			MeshCopyHelper.SetMeshVerts(mesh, Copy(staticVec3, outputVerts.positions, baseVertex, vertCount), vertCount);
 			MeshCopyHelper.SetMeshNormals(mesh, Copy(staticVec3, outputVerts.normals, baseVertex, vertCount), vertCount);
 			MeshCopyHelper.SetMeshColors(mesh, Copy(staticColors, outputVerts.colors, baseVertex, vertCount), vertCount);
+			MeshCopyHelper.SetMeshUVs(mesh, 0, Copy(staticVec4, outputVerts.textureBlending, baseVertex, vertCount), vertCount);
 
 			int submeshidx = 0;
 			int indexOfs = 0;
@@ -773,6 +837,20 @@ public partial class World {
 					MeshCopyHelper.SetSubMeshTris(mesh, submeshidx, Copy(staticIndices, outputVerts.indices, indexOfs+baseIndex, numSubmeshVerts), numSubmeshVerts, true, 0);
 					indexOfs += numSubmeshVerts;
 					++submeshidx;
+				}
+			}
+
+			component.SetSubmeshMaterials(_materials, submeshidx);
+			{
+				submeshidx = 0;
+				for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
+					int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
+					if (numSubmeshVerts > 0) {
+						var texBlend = outputVerts.submeshTextures[(layer*MAX_CHUNK_LAYERS)+submesh];
+						SetMaterialPropertyBlock(texBlend);
+						component.SetPropertyBlock(staticMaterialProperties, submeshidx);
+						++submeshidx;
+					}
 				}
 			}
 

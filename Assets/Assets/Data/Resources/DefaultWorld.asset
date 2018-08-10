@@ -20,8 +20,7 @@ MonoBehaviour:
     slideFriction: 0.5
     fallDamage: 1
     solid: 1
-    canClimbLight: 1
-    canClimbMedium: 0
+    climbType: 2
     canHang: 1
     soundModifier: 1
   - name: sand or snow
@@ -31,8 +30,7 @@ MonoBehaviour:
     slideFriction: 0.5
     fallDamage: 0.5
     solid: 1
-    canClimbLight: 0
-    canClimbMedium: 0
+    climbType: 0
     canHang: 0
     soundModifier: 0.5
   - name: foliage
@@ -42,8 +40,7 @@ MonoBehaviour:
     slideFriction: 0.5
     fallDamage: 0.5
     solid: 1
-    canClimbLight: 1
-    canClimbMedium: 1
+    climbType: 1
     canHang: 1
     soundModifier: 1
   - name: ice
@@ -53,8 +50,7 @@ MonoBehaviour:
     slideFriction: 0.25
     fallDamage: 1
     solid: 1
-    canClimbLight: 0
-    canClimbMedium: 0
+    climbType: 3
     canHang: 0
     soundModifier: 0.5
   - name: flowers
@@ -64,8 +60,7 @@ MonoBehaviour:
     slideFriction: 0.1
     fallDamage: 1
     solid: 0
-    canClimbLight: 0
-    canClimbMedium: 0
+    climbType: 0
     canHang: 0
     soundModifier: 1
   - name: air
@@ -75,8 +70,7 @@ MonoBehaviour:
     slideFriction: 0
     fallDamage: 1
     solid: 0
-    canClimbLight: 0
-    canClimbMedium: 0
+    climbType: 0
     canHang: 0
     soundModifier: 0
   - name: water
@@ -86,8 +80,7 @@ MonoBehaviour:
     slideFriction: 0
     fallDamage: 1
     solid: 0
-    canClimbLight: 0
-    canClimbMedium: 0
+    climbType: 0
     canHang: 0
     soundModifier: 1
   atlasData: {fileID: 11400000, guid: 3db0e86cbd5f229458f96df9da68b5ce, type: 2}

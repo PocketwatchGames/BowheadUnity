@@ -1,7 +1,7 @@
 // Copyright (c) 2018 Pocketwatch Games LLC.
 
 // Common terrain shading shit.
-UNITY_DECLARE_TEX2DARRAY(_MainTex);
+UNITY_DECLARE_TEX2DARRAY(_AlbedoTextureArray);
 
 struct Input {
 	//float2 uv_MainTex;
@@ -32,9 +32,9 @@ UNITY_INSTANCING_BUFFER_END(Props)
 
 fixed4 sampleTerrainAlbedo(float3 tc, float3 absNormal, float3 signNormal) {
 	fixed4 t0;
-	fixed4 x = UNITY_SAMPLE_TEX2DARRAY(_MainTex, float3(tc.z, tc.y, _AlbedoTextureArrayIndex[0])) * absNormal.x;
-	fixed4 y = UNITY_SAMPLE_TEX2DARRAY(_MainTex, float3(tc.x, tc.z, _AlbedoTextureArrayIndex[1])) * absNormal.y;
-	fixed4 z = UNITY_SAMPLE_TEX2DARRAY(_MainTex, float3(tc.x, tc.y, _AlbedoTextureArrayIndex[2])) * absNormal.z;
+	fixed4 x = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.z, tc.y, _AlbedoTextureArrayIndex[0])) * absNormal.x;
+	fixed4 y = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.x, tc.z, _AlbedoTextureArrayIndex[1])) * absNormal.y;
+	fixed4 z = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.x, tc.y, _AlbedoTextureArrayIndex[2])) * absNormal.z;
 	t0 = x + y + z;
 	
 	return t0;

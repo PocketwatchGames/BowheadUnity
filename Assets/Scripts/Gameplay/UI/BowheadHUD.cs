@@ -57,6 +57,7 @@ namespace Bowhead.Client.UI {
 			_inventory = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPanelPrefab, hudCanvas.transform, false);
 			_interactHint = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, hudCanvas.transform, false);
 			_lockMarker = GameObject.Instantiate(GameManager.instance.clientData.hudLockPrefab, hudCanvas.transform, false);
+			_lockMarker.gameObject.SetActive(false);
 			_worldmap = GameObject.Instantiate(GameManager.instance.clientData.worldMapPrefab, hudCanvas.transform, false);
 			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
 			_weaponChargeLeft = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
@@ -81,14 +82,14 @@ namespace Bowhead.Client.UI {
 			_inventory.Init(player);
             _compass.Init(Camera.main, player);
 
-			_worldmap.SetStreaming(player.world.worldStreaming);
+			_worldmap.SetStreaming(Bowhead.Server.BowheadGame.WORLD_GENERATOR_TYPE);
 			_worldmap.SetOrigin(0, 0);
 
             //_minimap.SetOrigin(0, 0);
 			player.OnExplore += OnExplore;
 
 			// for now, minimap reveal still kinda broke ass.
-			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 64);
+			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 128);
 
 			_weaponChargeLeft.SetTarget(player, 1);
 			_weaponChargeRight.SetTarget(player, 2);
@@ -104,7 +105,7 @@ namespace Bowhead.Client.UI {
 			critterHUD.SetTarget(critter);
 		}
 
-		private void OnExplore(Vector2 pos, float radius) {
+		private void OnExplore(Vector2 pos, int radius) {
 			var chunkPos = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.y)));
             _worldmap.SetOrigin(chunkPos.cx, chunkPos.cy);
             _worldmap.RevealArea(new Vector2(pos.x, pos.y), radius);
@@ -142,7 +143,7 @@ namespace Bowhead.Client.UI {
 			else {
 				_interactHint.SetTarget(target);
 			}
-			_interactHint.SetButton("X");
+			_interactHint.SetButton((interaction != null) ? "B" : "");
             _interactHint.SetHint(interaction);
 
 
@@ -152,11 +153,11 @@ namespace Bowhead.Client.UI {
 			} else {
 				angle = localPlayer.playerPawn.yaw;
 			}
-			var newTarget = localPlayer.playerPawn.GetAttackTarget(angle, 20, 360 * Mathf.Deg2Rad, null);
-			_lockMarker.gameObject.SetActive(newTarget != null);
-			if (newTarget != null) {
-				_lockMarker.transform.position = Camera.main.WorldToScreenPoint(newTarget.headPosition());
-			}
+			//var newTarget = localPlayer.playerPawn.GetAttackTarget(angle, 20, 360 * Mathf.Deg2Rad, null);
+			//_lockMarker.gameObject.SetActive(newTarget != null);
+			//if (newTarget != null) {
+			//	_lockMarker.transform.position = Camera.main.WorldToScreenPoint(newTarget.headPosition());
+			//}
 
 			if (Input.GetButtonDown("Start")) {
 				ShowWorldMap(!worldMapVisible);

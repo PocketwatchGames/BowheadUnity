@@ -16,7 +16,7 @@ namespace Bowhead {
 
 		public enum Spell {
 			None,
-			Heal,
+			StatusEffect,
 		}
 
 
@@ -67,14 +67,15 @@ namespace Bowhead {
 		public GameObject_WRef prefab;
         public Hand hand;
 		public float moveSpeedChargeDelay = 0.2f;
-		public float maxHealthBonus;
-		public float maxStaminaBonus;
+		public List<TraitData> traits = new List<TraitData>();
 
 		public AttackData[] attacks;
 
 		[Header("Spells")]
 		public Spell spell;
 		public float spellPower;
+		public StatusEffectData statusEffect;
+		public float statusEffectTime;
 		public float waterUse;
 		public bool canTarget;
 		public Actors.ProjectileData projectile;

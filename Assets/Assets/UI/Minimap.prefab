@@ -103,9 +103,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5541fac8bf3ff3489a8114386ffef27, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _chunkMinY: -1
-  _chunkMaxY: 4
-  _chunkXZSize: 6
+  _worldSize: 4096
+  _size: 1024
+  _revealSize: 128
   _iconScale: 1
   _maskBlitMaterial: {fileID: 2100000, guid: eb7646f2b6af5bd4fb0b5525ecb41c57, type: 2}
   _revealTexture: {fileID: 2800000, guid: 813600220f7521842bfcb7a4816ae5dc, type: 3}

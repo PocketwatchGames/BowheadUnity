@@ -69,7 +69,32 @@ MonoBehaviour:
       x: 1
       y: 1
     probability: 1
-  - itemClass: {fileID: 11400000, guid: 7879e1126a8e1da4a8521af4d952f8b6, type: 2}
+  - itemClass: {fileID: 11400000, guid: ef983562b060337448f1232876b25a1b, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 5cafa481ed1f2294ea5d6200e57c0321, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 615d1e46d1ccd2f428c5090d2d66fdb8, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 852248aeb3960a745a77cd070f486f1e, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: 70b894da3abb8094689342693d013d46, type: 2}
+    count:
+      x: 1
+      y: 1
+    probability: 1
+  - itemClass: {fileID: 11400000, guid: e55be9cb0ae81c144ba52ecdaee2f447, type: 2}
     count:
       x: 1
       y: 1

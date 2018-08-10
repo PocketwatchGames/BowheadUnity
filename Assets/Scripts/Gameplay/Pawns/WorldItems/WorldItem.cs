@@ -9,7 +9,7 @@ namespace Bowhead.Actors {
 
         public class MapReveal {
             public Vector2 position;
-            public float radius;
+            public int radius;
         }
 
         public bool inMotion;

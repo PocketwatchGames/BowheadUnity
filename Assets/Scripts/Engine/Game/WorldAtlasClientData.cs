@@ -19,6 +19,8 @@ public sealed class WorldAtlasClientData : ScriptableObject, ISerializationCallb
 	public TerrainTextureChannel albedo;
 	public int[] block2TextureSet;
 
+	public WorldAtlas.RenderMaterials_t renderMaterials;
+
 	public void OnBeforeSerialize() {
 #if UNITY_EDITOR
 		Resize();

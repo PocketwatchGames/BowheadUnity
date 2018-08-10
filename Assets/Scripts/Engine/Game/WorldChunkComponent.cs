@@ -8,15 +8,15 @@ using UnityEngine;
 public class WorldChunkComponent : MonoBehaviour {
 	[SerializeField]
 	MeshFilter _meshFilter;
-	[SerializeField]
-	Material _water;
-	
+		
 	MeshCollider _meshCollider;
+	MeshRenderer _meshRenderer;
 
 	public Mesh mesh => _meshFilter.mesh;
 
 	void Awake() {
 		_meshCollider = GetComponent<MeshCollider>();
+		_meshRenderer = GetComponent<MeshRenderer>();
 	}
 
 	public void UpdateCollider() {
@@ -25,10 +25,21 @@ public class WorldChunkComponent : MonoBehaviour {
 		}
 		_meshCollider = gameObject.AddComponent<MeshCollider>();
 		_meshCollider.sharedMesh = mesh;
+	}
 
-		if (gameObject.layer == Layers.Water) {
-			GetComponent<MeshRenderer>().sharedMaterial = _water;
+	public void SetSubmeshMaterials(WorldAtlas.RenderMaterials_t materials, int submeshCount) {
+		var mats = new Material[submeshCount];
+		var material = (gameObject.layer == Layers.Water) ? materials.water : materials.solid;
+		
+		for (int i = 0; i < submeshCount; ++i) {
+			mats[i] = material;
 		}
+
+		_meshRenderer.sharedMaterials = mats;
+	}
+
+	public void SetPropertyBlock(MaterialPropertyBlock properties, int submesh) {
+		_meshRenderer.SetPropertyBlock(properties, submesh);
 	}
 
 	public void Clear() {

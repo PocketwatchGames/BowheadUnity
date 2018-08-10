@@ -7,6 +7,14 @@ using UnityEngine;
 public sealed class WorldAtlas : ScriptableObject, ISerializationCallbackReceiver {
 	public WorldAtlasMaterial[] materials;
 
+	[Serializable]
+	public struct RenderMaterials_t {
+		public Material solid;
+		public Material water;
+	};
+
+	public RenderMaterials_t renderMaterials;
+
 	public void OnAfterDeserialize() {
 		materials = Utils.Resize(materials, (int)EVoxelBlockType.NumBlockTypes - 1); // doesn't include air
 	}

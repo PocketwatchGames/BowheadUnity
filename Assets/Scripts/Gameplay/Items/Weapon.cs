@@ -51,21 +51,13 @@ namespace Bowhead {
             }
 
 			if (oldSlot >= 0 && oldSlot < (int)Player.InventorySlot.PACK) {
-				if (data.maxStaminaBonus > 0) {
-					owner.maxStamina -= data.maxStaminaBonus;
-					owner.stamina = Mathf.Min(owner.stamina, owner.maxStamina);
-				}
-				if (data.maxHealthBonus > 0) {
-					owner.maxHealth -= data.maxHealthBonus;
-					owner.health = Mathf.Min(owner.health, owner.maxHealth);
+				foreach (var t in data.traits) {
+					t.Remove(owner);
 				}
 			}
 			if (newSlot < (int)Player.InventorySlot.PACK) {
-				if (data.maxStaminaBonus > 0) {
-					owner.maxStamina += data.maxStaminaBonus;
-				}
-				if (data.maxHealthBonus > 0) {
-					owner.maxHealth += data.maxHealthBonus;
+				foreach (var t in data.traits) {
+					t.Add(owner);
 				}
 			}
 
@@ -239,8 +231,8 @@ namespace Bowhead {
 		}
 
 		private void ActivateSpell(Pawn owner) {
-			if (data.spell == WeaponData.Spell.Heal) {
-				owner.health = Mathf.Min(owner.maxHealth, owner.health + data.spellPower);
+			if (data.spell == WeaponData.Spell.StatusEffect) {
+				owner.AddStatusEffect(data.statusEffect, data.statusEffectTime);
 			}
 		}
 

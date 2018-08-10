@@ -20,8 +20,7 @@ MonoBehaviour:
     _editorPath: 
   hand: 3
   moveSpeedChargeDelay: 0
-  maxHealthBonus: 0
-  maxStaminaBonus: 0
+  traits: []
   attacks:
   - chargeTime: 0
     maxCharge: 0
@@ -59,6 +58,8 @@ MonoBehaviour:
       statusEffectTime: 0
   spell: 1
   spellPower: 50
+  statusEffect: {fileID: 11400000, guid: dac19424df206fa479e52cdbbd028d09, type: 2}
+  statusEffectTime: 2
   waterUse: 10
   canTarget: 0
   projectile: {fileID: 0}

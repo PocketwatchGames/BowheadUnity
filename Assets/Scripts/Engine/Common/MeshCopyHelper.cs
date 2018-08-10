@@ -75,6 +75,21 @@ public class MeshCopyHelper {
 		mesh.SetUVs(channel, dumbfuckList);
 	}
 
+	public static void SetMaterialPropertyBlockFloatArray(MaterialPropertyBlock mpb, int name, float[] values, int count) {
+		unsafe {
+			fixed (void* p = values) {
+				var plen = ((UIntPtr*)p) - 1;
+				UIntPtr origLen = *plen;
+				*plen = (UIntPtr)count;
+				try {
+					mpb.SetFloatArray(name, values);
+				} finally {
+					*plen = origLen;
+				}
+			}
+		}
+	}
+
 	public static void SetMeshUV(Mesh mesh, int index, Vector2[] uvs, int count) {
 		unsafe {
 			fixed (void* p = uvs) {

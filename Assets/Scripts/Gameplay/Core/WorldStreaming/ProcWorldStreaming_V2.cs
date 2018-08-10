@@ -73,9 +73,22 @@ namespace Bowhead {
 
                 public void GetElevationAndTopBlock(int x, int z, out int elevation, out EVoxelBlockType blockType)
                 {
-                    elevation = 0;
-                    blockType = EVoxelBlockType.Grass;
-                }
+					FastNoise_t noise = FastNoise_t.New();
+
+					float slopedElevation;
+					int plateauElevation;
+					GenerateElevation(ref noise, x, z, out plateauElevation, out slopedElevation);
+
+					if (IsRoad(ref noise, x, z, plateauElevation)) {
+						blockType = EVoxelBlockType.Dirt;
+					} else if (IsRiver(ref noise, x, z, plateauElevation)) {
+						blockType = EVoxelBlockType.Water;
+					} else {
+						blockType = EVoxelBlockType.Grass;
+					}
+
+					elevation = plateauElevation;
+				}
 			};
 
 			const float waterLevel = 0;
@@ -172,10 +185,27 @@ namespace Bowhead {
 			}
 
 			private static void CreateRivers(ref PinnedChunkData_t chunk, ref FastNoise_t noise, Vector3 v3, int cx, int cz, int elevation) {
-				if (elevation <= waterLevel)
-					return;
 				var x = (int)v3.x + cx;
 				var z = (int)v3.z + cz;
+				if (IsRiver(ref noise, x, z, elevation)) {
+					for (int i = elevation - 2; i <= elevation; i++) {
+						int cy = (int)(i - v3.y);
+						if (cy >= 0 && cy < VOXEL_CHUNK_SIZE_Y) {
+							float temperature = GetTemperature(ref noise, x, i, z);
+							int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + (cy * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+							if (IsFrozen(temperature, GetHumidity(ref noise, x, z))) {
+								chunk.voxeldata[ofs] = EVoxelBlockType.Ice;
+							} else {
+								chunk.voxeldata[ofs] = EVoxelBlockType.Water;
+							}
+						}
+					}
+				}
+			}
+
+			private static bool IsRiver(ref FastNoise_t noise, int x, int z, int elevation) {
+				if (elevation <= waterLevel)
+					return false;
 
 				float powerScaleInverse = 0.005f;
 				float roadWidthMin = 0.001f;
@@ -193,35 +223,40 @@ namespace Bowhead {
 				if (power > 0.5f - range && power < 0.5f + range) {
 					float depth = 0;
 					if (power > 0.5f - range && power < 0.5f + range) {
-						for (int i = elevation - 2; i <= elevation; i++) {
-							int cy = (int)(i - v3.y);
-							if (cy >= 0 && cy < VOXEL_CHUNK_SIZE_Y) {
-								float temperature = GetTemperature(ref noise, x, i, z);
-								int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + (cy * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-								if (IsFrozen(temperature, GetHumidity(ref noise, x, z))) {
-									chunk.voxeldata[ofs] = EVoxelBlockType.Ice;
-								}
-								else {
-									chunk.voxeldata[ofs] = EVoxelBlockType.Water;
-								}
-							}
-						}
+						return true;
 					}
 				}
+				return false;
 			}
 
+
 			private static bool CreateRoads(ref PinnedChunkData_t chunk, ref FastNoise_t noise, Vector3 v3, int cx, int cz, int elevation) {
-				if (elevation <= waterLevel)
-					return false;
 				var x = (int)v3.x + cx;
 				var z = (int)v3.z + cz;
+				if (IsRoad(ref noise, x, z,elevation)) {
+					for (int i = elevation - 2; i <= elevation; i++) {
+						int cy = (int)(i - v3.y);
+						if (cy >= 0 && cy < VOXEL_CHUNK_SIZE_Y) {
+							float temperature = GetTemperature(ref noise, x, i, z);
+							int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + (cy * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
+							chunk.voxeldata[ofs] = EVoxelBlockType.Dirt;
+						}
+					}
+					return true;
+				}
+				return false;
+			}
+
+			private static bool IsRoad(ref FastNoise_t noise, int x, int z, int elevation) {
+				if (elevation <= waterLevel)
+					return false;
 
 				float powerScaleInverse = 0.005f;
 				float roadWidthMin = 0.001f;
 				float roadWidthRange = 0.02f;
 				float humidity = GetHumidity(ref noise, x, z);
 				float power =
-					0.4f * GetPerlinNormal(ref noise, x + 43, z+5634, NoiseFloatScale._0005) +
+					0.4f * GetPerlinNormal(ref noise, x + 43, z + 5634, NoiseFloatScale._0005) +
 					0.3f * GetPerlinNormal(ref noise, x + 254, z + 6563, 0, powerScaleInverse * 0.5f) +
 					0.3f * GetPerlinNormal(ref noise, x + 22554, z + 657463, 0, powerScaleInverse * 0.1f);
 				float range =
@@ -232,19 +267,13 @@ namespace Bowhead {
 				if (power > 0.5f - range && power < 0.5f + range) {
 					float depth = 0;
 					if (power > 0.5f - range && power < 0.5f + range) {
-						for (int i = elevation - 2; i <= elevation; i++) {
-							int cy = (int)(i - v3.y);
-							if (cy >= 0 && cy < VOXEL_CHUNK_SIZE_Y) {
-								float temperature = GetTemperature(ref noise, x, i, z);
-								int ofs = cx + (cz * VOXEL_CHUNK_SIZE_XZ) + (cy * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
-								chunk.voxeldata[ofs] = EVoxelBlockType.Dirt;
-							}
-						}
 						return true;
 					}
 				}
 				return false;
 			}
+
+
 
 			private static void AssignBlocks(ref PinnedChunkData_t chunk, ref FastNoise_t noise, ref bool solid, Vector3 v3, int x, int z, float elevation) {
 				var xpos = (int)v3.x + x;
