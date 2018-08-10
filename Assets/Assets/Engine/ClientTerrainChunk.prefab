@@ -57,8 +57,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
-  m_Materials:
-  - {fileID: 2100000, guid: f41d80efdaa48c240be21f819c2dcc42, type: 2}
+  m_Materials: []
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -111,4 +110,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _meshFilter: {fileID: 33775271890215504}
-  _water: {fileID: 2100000, guid: a42887ae7d1a1b540a40ab5e91eade23, type: 2}

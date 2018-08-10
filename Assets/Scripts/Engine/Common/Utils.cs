@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine.Assertions;
 
 #if UNITY_EDITOR
@@ -50,6 +51,18 @@ public static class Utils {
 	}
 
 	public static List<T> Broadcast<T>(this List<T> arr, T value, int index, int count) {
+		var end = index+count;
+		for (int i = index; i < end; ++i) {
+			arr[i] = value;
+		}
+		return arr;
+	}
+
+	public static NativeArray<T> Broadcast<T>(this NativeArray<T> arr, T value) where T : struct {
+		return arr.Broadcast(value, 0, arr.Length);
+	}
+
+	public static NativeArray<T> Broadcast<T>(this NativeArray<T> arr, T value, int index, int count) where T:struct {
 		var end = index+count;
 		for (int i = index; i < end; ++i) {
 			arr[i] = value;

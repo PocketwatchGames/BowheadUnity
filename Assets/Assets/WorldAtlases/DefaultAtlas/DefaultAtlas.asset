@@ -26,3 +26,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
   - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
   - {fileID: 11400000, guid: e444eea29f6325d4b909e58cff10150c, type: 2}
+  renderMaterials:
+    solid: {fileID: 2100000, guid: f41d80efdaa48c240be21f819c2dcc42, type: 2}
+    water: {fileID: 2100000, guid: a42887ae7d1a1b540a40ab5e91eade23, type: 2}

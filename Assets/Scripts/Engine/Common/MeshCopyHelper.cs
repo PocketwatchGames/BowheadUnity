@@ -69,8 +69,8 @@ public class MeshCopyHelper {
 	public static void SetMeshUVs(Mesh mesh, int channel, Vector4[] uvs, int count) {
 		// fuck you, unity.
 		var dumbfuckList = new List<Vector4>(count);
-		foreach (var dumbFuckCopy in uvs) {
-			dumbfuckList.Add(dumbFuckCopy);
+		for (int i = 0; i < count; ++i) {
+			dumbfuckList.Add(uvs[i]);
 		}
 		mesh.SetUVs(channel, dumbfuckList);
 	}
