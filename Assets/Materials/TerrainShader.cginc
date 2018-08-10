@@ -96,5 +96,5 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	// Metallic and smoothness come from slider variables
 	o.Metallic = _Metallic;
 	o.Smoothness = _Glossiness;
-	o.Alpha = albedo.a;
+	o.Alpha = albedo.a * _Color.a;
 }
