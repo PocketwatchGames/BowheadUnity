@@ -19,7 +19,7 @@ MonoBehaviour:
   _itemClass: Bowhead.Actors.WorldItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   mapMarker:
-    _assetPath: 
-    _editorPath: 
+    _assetPath: MapMarkers/MapTreasureMarker
+    _editorPath: Assets/Assets/Prefabs/Resources/MapMarkers/MapTreasureMarker.prefab
   mapMarkerStyle: 0
-  range: 0
+  range: 512
