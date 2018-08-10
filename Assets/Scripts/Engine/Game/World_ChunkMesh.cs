@@ -1230,7 +1230,7 @@ public partial class World {
 				for (int i = 0; i < num; ++i) {
 					blendFactor = SetMaterialBlendFactor(blendFactor, blend, _materials[i], frac);
 				}
-				
+
 				return blendFactor;
 			}
 

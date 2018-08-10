@@ -6,6 +6,7 @@ UNITY_DECLARE_TEX2DARRAY(_AlbedoTextureArray);
 struct Input {
 	//float2 uv_MainTex;
 	float4 vertColor : COLOR;
+	float4 texBlend;
 	float4 clipPos;
 	float3 worldPos;
 	float3 worldNormal;
@@ -30,14 +31,19 @@ UNITY_INSTANCING_BUFFER_START(Props)
 // put more per-instance properties here
 UNITY_INSTANCING_BUFFER_END(Props)
 
-fixed4 sampleTerrainAlbedo(float3 tc, float3 absNormal, float3 signNormal) {
-	fixed4 t0;
-	fixed4 x = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.z, tc.y, _AlbedoTextureArrayIndex[0])) * absNormal.x;
-	fixed4 y = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.x, tc.z, _AlbedoTextureArrayIndex[1])) * absNormal.y;
-	fixed4 z = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.x, tc.y, _AlbedoTextureArrayIndex[2])) * absNormal.z;
-	t0 = x + y + z;
+fixed4 sampleTerrainAlbedo(float3 tc, float3 absNormal, float3 signNormal, float4 texBlend) {
+	fixed4 color = fixed4(0, 0, 0, 0);
+
+	for (int i = 0; i < 4; ++i) {
+		fixed4 t;
+		fixed4 x = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.z, tc.y, _AlbedoTextureArrayIndex[i*3+1])) * absNormal.x;
+		fixed4 y = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.x, tc.z, _AlbedoTextureArrayIndex[i*3+0])) * absNormal.y;
+		fixed4 z = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.x, tc.y, _AlbedoTextureArrayIndex[i*3+1])) * absNormal.z;
+		t = x + y + z;
+		color += t * texBlend[i];
+	}
 	
-	return t0;
+	return color;
 }
 
 void clip(Input IN) {
@@ -73,6 +79,7 @@ void terrainVert(inout appdata_full v, out Input o) {
 	UNITY_INITIALIZE_OUTPUT(Input, o);
 	o.clipPos = UnityObjectToClipPos(v.vertex);
 	o.vertColor = v.color;
+	o.texBlend = v.texcoord;
 }
 
 void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
@@ -82,7 +89,7 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	float3 absNormal = normalize(abs(IN.worldNormal));
 	float3 signNormal = sign(IN.worldNormal);
 
-	fixed4 albedo = sampleTerrainAlbedo(tc, absNormal, signNormal);
+	fixed4 albedo = sampleTerrainAlbedo(tc, absNormal, signNormal, IN.texBlend);
 
 	// Albedo comes from a texture tinted by color
 	o.Albedo = albedo * _Color;
