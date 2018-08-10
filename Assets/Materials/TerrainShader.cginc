@@ -37,7 +37,7 @@ fixed4 sampleTerrainAlbedo(float3 tc, float3 absNormal, float3 signNormal, float
 	for (int i = 0; i < 4; ++i) {
 		fixed4 t;
 		fixed4 x = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.z, tc.y, _AlbedoTextureArrayIndex[i*3+1])) * absNormal.x;
-		fixed4 y = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.x, tc.z, _AlbedoTextureArrayIndex[i*3+0])) * absNormal.y;
+		fixed4 y = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.x, tc.z, _AlbedoTextureArrayIndex[i*3+(int)(1 + signNormal.y)])) * absNormal.y;
 		fixed4 z = UNITY_SAMPLE_TEX2DARRAY(_AlbedoTextureArray, float3(tc.x, tc.y, _AlbedoTextureArrayIndex[i*3+1])) * absNormal.z;
 		t = x + y + z;
 		color += t * texBlend[i];

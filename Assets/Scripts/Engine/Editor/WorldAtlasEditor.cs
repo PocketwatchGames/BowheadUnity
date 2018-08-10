@@ -127,9 +127,9 @@ public class WorldAtlasEditor : Editor {
 			for (int i = 0; i < ts.Count; ++i) {
 				var ofs = i*3;
 				var s = ts[i];
-				arr[ofs+0] = s.top;
+				arr[ofs+0] = s.bottom;
 				arr[ofs+1] = s.sides;
-				arr[ofs+2] = s.bottom;
+				arr[ofs+2] = s.top;
 			}
 
 			return arr;
