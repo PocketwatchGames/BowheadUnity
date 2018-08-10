@@ -10,6 +10,8 @@ public class TerrainTestMono : MonoBehaviour {
 	bool _tick;
 	[SerializeField]
 	Bowhead.WorldStreaming.EGenerator _generator;
+	[SerializeField]
+	WorldAtlasClientData _clientData;
 
 	World.Streaming _streaming;
 	World.Streaming.IVolume _volume;
@@ -24,6 +26,7 @@ public class TerrainTestMono : MonoBehaviour {
 
 		_tick = true;
 		_streaming = new World.Streaming(_chunkPrefab, CreateGenVoxelsJob, null, null);
+		_streaming.SetWorldAtlasClientData(_clientData);
 		_volume = _streaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);
 		_volume.position = default(WorldChunkPos_t);
 

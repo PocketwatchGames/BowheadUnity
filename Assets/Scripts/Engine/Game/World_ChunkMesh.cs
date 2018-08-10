@@ -753,19 +753,6 @@ public partial class World {
 		public struct TexBlend_t {
 			public int x, y, z, w;
 			public int count;
-
-			public int GetAt(int i) {
-				if (i == 0) {
-					return x;
-				}
-				if (i == 1) {
-					return y;
-				}
-				if (i == 2) {
-					return z;
-				}
-				return w;
-			}
 		};
 
 		public struct FinalMeshVerts_t : IDisposable {

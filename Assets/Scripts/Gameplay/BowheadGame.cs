@@ -108,10 +108,8 @@ namespace Bowhead.Server {
 			data = Resources.Load<WorldData>("DefaultWorld");
 
 			// mixed mode server owns the world instance
-			if (GameManager.instance.dedicatedServer) {
-				world.worldStreaming.SetBlockMaterialIndices(new int[WorldAtlasClientData.TEX2ARRAYINDEX_SIZE]);
-			} else {
-				world.worldStreaming.SetBlockMaterialIndices(data.atlasData.atlasClientData.Load().block2TextureSet);
+			if (!GameManager.instance.dedicatedServer) {
+				world.worldStreaming.SetWorldAtlasClientData(data.atlasData.atlasClientData.Load());
 			}
 		}
 
@@ -453,7 +451,7 @@ namespace Bowhead.Server {
 			var atlasClientData = data.atlasData.atlasClientData.Load();
 
 			if (!GameManager.instance.isServer) {
-				world.worldStreaming.SetBlockMaterialIndices(atlasClientData.block2TextureSet);
+				world.worldStreaming.SetWorldAtlasClientData(atlasClientData);
 			}
 		}
 

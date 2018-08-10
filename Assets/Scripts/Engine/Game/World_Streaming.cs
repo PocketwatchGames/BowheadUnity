@@ -161,29 +161,33 @@ public partial class World {
 			return data;
 		}
 
-		public void SetBlockMaterialIndices(int[] blockMaterialIndices) {
-			if (_blockMaterialIndices.IsCreated) {
-				_blockMaterialIndices.Dispose();
-			}
-			if ((blockMaterialIndices != null) && (blockMaterialIndices.Length > 0)) {
-				_blockMaterialIndices = new NativeArray<int>(blockMaterialIndices, Allocator.Persistent);
-			}
-		}
-
 		public void SetWorldAtlasClientData(WorldAtlasClientData clientData) {
+			DisposeClientData();
+
 			_clientData = clientData;
 
-			if (_materials.solid) {
-				GameObject.Destroy(_materials.solid);
+			if ((clientData.block2TextureSet != null) && (clientData.block2TextureSet.Length > 0)) {
+				_blockMaterialIndices = new NativeArray<int>(clientData.block2TextureSet, Allocator.Persistent);
 			}
-			if (_materials.water) {
-				GameObject.Destroy(_materials.water);
-			}
-
+			
 			_materials.solid = new Material(clientData.renderMaterials.solid);
 			_materials.water = new Material(clientData.renderMaterials.water);
 
 			SetMaterialTextureArray(ShaderID._AlbedoTextureArray, clientData.albedo.textureArray);
+		}
+
+		void DisposeClientData() {
+			if (_blockMaterialIndices.IsCreated) {
+				_blockMaterialIndices.Dispose();
+			}
+
+			if (_materials.solid) {
+				GameObject.Destroy(_materials.solid);
+			}
+
+			if (_materials.water) {
+				GameObject.Destroy(_materials.water);
+			}
 		}
 
 		void SetMaterialTextureArray(int name, Texture2DArray texArray) {
@@ -875,7 +879,7 @@ public partial class World {
 				Utils.DestroyGameObject(_terrainRoot);
 			}
 
-			_blockMaterialIndices.Dispose();
+			DisposeClientData();	
 		}
 
 		void AddRef(Chunk chunk) {

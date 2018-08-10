@@ -9,16 +9,20 @@ using UnityEditor;
 public class WorldAtlasEditor : Editor {
 
 	SerializedProperty _materials;
+	SerializedProperty _renderMaterials;
 	bool _materialsExpanded;
 
 	void OnEnable() {
 		_materials = serializedObject.FindProperty("materials");
+		_renderMaterials = serializedObject.FindProperty("renderMaterials");
 	}
 
 	public override void OnInspectorGUI() {
 		serializedObject.Update();
 
 		EditorGUILayout.BeginVertical();
+
+		EditorGUILayout.PropertyField(_renderMaterials, true);
 
 		_materialsExpanded = EditorGUILayout.Foldout(_materialsExpanded, "Materials", true);
 
