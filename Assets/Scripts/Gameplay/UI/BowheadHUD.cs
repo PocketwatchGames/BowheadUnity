@@ -15,6 +15,7 @@ namespace Bowhead.Client.UI {
         GameObject _pawnHUDs;
         GameObject _playerHUD;
         WeaponChargeHUD _weaponChargeLeft, _weaponChargeRight;
+		IMapMarker _spawnMarker;
 
 		class MapMarker : IMapMarker, IDisposable {
 			public Transform mmMarker;
@@ -89,7 +90,7 @@ namespace Bowhead.Client.UI {
 			player.OnExplore += OnExplore;
 
 			// for now, minimap reveal still kinda broke ass.
-			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 128);
+			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 128, false);
 
 			_weaponChargeLeft.SetTarget(player, 1);
 			_weaponChargeRight.SetTarget(player, 2);
@@ -105,14 +106,15 @@ namespace Bowhead.Client.UI {
 			critterHUD.SetTarget(critter);
 		}
 
-		private void OnExplore(Vector2 pos, int radius) {
+		private void OnExplore(Vector2 pos, int radius, bool showMap) {
 			var chunkPos = World.WorldToChunk(World.Vec3ToWorld(new Vector3(pos.x, 0, pos.y)));
             //_worldmap.SetOrigin(chunkPos.cx, chunkPos.cy);
             _worldmap.RevealArea(new Vector2(pos.x, pos.y), radius);
-			if (GameManager.instance.clientData.mapFlagIconPrefab != null) {
-				var marker = CreateMapMarker(GameManager.instance.clientData.mapFlagIconPrefab, EMapMarkerStyle.Normal);
-				marker.worldPosition = pos;
+			if (_spawnMarker == null && GameManager.instance.clientData.mapFlagIconPrefab != null) {
+				_spawnMarker = CreateMapMarker(GameManager.instance.clientData.mapFlagIconPrefab, EMapMarkerStyle.Normal);
 			}
+			_spawnMarker.worldPosition = pos;
+			ShowWorldMap(showMap);
         }
 
         private void OnDamage(Pawn target, float damage)

@@ -463,7 +463,7 @@ namespace Bowhead.Actors {
             float visionDistance = data.nightVisionDistance;
 			float sunriseTime = 2;
 			float sunsetTime = 22;
-			float sunChangeTime = 2;
+			float sunChangeTime = 0.5f;
 			float timeOfDay = gameMode.gameTime.timeOfDay * 24;
 			if (timeOfDay >= sunriseTime + sunChangeTime && timeOfDay < sunriseTime - sunChangeTime) {
 				visionDistance += 15;

@@ -56,7 +56,7 @@ namespace Bowhead.Actors {
 
 		public event Action OnMoneyChange;
         public event Action OnWeightClassChange;
-        public event Action<Vector2, int> OnExplore;
+        public event Action<Vector2, int, bool> OnExplore;
 		public event Action OnInventoryChange;
 
 		public delegate void OnLandFn(float damage);
@@ -1054,8 +1054,8 @@ namespace Bowhead.Actors {
         }
 
 
-        public void Explore(Vector2 pos, int radius) {
-            OnExplore?.Invoke(pos, radius);
+        public void Explore(Vector2 pos, int radius, bool showMap) {
+            OnExplore?.Invoke(pos, radius, showMap);
 			SetSpawnPoint(position);
         }
 

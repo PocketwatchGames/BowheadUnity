@@ -318,6 +318,10 @@ namespace Bowhead {
 			}
 
 			private static void AddDecorations(Vector3 chunkPos, bool hasRoad, ref PinnedChunkData_t chunk, ref FastNoise_t noise) {
+				if (chunkPos.y < 0) {
+					return;
+				}
+
 				for (int x = 0; x < VOXEL_CHUNK_SIZE_XZ; ++x) {
 					for (int z = 0; z < VOXEL_CHUNK_SIZE_XZ; ++z) {
 						var xpos = (int)chunkPos.x + x;

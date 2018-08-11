@@ -220,6 +220,7 @@ namespace Bowhead.Server {
 			}
 
 			spawnPoint.Spawn<Actor>(this, decoration.pos, 0);
+
 		}
 
 		#region perlin utils

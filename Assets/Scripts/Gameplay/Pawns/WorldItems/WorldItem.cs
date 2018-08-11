@@ -134,7 +134,7 @@ namespace Bowhead.Actors {
                 }
             }
             if (map != null) {
-                player.Explore(map.position, map.radius);
+                player.Explore(map.position, map.radius, true);
             }
             Destroy();
         }

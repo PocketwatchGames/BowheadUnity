@@ -93,7 +93,7 @@ namespace Bowhead.Client.UI {
 		}
 
 		void Update() {
-			Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal1"), Input.GetAxis("MoveVertical1")) * _visibleX * 10;
+			Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal1"), Input.GetAxis("MoveVertical1")) * _visibleX * 50;
 			SetOrigin((int)(_originX + move.x), (int)(_originZ + move.y));
 
 			float zoom = Input.GetAxis("Zoom");
@@ -131,7 +131,6 @@ namespace Bowhead.Client.UI {
 			_originZ = z;
 
 
-			//FullUpdate();
 
 			//_markers.localPosition = _markersOrigin - Vector3.Scale(_markers.localScale, new Vector3(_originX * World.VOXEL_CHUNK_SIZE_XZ, _originZ * World.VOXEL_CHUNK_SIZE_XZ, 0));
 			_alwaysVisibleMarkers.localPosition = _markers.localPosition;
@@ -142,13 +141,14 @@ namespace Bowhead.Client.UI {
 				pos = pos,
 				radius = radius
 			});
-			Reveal(pos, radius);
+			FullUpdate();
+			//Reveal(pos, radius);
 		}
 
 		void Reveal(Vector2 pos, int radius) {
 
 			float pixelsPerVoxel = (float)_sizePixels / _worldSize;
-			var mapBottomLeft = new WorldVoxelPos_t((int)((_originX-_worldSize/2) * pixelsPerVoxel), 0,(int)((_originZ-_worldSize/2) * pixelsPerVoxel));
+			var mapBottomLeft = new WorldVoxelPos_t((int)((-_worldSize/2) * pixelsPerVoxel), 0,(int)((-_worldSize/2) * pixelsPerVoxel));
 
 			var blockColors = World.Streaming.blockColors;
 

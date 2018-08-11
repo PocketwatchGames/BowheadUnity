@@ -106,7 +106,7 @@ MonoBehaviour:
   _worldSize: 4096
   _sizePixels: 4096
   _revealSizePixels: 256
-  _iconScale: 6
+  _iconScale: 2
   _maskBlitMaterial: {fileID: 2100000, guid: eb7646f2b6af5bd4fb0b5525ecb41c57, type: 2}
   _revealTexture: {fileID: 2800000, guid: 813600220f7521842bfcb7a4816ae5dc, type: 3}
   _maskImage: {fileID: 114525411039680736}
