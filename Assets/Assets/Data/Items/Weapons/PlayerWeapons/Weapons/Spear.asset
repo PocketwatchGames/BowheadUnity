@@ -21,8 +21,7 @@ MonoBehaviour:
     _editorPath: Assets/Assets/Prefabs/Resources/Items/Spear.prefab
   hand: 2
   moveSpeedChargeDelay: 0.2
-  maxHealthBonus: 0
-  maxStaminaBonus: 0
+  traits: []
   attacks:
   - chargeTime: 0
     maxCharge: 0
@@ -42,12 +41,6 @@ MonoBehaviour:
     unblockable: 0
     interruptOnHit: 1
     canBackstab: 0
-    spell: 0
-    spellPower: 0
-    waterUse: 0
-    canTarget: 0
-    projectile: {fileID: 0}
-    projectileSpeed: 0
     attackResult:
       knockback: 3
       damage: 10
@@ -56,6 +49,7 @@ MonoBehaviour:
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
+      loudness: 2
     backstabResult:
       knockback: 0
       damage: 0
@@ -64,32 +58,7 @@ MonoBehaviour:
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
-    canDefend: 0
-    defendAngleRange: 0
-    defendResult:
-      knockback: 0
-      damage: 0
-      stun: 0
-      interrupt: 0
-      damageType: 0
-      statusEffect: {fileID: 0}
-      statusEffectTime: 0
-      stunAbsorb: 0
-      damageAbsorb: 0
-      staminaUse: 0
-    canParry: 0
-    parryTime: 0
-    parryResult:
-      knockback: 0
-      damage: 0
-      stun: 0
-      interrupt: 0
-      damageType: 0
-      statusEffect: {fileID: 0}
-      statusEffectTime: 0
-      stunAbsorb: 0
-      damageAbsorb: 0
-      staminaUse: 0
+      loudness: 0
   - chargeTime: 0
     maxCharge: 0
     castTime: 0.05
@@ -108,12 +77,6 @@ MonoBehaviour:
     unblockable: 0
     interruptOnHit: 0
     canBackstab: 0
-    spell: 0
-    spellPower: 0
-    waterUse: 0
-    canTarget: 0
-    projectile: {fileID: 0}
-    projectileSpeed: 0
     attackResult:
       knockback: 2
       damage: 15
@@ -122,6 +85,7 @@ MonoBehaviour:
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
+      loudness: 0
     backstabResult:
       knockback: 0
       damage: 0
@@ -130,29 +94,27 @@ MonoBehaviour:
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
-    canDefend: 0
-    defendAngleRange: 0
-    defendResult:
-      knockback: 0
-      damage: 0
-      stun: 0
-      interrupt: 0
-      damageType: 0
-      statusEffect: {fileID: 0}
-      statusEffectTime: 0
-      stunAbsorb: 0
-      damageAbsorb: 0
-      staminaUse: 0
-    canParry: 0
-    parryTime: 0
-    parryResult:
-      knockback: 0
-      damage: 0
-      stun: 0
-      interrupt: 0
-      damageType: 0
-      statusEffect: {fileID: 0}
-      statusEffectTime: 0
-      stunAbsorb: 0
-      damageAbsorb: 0
-      staminaUse: 0
+      loudness: 0
+  spell: 0
+  spellPower: 0
+  statusEffect: {fileID: 0}
+  statusEffectTime: 0
+  waterUse: 0
+  canTarget: 0
+  projectile: {fileID: 0}
+  projectileSpeed: 0
+  blockAngleRange: 0
+  blockResult:
+    knockback: 0
+    damage: 0
+    stun: 0
+    interrupt: 0
+    damageType: 0
+    statusEffect: {fileID: 0}
+    statusEffectTime: 0
+    loudness: 0
+    stunAbsorb: 0
+    damageAbsorb: 0
+    staminaUse: 0
+  sprintSpeed: 0
+  jabChargeTime: 0
