@@ -18,7 +18,7 @@ MonoBehaviour:
     _editorPath: 
   mapMarkerStyle: 0
   defaultSilhouetteMode: 2
-  height: 1
+  height: 1.5
   maxHealth: 100
   maxWater: 0
   maxStamina: 50
