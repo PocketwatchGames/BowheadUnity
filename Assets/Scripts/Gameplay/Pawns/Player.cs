@@ -456,8 +456,6 @@ namespace Bowhead.Actors {
 			PickUp(unarmedWeaponRight);
 			PickUp(ItemData.Get("Pack").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
-			PickUp(ItemData.Get("Rapier").CreateItem());
-			PickUp(ItemData.Get("Buckler").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
