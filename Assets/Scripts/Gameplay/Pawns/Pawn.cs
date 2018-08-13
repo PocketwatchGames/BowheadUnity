@@ -1256,6 +1256,8 @@ namespace Bowhead.Actors {
 
             onHit?.Invoke(attacker);
 
+			gameMode.CreateAudioEvent(attacker, attackResult.loudness);
+
 			return true;
 		}
 

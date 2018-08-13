@@ -177,6 +177,10 @@ namespace Bowhead.Server {
 			}
 		}
 
+		float GetWhiteNoise(ref FastNoise_t noise, float x, float y, float z) {
+			var v = noise.GetWhiteNoise(x, y, z);
+			return (v + 1) / 2;
+		}
 		void SpawnDecoration(World.Streaming.IChunk chunk, Vector3 chunkWorldPos, World.Decoration_t decoration) {
 			SpawnPointData spawnPoint;
 
@@ -187,35 +191,36 @@ namespace Bowhead.Server {
 					if (_monsterSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _monsterSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+					spawnPoint = _monsterSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x,chunkWorldPos.y,chunkWorldPos.z));
 				break;
 				case EDecorationType.Merchant:
 					if (_merchantSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _merchantSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+					spawnPoint = _merchantSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
 					break;
 				case EDecorationType.Horse:
 					if (_horseSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _horseSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+					spawnPoint = _horseSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
 					break;
 				case EDecorationType.Chest:
 					if (_chestSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _chestSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+					spawnPoint = _chestSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
 					break;
 				case EDecorationType.MapReveal:
 					if (_mapRevealSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _mapRevealSpawns.GetAtIndexZeroToOne(GameManager.instance.randomNumber);
+					spawnPoint = _mapRevealSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
 				break;
 			}
 
 			spawnPoint.Spawn<Actor>(this, decoration.pos, 0);
+
 		}
 
 		#region perlin utils

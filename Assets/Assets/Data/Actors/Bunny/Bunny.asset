@@ -75,7 +75,7 @@ MonoBehaviour:
   visionWeight: 2
   smellWeight: 1
   hearingWeight: 2
-  dayVisionDistance: 15
+  dayVisionDistance: 30
   nightVisionDistance: 10
   visionAngleExponent: 1
   visionDistanceExponent: 0.5

@@ -30,6 +30,8 @@ namespace Bowhead.Actors {
 		ESpawnPointType _type;
 		[SerializeField]
 		List<SpawnCount> _entities = new List<SpawnCount>();
+		public GameObject_WRef mapMarker;
+		public Client.UI.EMapMarkerStyle mapMarkerStyle;
 
 		static List<SpawnPointData> _list = new List<SpawnPointData>();
 
@@ -74,6 +76,11 @@ namespace Bowhead.Actors {
 						spawns.Add((T)spawnFn.Spawn(gameMode.world, pos + new Vector3(i*0.1f,0,0), yaw, team));
 					}
 				}
+			}
+
+			if (mapMarker != null) {
+				var marker = GameManager.instance.clientWorld.gameState.hud.CreateMapMarker(mapMarker.Load(), mapMarkerStyle);
+				marker.worldPosition = new Vector2(pos.x,pos.z);
 			}
 
 			return spawns;

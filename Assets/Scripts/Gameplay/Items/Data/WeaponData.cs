@@ -29,6 +29,7 @@ namespace Bowhead {
 			public Actors.PawnData.DamageType damageType;
 			public StatusEffectData statusEffect;
 			public float statusEffectTime;
+			public float loudness;
 		}
 
 		[System.Serializable]

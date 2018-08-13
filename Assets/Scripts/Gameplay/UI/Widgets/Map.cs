@@ -24,9 +24,9 @@ namespace Bowhead.Client.UI {
 		[SerializeField]
 		int _worldSize;
 		[SerializeField]
-		int _size;
+		int _sizePixels;
 		[SerializeField]
-		int _revealSize;
+		int _revealSizePixels;
 		[SerializeField]
 		float _iconScale;
 		[SerializeField]
@@ -40,8 +40,10 @@ namespace Bowhead.Client.UI {
 		[SerializeField]
 		Transform _alwaysVisibleMarkers;
 
-		int _originX;
-		int _originZ;
+		float _originX;
+		float _originZ;
+		float _visibleX;
+		float _visibleZ;
 
 		WorldStreaming.IWorldStreaming _streaming;
 		Texture2D _mainTexture;
@@ -55,10 +57,10 @@ namespace Bowhead.Client.UI {
 
 		void Awake() {
 
-			_mainTexture = AddGC(new Texture2D(_size, _size, TextureFormat.ARGB32, false));
-			_maskTexture = AddGC(new RenderTexture(_size, _size, 1, RenderTextureFormat.R8, RenderTextureReadWrite.Linear));
-			_blitTexture = AddGC(new Texture2D(_revealSize, _revealSize, TextureFormat.ARGB32, false));
-			_blackTexture = AddGC(new Texture2D(_revealSize, _revealSize, TextureFormat.ARGB32, false));
+			_mainTexture = AddGC(new Texture2D(_sizePixels, _sizePixels, TextureFormat.ARGB32, false));
+			_maskTexture = AddGC(new RenderTexture(_sizePixels, _sizePixels, 1, RenderTextureFormat.R8, RenderTextureReadWrite.Linear));
+			_blitTexture = AddGC(new Texture2D(_revealSizePixels, _revealSizePixels, TextureFormat.ARGB32, false));
+			_blackTexture = AddGC(new Texture2D(_revealSizePixels, _revealSizePixels, TextureFormat.ARGB32, false));
 
 			_pixels = _blitTexture.GetPixels32();
 
@@ -79,6 +81,8 @@ namespace Bowhead.Client.UI {
 			
 			_originX = int.MaxValue;
 			_originZ = int.MaxValue;
+			_visibleX = 0.25f;
+			_visibleZ =0.25f;
 
 
 			var scale = _image.rectTransform.sizeDelta / _worldSize;
@@ -89,6 +93,25 @@ namespace Bowhead.Client.UI {
 		}
 
 		void Update() {
+			Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal1"), Input.GetAxis("MoveVertical1")) * _visibleX * 50;
+			SetOrigin((int)(_originX + move.x), (int)(_originZ + move.y));
+
+			float zoom = Input.GetAxis("Zoom");
+			if (zoom != 0) {
+				_visibleX = Mathf.Clamp(_visibleX + 0.01f * zoom, 0.1f, 1.0f);
+				_visibleZ = Mathf.Clamp(_visibleZ + 0.01f * zoom, 0.1f, 1.0f);
+			}
+			_image.uvRect = new Rect((_originX - _visibleX * _sizePixels / 2 + _worldSize / 2) / _sizePixels, (_originZ - _visibleZ * _sizePixels / 2 + _worldSize / 2) / _sizePixels, _visibleX, _visibleZ);
+			_maskImage.uvRect = new Rect((_originX - _visibleX * _sizePixels / 2 + _worldSize / 2) / _sizePixels, (_originZ - _visibleZ * _sizePixels / 2 + _worldSize / 2) / _sizePixels, _visibleX, _visibleZ);
+
+
+			var scale = _image.rectTransform.sizeDelta.x / (_sizePixels * _visibleX);
+			_markers.localScale = new Vector3(scale, scale, 1);
+			_alwaysVisibleMarkers.localScale = _markers.localScale;
+
+			_markers.localPosition = _markersOrigin - Vector3.Scale(_markers.localScale, new Vector3(_originX, _originZ, 0));
+			_alwaysVisibleMarkers.localPosition = _markers.localPosition;
+
 			if (_dirty) {
 				DirtyUpdate();
 			}
@@ -99,15 +122,15 @@ namespace Bowhead.Client.UI {
 			_streaming = Bowhead.WorldStreaming.NewProceduralWorldStreaming(0, genType);
 		}
 
-		public void SetOrigin(int chunkX, int chunkZ) {
-			if ((_originX == chunkX) && (_originZ == chunkZ)) {
+		public void SetOrigin(int x, int z) {
+			if ((_originX == x) && (_originZ == z)) {
 				return;
 			}
 
-			_originX = chunkX;
-			_originZ = chunkZ;
+			_originX = x;
+			_originZ = z;
 
-			FullUpdate();
+
 
 			//_markers.localPosition = _markersOrigin - Vector3.Scale(_markers.localScale, new Vector3(_originX * World.VOXEL_CHUNK_SIZE_XZ, _originZ * World.VOXEL_CHUNK_SIZE_XZ, 0));
 			_alwaysVisibleMarkers.localPosition = _markers.localPosition;
@@ -118,25 +141,26 @@ namespace Bowhead.Client.UI {
 				pos = pos,
 				radius = radius
 			});
-			Reveal(pos, radius);
+			FullUpdate();
+			//Reveal(pos, radius);
 		}
 
 		void Reveal(Vector2 pos, int radius) {
 
-			float pixelsPerVoxel = (float)_size / _worldSize;
-			var mapBottomLeft = new WorldVoxelPos_t((int)((_originX-_worldSize/2) * pixelsPerVoxel), 0,(int)((_originZ-_worldSize/2) * pixelsPerVoxel));
+			float pixelsPerVoxel = (float)_sizePixels / _worldSize;
+			var mapBottomLeft = new WorldVoxelPos_t((int)((-_worldSize/2) * pixelsPerVoxel), 0,(int)((-_worldSize/2) * pixelsPerVoxel));
 
 			var blockColors = World.Streaming.blockColors;
 
-			int minX = (int)(pos.x * pixelsPerVoxel) - _revealSize / 2;
-			int minZ = (int)(pos.y * pixelsPerVoxel) - _revealSize / 2;
+			int minX = (int)(pos.x * pixelsPerVoxel) - _revealSizePixels / 2;
+			int minZ = (int)(pos.y * pixelsPerVoxel) - _revealSizePixels / 2;
 
-			for (int z = 0; z < _revealSize; ++z) {
-				var zofs = z * _revealSize;
-				int vz = (int)pos.y + (int)((z - _revealSize / 2) / pixelsPerVoxel);
-				for (int x = 0; x < _revealSize; ++x) {
+			for (int z = 0; z < _revealSizePixels; ++z) {
+				var zofs = z * _revealSizePixels;
+				int vz = (int)pos.y + (int)((z - _revealSizePixels / 2) / pixelsPerVoxel);
+				for (int x = 0; x < _revealSizePixels; ++x) {
 					var ofs = zofs + x;
-					int vx = (int)pos.x + (int)((x-_revealSize/2) / pixelsPerVoxel);
+					int vx = (int)pos.x + (int)((x-_revealSizePixels/2) / pixelsPerVoxel);
 
 					EVoxelBlockType voxel;
 					int elevation;
@@ -162,8 +186,8 @@ namespace Bowhead.Client.UI {
 			GL.sRGBWrite = false;
 			Graphics.SetRenderTarget(_maskTexture);
 			GL.PushMatrix();
-			GL.LoadPixelMatrix(0, _size, 0, _size);
-			Graphics.DrawTexture(new Rect(minX- mapBottomLeft.vx, minZ- mapBottomLeft.vz, _revealSize, _revealSize), _revealTexture, _maskBlitMaterial);
+			GL.LoadPixelMatrix(0, _sizePixels, 0, _sizePixels);
+			Graphics.DrawTexture(new Rect(minX- mapBottomLeft.vx, minZ- mapBottomLeft.vz, _revealSizePixels, _revealSizePixels), _revealTexture, _maskBlitMaterial);
 			GL.PopMatrix();
 			Graphics.SetRenderTarget(null);
 		}
@@ -173,6 +197,7 @@ namespace Bowhead.Client.UI {
 			marker.GetGameObject().transform.localScale = new Vector3(_iconScale, _iconScale, 1);
 			return marker;
 		}
+
 
 		void FullUpdate() {
 			_dirty = false;

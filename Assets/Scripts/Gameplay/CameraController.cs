@@ -147,9 +147,9 @@ namespace Bowhead.Actors {
 			} else {
 				int delta = 0;
 				if (Input.GetButtonDown("ShoulderLeft")) {
-					delta++;
-				} else if (Input.GetButtonDown("ShoulderRight")) {
 					delta--;
+				} else if (Input.GetButtonDown("ShoulderRight")) {
+					delta++;
 				}
 				if (delta != 0) {
 					float curAngle = (Utils.NormalizeAngle(_yaw * Mathf.Rad2Deg + 45)) / (360);
