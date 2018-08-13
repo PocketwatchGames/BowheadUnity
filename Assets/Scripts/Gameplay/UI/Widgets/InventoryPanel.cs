@@ -234,8 +234,10 @@ namespace Bowhead.Client.UI {
 				var item = _player.GetInventorySlot(inventorySelected);
 				if (item != null) {
 					if (_rearranging) {
-						_player.Drop(item);
-						SetRearranging(false);
+						if (item.data.canDrop) {
+							_player.Drop(item);
+							SetRearranging(false);
+						}
 					}
 					else {
 						SetRearranging(true);
@@ -247,13 +249,9 @@ namespace Bowhead.Client.UI {
 				var item = _player.GetInventorySlot(inventorySelected);
 				if (item != null) {
 					if (_rearranging) {
-                        if (usePressed)
-                        {
-                            SetRearranging(false);
-                            Rebuild();
-                        }
-                    }
-                    else {
+                        SetRearranging(false);
+                        Rebuild();
+                    } else if (item.data.canUse) {
 						if (_useTimer > 0 || useDown) {
 							_useTimer += Time.deltaTime;
 							if (_useTimer > _useTime) {

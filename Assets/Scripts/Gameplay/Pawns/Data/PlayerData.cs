@@ -18,6 +18,8 @@ namespace Bowhead.Actors {
 		public float dropTime;
 		public float teleportTime;
 		public float tradePartnerCancelDistance;
+		public WeaponData unarmedWeaponLeft;
+		public WeaponData unarmedWeaponRight;
 		public int[] weightClassItemCount;
 
 		public Type playerClass { get; private set; }

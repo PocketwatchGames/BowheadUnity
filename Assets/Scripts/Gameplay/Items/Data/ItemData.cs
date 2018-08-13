@@ -6,6 +6,8 @@ namespace Bowhead {
 
 		public string description;
 		public int monetaryValue;
+		public bool canUse = true;
+		public bool canDrop = true;
 
 
 		public Item CreateItem() {
