@@ -177,7 +177,7 @@ namespace Bowhead.Server {
 			}
 		}
 
-		float GetWhiteNoise(ref FastNoise_t noise, float x, float y, float z) {
+		public float GetWhiteNoise(float x, float y, float z) {
 			var v = noise.GetWhiteNoise(x, y, z);
 			return (v + 1) / 2;
 		}
@@ -191,31 +191,31 @@ namespace Bowhead.Server {
 					if (_monsterSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _monsterSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x,chunkWorldPos.y,chunkWorldPos.z));
+					spawnPoint = _monsterSpawns.GetAtIndexZeroToOne(GetWhiteNoise(chunkWorldPos.x,chunkWorldPos.y,chunkWorldPos.z));
 				break;
 				case EDecorationType.Merchant:
 					if (_merchantSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _merchantSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
+					spawnPoint = _merchantSpawns.GetAtIndexZeroToOne(GetWhiteNoise(chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
 					break;
 				case EDecorationType.Horse:
 					if (_horseSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _horseSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
+					spawnPoint = _horseSpawns.GetAtIndexZeroToOne(GetWhiteNoise(chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
 					break;
 				case EDecorationType.Chest:
 					if (_chestSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _chestSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
+					spawnPoint = _chestSpawns.GetAtIndexZeroToOne(GetWhiteNoise(chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
 					break;
 				case EDecorationType.MapReveal:
 					if (_mapRevealSpawns.Length < 1) {
 						return;
 					}
-					spawnPoint = _mapRevealSpawns.GetAtIndexZeroToOne(GetWhiteNoise(ref noise, chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
+					spawnPoint = _mapRevealSpawns.GetAtIndexZeroToOne(GetWhiteNoise(chunkWorldPos.x, chunkWorldPos.y, chunkWorldPos.z));
 				break;
 			}
 

@@ -68,12 +68,13 @@ namespace Bowhead.Actors {
 					break;
 			}
 
+			int entCount = 0;
 			foreach (var s in _entities) {
-				int count = Random.Range(s._spawnCountMin, s._spawnCountMax);
+				int count = s._spawnCountMin + (int)((((Server.BowheadGame)gameMode).GetWhiteNoise((int)pos.x,(int)pos.y,(int)pos.z)) * (s._spawnCountMax - s._spawnCountMin));
 				for (int i = 0; i < count; i++) {
 					var spawnFn = (ISpawnPointSupport)s._entityData;
 					if (spawnFn != null) {
-						spawns.Add((T)spawnFn.Spawn(gameMode.world, pos + new Vector3(i*0.1f,0,0), yaw, team));
+						spawns.Add((T)spawnFn.Spawn(gameMode.world, pos + new Vector3((entCount ++)* 0.1f,0,0), yaw, team));
 					}
 				}
 			}
