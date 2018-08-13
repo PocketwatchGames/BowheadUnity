@@ -81,7 +81,7 @@ public class WorldAtlasEditor : Editor {
 			EditorUtility.SetDirty(existing);
 			clientData = existing;
 		} else {
-			AssetDatabase.CreateFolder(folder, "Resources");
+			Utils.CreateAssetFolder(folder, "Resources");
 			AssetDatabase.CreateAsset(clientData, path);
 			clientData = AssetDatabase.LoadAssetAtPath<WorldAtlasClientData>(path);
 		}
@@ -96,7 +96,7 @@ public class WorldAtlasEditor : Editor {
 			EditorUtility.CopySerialized(array, existing);
 			EditorUtility.SetDirty(existing);
 		} else {
-			AssetDatabase.CreateFolder(folder, "TextureArrays");
+			Utils.CreateAssetFolder(folder, "TextureArrays");
 			AssetDatabase.CreateAsset(array, path);
 		}
 	}
@@ -143,10 +143,16 @@ public class WorldAtlasEditor : Editor {
 	struct TextureBundle {
 		public TextureSet albedo;
 		public TextureSet normals;
+		public TextureSet roughness;
+		public TextureSet ao;
+		public TextureSet height;
 
 		public static bool Equals(TextureBundle a, TextureBundle b) {
 			return TextureSet.Equals(a.albedo, b.albedo) &&
-				TextureSet.Equals(a.normals, b.normals);
+				TextureSet.Equals(a.normals, b.normals) &&
+				TextureSet.Equals(a.roughness, b.roughness) &&
+				TextureSet.Equals(a.ao, b.ao) &&
+				TextureSet.Equals(a.height, b.height);
 		}
 	
 		public static int[] OptimizeShaderIndices(TextureBundle[] arr) {
@@ -241,6 +247,9 @@ public class WorldAtlasEditor : Editor {
 			var bundles = new TextureBundle[atlas.materials.Length];
 			LoadTextureChannel(atlas, bundles, (x) => x.albedo, (x) => atlasClientData.albedo.textureSet2ArrayIndex = x, (b, s) => { b.albedo = s; return b; }, "Albedo");
 			LoadTextureChannel(atlas, bundles, (x) => x.normals, (x) => atlasClientData.normals.textureSet2ArrayIndex = x, (b, s) => { b.normals = s; return b; }, "Normals");
+			LoadTextureChannel(atlas, bundles, (x) => x.roughness, (x) => atlasClientData.roughness.textureSet2ArrayIndex = x, (b, s) => { b.roughness = s; return b; }, "Roughness");
+			LoadTextureChannel(atlas, bundles, (x) => x.ao, (x) => atlasClientData.ao.textureSet2ArrayIndex = x, (b, s) => { b.ao = s; return b; }, "AO");
+			LoadTextureChannel(atlas, bundles, (x) => x.height, (x) => atlasClientData.height.textureSet2ArrayIndex = x, (b, s) => { b.height = s; return b; }, "Height");
 
 			atlasClientData.block2TextureSet = TextureBundle.OptimizeShaderIndices(bundles);
 			atlasClientData.renderMaterials = atlas.renderMaterials;
@@ -268,6 +277,9 @@ public class WorldAtlasEditor : Editor {
 	void LoadTerrainTextures(WorldAtlas atlas, WorldAtlasClientData clientData) {
 		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.albedo.textureArray = arr, "Albedo");
 		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.normals.textureArray = arr, "Normals");
+		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.roughness.textureArray = arr, "Roughness");
+		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.ao.textureArray = arr, "AO");
+		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.height.textureArray = arr, "Height");
 	}
 
 	void CreateColorChannelTextureArray(WorldAtlas atlas, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> f, string channelName) {
@@ -324,6 +336,9 @@ public class WorldAtlasEditor : Editor {
 
 			CreateColorChannelTextureArray(atlas, x => x.albedo, "Albedo");
 			CreateColorChannelTextureArray(atlas, x => x.normals, "Normals");
+			CreateColorChannelTextureArray(atlas, x => x.roughness, "Roughness");
+			CreateColorChannelTextureArray(atlas, x => x.ao, "AO");
+			CreateColorChannelTextureArray(atlas, x => x.height, "Height");
 		}
 	}
 

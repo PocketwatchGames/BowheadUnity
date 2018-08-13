@@ -15,4 +15,7 @@ public sealed class WorldAtlasMaterialTextures : ScriptableObject {
 
 	public TextureSet albedo;
 	public TextureSet normals;
+	public TextureSet roughness;
+	public TextureSet ao;
+	public TextureSet height;
 }

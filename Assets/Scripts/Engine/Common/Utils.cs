@@ -1395,6 +1395,13 @@ public static class Utils {
 		return newPath;
 	}
 
+	public static void CreateAssetFolder(string path, string folder) {
+		path = projectRootDirectory + "/" + path + "/" + folder;
+		if (!System.IO.Directory.Exists(path)) {
+			AssetDatabase.CreateFolder(path, folder);
+		}
+	}
+
 	public static string GetAssetFolderPath(this Object obj) {
 		var path = AssetDatabase.GetAssetPath(obj);
 		var idx = path.LastIndexOf('/');
