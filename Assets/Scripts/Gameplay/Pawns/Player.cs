@@ -26,6 +26,7 @@ namespace Bowhead.Actors {
         public int money;
         public WeightClass weight;
         public float dropTimer;
+		public float teleportTimer;
 
         [Header("Player Stats")]
         public float temperature;
@@ -304,11 +305,18 @@ namespace Bowhead.Actors {
 				}
 			}
 
-			if (input.inputs[(int)InputType.Interact] == InputState.JustPressed) {
+			if (input.JustPressed(InputType.Interact)) {
 				Interact();
 			}
-			if (input.inputs[(int)InputType.Teleport] == InputState.JustPressed) {
-				Teleport();
+			if (input.IsPressed(InputType.Teleport)) {
+				teleportTimer += dt;
+				if (teleportTimer >= data.teleportTime) {
+					Teleport();
+					teleportTimer = 0;
+				}
+			}
+			else {
+				teleportTimer = 0;
 			}
 
 			bool isCasting = false;
@@ -323,7 +331,7 @@ namespace Bowhead.Actors {
 			if (canAttack) {
 				if (itemLeft != null) {
 					if (itemLeft.CanCast()) {
-						if (input.inputs[(int)InputType.AttackLeft] == InputState.JustReleased) {
+						if (input.JustReleased(InputType.AttackLeft)) {
 							if (itemLeft.chargeTime < itemLeft.data.jabChargeTime) {
 								itemLeft.Attack(this);
 								isCasting = true;
@@ -333,7 +341,7 @@ namespace Bowhead.Actors {
 				}
 				if (itemRight != null) {
 					if (itemRight.CanCast()) {
-						if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
+						if (input.JustReleased(InputType.AttackRight)) {
 							itemRight.Attack(this);
 							isCasting = true;
 						}
@@ -373,7 +381,7 @@ namespace Bowhead.Actors {
 							itemRangedRight.Charge(dt, 0);
 							isCasting = true;
 						} else {
-							if (input.inputs[(int)InputType.AttackRangedRight] == InputState.JustReleased) {
+							if (input.JustReleased(InputType.AttackRangedRight)) {
 								itemRangedRight.Attack(this);
 								isCasting = true;
 							}
@@ -388,7 +396,7 @@ namespace Bowhead.Actors {
 							itemRangedLeft.Charge(dt, 0);
 							isCasting = true;
 						} else {
-							if (input.inputs[(int)InputType.AttackRangedLeft] == InputState.JustReleased) {
+							if (input.JustReleased(InputType.AttackRangedLeft)) {
 								itemRangedLeft.Attack(this);
 								isCasting = true;
 							}

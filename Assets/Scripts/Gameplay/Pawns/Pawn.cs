@@ -140,10 +140,16 @@ namespace Bowhead.Actors {
             public Vector3 look = Vector3.zero;
             public InputState[] inputs = new InputState[(int)InputType.Count];
 
-            public bool IsPressed(InputType i) {
-                return inputs[(int)i] == InputState.Pressed || inputs[(int)i] == InputState.JustPressed;
-            }
-            public bool inMotion;
+			public bool IsPressed(InputType i) {
+				return inputs[(int)i] == InputState.Pressed || inputs[(int)i] == InputState.JustPressed;
+			}
+			public bool JustPressed(InputType i) {
+				return inputs[(int)i] == InputState.JustPressed;
+			}
+			public bool JustReleased(InputType i) {
+				return inputs[(int)i] == InputState.JustReleased;
+			}
+			public bool inMotion;
             public Vector3 position;
             public Vector3 velocity;
         };
@@ -654,7 +660,7 @@ namespace Bowhead.Actors {
 					if (sprintTimer > data.sprintTime) {
 						sprintGracePeriodTime = data.sprintGracePeriodTime;
 					}
-					if (input.inputs[(int)InputType.Jump] == InputState.JustPressed) {
+					if (input.JustPressed(InputType.Jump)) {
 						dodgeTimer = dodgeTimer + data.dodgeTime;
 					}
 				} else {
@@ -858,7 +864,7 @@ namespace Bowhead.Actors {
 
 				if (!input.IsPressed(InputType.Jump)) {
 
-					if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
+					if (input.JustReleased(InputType.Jump)) {
 						if (activity != Activity.Falling) {
 							climbingAttachCooldown = data.climbAttachCooldown;
 						}

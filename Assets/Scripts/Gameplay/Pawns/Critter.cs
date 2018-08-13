@@ -257,7 +257,7 @@ namespace Bowhead.Actors {
                             w.Charge(dt, 1);
                         }
                         else {
-                            if (input.inputs[(int)InputType.AttackRight] == InputState.JustReleased) {
+                            if (input.JustReleased(InputType.AttackRight)) {
                                 w.Attack(this);
                             }
                             w.chargeTime = 0;
