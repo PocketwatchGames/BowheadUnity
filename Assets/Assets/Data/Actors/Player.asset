@@ -74,6 +74,8 @@ MonoBehaviour:
   fallDamageSpeed: 30
   fallSpeedLoudness: 0.25
   dropTime: 0.5
-  lockHoldTime: 0.25
+  teleportTime: 1
   tradePartnerCancelDistance: 3
+  unarmedWeaponLeft: {fileID: 11400000, guid: bab1f60a0f2deb44e9a9beeb41fa254b, type: 2}
+  unarmedWeaponRight: {fileID: 11400000, guid: eda45c2588776524293a8f439e156e5e, type: 2}
   weightClassItemCount: 00000000070000000c0000001100000016000000

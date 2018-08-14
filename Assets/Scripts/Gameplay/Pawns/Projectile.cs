@@ -48,7 +48,7 @@ namespace Bowhead.Actors {
 			move = velocity * dt;
 			RaycastHit hit;
 			if (Physics.Raycast(position,move.normalized,out hit,move.magnitude)) {
-				var target = (Pawn)hit.transform.FindServerActorUpwards();
+				var target = hit.transform.FindServerActorUpwards() as Pawn;
 				if (target != null) {
 					if (target.team != team) {
 						target.Hit(this, owner);

@@ -12,10 +12,12 @@ namespace Bowhead {
         public int attackHand;
 		public float attackCharge;
         public float castTime;
+		public Pawn target;
 		public float activeTime;
 		public float chargeTime;
 		public float cooldown;
 		public bool attackWhenCooldownComplete;
+
 		public List<Pawn> hitTargets = new List<Pawn>();
 
 		#endregion
@@ -107,7 +109,11 @@ namespace Bowhead {
 				return false;
 			}
 
-            castTime = data.attacks[attackHand].castTime;
+			target = null;
+			if (data.canTarget) {
+				target = owner.GetAttackTarget(owner.yaw, data.projectile.lifetime * data.projectileSpeed, 60 * Mathf.Deg2Rad, null);
+			}
+			castTime = data.attacks[attackHand].castTime;
 			attackCharge = chargeTime;
 			chargeTime = 0;
             if (castTime <= 0) {
@@ -174,10 +180,6 @@ namespace Bowhead {
 			}
 			
 			if (data.projectile != null) {
-				Pawn target = null;
-				if (data.canTarget) {
-					target = owner.GetAttackTarget(owner.yaw, data.projectile.lifetime * data.projectileSpeed, 60 * Mathf.Deg2Rad, null);
-				}
 				Vector3 dir;
 				if (target != null) {
 					dir = (target.waistPosition() - owner.headPosition()).normalized;

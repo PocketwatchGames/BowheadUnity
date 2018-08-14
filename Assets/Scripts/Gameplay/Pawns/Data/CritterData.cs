@@ -33,6 +33,7 @@ namespace Bowhead.Actors {
 		public float panicCooldownTime;
 		public float waryIncreaseAtMaxAwareness;
 		public float waryIncreaseAtMaxAwarenessWhilePanicked;
+		public ECritterBehaviorType idleBehavior;
 		public ECritterBehaviorType panicBehavior;
 		public ItemLoadoutData defaultLoadout;
 

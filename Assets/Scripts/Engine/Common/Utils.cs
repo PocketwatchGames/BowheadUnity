@@ -106,7 +106,7 @@ public static class Utils {
 
 	public static T GetAtIndexSubRangeZeroToOne<T>(this List<T> arr, int min, int max, float zeroToOne) {
 		Assert.IsTrue(zeroToOne >= 0);
-		Assert.IsTrue(zeroToOne <= 1);
+		Assert.IsTrue(zeroToOne < 1);
 		Assert.IsTrue(arr.Count > 0);
 		var index = Mathf.FloorToInt(min + (max-min)*zeroToOne);
 		return arr[index];
@@ -114,23 +114,23 @@ public static class Utils {
 
 	public static T GetAtIndexZeroToOne<T>(this List<T> arr, float zeroToOne) {
 		Assert.IsTrue(zeroToOne >= 0);
-		Assert.IsTrue(zeroToOne <= 1);
+		Assert.IsTrue(zeroToOne < 1);
 		Assert.IsTrue(arr.Count > 0);
-		return arr.GetAtIndexSubRangeZeroToOne(0, arr.Count-1, zeroToOne);
+		return arr.GetAtIndexSubRangeZeroToOne(0, arr.Count, zeroToOne);
 	}
 
 	public static T GetAtIndexSubRangeZeroToOne<T>(this T[] arr, int min, int max, float zeroToOne) {
 		Assert.IsTrue(zeroToOne >= 0);
-		Assert.IsTrue(zeroToOne <= 1);
+		Assert.IsTrue(zeroToOne < 1);
 		var index = Mathf.FloorToInt(min + (max-min)*zeroToOne);
 		return arr[index];
 	}
 
 	public static T GetAtIndexZeroToOne<T>(this T[] arr, float zeroToOne) {
 		Assert.IsTrue(zeroToOne >= 0);
-		Assert.IsTrue(zeroToOne <= 1);
+		Assert.IsTrue(zeroToOne < 1);
 		Assert.IsTrue(arr.Length > 0);
-		return arr.GetAtIndexSubRangeZeroToOne(0, arr.Length-1, zeroToOne);
+		return arr.GetAtIndexSubRangeZeroToOne(0, arr.Length, zeroToOne);
 	}
 
 	public static GameObject GetGameObject(this UnityEngine.Object obj) {
