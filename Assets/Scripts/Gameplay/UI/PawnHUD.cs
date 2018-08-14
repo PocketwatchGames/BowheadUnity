@@ -9,6 +9,8 @@ public class PawnHUD : MonoBehaviour {
 	[SerializeField]
 	UnityEngine.UI.Slider _health;
 	[SerializeField]
+	UnityEngine.UI.Slider _stamina;
+	[SerializeField]
 	UnityEngine.UI.Slider _aggro;
 	[SerializeField]
 	UnityEngine.UI.Image _sight;
@@ -26,11 +28,12 @@ public class PawnHUD : MonoBehaviour {
 			return;
 		}
 		float h = _target.health / _target.maxHealth;
+		float s = _target.stamina / _target.maxStamina;
 
 		Critter critter = _target as Critter;
 
 		float w = critter.wary;
-		if (h < 1 || w > 0) {
+		if (h < 1 || s < 1 || w > 0) {
 			transform.position = Camera.main.WorldToScreenPoint(_target.headPosition());
 			if (Vector2.Dot(Camera.main.transform.forward, _target.headPosition() - Camera.main.transform.position) < 0) {
 				transform.GetChild(0).gameObject.SetActive(false);
@@ -46,6 +49,14 @@ public class PawnHUD : MonoBehaviour {
 		else {
 			_health.gameObject.SetActive(false);
 		}
+
+		if (s < 1 && critter.alive) {
+			_stamina.value = s;
+			_stamina.gameObject.SetActive(true);
+		} else {
+			_stamina.gameObject.SetActive(false);
+		}
+
 		if (w > 0 && critter.panic == 0 && critter.alive) {
 			_aggro.gameObject.SetActive(true);
 			if (w > critter.data.waryLimit) {

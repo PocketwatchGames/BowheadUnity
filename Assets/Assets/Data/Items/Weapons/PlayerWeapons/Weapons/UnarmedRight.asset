@@ -35,7 +35,7 @@ MonoBehaviour:
     staminaUse: 20
     stepDistance: 0
     moveSpeedWhileCharging: 0.8
-    moveSpeedWhileFullyCharged: 0.25
+    moveSpeedWhileFullyCharged: 0.5
     canMoveDuringCooldown: 1
     canMoveDuringCast: 1
     canMoveDuringActive: 1
@@ -44,7 +44,7 @@ MonoBehaviour:
     canBackstab: 1
     attackResult:
       knockback: 0.1
-      damage: 2
+      damage: 1
       stun: 5
       interrupt: 0
       damageType: 1
@@ -53,10 +53,10 @@ MonoBehaviour:
       loudness: 1
     backstabResult:
       knockback: 0
-      damage: 10
-      stun: 50
+      damage: 1
+      stun: 20
       interrupt: 1
-      damageType: 0
+      damageType: 1
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0.25
