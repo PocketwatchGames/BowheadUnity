@@ -107,10 +107,15 @@ namespace Bowhead.Client.UI {
 
 		public abstract IMapMarker CreateMapMarker<T>(T prefab, EMapMarkerStyle style) where T: UnityEngine.Object;
 
+		public abstract void ShowInventory(bool show);
+
+		public abstract bool inventoryVisible { get; }
+
 		public abstract void ShowWorldMap(bool show);
 
 		public abstract bool worldMapVisible { get; }
-		
+
+
 		protected virtual GameObject hudPrefab {
 			get {
 				return null;

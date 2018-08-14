@@ -4,114 +4,93 @@ using UnityEngine;
 using Bowhead.Actors;
 
 namespace Bowhead.Client.UI {
-    public class InventoryPanel : MonoBehaviour {
+	public class InventoryPanel : MonoBehaviour {
 
-        [SerializeField]
-        Player _player;
+		public InventorySlot inventorySlotPrefab;
+		public Transform equipSlots;
+		public Transform packSlots;
+		public ItemInfoPanel itemInfoPanelPrefab;
+		private ItemInfoPanel itemInfoPanel;
+		private int _playerIndex = 1;
+		private float _moveX, _moveY;
+		public int columns = 5;
+		public int rows = 3;
 
-        [SerializeField]
-        InventoryContainer _inventoryContainerPrefab;
-		[SerializeField]
-		InventorySlot _inventorySlotPrefab;
-		[SerializeField]
-		Transform _inventoryItems;
-		[SerializeField]
-		StatusEffectHUD _statusEffectPrefab;
+		private int selectSlot;
+		private InventorySlot[] _slots;
+		private Player _player;
 
+		// Use this for initialization
+		void Start() {
 
-		public int slotMargin = 8;
-        private Vector3 slotSize;
+		}
 
-		private InventoryContainer _mainContainer;
-        private InventorySlot[] _slots = new InventorySlot[Player.MaxInventorySize];
+		public void Init(Player p) {
+			_player = p;
 
-		[SerializeField] GameObject _statusEffectContainer;
+			itemInfoPanel = GameObject.Instantiate<ItemInfoPanel>(itemInfoPanelPrefab, transform);
 
-
-		public void Init(Player player) {
-            _player = player;
-            var r = _inventorySlotPrefab.GetComponent<RectTransform>().rect;
-            slotSize = new Vector3(r.width, r.height, 0);
+			_slots = new InventorySlot[_player.data.packSize + (int)Player.InventorySlot.PACK-1];
+			for (int i=0;i<_player.data.packSize + (int)Player.InventorySlot.PACK - 1;i++) {
+				var parent = (i < (int)Player.InventorySlot.PACK) ? equipSlots : packSlots;
+				var s = GameObject.Instantiate<InventorySlot>(inventorySlotPrefab, parent);
+				_slots[i] = s;
+			}
+			OnInventoryChange();
 
 			_player.OnInventoryChange += OnInventoryChange;
-			GameManager.instance.clientWorld.StatusEffectAddedEvent += OnStatusEffectAdded;
-
-            _mainContainer = Instantiate(_inventoryContainerPrefab, _inventoryItems, false);
-
-			OnInventoryChange();
 		}
 
+		// Update is called once per frame
+		void Update() {
+			int moveX = (int)Utils.SignOrZero(Input.GetAxis("MoveHorizontal" + _playerIndex));
+			int moveY = (int)-Utils.SignOrZero(Input.GetAxis("MoveVertical" + _playerIndex));
+
+			if ((_moveX != moveX && moveX != 0) || (_moveY != moveY && moveY != 0)) {
+				Vector2Int selectPos = new Vector2Int(selectSlot % columns, selectSlot / columns);
+				if (_moveX != moveX) {
+					selectPos.x += moveX;
+					if (selectPos.x < 0) {
+						selectPos.x = columns - 1;
+					} else if (selectPos.x >= columns) {
+						selectPos.x = 0;
+					}
+				}
+				if (_moveY != moveY) {
+					selectPos.y += moveY;
+					if (selectPos.y < 0) {
+						selectPos.y = rows - 1;
+					} else if (selectPos.y >= rows) {
+						selectPos.y = 0;
+					}
+				}
+				_slots[selectSlot].Deselect();
+				selectSlot = selectPos.x + selectPos.y * columns;
+				_slots[selectSlot].Select();
+
+				var selectedItem = _player.GetInventorySlot(selectSlot);
+				if (selectedItem != null) {
+					itemInfoPanel.gameObject.SetActive(true);
+					itemInfoPanel.SetItem(selectedItem);
+				} else {
+					itemInfoPanel.gameObject.SetActive(false);
+				}
+			}
+			_moveX = moveX;
+			_moveY = moveY;
+
+			if (Input.GetButtonDown("A1")) {
+				_player.Use(_player.GetInventorySlot(selectSlot));
+			}
+			if (Input.GetButtonDown("X1")) {
+				_player.Drop(_player.GetInventorySlot(selectSlot));
+			}
+		}
 
 		private void OnInventoryChange() {
-            Rebuild();
+			for (int i=0;i<_slots.Length;i++) {
+				_slots[i].SetItem(_player.GetInventorySlot(i));
+			}
 		}
-
-		private void OnStatusEffectAdded(Pawn target, StatusEffect e) {
-            if (target != _player) {
-                return;
-            }
-
-			foreach (var s in GetComponentsInChildren<StatusEffectHUD>()) {
-				if (s.statusEffectType == e.data) {
-					s.Init(e);
-					return;
-				}
-			}
-
-			var hud = Instantiate<StatusEffectHUD>(_statusEffectPrefab, _statusEffectContainer.transform);
-			hud.Init(e);
-		}
-
-
-		private void Rebuild() {
-
-			foreach (var i in _slots) {
-				if (i != null) {
-					GameObject.Destroy(i.gameObject);
-				}
-			}
-			System.Array.Clear(_slots, 0, _slots.Length);
-
-
-			float x = slotMargin;
-			int index = 0;
-            for (int slot = 1; slot <= (int)Player.InventorySlot.PACK-1; slot++) {
-				var item = _player.GetInventorySlot(slot);
-				if (item != null) {
-					var s = Instantiate(_inventorySlotPrefab, _mainContainer.transform, false);
-					s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
-					s.Init((Player.InventorySlot)slot, _player);
-					s.SetItem(item);
-					_slots[index] = s;
-					x += slotSize.x + slotMargin;
-
-					switch ((Player.InventorySlot)slot) {
-						case Player.InventorySlot.LEFT_HAND:
-							_slots[index].SetButton("LT"); break;
-						case Player.InventorySlot.RIGHT_HAND:
-							_slots[index].SetButton("RT"); break;
-						case Player.InventorySlot.LEFT_RANGED:
-							_slots[index].SetButton("LB"); break;
-						case Player.InventorySlot.RIGHT_RANGED:
-							_slots[index].SetButton("RB"); break;
-					}
-					index++;
-				}
-            }
-
-			{
-				var s = Instantiate(_inventorySlotPrefab, _mainContainer.transform, false);
-				s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
-				s.Init(Player.InventorySlot.PACK, _player);
-				_slots[index] = s;
-				x += slotSize.x + slotMargin;
-				_slots[index].SetButton("Y");
-			}
-
-			x += slotMargin;
-            _mainContainer.GetComponent<RectTransform>().sizeDelta = new Vector2(x, 54);
-        }
-
-
-    }
+	}
 }

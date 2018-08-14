@@ -24,7 +24,9 @@ MonoBehaviour:
     type: 2}
   hudCanvasPrefab: {fileID: 223527955372744662, guid: ce7146563d8c545458785b03160612eb,
     type: 2}
-  hudInventoryPanelPrefab: {fileID: 114904058803911864, guid: 9b4b4fb52c164b540a19582b7aedae2e,
+  hudEquipPrefab: {fileID: 114904058803911864, guid: 9b4b4fb52c164b540a19582b7aedae2e,
+    type: 2}
+  hudInventoryPrefab: {fileID: 114465781474822714, guid: 757736a60d5d57a4f9b3570f888414a5,
     type: 2}
   hudButtonHintPrefab: {fileID: 114042321560627920, guid: 70f2a471b6a3a4049853a27d48744fbb,
     type: 2}

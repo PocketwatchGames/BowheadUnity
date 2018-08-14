@@ -104,8 +104,9 @@ namespace Bowhead {
         public Client.UI.Map worldMapPrefab;
         public Client.UI.Compass compassPrefab;
         public Canvas hudCanvasPrefab;
-		public Client.UI.InventoryPanel hudInventoryPanelPrefab;
-        public Client.UI.ButtonHint hudButtonHintPrefab;
+		public Client.UI.EquipPanel hudEquipPrefab;
+		public Client.UI.InventoryPanel hudInventoryPrefab;
+		public Client.UI.ButtonHint hudButtonHintPrefab;
 		public LockTargetHUD hudLockPrefab;
 		public CameraData cameraDataCombat;
 		public CameraData cameraDataExplore;

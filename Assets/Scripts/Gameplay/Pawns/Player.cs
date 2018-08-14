@@ -20,7 +20,6 @@ namespace Bowhead.Actors {
 		public int playerIndex;
 		public Vector3 spawnPoint;
         public Vector2 mapPos;
-		public float teleportTimer;
 		public Pawn tradePartner;
 
 		[Header("Inventory")]
@@ -113,12 +112,6 @@ namespace Bowhead.Actors {
             if (Input.GetButton("X" + pi)) {
                 cmd.buttons |= 1 << (int)InputType.Interact;
             }
-			if (Input.GetButton("Y" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.Inventory;
-			}
-			if (Input.GetButton("B" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.Teleport;
-			}
 			if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
 			}
@@ -320,17 +313,6 @@ namespace Bowhead.Actors {
 			if (input.JustPressed(InputType.Interact)) {
 				Interact();
 			}
-			if (input.IsPressed(InputType.Teleport)) {
-				teleportTimer += dt;
-				if (teleportTimer >= data.teleportTime) {
-					Teleport();
-					teleportTimer = 0;
-				}
-			}
-			else {
-				teleportTimer = 0;
-			}
-
 			bool isCasting = false;
 			Weapon itemLeft, itemRight;
 			GetEquippedWeapons(out itemLeft, out itemRight);
@@ -660,6 +642,12 @@ namespace Bowhead.Actors {
                 }
                 return true;
             }
+
+			Weapon weapon;
+			if ((weapon=item as Weapon) != null) {
+				return Equip(weapon);
+			}
+
             return false;
         }
 
@@ -872,7 +860,7 @@ namespace Bowhead.Actors {
 			base.SetActivity(a);
 		}
 
-		void Teleport() {
+		public void Teleport() {
 			SetMount(null);
 			tradePartner = null;
 			SetPosition(spawnPoint);

@@ -16,7 +16,6 @@ namespace Bowhead.Actors {
         public float fallDamageSpeed;
 		public float fallSpeedLoudness;
 		public float dropTime;
-		public float teleportTime;
 		public float tradePartnerCancelDistance;
 		public WeaponData unarmedWeaponLeft;
 		public WeaponData unarmedWeaponRight;
