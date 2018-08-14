@@ -38,6 +38,12 @@ public partial class World {
 			public static readonly int _AlbedoTextureArray = Shader.PropertyToID("_AlbedoTextureArray");
 			public static readonly int _NormalsTextureArrayIndices = Shader.PropertyToID("_NormalsTextureArrayIndices");
 			public static readonly int _NormalsTextureArray = Shader.PropertyToID("_NormalsTextureArray");
+			public static readonly int _RoughnessTextureArrayIndices = Shader.PropertyToID("_RoughnessTextureArrayIndices");
+			public static readonly int _RoughnessTextureArray = Shader.PropertyToID("_RoughnessTextureArray");
+			public static readonly int _AOTextureArrayIndices = Shader.PropertyToID("_AOTextureArrayIndices");
+			public static readonly int _AOTextureArray = Shader.PropertyToID("_AOTextureArray");
+			public static readonly int _HeightTextureArrayIndices = Shader.PropertyToID("_HeightTextureArrayIndices");
+			public static readonly int _HeightTextureArray = Shader.PropertyToID("_HeightTextureArray");
 		};
 
 		public CountersThisFrame_t countersThisFrame;
@@ -177,6 +183,9 @@ public partial class World {
 
 			SetMaterialTextureArray(ShaderID._AlbedoTextureArray, clientData.albedo.textureArray);
 			SetMaterialTextureArray(ShaderID._NormalsTextureArray, clientData.normals.textureArray);
+			SetMaterialTextureArray(ShaderID._RoughnessTextureArray, clientData.roughness.textureArray);
+			SetMaterialTextureArray(ShaderID._AOTextureArray, clientData.ao.textureArray);
+			SetMaterialTextureArray(ShaderID._HeightTextureArray, clientData.height.textureArray);
 		}
 
 		void DisposeClientData() {
@@ -717,6 +726,7 @@ public partial class World {
 
 		static int[] staticIndices = new int[ushort.MaxValue];
 		static Vector3[] staticVec3 = new Vector3[ushort.MaxValue];
+		static Vector3[] tan2 = new Vector3[ushort.MaxValue];
 		static Color32[] staticColors = new Color32[ushort.MaxValue];
 		static Vector4[] staticVec4 = new Vector4[ushort.MaxValue];
 		static MaterialPropertyBlock staticMaterialProperties = new MaterialPropertyBlock();
@@ -814,6 +824,9 @@ public partial class World {
 
 			staticMaterialProperties.SetFloatArray(ShaderID._AlbedoTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.albedo));
 			staticMaterialProperties.SetFloatArray(ShaderID._NormalsTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.normals));
+			staticMaterialProperties.SetFloatArray(ShaderID._RoughnessTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.roughness));
+			staticMaterialProperties.SetFloatArray(ShaderID._AOTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.ao));
+			staticMaterialProperties.SetFloatArray(ShaderID._HeightTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.height));
 		}
 
 		void CreateChunkMesh(ref ChunkMeshGen.CompiledChunkData jobData, ref WorldChunkComponent root, Vector3 pos, int layer, ref int baseIndex, ref int baseVertex) {
@@ -833,7 +846,7 @@ public partial class World {
 			MeshCopyHelper.SetMeshNormals(mesh, Copy(staticVec3, outputVerts.normals, baseVertex, vertCount), vertCount);
 			MeshCopyHelper.SetMeshColors(mesh, Copy(staticColors, outputVerts.colors, baseVertex, vertCount), vertCount);
 			MeshCopyHelper.SetMeshUVs(mesh, 0, Copy(staticVec4, outputVerts.textureBlending, baseVertex, vertCount), vertCount);
-
+			
 			int submeshidx = 0;
 			int indexOfs = 0;
 
@@ -873,10 +886,87 @@ public partial class World {
 				}
 			}
 
+			ComputeAndSetTangentVectors(mesh, outputVerts.positions, outputVerts.normals, outputVerts.indices, baseVertex, vertCount, baseIndex, indexOfs);
+
 			baseVertex += vertCount;
 			baseIndex += indexOfs;
 
 			component.UpdateCollider();
+		}
+
+		// axial UV
+		static Vector2 GetUV(Vector3 p, Vector3 n) {
+
+			if (Mathf.Abs(n.y) > 0.5f) {
+				return new Vector2(p.x, p.z);
+			} else if (Mathf.Abs(n.x) > 0.5f) {
+				return new Vector2(p.z, p.y);
+			}
+
+			return new Vector2(p.x, p.y);
+		}
+
+		// Based on:
+		// http://www.terathon.com/code/tangent.html
+
+		static void ComputeAndSetTangentVectors(Mesh mesh, NativeArray<Vector3> verts, NativeArray<Vector3> normals, NativeArray<int> indices, int baseVertex, int numVerts, int baseIndex, int numIndices) {
+			staticVec3.Broadcast(Vector3.zero, 0, numVerts);
+			tan2.Broadcast(Vector3.zero, 0, numVerts);
+
+			for (int i = 0; i < numIndices; i += 3) {
+				var i1 = indices[baseIndex+i];
+				var i2 = indices[baseIndex+i+1];
+				var i3 = indices[baseIndex+i+2];
+
+				var v1 = verts[i1+baseVertex];
+				var v2 = verts[i2+baseVertex];
+				var v3 = verts[i3+baseVertex];
+
+				var w1 = GetUV(v1, normals[i1+baseVertex]);
+				var w2 = GetUV(v2, normals[i2+baseVertex]);
+				var w3 = GetUV(v3, normals[i3+baseVertex]);
+
+				var x1 = v2.x - v1.x;
+				var x2 = v3.x - v1.x;
+				var y1 = v2.y - v1.y;
+				var y2 = v3.y - v1.y;
+				var z1 = v2.z - v1.z;
+				var z2 = v3.z - v1.z;
+
+				var s1 = w2.x - w1.x;
+				var s2 = w3.x - w1.x;
+				var t1 = w2.y - w1.y;
+				var t2 = w3.y - w1.y;
+
+				var r = 1 / (s1 * t2 - s2 * t1);
+
+				Vector3 sdir = new Vector3((t2* x1 -t1 * x2) *r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
+				Vector3 tdir = new Vector3((s1* x2 -s2 * x1) *r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
+
+				staticVec3[i1] += sdir;
+				staticVec3[i2] += sdir;
+				staticVec3[i3] += sdir;
+
+				tan2[i1] += tdir;
+				tan2[i2] += tdir;
+				tan2[i3] += tdir;
+			}
+
+			for (int i = 0; i < numVerts; ++i) {
+				var n = normals[i+baseVertex];
+				var t = staticVec3[i];
+
+				// Gram-Schmidt orthogonalize
+				Vector4 v4 = (t - n * Vector3.Dot(n, t)).normalized;
+
+				// Calculate handedness
+				// NOTE: This is flipped from Lengyel's implementation, assuming it's a left-handed Unity thing.
+				v4.w = (Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0f) ? 1f : -1f;
+
+				staticVec4[i] = v4;
+			}
+
+			MeshCopyHelper.SetMeshTangents(mesh, staticVec4, numVerts);
 		}
 
 		public void Dispose() {

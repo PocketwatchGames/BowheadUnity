@@ -58,6 +58,18 @@ public static class Utils {
 		return arr;
 	}
 
+	public static IList<T> Broadcast<T>(this IList<T> arr, T value) {
+		return arr.Broadcast(value, 0, arr.Count);
+	}
+
+	public static IList<T> Broadcast<T>(this IList<T> arr, T value, int index, int count) {
+		var end = index+count;
+		for (int i = index; i < end; ++i) {
+			arr[i] = value;
+		}
+		return arr;
+	}
+
 	public static NativeArray<T> Broadcast<T>(this NativeArray<T> arr, T value) where T : struct {
 		return arr.Broadcast(value, 0, arr.Length);
 	}

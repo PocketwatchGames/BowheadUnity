@@ -306,7 +306,7 @@ public class WorldAtlasEditor : Editor {
 		CreateTextureArray(atlas, settings, textures, channelName);
 	}
 
-	void CreateColorChannelNormalsArray(WorldAtlas atlas, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> f, string channelName) {
+	void CreateNormalsChannelTextureArray(WorldAtlas atlas, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> f, string channelName) {
 		List<Texture2D> textures;
 		List<TextureSet> indices;
 
@@ -335,7 +335,7 @@ public class WorldAtlasEditor : Editor {
 			var atlas = (WorldAtlas)obj;
 
 			CreateColorChannelTextureArray(atlas, x => x.albedo, "Albedo");
-			CreateColorChannelTextureArray(atlas, x => x.normals, "Normals");
+			CreateNormalsChannelTextureArray(atlas, x => x.normals, "Normals");
 			CreateColorChannelTextureArray(atlas, x => x.roughness, "Roughness");
 			CreateColorChannelTextureArray(atlas, x => x.ao, "AO");
 			CreateColorChannelTextureArray(atlas, x => x.height, "Height");

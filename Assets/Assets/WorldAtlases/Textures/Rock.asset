@@ -19,3 +19,15 @@ MonoBehaviour:
     top: {fileID: 2800000, guid: e19d8f112864f8844864c3bc989a6d07, type: 3}
     sides: {fileID: 2800000, guid: e19d8f112864f8844864c3bc989a6d07, type: 3}
     bottom: {fileID: 2800000, guid: e19d8f112864f8844864c3bc989a6d07, type: 3}
+  roughness:
+    top: {fileID: 2800000, guid: 4bf99330cc71ef445a4e64a0fa10a44a, type: 3}
+    sides: {fileID: 2800000, guid: 4bf99330cc71ef445a4e64a0fa10a44a, type: 3}
+    bottom: {fileID: 2800000, guid: 4bf99330cc71ef445a4e64a0fa10a44a, type: 3}
+  ao:
+    top: {fileID: 2800000, guid: fb185ecfc9465444fbbd0633fbb1b116, type: 3}
+    sides: {fileID: 2800000, guid: fb185ecfc9465444fbbd0633fbb1b116, type: 3}
+    bottom: {fileID: 2800000, guid: fb185ecfc9465444fbbd0633fbb1b116, type: 3}
+  height:
+    top: {fileID: 2800000, guid: 087aebe4953da1c4aa40f4f2c59c1982, type: 3}
+    sides: {fileID: 2800000, guid: 087aebe4953da1c4aa40f4f2c59c1982, type: 3}
+    bottom: {fileID: 2800000, guid: 087aebe4953da1c4aa40f4f2c59c1982, type: 3}
