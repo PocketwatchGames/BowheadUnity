@@ -115,7 +115,7 @@ fixed3 sampleTerrainNormal(float3 tc, float3 triblend, float3 signNormal, float4
 }
 
 fixed3 sampleTerrainAO(float3 tc, float3 triblend, float3 signNormal, float4 texBlend) {
-	return triplanarNormal(UNITY_PASS_TEX2DARRAY(_AOTextureArray), _AOTextureArrayIndices, tc, triblend, signNormal, texBlend).r;
+	return triplanarColor(UNITY_PASS_TEX2DARRAY(_AOTextureArray), _AOTextureArrayIndices, tc, triblend, signNormal, texBlend).r;
 }
 
 void clip(Input IN) {
@@ -167,12 +167,12 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 
 	fixed4 albedo = sampleTerrainAlbedo(tc, triblend, signNormal, IN.texBlend);
 	fixed3 normal = sampleTerrainNormal(tc, triblend, signNormal, IN.texBlend);
-	fixed  ao = sampleTerrainAO(tc, absNormal, triblend, IN.texBlend);
+	fixed ao = sampleTerrainAO(tc, triblend, signNormal, IN.texBlend);
 
 	// Albedo comes from a texture tinted by color
-	o.Albedo = fixed3(0.5, 0.5, 0.5);// albedo * _Color;
+	o.Albedo = albedo * _Color;
 	o.Normal = normal;
-	//o.Occlusion = ao;
+	o.Occlusion = ao;
 	// Metallic and smoothness come from slider variables
 	o.Metallic = 0;// _Metallic;
 	o.Smoothness = 0;// _Glossiness;
