@@ -53,16 +53,26 @@ UNITY_INSTANCING_BUFFER_END(Props)
 #define WorldToTangentNormalVector(data,normal) normal
 #endif
 
+struct Fragment_t {
+	fixed4 albedo;
+	fixed4 ao_roughness;
+	half3 normal;
+};
+
+fixed4 triplanarSampleColor(int i, UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float2 uvs[3], half3 triblend, half3 signNormal) {
+	fixed4 t;
+	fixed4 x = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[0], arrayIndices[i * 3 + 1])) * triblend.x;
+	fixed4 y = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[1], arrayIndices[i * 3 + (int)(1 + signNormal.y)])) * triblend.y;
+	fixed4 z = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[2], arrayIndices[i * 3 + 1])) * triblend.z;
+	t = x + y + z;
+	return t;
+}
+
 fixed4 triplanarColor(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
 	fixed4 color = fixed4(0, 0, 0, 0);
 
 	for (int i = 0; i < 4; ++i) {
-		fixed4 t;
-		fixed4 x = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[0], arrayIndices[i * 3 + 1])) * triblend.x;
-		fixed4 y = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[1], arrayIndices[i * 3 + (int)(1 + signNormal.y)])) * triblend.y;
-		fixed4 z = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[2], arrayIndices[i * 3 + 1])) * triblend.z;
-		t = x + y + z;
-		color += t * texBlend[i];
+		color += triplanarSampleColor(i, UNITY_PASS_TEX2DARRAY(texArray), arrayIndices, uvs, triblend, signNormal) * texBlend[i];
 	}
 
 	return color;
@@ -77,31 +87,34 @@ half3 blend_rnm(half3 n1, half3 n2) {
 	return n1 * dot(n1, n2) / n1.z - n2;
 }
 
+half3 triplanarSampleWorldNormal(int i, UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float2 uvs[3], half3 triblend, half3 signNormal, half3 bumpNormals[3]) {
+	half3 x = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[0], arrayIndices[i * 3 + 1])));
+	half3 y = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[1], arrayIndices[i * 3 + (int)(1 + signNormal.y)])));
+	half3 z = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[2], arrayIndices[i * 3 + 1])));
+
+	x.x *= signNormal.x;
+	y.x *= signNormal.y;
+	z.x *= -signNormal.z;
+
+	half3 nx = blend_rnm(bumpNormals[0], x);
+	half3 ny = blend_rnm(bumpNormals[1], y);
+	half3 nz = blend_rnm(bumpNormals[2], z);
+
+	nx.z *= signNormal.x;
+	ny.z *= signNormal.y;
+	nz.z *= signNormal.z;
+
+	// world space normal
+	half3 wn = normalize((nx.zyx * triblend.x) + (ny.xzy * triblend.y) + (nz.xyz * triblend.z));
+
+	return wn;
+}
+
 half3 triplanarWorldNormal(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float2 uvs[3], half3 triblend, half3 signNormal, half3 bumpNormals[3], half4 texBlend) {
 	float3 normal = float3(0, 0, 0);
 
 	for (int i = 0; i < 4; ++i) {
-		
-		half3 x = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[0], arrayIndices[i * 3 + 1])));
-		half3 y = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[1], arrayIndices[i * 3 + (int)(1 + signNormal.y)])));
-		half3 z = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[2], arrayIndices[i * 3 + 1])));
-
-		x.x *= signNormal.x;
-		y.x *= signNormal.y;
-		z.x *= -signNormal.z;
-	
-		half3 nx = blend_rnm(bumpNormals[0], x);
-		half3 ny = blend_rnm(bumpNormals[1], y);
-		half3 nz = blend_rnm(bumpNormals[2], z);
-
-		nx.z *= signNormal.x;
-		ny.z *= signNormal.y;
-		nz.z *= signNormal.z;
-
-		// world space normal
-		half3 wn = normalize((nx.zyx * triblend.x) + (ny.xzy * triblend.y) + (nz.xyz * triblend.z));
-
-		normal += wn * texBlend[i];
+		normal += triplanarSampleWorldNormal(i, UNITY_PASS_TEX2DARRAY(texArray), arrayIndices, uvs, triblend, signNormal, bumpNormals) * texBlend[i];
 	}
 
 	return (half3)normalize(normal);
