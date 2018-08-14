@@ -35,7 +35,7 @@ namespace Bowhead.Actors {
 
 		public override void Spawn(EntityData d, int index, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
 			base.Spawn(d, index, pos, yaw, instigator, owner, team);
-			behaviorPanic = CritterBehavior.Create(data.panicBehavior);
+			behaviorPanic = CritterBehavior.Create(data.panicBehavior, this);
 			_defaultSilhouetteMode = SilhouetteRenderer.Mode.Off;
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
             position = pos;
