@@ -44,14 +44,14 @@ UNITY_INSTANCING_BUFFER_START(Props)
 // put more per-instance properties here
 UNITY_INSTANCING_BUFFER_END(Props)
 
-fixed4 triplanarColor(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float3 tc, float3 triblend, float3 signNormal, float4 texBlend) {
+fixed4 triplanarColor(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float2 uvs[3], float3 triblend, float3 signNormal, float4 texBlend) {
 	fixed4 color = fixed4(0, 0, 0, 0);
 
 	for (int i = 0; i < 4; ++i) {
 		fixed4 t;
-		fixed4 x = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(tc.z, tc.y, arrayIndices[i * 3 + 1])) * triblend.x;
-		fixed4 y = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(tc.x, tc.z, arrayIndices[i * 3 + (int)(1 + signNormal.y)])) * triblend.y;
-		fixed4 z = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(tc.x, tc.y, arrayIndices[i * 3 + 1])) * triblend.z;
+		fixed4 x = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[0], arrayIndices[i * 3 + 1])) * triblend.x;
+		fixed4 y = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[1], arrayIndices[i * 3 + (int)(1 + signNormal.y)])) * triblend.y;
+		fixed4 z = UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[2], arrayIndices[i * 3 + 1])) * triblend.z;
 		t = x + y + z;
 		color += t * texBlend[i];
 	}
@@ -59,38 +59,14 @@ fixed4 triplanarColor(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], f
 	return color;
 }
 
-// Unpack normal as DXT5nm (1, y, 1, x) or BC5 (x, y, 0, 1)
-// Note neutral texture like "bump" is (0, 0, 1, 1) to work with both plain RGB normal and DXT5nm/BC5
-fixed2 MyUnpackNormalmapRGorAG(fixed4 packednormal) {
-	// This do the trick
-	packednormal.x *= packednormal.w;
-
-	fixed2 normal;
-	normal.xy = packednormal.xy * 2 - 1;
-	return normal;
-}
-
-inline fixed2 MyUnpackNormal(fixed4 packednormal) {
-#if defined(UNITY_NO_DXT5nm)
-	return packednormal.xy * 2 - 1;
-#else
-	return MyUnpackNormalmapRGorAG(packednormal);
-#endif
-}
-
-float3 blendNormal(float3 src, float3 dst, float blend) {
-	float3 n = lerp(src, dst, blend);
-	return normalize(n);
-}
-
-float3 triplanarNormal(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float3 tc, float3 triblend, float3 signNormal, float4 texBlend) {
+float3 triplanarNormal(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float2 uvs[3], float3 triblend, float3 signNormal, float4 texBlend) {
 	float3 normal = float3(0, 0, 0);
 
 	for (int i = 0; i < 4; ++i) {
 		
-		float3 x = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(tc.z, tc.y, arrayIndices[i * 3 + 1])));
-		float3 y = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(tc.x, tc.z, arrayIndices[i * 3 + (int)(1 + signNormal.y)])));
-		float3 z = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(tc.x, tc.y, arrayIndices[i * 3 + 1])));
+		float3 x = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[0], arrayIndices[i * 3 + 1])));
+		float3 y = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[1], arrayIndices[i * 3 + (int)(1 + signNormal.y)])));
+		float3 z = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[2], arrayIndices[i * 3 + 1])));
 		
 		float3 n = x * triblend.x * texBlend[i];
 		n += y * triblend.y * texBlend[i];
@@ -106,21 +82,20 @@ float3 triplanarNormal(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], 
 	return normalize(normal);
 }
 
-fixed4 sampleTerrainAlbedo(float3 tc, float3 triblend, float3 signNormal, float4 texBlend) {
-	return triplanarColor(UNITY_PASS_TEX2DARRAY(_AlbedoTextureArray), _AlbedoTextureArrayIndices, tc, triblend, signNormal, texBlend);
+fixed4 sampleTerrainAlbedo(float2 uvs[3], float3 triblend, float3 signNormal, float4 texBlend) {
+	return triplanarColor(UNITY_PASS_TEX2DARRAY(_AlbedoTextureArray), _AlbedoTextureArrayIndices, uvs, triblend, signNormal, texBlend);
 }
 
-fixed3 sampleTerrainNormal(float3 tc, float3 triblend, float3 signNormal, float4 texBlend) {
-	return triplanarNormal(UNITY_PASS_TEX2DARRAY(_NormalsTextureArray), _NormalsTextureArrayIndices, tc, triblend, signNormal, texBlend);
+fixed3 sampleTerrainNormal(float2 uvs[3], float3 triblend, float3 signNormal, float4 texBlend) {
+	return triplanarNormal(UNITY_PASS_TEX2DARRAY(_NormalsTextureArray), _NormalsTextureArrayIndices, uvs, triblend, signNormal, texBlend);
 }
 
-fixed sampleTerrainAO(float3 tc, float3 triblend, float3 signNormal, float4 texBlend) {
-	return triplanarColor(UNITY_PASS_TEX2DARRAY(_AOTextureArray), _AOTextureArrayIndices, tc, triblend, signNormal, texBlend).r;
+fixed sampleTerrainAO(float2 uvs[3], float3 triblend, float3 signNormal, float4 texBlend) {
+	return triplanarColor(UNITY_PASS_TEX2DARRAY(_AOTextureArray), _AOTextureArrayIndices, uvs, triblend, signNormal, texBlend).r;
 }
 
-
-fixed sampleTerrainRoughness(float3 tc, float3 triblend, float3 signNormal, float4 texBlend) {
-	return triplanarColor(UNITY_PASS_TEX2DARRAY(_RoughnessTextureArray), _RoughnessTextureArrayIndices, tc, triblend, signNormal, texBlend).r;
+fixed sampleTerrainRoughness(float2 uvs[3], float3 triblend, float3 signNormal, float4 texBlend) {
+	return triplanarColor(UNITY_PASS_TEX2DARRAY(_RoughnessTextureArray), _RoughnessTextureArrayIndices, uvs, triblend, signNormal, texBlend).r;
 }
 
 void clip(Input IN) {
@@ -165,15 +140,25 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	float3 triblend = saturate(pow(IN.wNormal.xyz, 4));
 	triblend /= dot(triblend, float3(1, 1, 1));
 
-	float3 worldNormal = normalize(IN.wNormal);
-	float3 tc = IN.worldPos / _TextureScale;
-	float3 absNormal = abs(worldNormal);
-	float3 signNormal = sign(worldNormal);
+	float3 uvbase = IN.worldPos / _TextureScale;
 
-	fixed4 albedo = sampleTerrainAlbedo(tc, triblend, signNormal, IN.texBlend);
-	fixed3 normal = sampleTerrainNormal(tc, triblend, signNormal, IN.texBlend);
-	fixed ao = sampleTerrainAO(tc, triblend, signNormal, IN.texBlend);
-	fixed roughness = sampleTerrainRoughness(tc, triblend, signNormal, IN.texBlend);
+	// triplanar uvs
+	float2 uvs[3];
+	uvs[0] = uvbase.zy;
+	uvs[1] = uvbase.xz;
+	uvs[2] = uvbase.xy;
+
+	uvs[1] += 0.33f;
+	uvs[2] += 0.67f;
+
+	float3 worldNormal = normalize(IN.wNormal);
+	float3 signNormal = worldNormal < 0 ? -1 : 1;
+	float3 absNormal = worldNormal * signNormal;
+		
+	fixed4 albedo = sampleTerrainAlbedo(uvs, triblend, signNormal, IN.texBlend);
+	fixed3 normal = sampleTerrainNormal(uvs, triblend, signNormal, IN.texBlend);
+	fixed ao = sampleTerrainAO(uvs, triblend, signNormal, IN.texBlend);
+	fixed roughness = sampleTerrainRoughness(uvs, triblend, signNormal, IN.texBlend);
 
 	// Albedo comes from a texture tinted by color
 	o.Albedo = albedo * _Color;
