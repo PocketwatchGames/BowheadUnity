@@ -218,12 +218,7 @@ namespace Bowhead.Actors {
 
 			if (_matchTimer != matchTimer) {
 				_matchTimer = matchTimer;
-				_gameTime = new GameTime() {
-					seconds = 0,
-					minutes = 0,
-					hours = 8,
-					days = 1
-				};//GameTime.FromSeconds(_matchTimer);
+				_gameTime = GameTime.FromSeconds(_matchTimer);
 				if (_sky != null) {
 					SyncEnviroSkyTime();
 				}
