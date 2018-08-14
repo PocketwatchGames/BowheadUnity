@@ -13,8 +13,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 58
+  displayName: Platemail
   description: 
   monetaryValue: 0
+  canUse: 1
+  canDrop: 1
   prefab:
     _assetPath: 
     _editorPath: 
@@ -40,6 +43,7 @@ MonoBehaviour:
     damageType: 1
     statusEffect: {fileID: 0}
     statusEffectTime: 0
+    loudness: 0
     stunAbsorb: 10
     damageAbsorb: 15
     staminaUse: 0

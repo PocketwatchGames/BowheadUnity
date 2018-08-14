@@ -438,11 +438,11 @@ InputManager:
     axis: 4
     joyNum: 0
   - serializedVersion: 3
-    m_Name: ShoulderLeft
+    m_Name: ShoulderLeft1
     descriptiveName: ShoulderLeft
     descriptiveNegativeName: 
     negativeButton: 
-    positiveButton: q
+    positiveButton: left shift
     altNegativeButton: 
     altPositiveButton: joystick button 4
     gravity: 1000000
@@ -454,7 +454,39 @@ InputManager:
     axis: 4
     joyNum: 1
   - serializedVersion: 3
-    m_Name: ShoulderRight
+    m_Name: ShoulderLeft2
+    descriptiveName: ShoulderLeft
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: 
+    altNegativeButton: 
+    altPositiveButton: joystick button 4
+    gravity: 1000000
+    dead: 0
+    sensitivity: 1000000
+    snap: 0
+    invert: 0
+    type: 0
+    axis: 4
+    joyNum: 2
+  - serializedVersion: 3
+    m_Name: ShoulderRight1
+    descriptiveName: ShoulderRight
+    descriptiveNegativeName: 
+    negativeButton: 
+    positiveButton: left ctrl
+    altNegativeButton: 
+    altPositiveButton: joystick button 5
+    gravity: 1000000
+    dead: 0
+    sensitivity: 1000000
+    snap: 0
+    invert: 0
+    type: 0
+    axis: 4
+    joyNum: 1
+  - serializedVersion: 3
+    m_Name: ShoulderRight2
     descriptiveName: ShoulderRight
     descriptiveNegativeName: 
     negativeButton: 
@@ -468,7 +500,7 @@ InputManager:
     invert: 0
     type: 0
     axis: 4
-    joyNum: 1
+    joyNum: 2
   - serializedVersion: 3
     m_Name: Back
     descriptiveName: Back
@@ -518,11 +550,11 @@ InputManager:
     axis: 9
     joyNum: 2
   - serializedVersion: 3
-    m_Name: DPadX1
+    m_Name: DPadX
     descriptiveName: DPadX
     descriptiveNegativeName: 
-    negativeButton: z
-    positiveButton: x
+    negativeButton: q
+    positiveButton: e
     altNegativeButton: 
     altPositiveButton: 
     gravity: 1000
@@ -532,25 +564,9 @@ InputManager:
     invert: 0
     type: 2
     axis: 5
-    joyNum: 1
+    joyNum: 0
   - serializedVersion: 3
-    m_Name: DPadX2
-    descriptiveName: DPadX
-    descriptiveNegativeName: 
-    negativeButton: z
-    positiveButton: x
-    altNegativeButton: 
-    altPositiveButton: 
-    gravity: 1000
-    dead: 0.001
-    sensitivity: 1000
-    snap: 0
-    invert: 0
-    type: 2
-    axis: 5
-    joyNum: 2
-  - serializedVersion: 3
-    m_Name: DPadY1
+    m_Name: DPadY
     descriptiveName: DPadY
     descriptiveNegativeName: 
     negativeButton: 
@@ -565,22 +581,6 @@ InputManager:
     type: 2
     axis: 6
     joyNum: 1
-  - serializedVersion: 3
-    m_Name: DPadY2
-    descriptiveName: DPadY
-    descriptiveNegativeName: 
-    negativeButton: 
-    positiveButton: 
-    altNegativeButton: 
-    altPositiveButton: 
-    gravity: 1000
-    dead: 0.1
-    sensitivity: 1000
-    snap: 0
-    invert: 0
-    type: 2
-    axis: 6
-    joyNum: 2
   - serializedVersion: 3
     m_Name: MenuAxisX
     descriptiveName: 
@@ -677,38 +677,6 @@ InputManager:
     type: 2
     axis: 9
     joyNum: 2
-  - serializedVersion: 3
-    m_Name: DPadX1
-    descriptiveName: 
-    descriptiveNegativeName: 
-    negativeButton: z
-    positiveButton: x
-    altNegativeButton: 
-    altPositiveButton: 
-    gravity: 10000
-    dead: 0.01
-    sensitivity: 10000
-    snap: 0
-    invert: 0
-    type: 0
-    axis: 0
-    joyNum: 0
-  - serializedVersion: 3
-    m_Name: DPadY1
-    descriptiveName: ZoomGamepad
-    descriptiveNegativeName: 
-    negativeButton: c
-    positiveButton: v
-    altNegativeButton: 
-    altPositiveButton: 
-    gravity: 10000
-    dead: 0.01
-    sensitivity: 10000
-    snap: 0
-    invert: 0
-    type: 0
-    axis: 0
-    joyNum: 0
   - serializedVersion: 3
     m_Name: Zoom
     descriptiveName: ZoomKeyboard

@@ -146,9 +146,10 @@ namespace Bowhead.Actors {
 				_oldMousePosition = m;
 			} else {
 				int delta = 0;
-				if (Input.GetButtonDown("ShoulderLeft")) {
+				float r = Input.GetAxis("DPadX");
+				if (r < 0) {
 					delta--;
-				} else if (Input.GetButtonDown("ShoulderRight")) {
+				} else if (r > 0) {
 					delta++;
 				}
 				if (delta != 0) {

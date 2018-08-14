@@ -13,8 +13,8 @@ namespace Bowhead.Actors {
     }
     public enum InputType {
         Jump,
-        Interact,
-        Use,
+		Interact,
+		Inventory,
         AttackLeft,
 		AttackRight,
 		AttackRangedLeft,

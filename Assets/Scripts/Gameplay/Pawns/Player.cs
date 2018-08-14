@@ -113,17 +113,23 @@ namespace Bowhead.Actors {
             if (Input.GetButton("X" + pi)) {
                 cmd.buttons |= 1 << (int)InputType.Interact;
             }
+			if (Input.GetButton("Y" + pi)) {
+				cmd.buttons |= 1 << (int)InputType.Inventory;
+			}
+			if (Input.GetButton("B" + pi)) {
+				cmd.buttons |= 1 << (int)InputType.Teleport;
+			}
 			if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackRight;
 			}
 			if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
 				cmd.buttons |= 1 << (int)InputType.AttackLeft;
 			}
-			if (Input.GetButton("B" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
+			if (Input.GetButton("ShoulderLeft" + pi)) {
+				cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
 			}
-			if (Input.GetButton("Y" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.Teleport;
+			if (Input.GetButton("ShoulderRight" + pi)) {
+				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
 			}
 			//if (Input.GetButton("ShoulderLeft" + pi)) {
 			//	cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
@@ -162,8 +168,6 @@ namespace Bowhead.Actors {
                     var horseData = CritterData.Get("horse");
                     var c = gameMode.SpawnCritter(horseData, position + new Vector3(3,0,0), yaw, team);
                     c.SetActive(position + new Vector3(3, 0, 0));
-                    var weapon = PackData.Get("Pack").CreateItem();
-                    c.SetInventorySlot(0, weapon);
 				}
 				else {
                     return;
@@ -454,8 +458,8 @@ namespace Bowhead.Actors {
 			unarmedWeaponRight = ItemData.Get(data.unarmedWeaponRight.name).CreateItem() as Weapon;
 			PickUp(unarmedWeaponLeft);
 			PickUp(unarmedWeaponRight);
-			PickUp(ItemData.Get("Pack").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
+			PickUp(ItemData.Get("SpellHeal").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
@@ -568,31 +572,6 @@ namespace Bowhead.Actors {
                 return true;
             }
 
-            Pack p;
-            if ((p = item as Pack) != null) {
-                int packSlots = 0;
-                // find the first available pack slot (there might be empty slots in a previous pack)
-                for (int i = (int)InventorySlot.PACK; i < MaxInventorySize - (p.data.slots + 1); i++) {
-                    var j = GetInventorySlot(i);
-                    Pack p2;
-                    if ((p2 = j as Pack) != null) {
-                        packSlots = p2.data.slots;
-                    }
-                    else {
-                        if (packSlots == 0) {
-                            SetInventorySlot(i++, item);
-                            foreach (var c in p.contained) {
-                                SetInventorySlot(i++, c);
-                            }
-                            return true;
-                        }
-                        packSlots--;
-                    }
-                }
-                return false;
-            }
-
-
             Weapon weapon;
             if ((weapon = item as Weapon) != null) {
 
@@ -671,11 +650,6 @@ namespace Bowhead.Actors {
 		public bool Use(Item item) {
             if (item == null) {
                 return false;
-            }
-
-            if (item is Pack
-                || item is Weapon) {
-                return Equip(item);
             }
 
             Loot loot;
@@ -828,25 +802,14 @@ namespace Bowhead.Actors {
         }
 
         bool FindEmptyPackSlots(int count, ref int[] slots) {
-            int packSlots = 0;
             int emptySlotIndex = 0;
             for (int i = (int)InventorySlot.PACK; i < MaxInventorySize; i++) {
                 var item = GetInventorySlot(i);
                 if (item == null) {
-                    if (packSlots > 0) {
-                        slots[emptySlotIndex++] = i;
-                        if (emptySlotIndex >= count) {
-                            return true;
-                        }
+                    slots[emptySlotIndex++] = i;
+                    if (emptySlotIndex >= count) {
+                        return true;
                     }
-                    return false;
-                }
-                Pack pack;
-                if ((pack = item as Pack) != null) {
-                    packSlots = pack.data.slots;
-                }
-                else {
-                    packSlots--;
                 }
             }
             return false;
@@ -858,30 +821,11 @@ namespace Bowhead.Actors {
 
 
             for (var i = 0; i < MaxInventorySize; i++) {
-                var checkItem = GetInventorySlot(i) as Pack;
-                if (checkItem != null) {
-                    packSlots = checkItem.data.slots;
-                }
-                else {
-                    packSlots--;
-                }
                 if (GetInventorySlot(i) == item) {
                     slot = i;
                     break;
                 }
             }
-
-            Pack pack;
-            if ((pack = item as Pack) != null) {
-                pack.contained.Clear();
-                for (int i = 0; i < pack.data.slots; i++) {
-                    var packItem = GetInventorySlot(i + slot + 1);
-                    if (packItem != null) {
-                        pack.contained.Add(packItem);
-                    }
-                }
-            }
-
 
             if (slot == (int)InventorySlot.CLOTHING) {
                 SetInventorySlot(slot, null);
@@ -895,12 +839,7 @@ namespace Bowhead.Actors {
 				SetInventorySlot(slot, null);
 			} else if (slot == (int)InventorySlot.RIGHT_RANGED) {
 				SetInventorySlot(slot, null);
-			} else if (pack != null) {
-                for (int i = slot; i < MaxInventorySize - packSlots - 1; i++) {
-                    SetInventorySlot(i, GetInventorySlot(i + packSlots + 1));
-                }
-            }
-            else {
+			} else {
                 for (int j = slot; j < slot + packSlots; j++) {
                     SetInventorySlot(j, GetInventorySlot(j + 1));
                 }

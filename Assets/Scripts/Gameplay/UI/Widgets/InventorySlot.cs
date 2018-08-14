@@ -15,17 +15,25 @@ namespace Bowhead.Client.UI {
         private Item _item;
         private Button _button;
         private Image _background;
+		private Player _player;
 
 		public Sprite[] _slotBackgrounds;
 
 
-        public void Init(Player.InventorySlot slot) {
-            _button = transform.GetAnyChildComponent<Button>("Button");
-            _background = transform.GetAnyChildComponent<Image>("Background");
-            _background.sprite = _slotBackgrounds[Mathf.Min((int)slot, _slotBackgrounds.Length-1)];
+		public void Init(Player.InventorySlot slot, Player p) {
+			_player = p;
+			_button = transform.GetAnyChildComponent<Button>("Button");
+			_background = transform.GetAnyChildComponent<Image>("Background");
+			_background.sprite = _slotBackgrounds[Mathf.Min((int)slot, _slotBackgrounds.Length - 1)];
 			_button.gameObject.SetActive(false);
 			_buttonHint.gameObject.SetActive(false);
-        }
+			SetTimer(0);
+
+			if (slot == Player.InventorySlot.PACK) {
+				_button.gameObject.SetActive(true);
+				_button.GetComponentInChildren<Text>().text = "Pack";
+			}
+		}
 
 		public void SetButton(string b) {
 			_buttonHint.gameObject.SetActive(b != null);
@@ -47,30 +55,23 @@ namespace Bowhead.Client.UI {
 
 
 		public void SetItem(Item i) {
-            _item = i;
-            if (i == null) {
-                _button.gameObject.SetActive(false);
-            }
-            else {
-                _button.gameObject.SetActive(true);
+			_item = i;
+			if (i == null) {
+				_button.gameObject.SetActive(false);
+			} else {
+				_button.gameObject.SetActive(true);
 
 				string name;
 				Loot loot;
 				if ((loot = i as Loot) != null && loot.data.stackSize > 1) {
-					_button.GetComponentInChildren<Text>().text = i.data.name + " x" + loot.count;
-				}
-				else {
-					_button.GetComponentInChildren<Text>().text = i.data.name;
+					_button.GetComponentInChildren<Text>().text = i.data.displayName + " x" + loot.count;
+				} else {
+					_button.GetComponentInChildren<Text>().text = i.data.displayName;
 				}
 
 			}
-        }
+		}
 
-        public void Deselect() {
-        }
-        public void Select() {
-            _button.Select();
-        }
 
         private void OnDestroy() {
             gameObject.DestroyAllChildren();

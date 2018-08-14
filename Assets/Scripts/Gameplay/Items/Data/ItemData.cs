@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace Bowhead {
 	public abstract class ItemData : EntityData {
 
+		public string displayName;
 		public string description;
 		public int monetaryValue;
 		public bool canUse = true;
