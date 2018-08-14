@@ -118,7 +118,6 @@ namespace Bowhead {
         public WorldHUD worldHUDPrefab;
 		public PawnHUD critterHudPrefab;
         public PlayerHUD playerHudPrefab;
-        public WeaponChargeHUD weaponChargePrefab;
         public DamageHUD damageHUDPrefab;
         public DirectionPreview directionPreviewPrefab;
 

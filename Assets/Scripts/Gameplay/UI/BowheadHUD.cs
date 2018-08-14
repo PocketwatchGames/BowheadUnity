@@ -15,7 +15,6 @@ namespace Bowhead.Client.UI {
 
         GameObject _pawnHUDs;
         GameObject _playerHUD;
-        WeaponChargeHUD _weaponChargeLeft, _weaponChargeRight;
 		IMapMarker _spawnMarker;
 
 		class MapMarker : IMapMarker, IDisposable {
@@ -63,8 +62,6 @@ namespace Bowhead.Client.UI {
 			_lockMarker.gameObject.SetActive(false);
 			_worldmap = GameObject.Instantiate(GameManager.instance.clientData.worldMapPrefab, hudCanvas.transform, false);
 			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
-			_weaponChargeLeft = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
-			_weaponChargeRight = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
 			_pawnHUDs = new GameObject("PawnHuds");
 			_pawnHUDs.transform.parent = hudCanvas.transform;
 
@@ -96,9 +93,6 @@ namespace Bowhead.Client.UI {
 
 			// for now, minimap reveal still kinda broke ass.
 			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 128, false);
-
-			_weaponChargeLeft.SetTarget(player, 1);
-			_weaponChargeRight.SetTarget(player, 2);
 
             var playerHUD = GameObject.Instantiate<PlayerHUD>(GameManager.instance.clientData.playerHudPrefab, _pawnHUDs.transform);
             playerHUD.SetTarget(player);
