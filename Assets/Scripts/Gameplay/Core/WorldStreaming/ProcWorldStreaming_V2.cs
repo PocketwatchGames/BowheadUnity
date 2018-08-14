@@ -424,11 +424,11 @@ namespace Bowhead {
 					}
 				}
 
-				int voxelsPerTower = 500;
-				Vector2Int towerRegion = new Vector2Int(Mathf.FloorToInt((chunkPos.x*VOXEL_CHUNK_SIZE_XZ)/ voxelsPerTower), Mathf.FloorToInt((chunkPos.z * VOXEL_CHUNK_SIZE_XZ) / voxelsPerTower));
+				int voxelsPerTower = 256;
+				Vector2Int towerRegion = new Vector2Int(Mathf.FloorToInt(chunkPos.x/ voxelsPerTower), Mathf.FloorToInt(chunkPos.z / voxelsPerTower));
 				Vector2Int towerWorldPosition = new Vector2Int(towerRegion.x*voxelsPerTower+(int)(GetWhiteNoise(ref noise, towerRegion.x, 0, towerRegion.y) * voxelsPerTower), towerRegion.y * voxelsPerTower + (int)(GetWhiteNoise(ref noise, towerRegion.x+100, 0, towerRegion.y) * voxelsPerTower));
 				var towerChunkPos = new Vector2Int(towerWorldPosition.x / VOXEL_CHUNK_SIZE_XZ, towerWorldPosition.y / VOXEL_CHUNK_SIZE_XZ);
-				if (towerChunkPos.x == chunkPos.x && towerChunkPos.y == chunkPos.z) {
+				if (towerChunkPos.x* VOXEL_CHUNK_SIZE_XZ == chunkPos.x && towerChunkPos.y* VOXEL_CHUNK_SIZE_XZ == chunkPos.z) {
 					int towerHeight = (int)(GetWhiteNoise(ref noise, chunkPos.x+100, chunkPos.y, chunkPos.z) * 30 + 12);
 					int x = 8;
 					int z = 8;

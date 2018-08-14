@@ -134,10 +134,10 @@ namespace Bowhead.Actors {
 			maxRange = 5;
 			destinationTolerance = 1.5f;
 
-			fleeStaminaLimit = c.maxStamina * 0.2f;
+			fleeStaminaLimit = 0.2f;
 			enemyElevationDeltaToJump = 3;
 			fleeRange = 10;
-			sprintStaminaLimit = c.maxStamina * 0.5f;
+			sprintStaminaLimit = 0.75f;
 		}
 
 
@@ -149,7 +149,7 @@ namespace Bowhead.Actors {
 			if (!c.hasLastKnownPosition) {
 				curSubBehavior = SubBehavior.Idle;
 			} else {
-				if (c.stamina < fleeStaminaLimit) {
+				if (c.stamina < c.maxStamina * fleeStaminaLimit) {
 					curSubBehavior = SubBehavior.FleeAndRecover;
 				} else {
 					curSubBehavior = SubBehavior.MeleeAttack;
@@ -235,7 +235,7 @@ namespace Bowhead.Actors {
 					if (c.canJump && c.activity == Pawn.Activity.OnGround) {
 						input.inputs[(int)InputType.Jump] = InputState.JustPressed;
 					}
-				} else if (c.stamina > sprintStaminaLimit) {
+				} else if (c.stamina > c.maxStamina * sprintStaminaLimit) {
 					input.inputs[(int)InputType.Jump] = InputState.Pressed;
 				}
 			}

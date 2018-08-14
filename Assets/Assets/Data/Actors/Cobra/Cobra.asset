@@ -90,5 +90,6 @@ MonoBehaviour:
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
-  panicBehavior: 2
+  idleBehavior: 0
+  panicBehavior: 4
   defaultLoadout: {fileID: 11400000, guid: 67bcee8cf8ef006468f40aa809231c3f, type: 2}

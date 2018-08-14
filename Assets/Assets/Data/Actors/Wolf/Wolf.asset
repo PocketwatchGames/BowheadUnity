@@ -39,7 +39,7 @@ MonoBehaviour:
   jumpHorizontalSpeed: 0
   groundAcceleration: 8
   crouchSpeed: 0
-  walkSpeed: 1
+  walkSpeed: 7
   walkStartTime: 0.1
   walkStopTime: 0.1
   groundMaxSpeed: 7
@@ -90,5 +90,6 @@ MonoBehaviour:
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
-  panicBehavior: 1
+  idleBehavior: 1
+  panicBehavior: 3
   defaultLoadout: {fileID: 11400000, guid: aed3b51089462144abc792f1413f0c29, type: 2}
