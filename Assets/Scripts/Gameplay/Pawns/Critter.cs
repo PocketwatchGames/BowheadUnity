@@ -22,7 +22,8 @@ namespace Bowhead.Actors {
         public Vector3 lastKnownPosition;
 
         public Item[] loot = new Item[MaxInventorySize];
-        public CritterBehavior behaviorPanic;
+		public CritterBehavior behaviorPanic;
+		public CritterBehavior behaviorIdle;
 
 		#endregion
 
@@ -35,6 +36,7 @@ namespace Bowhead.Actors {
 
 		public override void Spawn(EntityData d, int index, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
 			base.Spawn(d, index, pos, yaw, instigator, owner, team);
+			behaviorIdle = CritterBehavior.Create(data.idleBehavior, this);
 			behaviorPanic = CritterBehavior.Create(data.panicBehavior, this);
 			_defaultSilhouetteMode = SilhouetteRenderer.Mode.Off;
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
@@ -313,17 +315,11 @@ namespace Bowhead.Actors {
 			UpdatePanic(dt);
 			
             input.look = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
-            if (IsPanicked()) {
-                if (behaviorPanic != null) {
-                    behaviorPanic.Tick(this, dt, ref input);
-                }
+            if (IsPanicked() && behaviorPanic != null) {
+                behaviorPanic.Tick(this, dt, ref input);
             }
-            else {
-                input.movement = Vector3.zero;
-                if (hasLastKnownPosition) {
-                    var diff = lastKnownPosition - position;
-                    input.look = diff.normalized;
-                }
+            else if (behaviorIdle != null) {
+				behaviorIdle.Tick(this, dt, ref input);
             }
 
             //float yawDiff = constrainAngle(input.yaw - yaw);
@@ -465,7 +461,7 @@ namespace Bowhead.Actors {
 			float sunsetTime = 22;
 			float sunChangeTime = 0.5f;
 			float timeOfDay = gameMode.gameTime.timeOfDay * 24;
-			if (timeOfDay >= sunriseTime + sunChangeTime && timeOfDay < sunriseTime - sunChangeTime) {
+			if (timeOfDay >= sunriseTime + sunChangeTime && timeOfDay < sunsetTime - sunChangeTime) {
 				visionDistance += 15;
 			}
 			else if (timeOfDay >= sunriseTime && timeOfDay < sunriseTime + sunChangeTime) {

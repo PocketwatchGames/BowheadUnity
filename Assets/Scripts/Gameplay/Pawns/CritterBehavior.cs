@@ -5,6 +5,8 @@ using UnityEngine;
 namespace Bowhead.Actors {
 
     public enum ECritterBehaviorType {
+		Idle,
+		Patrol,
         Flee,
         MeleeAttack,
 		RangedAttack
@@ -17,6 +19,10 @@ namespace Bowhead.Actors {
 
         public static CritterBehavior Create(ECritterBehaviorType t, Critter c) {
             switch (t) {
+				case ECritterBehaviorType.Idle:
+					return new CritterBehaviorIdle(c);
+				case ECritterBehaviorType.Patrol:
+					return new CritterBehaviorPatrol(c);
                 case ECritterBehaviorType.Flee:
                     return new CritterBehaviorFlee(c);
 				case ECritterBehaviorType.MeleeAttack:
@@ -28,7 +34,62 @@ namespace Bowhead.Actors {
         }
     }
 
-    public class CritterBehaviorFlee : CritterBehavior {
+	public class CritterBehaviorIdle : CritterBehavior {
+		public CritterBehaviorIdle(Critter c) : base(c) { }
+		public override void Tick(Critter c, float dt, ref Pawn.Input_t input) {
+			input.movement = Vector3.zero;
+			if (c.hasLastKnownPosition) {
+				var diff = c.lastKnownPosition - c.position;
+				input.look = diff.normalized;
+			}
+		}
+	}
+
+	public class CritterBehaviorPatrol : CritterBehavior {
+
+		public float destinationTolerance = 0.5f;
+		public float patrolRange = 5.0f;
+		public float patrolTimeMin = 4.0f;
+		public float patrolTimeMax = 8.0f;
+		public float patrolSpeed = 0.25f;
+
+		Vector3 patrolPos;
+		float patrolTimer;
+
+		public CritterBehaviorPatrol(Critter c) : base(c) { }
+		public override void Tick(Critter c, float dt, ref Pawn.Input_t input) {
+			if (c.hasLastKnownPosition && c.wary > 0) {
+				var diff = c.lastKnownPosition - c.position;
+				input.look = diff.normalized;
+				input.movement = Vector3.zero;
+			} else {
+				patrolTimer -= dt;
+				if (patrolTimer <= 0) {
+					patrolTimer = Random.Range(patrolTimeMin,patrolTimeMax);
+					GetNewPatrolPoint(c);
+				}
+
+				var diff = patrolPos - c.position;
+				diff.y = 0;
+				if (diff.magnitude > destinationTolerance) {
+					input.movement = diff.normalized* patrolSpeed;
+					input.look = input.movement;
+				}
+
+			}
+		}
+
+		private void GetNewPatrolPoint(Critter c) {
+			var angle = Random.Range(0, Mathf.PI * 2);
+			var desiredOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+			patrolPos = c.position + desiredOffset * patrolRange;
+		}
+	}
+
+	public class CritterBehaviorFlee : CritterBehavior {
+
+		public float destinationTolerance = 0.5f;
+
 		public CritterBehaviorFlee(Critter c) : base(c) { }
 
         override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
@@ -36,13 +97,12 @@ namespace Bowhead.Actors {
             input.inputs[(int)InputType.AttackRight] = InputState.Released;
             if (c.hasLastKnownPosition) {
                 var diff = c.position - c.lastKnownPosition;
-                diff.z = 0;
-                if (diff == Vector3.zero) {
-                    diff.x = 1;
-                }
-                input.movement = diff.normalized;
-                input.look = input.movement;
-            }
+                diff.y = 0;
+				if (diff.magnitude > destinationTolerance) {
+					input.movement = diff.normalized;
+					input.look = input.movement;
+				}
+			}
             if (c.canJump && c.activity == Pawn.Activity.OnGround) {
                 input.inputs[(int)InputType.Jump] = InputState.JustPressed;
             }
@@ -53,6 +113,7 @@ namespace Bowhead.Actors {
 
 		float minRange;
 		float maxRange;
+		float destinationTolerance;
 		float fleeStaminaLimit;
 		float enemyElevationDeltaToJump;
 		float fleeRange;
@@ -71,6 +132,8 @@ namespace Bowhead.Actors {
 		public CritterBehaviorMeleeAttack(Critter c) : base(c) {
 			minRange = 2;
 			maxRange = 5;
+			destinationTolerance = 1.5f;
+
 			fleeStaminaLimit = c.maxStamina * 0.2f;
 			enemyElevationDeltaToJump = 3;
 			fleeRange = 10;
@@ -156,7 +219,7 @@ namespace Bowhead.Actors {
 			float dist = diff.magnitude;
 
 
-			if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround && move.magnitude < (maxRange - minRange) / 2) {
+			if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround && move.magnitude < destinationTolerance) {
 				input.look = -diff;
 				var weapon = c.GetInventorySlot(0) as Weapon;
 				if (weapon.CanCast()) {
