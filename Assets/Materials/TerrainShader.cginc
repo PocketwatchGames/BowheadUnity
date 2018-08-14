@@ -154,6 +154,10 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	float3 worldNormal = normalize(IN.wNormal);
 	float3 signNormal = worldNormal < 0 ? -1 : 1;
 	float3 absNormal = worldNormal * signNormal;
+
+	uvs[0].x *= signNormal.x;
+	uvs[1].x *= signNormal.y;
+	uvs[2].x *= -signNormal.z;
 		
 	fixed4 albedo = sampleTerrainAlbedo(uvs, triblend, signNormal, IN.texBlend);
 	fixed3 normal = sampleTerrainNormal(uvs, triblend, signNormal, IN.texBlend);
