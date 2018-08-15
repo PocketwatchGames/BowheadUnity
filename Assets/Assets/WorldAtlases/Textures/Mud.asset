@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4129b2176e76c044b0c0646095d6faf, type: 3}
+  m_Name: Mud
+  m_EditorClassIdentifier: 
+  albedo:
+    top: {fileID: 2800000, guid: 761f24e4359c81f489ce42c83b7bd651, type: 3}
+    sides: {fileID: 2800000, guid: 761f24e4359c81f489ce42c83b7bd651, type: 3}
+    bottom: {fileID: 2800000, guid: 761f24e4359c81f489ce42c83b7bd651, type: 3}
+  normals:
+    top: {fileID: 2800000, guid: 56598871bccb9ff4a9862e5c8892445f, type: 3}
+    sides: {fileID: 2800000, guid: 56598871bccb9ff4a9862e5c8892445f, type: 3}
+    bottom: {fileID: 2800000, guid: 56598871bccb9ff4a9862e5c8892445f, type: 3}
+  roughness:
+    top: {fileID: 2800000, guid: 8d83e7aafad630b4fbda42e11a459409, type: 3}
+    sides: {fileID: 2800000, guid: 8d83e7aafad630b4fbda42e11a459409, type: 3}
+    bottom: {fileID: 2800000, guid: 8d83e7aafad630b4fbda42e11a459409, type: 3}
+  ao:
+    top: {fileID: 2800000, guid: 83dcd1fd087e4524299b3eb1f94d831a, type: 3}
+    sides: {fileID: 2800000, guid: 83dcd1fd087e4524299b3eb1f94d831a, type: 3}
+    bottom: {fileID: 2800000, guid: 83dcd1fd087e4524299b3eb1f94d831a, type: 3}
+  height:
+    top: {fileID: 2800000, guid: cbd59091ca524ab4d829a55ee9f0b5cf, type: 3}
+    sides: {fileID: 2800000, guid: cbd59091ca524ab4d829a55ee9f0b5cf, type: 3}
+    bottom: {fileID: 2800000, guid: cbd59091ca524ab4d829a55ee9f0b5cf, type: 3}

@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Name: Wood
   m_EditorClassIdentifier: 
   physics: {fileID: 0}
-  textures: {fileID: 11400000, guid: b8bd015532968974190ba78ca87f920b, type: 2}
+  textures: {fileID: 11400000, guid: 1c231ecda4de13a439bcdaf96beaeb48, type: 2}

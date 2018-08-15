@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4129b2176e76c044b0c0646095d6faf, type: 3}
+  m_Name: Moss
+  m_EditorClassIdentifier: 
+  albedo:
+    top: {fileID: 2800000, guid: 6444e56ba6b0f474fb853ab5d286bb40, type: 3}
+    sides: {fileID: 2800000, guid: 6444e56ba6b0f474fb853ab5d286bb40, type: 3}
+    bottom: {fileID: 2800000, guid: 6444e56ba6b0f474fb853ab5d286bb40, type: 3}
+  normals:
+    top: {fileID: 2800000, guid: 98a3bf1eeb3a3a3428280145d39d9951, type: 3}
+    sides: {fileID: 2800000, guid: 98a3bf1eeb3a3a3428280145d39d9951, type: 3}
+    bottom: {fileID: 2800000, guid: 98a3bf1eeb3a3a3428280145d39d9951, type: 3}
+  roughness:
+    top: {fileID: 2800000, guid: 56aef840fd30ad642b4395a2f44408f4, type: 3}
+    sides: {fileID: 2800000, guid: 56aef840fd30ad642b4395a2f44408f4, type: 3}
+    bottom: {fileID: 2800000, guid: 56aef840fd30ad642b4395a2f44408f4, type: 3}
+  ao:
+    top: {fileID: 2800000, guid: 79a5886727cbd2347a72cb7047e11f66, type: 3}
+    sides: {fileID: 2800000, guid: 79a5886727cbd2347a72cb7047e11f66, type: 3}
+    bottom: {fileID: 2800000, guid: 79a5886727cbd2347a72cb7047e11f66, type: 3}
+  height:
+    top: {fileID: 2800000, guid: 845878e56fea3f142b1e3e3435e75605, type: 3}
+    sides: {fileID: 2800000, guid: 845878e56fea3f142b1e3e3435e75605, type: 3}
+    bottom: {fileID: 2800000, guid: 845878e56fea3f142b1e3e3435e75605, type: 3}
