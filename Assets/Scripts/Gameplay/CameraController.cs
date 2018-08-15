@@ -40,6 +40,8 @@ namespace Bowhead.Actors {
 		private float _turnAccelerationTimer;
 		private float _turnAccelerationResetTimer;
 
+		private float _dpadX;
+
 		Camera _camera;
 
 		public CameraController(Camera camera, CameraData cData, CameraData eData) {
@@ -146,18 +148,21 @@ namespace Bowhead.Actors {
 				_oldMousePosition = m;
 			} else {
 				int delta = 0;
-				float r = Input.GetAxis("DPadX");
-				if (r < 0) {
-					delta--;
-				} else if (r > 0) {
-					delta++;
+				float r = Utils.SignOrZero(Input.GetAxis("DPadX"));
+				if (r != 0 && _dpadX == 0) {
+					if (r < 0) {
+						delta--;
+					} else if (r > 0) {
+						delta++;
+					}
+					if (delta != 0) {
+						float curAngle = (Utils.NormalizeAngle(_yaw * Mathf.Rad2Deg + 45)) / (360);
+						int newDir = Mathf.FloorToInt(curAngle * 4) + delta;
+						_isAdjustingYaw = true;
+						_adjustYaw = (float)newDir / 4 * Mathf.PI * 2;
+					}
 				}
-				if (delta != 0) {
-					float curAngle = (Utils.NormalizeAngle(_yaw * Mathf.Rad2Deg + 45)) / (360);
-					int newDir = Mathf.FloorToInt(curAngle * 4) + delta;
-					_isAdjustingYaw = true;
-					_adjustYaw = (float)newDir / 4 * Mathf.PI * 2;
-				}
+				_dpadX = r;
 			}
 		}
 
@@ -284,14 +289,17 @@ namespace Bowhead.Actors {
 
 						if (_isAdjustingYaw) {
 
-							float turnToYaw = _adjustYaw;
-							float desiredVelocity = Utils.SignedMinAngleDelta(turnToYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg) * Mathf.Deg2Rad * data.climbingYawTurnSpeed;
+							float desiredVelocity = Utils.SignedMinAngleDelta(_adjustYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg) * Mathf.Deg2Rad * data.climbingYawTurnSpeed;
 							_adjustYawVelocity += (desiredVelocity - _adjustYawVelocity) * dt * data.climbingYawAdjustmentAcceleration;
-							_yaw = Utils.NormalizeAngle((_yaw + _adjustYawVelocity * dt) * Mathf.Rad2Deg) * Mathf.Deg2Rad;
 
-							if (Mathf.Abs(Mathf.DeltaAngle(_yaw* Mathf.Rad2Deg, _adjustYaw* Mathf.Rad2Deg)) < 0.1f) {
+							float move = _adjustYawVelocity * dt;
+							float deltaAngle = Mathf.DeltaAngle(_yaw * Mathf.Rad2Deg, _adjustYaw * Mathf.Rad2Deg);
+							if (Mathf.Abs(move * Mathf.Rad2Deg) >= Mathf.Abs(Mathf.DeltaAngle(_yaw * Mathf.Rad2Deg, _adjustYaw * Mathf.Rad2Deg))) {
+								_yaw = _adjustYaw;
 								_adjustYaw = -10000;
 								_isAdjustingYaw = false;
+							} else {
+								_yaw = Utils.NormalizeAngle((_yaw + move) * Mathf.Rad2Deg) * Mathf.Deg2Rad;
 							}
 						}
 
