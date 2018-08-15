@@ -900,14 +900,20 @@ public partial class World {
 
 		// axial UV
 		static Vector2 GetUV(Vector3 p, Vector3 n) {
+			Vector3 u;
+			Vector3 v;
 
-			if (Mathf.Abs(n.y) > 0.5f) {
-				return new Vector2(p.x, p.z);
-			} else if (Mathf.Abs(n.x) > 0.5f) {
-				return new Vector2(p.z, p.y);
+			if (Mathf.Abs(Vector3.Dot(n, Vector3.up)) < 0.9f) {
+				v = Vector3.Cross(n, Vector3.down);
+				u = Vector3.Cross(n, v);
+				v = Vector3.Cross(u, n);
+			} else {
+				v = Vector3.Cross(n, Vector3.left);
+				u = Vector3.Cross(n, v);
+				v = Vector3.Cross(u, n);
 			}
 
-			return new Vector2(p.x, p.y);
+			return new Vector2(Vector3.Dot(u, p), Vector3.Dot(v, p));
 		}
 
 		// Based on:
@@ -965,7 +971,7 @@ public partial class World {
 
 				// Calculate handedness
 				// NOTE: This is flipped from Lengyel's implementation, assuming it's a left-handed Unity thing.
-				v4.w = (Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0f) ? 1f : -1f;
+				v4.w = (Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0f) ? -1f : 1f;
 
 				staticVec4[i] = v4;
 			}

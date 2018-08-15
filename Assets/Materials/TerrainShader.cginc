@@ -228,6 +228,7 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 
 	// Albedo comes from a texture tinted by color
 	o.Albedo = albedo * _Color;
+	//o.Albedo = fixed3(0.5, 0.5, 0.5);
 	o.Normal = WorldToTangentNormalVector(IN, normal);
 	o.Occlusion = ao;
 	// Metallic and smoothness come from slider variables

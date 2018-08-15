@@ -664,20 +664,20 @@ public partial class World {
 				// Defines the blending
 
 				_blockSmoothingGroups = new uint[(int)EVoxelBlockType.NumBlockTypes - 1] {
-					0, // BLOCK_TYPE_DIRT -> blends with rock and grass
-					0, // BLOCK_TYPE_GRASS
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_DIRT -> blends with rock and grass
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_GRASS
 					BLOCK_SMG_WATER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_WATER
-					0, // BLOCK_TYPE_SAND
-					0, // BLOCK_TYPE_SNOW
-					0, // BLOCK_TYPE_ROCK
-					0, // BLOCK_TYPE_ICE
-					0, // BLOCK_TYPE_WOOD
-					0, // BLOCK_TYPE_LEAVES
-					0, // BLOCK_TYPE_NEEDLES
-					0, // BLOCK_TYPE_FLOWERS1
-					0, // BLOCK_TYPE_FLOWERS2
-					0, // BLOCK_TYPE_FLOWERS3
-					0 // BLOCK_TYPE_FLOWERS4
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_SAND
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_SNOW
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_ROCK
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_ICE
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_WOOD
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_LEAVES
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_NEEDLES
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS1
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS2
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS3
+					BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS // BLOCK_TYPE_FLOWERS4
 				};
 
 				_pinnedBlockSmoothingGroups = GCHandle.Alloc(_blockSmoothingGroups, GCHandleType.Pinned);
@@ -689,20 +689,20 @@ public partial class World {
 				// 1f = most smooth, 0 = very faceted
 
 				_blockSmoothingFactors = new float[(int)EVoxelBlockType.NumBlockTypes - 1] {
-					0.8f, // BLOCK_TYPE_DIRT
-					0.8f, // BLOCK_TYPE_GRASS
-					0.8f, // BLOCK_TYPE_WATER
-					0.8f, // BLOCK_TYPE_SAND
-					0.8f, // BLOCK_TYPE_SNOW
-					0.35f, // BLOCK_TYPE_ROCK
-					0.35f, // BLOCK_TYPE_ICE
-					0.5f, // BLOCK_TYPE_WOOD
-					0.8f, // BLOCK_TYPE_LEAVES
-					0.8f, // BLOCK_TYPE_NEEDLES
-					0.8f, // BLOCK_TYPE_FLOWERS1
-					0.8f, // BLOCK_TYPE_FLOWERS2
-					0.8f, // BLOCK_TYPE_FLOWERS3
-					0.8f  // BLOCK_TYPE_FLOWERS4
+					1f, // BLOCK_TYPE_DIRT
+					1f, // BLOCK_TYPE_GRASS
+					1f, // BLOCK_TYPE_WATER
+					1f, // BLOCK_TYPE_SAND
+					1f, // BLOCK_TYPE_SNOW
+					1f, // BLOCK_TYPE_ROCK
+					1f, // BLOCK_TYPE_ICE
+					1f, // BLOCK_TYPE_WOOD
+					1f, // BLOCK_TYPE_LEAVES
+					1f, // BLOCK_TYPE_NEEDLES
+					1f, // BLOCK_TYPE_FLOWERS1
+					1f, // BLOCK_TYPE_FLOWERS2
+					1f, // BLOCK_TYPE_FLOWERS3
+					1f  // BLOCK_TYPE_FLOWERS4
 				};
 
 				_pinnedBlockSmoothingFactors = GCHandle.Alloc(_blockSmoothingFactors, GCHandleType.Pinned);
@@ -848,7 +848,7 @@ public partial class World {
 				int vtoiCount = _vtoiCounts[INDEX];
 				for (int i = 0; i < vtoiCount; ++i) {
 					int idx = _vtoi[(INDEX*BANK_SIZE)+i];
-					if (ColorEqual(colors[idx], color) && (this.textureBlending[idx] == textureBlending) && (normals[idx] == normal)) {
+					if (ColorEqual(colors[idx], color) && (Vector4.Equals(this.textureBlending[idx], textureBlending)) && (Vector3.Equals(normals[idx], normal))) {
 						Assert((_indexCount-_layerIndexOfs) < ushort.MaxValue);
 						indices[_indexCount++] = idx - _layerVertOfs;
 						return;
@@ -1382,7 +1382,7 @@ public partial class World {
 
 				var smg = _smoothVerts.smgs[bankedIndex];
 
-				float factor = 1.1f - _smoothVerts.smoothFactor[bankedIndex];
+				float factor = 1f - _smoothVerts.smoothFactor[bankedIndex];
 
 				float w = 1f;
 
