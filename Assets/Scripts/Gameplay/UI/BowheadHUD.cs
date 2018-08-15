@@ -99,6 +99,8 @@ namespace Bowhead.Client.UI {
             var directionPreview = GameObject.Instantiate<DirectionPreview>(GameManager.instance.clientData.directionPreviewPrefab, _playerHUD.transform);
             directionPreview.SetTarget(player);
 
+			localPlayer.playerPawn.OnMerchantActivated += OnMerchantActivated;
+
 			_inventoryHUD.Init(player);
         }
 
@@ -117,6 +119,10 @@ namespace Bowhead.Client.UI {
 			_spawnMarker.worldPosition = pos;
 			ShowWorldMap(showMap);
         }
+
+		private void OnMerchantActivated(Pawn merchant) {
+			ShowInventory(true, merchant);
+		}
 
         private void OnDamage(Pawn target, float damage)
         {
@@ -166,7 +172,7 @@ namespace Bowhead.Client.UI {
 				ShowWorldMap(!worldMapVisible);
 			}
 			else if (!worldMapVisible && (Input.GetButtonDown("B1") || (inventoryVisible && Input.GetButtonDown("B1")))) {
-				ShowInventory(!inventoryVisible);
+				ShowInventory(!inventoryVisible, null);
 			}
 			else if (worldMapVisible && Input.GetButtonDown("X1")) {
 				localPlayer.playerPawn.Teleport();
@@ -186,7 +192,10 @@ namespace Bowhead.Client.UI {
 			localPlayer.playerPawn.FreezeMotion(show);
 		}
 
-		public override void ShowInventory(bool show) {
+		public override void ShowInventory(bool show, Pawn merchant) {
+			if (show) {
+				_inventoryHUD.SetMerchant(merchant);
+			}
 			_inventoryHUD.gameObject.SetActive(show);
 			localPlayer.playerPawn.FreezeMotion(show);
 		}

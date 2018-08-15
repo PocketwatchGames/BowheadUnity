@@ -60,6 +60,7 @@ namespace Bowhead.Actors {
         public event Action OnWeightClassChange;
         public event Action<Vector2, int, bool> OnExplore;
 		public event Action OnInventoryChange;
+		public event Action<Pawn> OnMerchantActivated;
 
 		public delegate void OnLandFn(float damage);
         public event OnLandFn OnLand;
@@ -77,56 +78,55 @@ namespace Bowhead.Actors {
 
 			PlayerCmd_t cmd = new PlayerCmd_t();
 
-			if (freezeMotion) {
-				return;
-			}
+			if (!freezeMotion) {
 
-			if (pi == 1) {
+				if (pi == 1) {
 
-				Vector2 look;
-				if (Input.GetJoystickNames().Length == 0) {
-					look = (Input.mousePosition - new Vector3(Screen.width/2,Screen.height/2)).normalized;
-					if (look != Vector2.zero) {
-						look.Normalize();
-					}
-					look.y = -look.y;
-				} else {
-					look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
-					if (look.magnitude > 0.5f) {
-						look.Normalize();
+					Vector2 look;
+					if (Input.GetJoystickNames().Length == 0) {
+						look = (Input.mousePosition - new Vector3(Screen.width / 2, Screen.height / 2)).normalized;
+						if (look != Vector2.zero) {
+							look.Normalize();
+						}
+						look.y = -look.y;
 					} else {
-						look = Vector2.zero;
+						look = new Vector2(Input.GetAxis("LookHorizontal"), Input.GetAxis("LookVertical"));
+						if (look.magnitude > 0.5f) {
+							look.Normalize();
+						} else {
+							look = Vector2.zero;
+						}
 					}
+					cmd.lookFwd = (sbyte)(-look.y * 127);
+					cmd.lookRight = (sbyte)(look.x * 127);
 				}
-				cmd.lookFwd = (sbyte)(-look.y * 127);
-				cmd.lookRight = (sbyte)(look.x * 127);
-			}
 
-			Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal" + pi), Input.GetAxis("MoveVertical" + pi)); ;
-			cmd.fwd = (sbyte)(move.y * 127);
-			cmd.right = (sbyte)(move.x * 127);
+				Vector2 move = new Vector2(Input.GetAxis("MoveHorizontal" + pi), Input.GetAxis("MoveVertical" + pi)); ;
+				cmd.fwd = (sbyte)(move.y * 127);
+				cmd.right = (sbyte)(move.x * 127);
 
-			if (Input.GetButton("A" + pi)) {
-                cmd.buttons |= 1 << (int)InputType.Jump;
-            }
-            if (Input.GetButton("X" + pi)) {
-                cmd.buttons |= 1 << (int)InputType.Interact;
-            }
-			if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
-				cmd.buttons |= 1 << (int)InputType.AttackRight;
+				if (Input.GetButton("A" + pi)) {
+					cmd.buttons |= 1 << (int)InputType.Jump;
+				}
+				if (Input.GetButton("X" + pi)) {
+					cmd.buttons |= 1 << (int)InputType.Interact;
+				}
+				if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
+					cmd.buttons |= 1 << (int)InputType.AttackRight;
+				}
+				if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
+					cmd.buttons |= 1 << (int)InputType.AttackLeft;
+				}
+				if (Input.GetButton("ShoulderLeft" + pi)) {
+					cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
+				}
+				if (Input.GetButton("ShoulderRight" + pi)) {
+					cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
+				}
+				//if (Input.GetButton("ShoulderLeft" + pi)) {
+				//	cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
+				//}
 			}
-			if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
-				cmd.buttons |= 1 << (int)InputType.AttackLeft;
-			}
-			if (Input.GetButton("ShoulderLeft" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
-			}
-			if (Input.GetButton("ShoulderRight" + pi)) {
-				cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
-			}
-			//if (Input.GetButton("ShoulderLeft" + pi)) {
-			//	cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
-			//}
 
 			UpdatePlayerCmd(cmd);
         }
@@ -306,7 +306,7 @@ namespace Bowhead.Actors {
 			if (tradePartner != null) {
 				var diff = tradePartner.position - position;
 				if (diff.magnitude > data.tradePartnerCancelDistance) {
-					tradePartner = null;
+					SetTradePartner(null);
 				}
 			}
 
@@ -397,7 +397,7 @@ namespace Bowhead.Actors {
 			attackTargetPreview = GetAttackTarget(yaw, 20, 360 * Mathf.Deg2Rad, null);
 
 			if (isCasting) {
-				tradePartner = null;
+				SetTradePartner(null);
 			}
 
 			base.Simulate(dt, input);
@@ -442,6 +442,7 @@ namespace Bowhead.Actors {
 			PickUp(unarmedWeaponRight);
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
 			PickUp(ItemData.Get("SpellHeal").CreateItem());
+			SetMoney(50);
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
@@ -803,7 +804,7 @@ namespace Bowhead.Actors {
             return false;
         }
 
-        void RemoveFromInventory(Item item) {
+        public void RemoveFromInventory(Item item) {
             int slot = 0;
             int packSlots = 0;
 
@@ -840,15 +841,9 @@ namespace Bowhead.Actors {
         }
 
         public void Drop(Item item) {
-			if (tradePartner != null) {
-				RemoveFromInventory(item);
-				SetMoney(money + item.data.monetaryValue);
-			}
-			else {
-				RemoveFromInventory(item);
-				var worldItem = WorldItemData.Get("chest").Spawn<WorldItem>(world, handPosition(), yaw, this, this, team);
-				worldItem.item = item;
-			}
+			RemoveFromInventory(item);
+			var worldItem = WorldItemData.Get("chest").Spawn<WorldItem>(world, handPosition(), yaw, this, this, team);
+			worldItem.item = item;
         }
 
 		#endregion
@@ -860,9 +855,18 @@ namespace Bowhead.Actors {
 			base.SetActivity(a);
 		}
 
+		protected void SetTradePartner(Pawn t) {
+
+			tradePartner = t;
+			if (tradePartner != null) {
+				OnMerchantActivated?.Invoke(tradePartner);
+			}
+		}
+
+
 		public void Teleport() {
 			SetMount(null);
-			tradePartner = null;
+			SetTradePartner(null);
 			SetPosition(spawnPoint);
 		}
 
@@ -874,7 +878,7 @@ namespace Bowhead.Actors {
             GetInteractTarget(out target, out targetPos, out interaction);
 
 			if (tradePartner == target) {
-				tradePartner = null;
+				SetTradePartner(null);
 				return;
 			} else if (mount == target) {
 				SetMount(null);
@@ -895,10 +899,9 @@ namespace Bowhead.Actors {
 				}
 				else {
 					if (tradePartner == critter) {
-						tradePartner = null;
-					}
-					else {
-						tradePartner = critter;
+						SetTradePartner(null);
+					} else {
+						SetTradePartner(critter);
 					}
 				}
 			}
