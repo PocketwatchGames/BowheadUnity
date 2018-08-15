@@ -100,7 +100,7 @@ namespace Bowhead.Client.UI {
 				s.Init(Player.InventorySlot.PACK, _player);
 				_slots[index] = s;
 				x += slotSize.x + slotMargin;
-				_slots[index].SetButton("Y");
+				_slots[index].SetButton("B");
 			}
 
 			x += slotMargin;
