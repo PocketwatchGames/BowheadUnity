@@ -9,6 +9,7 @@ public class CameraData : ScriptableObject {
 	public float lookAtFriction = 10f;
     public float lookAtAcceleration = 20;
     public float lookAtLeadDist = 5;
+	public float targetOffsetAcceleration = 15;
 	public float friction = 10.0f;
 	public float leashFollowVelocityRate = 0.15f;
 

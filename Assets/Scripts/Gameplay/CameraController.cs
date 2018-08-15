@@ -175,7 +175,20 @@ namespace Bowhead.Actors {
 				float angleCorrectionTime = 2;
 				var desiredVelocity = (desiredAngles - curAngles) / angleCorrectionTime;
 				_angleCorrectionVelocity += (desiredVelocity - _angleCorrectionVelocity) * dt * angleCorrectionAcceleration;
-				curAngles += _angleCorrectionVelocity * dt;
+
+				var move = _angleCorrectionVelocity * dt;
+				if (Mathf.Abs(move.x) >= Mathf.Abs(Mathf.DeltaAngle(curAngles.x * Mathf.Rad2Deg, desiredAngles.x * Mathf.Rad2Deg)) * Mathf.Deg2Rad) {
+					curAngles.x = desiredAngles.x;
+					_angleCorrectionVelocity.x = 0;
+				} else {
+					curAngles.x += move.x;
+				}
+				if (Mathf.Abs(move.y) >= Mathf.Abs(Mathf.DeltaAngle(curAngles.y * Mathf.Rad2Deg, desiredAngles.y * Mathf.Rad2Deg)) * Mathf.Deg2Rad) {
+					curAngles.y = desiredAngles.y;
+					_angleCorrectionVelocity.y = 0;
+				} else {
+					curAngles.y += move.y;
+				}
 				_yaw = curAngles.x;
 				_pitch = curAngles.y;
 			}
@@ -201,10 +214,15 @@ namespace Bowhead.Actors {
 				if (isMoving) {
 					Vector3 playerMovement = avgPlayerPosition - _playerPosition;
 					var desiredTargetOffset = playerMovement.normalized * data.lookAtLeadDist;
-					_targetOffsetVelocity = _targetOffsetVelocity + ((desiredTargetOffset - _targetOffsetPosition) - _targetOffsetVelocity) * dt * 10;
-					_targetOffsetPosition += _targetOffsetVelocity * dt;
-				}
-				else {
+					_targetOffsetVelocity = _targetOffsetVelocity + ((desiredTargetOffset - _targetOffsetPosition) - _targetOffsetVelocity) * dt * data.targetOffsetAcceleration;
+					var move = _targetOffsetVelocity * dt;
+					if ((_targetOffsetPosition - desiredTargetOffset).magnitude <= move.magnitude) {
+						_targetOffsetPosition = desiredTargetOffset;
+						_targetOffsetVelocity = Vector3.zero;
+					} else {
+						_targetOffsetPosition += move;
+					}
+				} else {
 					_targetOffsetVelocity = Vector3.zero;
 				}
 
