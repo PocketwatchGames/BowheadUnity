@@ -970,7 +970,6 @@ public partial class World {
 				Vector4 v4 = (t - n * Vector3.Dot(n, t)).normalized;
 
 				// Calculate handedness
-				// NOTE: This is flipped from Lengyel's implementation, assuming it's a left-handed Unity thing.
 				v4.w = (Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0f) ? -1f : 1f;
 
 				staticVec4[i] = v4;
