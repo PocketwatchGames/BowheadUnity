@@ -665,14 +665,14 @@ namespace Bowhead.Actors {
 				// ranged
 				if (weapon.data.hand == WeaponData.Hand.RANGED) {
 					var equippedRight = GetInventorySlot((int)InventorySlot.SPELL);
-					if (equippedRight != null) {
-						if (!FindEmptyPackSlots(1, ref emptyPackSlots)) {
-							return false;
-						}
-						SetInventorySlot(emptyPackSlots[0], equippedRight);
-					}
 					if (equippedRight == null) {
 						SetInventorySlot((int)InventorySlot.SPELL, weapon);
+					} else {
+						if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
+							SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.SPELL));
+							SetInventorySlot((int)InventorySlot.SPELL, weapon);
+							return true;
+						}
 					}
 					return true;
 				}
@@ -686,9 +686,7 @@ namespace Bowhead.Actors {
 					}
 					else {
 						if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
-							if (GetInventorySlot((int)InventorySlot.CLOTHING) != null) {
-								SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.CLOTHING));
-							}
+							SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.CLOTHING));
 							SetInventorySlot((int)InventorySlot.CLOTHING, item);
 							return true;
 						}
