@@ -38,9 +38,8 @@ namespace Bowhead.Actors {
             CLOTHING = 0,
             LEFT_HAND = 1,
             RIGHT_HAND = 2,
-			LEFT_RANGED = 3,
-			RIGHT_RANGED = 4,
-			PACK = 5,
+			SPELL = 3,
+			PACK = 4,
         }
         public enum WeightClass {
             LIGHT,
@@ -118,7 +117,7 @@ namespace Bowhead.Actors {
 					cmd.buttons |= 1 << (int)InputType.AttackLeft;
 				}
 				if (Input.GetButton("ShoulderLeft" + pi)) {
-					cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
+					cmd.buttons |= 1 << (int)InputType.Dodge;
 				}
 				if (Input.GetButton("ShoulderRight" + pi)) {
 					cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
@@ -362,7 +361,7 @@ namespace Bowhead.Actors {
 					}
 				}
 
-				Weapon itemRangedRight = GetInventorySlot((int)InventorySlot.RIGHT_RANGED) as Weapon;
+				Weapon itemRangedRight = GetInventorySlot((int)InventorySlot.SPELL) as Weapon;
 				if (itemRangedRight != null) {
 					if (itemRangedRight.CanCast()) {
 						if (input.IsPressed(InputType.AttackRangedRight)) {
@@ -374,21 +373,6 @@ namespace Bowhead.Actors {
 								isCasting = true;
 							}
 							itemRangedRight.chargeTime = 0;
-						}
-					}
-				}
-				Weapon itemRangedLeft = GetInventorySlot((int)InventorySlot.LEFT_RANGED) as Weapon;
-				if (itemRangedLeft != null) {
-					if (itemRangedLeft.CanCast()) {
-						if (input.IsPressed(InputType.AttackRangedLeft)) {
-							itemRangedLeft.Charge(dt, 0);
-							isCasting = true;
-						} else {
-							if (input.JustReleased(InputType.AttackRangedLeft)) {
-								itemRangedLeft.Attack(this);
-								isCasting = true;
-							}
-							itemRangedLeft.chargeTime = 0;
 						}
 					}
 				}
@@ -570,11 +554,7 @@ namespace Bowhead.Actors {
 					slot = (int)InventorySlot.RIGHT_HAND;
 				}
 				else if (weapon.data.hand == WeaponData.Hand.RANGED) {
-					if (GetInventorySlot((int)InventorySlot.RIGHT_RANGED) == null) {
-						slot = (int)InventorySlot.RIGHT_RANGED;
-					} else {
-						slot = (int)InventorySlot.LEFT_RANGED;
-					}
+					slot = (int)InventorySlot.SPELL;
 				}
 				else if (weapon.data.hand == WeaponData.Hand.ARMOR) {
 					slot = (int)InventorySlot.CLOTHING;
@@ -662,7 +642,7 @@ namespace Bowhead.Actors {
             for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) == item) {
                     // unequip
-                    if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND || i == (int)InventorySlot.LEFT_RANGED || i == (int)InventorySlot.RIGHT_RANGED) {
+                    if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND || i == (int)InventorySlot.SPELL) {
                         if (FindEmptyPackSlots(1, ref emptyPackSlots)) {
                             SetInventorySlot(emptyPackSlots[0], GetInventorySlot(i));
                             return true;
@@ -684,18 +664,15 @@ namespace Bowhead.Actors {
 
 				// ranged
 				if (weapon.data.hand == WeaponData.Hand.RANGED) {
-					var equippedLeft = GetInventorySlot((int)InventorySlot.LEFT_RANGED);
-					var equippedRight = GetInventorySlot((int)InventorySlot.RIGHT_RANGED);
-					if (equippedLeft != null && equippedRight != null) {
+					var equippedRight = GetInventorySlot((int)InventorySlot.SPELL);
+					if (equippedRight != null) {
 						if (!FindEmptyPackSlots(1, ref emptyPackSlots)) {
 							return false;
 						}
-						SetInventorySlot(emptyPackSlots[0], equippedLeft);
+						SetInventorySlot(emptyPackSlots[0], equippedRight);
 					}
 					if (equippedRight == null) {
-						SetInventorySlot((int)InventorySlot.RIGHT_RANGED, weapon);
-					} else {
-						SetInventorySlot((int)InventorySlot.LEFT_RANGED, weapon);
+						SetInventorySlot((int)InventorySlot.SPELL, weapon);
 					}
 					return true;
 				}
@@ -824,9 +801,7 @@ namespace Bowhead.Actors {
             }
 			else if (slot == (int)InventorySlot.RIGHT_HAND) {
 				SetInventorySlot(slot, null);
-			} else if (slot == (int)InventorySlot.LEFT_RANGED) {
-				SetInventorySlot(slot, null);
-			} else if (slot == (int)InventorySlot.RIGHT_RANGED) {
+			} else if (slot == (int)InventorySlot.SPELL) {
 				SetInventorySlot(slot, null);
 			} else {
                 for (int j = slot; j < slot + packSlots; j++) {

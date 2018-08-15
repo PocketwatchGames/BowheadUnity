@@ -20,7 +20,7 @@ namespace Bowhead.Client.UI {
 		public Sprite[] _slotBackgrounds;
 
 
-		public void Init(Player.InventorySlot slot, Player p) {
+		public void Init(Player.InventorySlot slot, Player p, string text=null) {
 			_player = p;
 			_button = transform.GetAnyChildComponent<Button>("Button");
 			_background = transform.GetAnyChildComponent<Image>("Background");
@@ -29,9 +29,9 @@ namespace Bowhead.Client.UI {
 			_buttonHint.gameObject.SetActive(false);
 			SetTimer(0);
 
-			if (slot == Player.InventorySlot.PACK) {
+			if (text != null) {
 				_button.gameObject.SetActive(true);
-				_button.GetComponentInChildren<Text>().text = "Pack";
+				_button.GetComponentInChildren<Text>().text = text;
 			}
 		}
 

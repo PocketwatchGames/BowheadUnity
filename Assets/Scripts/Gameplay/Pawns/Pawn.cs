@@ -13,6 +13,7 @@ namespace Bowhead.Actors {
     }
     public enum InputType {
         Jump,
+		Dodge,
 		Interact,
         AttackLeft,
 		AttackRight,
@@ -79,7 +80,6 @@ namespace Bowhead.Actors {
         public float fallJumpTimer;
         public float maxHorizontalSpeed;
 		public float sprintTimer;
-		public float sprintGracePeriodTime;
 		public bool skidding;
         public bool canMove;
         public bool canRun;
@@ -606,18 +606,16 @@ namespace Bowhead.Actors {
 				if (input.IsPressed(InputType.Jump)) {
 					sprintTimer = sprintTimer += dt;
 				} else if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
-                    if (canJump) {
-                        var jumpDir = input.movement * data.jumpHorizontalSpeed;
-                        jumpDir.y += getGroundJumpVelocity();
-                        Jump(jumpDir);
-                    }
-                    fallJumpTimer = 0;
+					if (canJump) {
+						var jumpDir = input.movement * data.jumpHorizontalSpeed;
+						jumpDir.y += getGroundJumpVelocity();
+						Jump(jumpDir);
+					}
+					fallJumpTimer = 0;
 					sprintTimer = 0;
-					sprintGracePeriodTime = 0;
 				}
 			} else {
 				sprintTimer = 0;
-				sprintGracePeriodTime = 0;
 			}
 
 			velocity.y += data.gravity * dt;
@@ -653,30 +651,30 @@ namespace Bowhead.Actors {
 			bool jumped = false;
 			if (canJump) {
 
-				if (input.IsPressed(InputType.Jump)) {
+				if (input.JustPressed(InputType.Jump)) {
+					var jumpDir = input.movement * data.jumpHorizontalSpeed;
+					jumpDir.y += getGroundJumpVelocity();
+					Jump(jumpDir);
+					jumped = true;
+					fallJumpTimer = 0;
+				}
+
+				if (input.IsPressed(InputType.Dodge)) {
 					sprintTimer = sprintTimer += dt;
-					if (sprintTimer > data.sprintTime) {
-						sprintGracePeriodTime = data.sprintGracePeriodTime;
-					}
-					if (input.JustPressed(InputType.Jump)) {
+					if (input.JustPressed(InputType.Dodge)) {
 						dodgeTimer = dodgeTimer + data.dodgeTime;
 					}
 				} else {
 					if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
-						if (canJump) {
-							var jumpDir = input.movement * data.jumpHorizontalSpeed;
-							jumpDir.y += getGroundJumpVelocity();
-							Jump(jumpDir);
-							jumped = true;
-						}
+						var jumpDir = input.movement * data.jumpHorizontalSpeed;
+						Dodge(jumpDir, 0.5f);
 						fallJumpTimer = 0;
 					}
 					sprintTimer = 0;
-					sprintGracePeriodTime = Mathf.Max(0, sprintGracePeriodTime - dt);
 				}
+
 			} else {
 				sprintTimer = 0;
-				sprintGracePeriodTime = 0;
 				dodgeTimer = 0;
 			}
 
@@ -778,12 +776,7 @@ namespace Bowhead.Actors {
 
 
 			Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
-
-			if (sprintGracePeriodTime > 0) {
-				maxHorizontalSpeed = Mathf.Max(maxHorizontalSpeed, horizontalVel.magnitude);
-			} else {
-				maxHorizontalSpeed = horizontalVel.magnitude;
-			}
+			maxHorizontalSpeed = horizontalVel.magnitude;
 
 			if (data.sprintTime > 0 && sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
 				UseStamina(data.sprintStaminaUse * dt, false);
@@ -793,7 +786,6 @@ namespace Bowhead.Actors {
 		private void UpdateSwimming(float dt, Input_t input) {
 
 			sprintTimer = 0;
-			sprintGracePeriodTime = 0;
 			skidding = false;
 
 			if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
@@ -843,7 +835,6 @@ namespace Bowhead.Actors {
             maxHorizontalSpeed = data.jumpHorizontalSpeed;
 
 			sprintTimer = 0;
-			sprintGracePeriodTime = 0;
 			skidding = false;
 
 
@@ -886,7 +877,6 @@ namespace Bowhead.Actors {
 									jumpDir += input.movement * data.groundMaxSpeed;
 									jumpDir.y = data.jumpSpeed;
 									maxHorizontalSpeed = data.sprintSpeed;
-									sprintGracePeriodTime = 0.1f;
 								}
 							}
 							Jump(jumpDir);
@@ -1104,12 +1094,6 @@ namespace Bowhead.Actors {
 			UseStamina(data.jumpStaminaUse, false);
 
 			float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-			float launchSpeedXZ;
-			if (sprintGracePeriodTime > 0) {
-				launchSpeedXZ = data.sprintSpeed;
-			} else {
-				launchSpeedXZ = curSpeedXZ;
-			}
 
 			float jumpSpeedXZ = Mathf.Sqrt(dir.x * dir.x + dir.z * dir.z);
 			velocity += dir;
@@ -1117,7 +1101,7 @@ namespace Bowhead.Actors {
 
 
 			float velY = velocity.y;
-			float newSpeedXZ = Mathf.Min(launchSpeedXZ, combinedSpeedXZ);
+			float newSpeedXZ = Mathf.Min(curSpeedXZ, combinedSpeedXZ);
 			velocity = velocity.normalized * newSpeedXZ;
 			velocity.y = velY;
 		}
