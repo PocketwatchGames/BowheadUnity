@@ -120,6 +120,17 @@ half3 triplanarWorldNormal(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[1
 	return (half3)normalize(normal);
 }
 
+half4 sampleTerrainHeight(float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
+	half4 height;
+
+	height.r = triplanarSampleColor(0, UNITY_PASS_TEX2DARRAY(_HeightTextureArray), _HeightTextureArrayIndices, uvs, triblend, signNormal).r * texBlend[0];
+	height.g = triplanarSampleColor(1, UNITY_PASS_TEX2DARRAY(_HeightTextureArray), _HeightTextureArrayIndices, uvs, triblend, signNormal).r * texBlend[1];
+	height.b = triplanarSampleColor(2, UNITY_PASS_TEX2DARRAY(_HeightTextureArray), _HeightTextureArrayIndices, uvs, triblend, signNormal).r * texBlend[2];
+	height.a = triplanarSampleColor(3, UNITY_PASS_TEX2DARRAY(_HeightTextureArray), _HeightTextureArrayIndices, uvs, triblend, signNormal).r * texBlend[3];
+
+	return height;
+}
+
 fixed4 sampleTerrainAlbedo(float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
 	return triplanarColor(UNITY_PASS_TEX2DARRAY(_AlbedoTextureArray), _AlbedoTextureArrayIndices, uvs, triblend, signNormal, texBlend);
 }
@@ -175,9 +186,14 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	clip(IN);
 	IN.worldNormal = WorldNormalVector(IN, float3(0, 0, 1));
 
-	half3 triblend = saturate(pow(IN.worldNormal, 4));
-	triblend /= dot(triblend, half3(1, 1, 1));
+	half3 worldNormal = normalize(IN.worldNormal);
+	half3 signNormal = worldNormal < 0 ? -1 : 1;
+	half3 absNormal = worldNormal * signNormal;
 
+	half3 triblend = saturate(pow(worldNormal, 4));
+	//triblend = pow(triblend, 2);
+	triblend /= dot(triblend, half3(1, 1, 1));
+	
 	float3 uvbase = IN.worldPos / _TextureScale;
 
 	// triplanar uvs
@@ -186,26 +202,27 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	uvs[1] = uvbase.xz;
 	uvs[2] = uvbase.xy;
 
-	uvs[1] += 0.33f;
-	uvs[2] += 0.67f;
-
-	half3 worldNormal = normalize(IN.worldNormal);
-	half3 signNormal = worldNormal < 0 ? -1 : 1;
-	half3 absNormal = worldNormal * signNormal;
-
+	//uvs[1] += 0.33f;
+	//uvs[2] += 0.67f;
+	
 	uvs[0].x *= signNormal.x;
 	uvs[1].x *= signNormal.y;
 	uvs[2].x *= -signNormal.z;
+
+	half4 height = sampleTerrainHeight(uvs, triblend, signNormal, IN.texBlend);// +(IN.texBlend * 0.1);
+	half baseHeight = max(max(max(height.x, height.y), height.z), height.w) * 0.6;// -0.3;
+	height = max(height - baseHeight.xxxx, half4(0, 0, 0, 0));
+	height /= dot(height, half4(1, 1, 1, 1));
 
 	half3 bumpNormals[3];
 	bumpNormals[0] = half3(worldNormal.zy, absNormal.x);
 	bumpNormals[1] = half3(worldNormal.xz, absNormal.y);
 	bumpNormals[2] = half3(worldNormal.xy, absNormal.z);
 			
-	fixed4 albedo = sampleTerrainAlbedo(uvs, triblend, signNormal, IN.texBlend);
-	half3 normal = sampleTerrainWorldNormal(uvs, triblend, signNormal, bumpNormals, IN.texBlend);
-	fixed ao = sampleTerrainAO(uvs, triblend, signNormal, IN.texBlend);
-	fixed roughness = sampleTerrainRoughness(uvs, triblend, signNormal, IN.texBlend);
+	fixed4 albedo = sampleTerrainAlbedo(uvs, triblend, signNormal, height);
+	half3 normal = sampleTerrainWorldNormal(uvs, triblend, signNormal, bumpNormals, height);
+	fixed ao = sampleTerrainAO(uvs, triblend, signNormal, height);
+	fixed roughness = sampleTerrainRoughness(uvs, triblend, signNormal, height);
 
 	// Albedo comes from a texture tinted by color
 	o.Albedo = albedo * _Color;
