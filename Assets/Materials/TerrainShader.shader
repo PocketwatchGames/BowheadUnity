@@ -2,9 +2,10 @@
 	Properties {
 		[NoScaleOffset]_AlbedoTextureArray("Albedo (RGB)", 2DArray) = "white" {}
 		[NoScaleOffset]_NormalsTextureArray("Normals (RGB)", 2DArray) = "white" {}
-		[NoScaleOffset]_RoughnessTextureArray("Roughness (RGB)", 2DArray) = "white" {}
+		/*[NoScaleOffset]_RoughnessTextureArray("Roughness (RGB)", 2DArray) = "white" {}
 		[NoScaleOffset]_AOTextureArray("AO (RGB)", 2DArray) = "white" {}
-		[NoScaleOffset]_HeightTextureArray("Height (RGB)", 2DArray) = "white" {}
+		[NoScaleOffset]_HeightTextureArray("Height (RGB)", 2DArray) = "white" {}*/
+		[NoScaleOffset] _RHOTextureArray("Height (RGB)", 2DArray) = "white" {}
 		_Color("Color", Color) = (1,1,1,1)
 		_Glossiness ("Smoothness", Range(0,1)) = 0.5
 		_Metallic ("Metallic", Range(0,1)) = 0.0

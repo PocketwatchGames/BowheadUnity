@@ -7,6 +7,9 @@ using UnityEditor;
 
 [CustomEditor(typeof(WorldAtlas))]
 public class WorldAtlasEditor : Editor {
+	const TextureImporterFormat RHO_TEXTURE_FORMAT = TextureImporterFormat.DXT5;
+	const TextureImporterFormat COLOR_TEXTURE_FORMAT = TextureImporterFormat.DXT1;
+	const TextureImporterFormat NORMALS_TEXTURE_FORMAT = TextureImporterFormat.DXT5;
 
 	SerializedProperty _materials;
 	SerializedProperty _renderMaterials;
@@ -143,16 +146,18 @@ public class WorldAtlasEditor : Editor {
 	struct TextureBundle {
 		public TextureSet albedo;
 		public TextureSet normals;
-		public TextureSet roughness;
-		public TextureSet ao;
-		public TextureSet height;
+		//public TextureSet roughness;
+		//public TextureSet ao;
+		//public TextureSet height;
+		public TextureSet rho;
 
 		public static bool Equals(TextureBundle a, TextureBundle b) {
 			return TextureSet.Equals(a.albedo, b.albedo) &&
 				TextureSet.Equals(a.normals, b.normals) &&
-				TextureSet.Equals(a.roughness, b.roughness) &&
-				TextureSet.Equals(a.ao, b.ao) &&
-				TextureSet.Equals(a.height, b.height);
+				//TextureSet.Equals(a.roughness, b.roughness) &&
+				//TextureSet.Equals(a.ao, b.ao) &&
+				//TextureSet.Equals(a.height, b.height) &&
+				TextureSet.Equals(a.rho, b.rho);
 		}
 	
 		public static int[] OptimizeShaderIndices(TextureBundle[] arr) {
@@ -188,7 +193,7 @@ public class WorldAtlasEditor : Editor {
 		}
 	};
 
-	void AddTextureSet(WorldAtlasMaterial atlasMaterial, List<Texture2D> arr, List<TextureSet> indices, WorldAtlasMaterialTextures.TextureSet textureSet, string channelName) {
+	void CheckThrowTextureSet(WorldAtlasMaterial atlasMaterial, WorldAtlasMaterialTextures.TextureSet textureSet, string channelName) {
 		if (textureSet.top == null) {
 			ThrowAssetException(atlasMaterial, "Texture set for " + channelName + " is missing 'top' texture!");
 		}
@@ -198,7 +203,9 @@ public class WorldAtlasEditor : Editor {
 		if (textureSet.bottom == null) {
 			ThrowAssetException(atlasMaterial, "Texture set for " + channelName + " is missing 'bottom' texture!");
 		}
+	}
 
+	void AddTextureSet(WorldAtlasMaterial atlasMaterial, List<Texture2D> arr, List<TextureSet> indices, WorldAtlasMaterialTextures.TextureSet textureSet, string channelName) {
 		var tSet = new TextureSet() {
 			top = AddTextureIndex(arr, textureSet.top),
 			sides = AddTextureIndex(arr, textureSet.sides),
@@ -227,6 +234,124 @@ public class WorldAtlasEditor : Editor {
 		}
 	}
 
+	class RHOTextureJoin {
+		public int roughnessIndex;
+		public int heightIndex;
+		public int aoIndex;
+	};
+
+	class RHOTextureTable {
+		public List<RHOTextureJoin> textures = new List<RHOTextureJoin>();
+		public List<Texture2D> roughness = new List<Texture2D>();
+		public List<Texture2D> height = new List<Texture2D>();
+		public List<Texture2D> ao = new List<Texture2D> ();
+		public List<TextureSet> indices = new List<TextureSet>();
+
+		public int AddTextureJoin(Texture2D r, Texture2D h, Texture2D o) {
+			var ri = roughness.FindIndex(0, roughness.Count, x => x.GetInstanceID() == r.GetInstanceID());
+			var hi = height.FindIndex(0, height.Count, x => x.GetInstanceID() == h.GetInstanceID());
+			var oi = ao.FindIndex(0, ao.Count, x => x.GetInstanceID() == o.GetInstanceID());
+			
+			var idx = textures.FindIndex(0, textures.Count, x => (x.roughnessIndex == ri) && (x.heightIndex == hi) && (x.aoIndex == oi));
+			if (idx < 0) {
+				if (ri < 0) {
+					ri = roughness.Count;
+					roughness.Add(r);
+				}
+				if (hi < 0) {
+					hi = height.Count;
+					height.Add(h);
+				}
+				if (oi < 0) {
+					oi = ao.Count;
+					ao.Add(o);
+				}
+
+				idx = textures.Count;
+				textures.Add(new RHOTextureJoin() {
+					roughnessIndex = ri,
+					heightIndex = hi,
+					aoIndex = oi
+				});
+
+			}
+			return idx;
+		}
+	};
+
+	struct RHOTextureSet {
+		public WorldAtlasMaterialTextures.TextureSet roughness;
+		public WorldAtlasMaterialTextures.TextureSet height;
+		public WorldAtlasMaterialTextures.TextureSet ao;
+	};
+
+	void AddTextureSet(WorldAtlasMaterial atlasMaterial, RHOTextureTable table, RHOTextureSet textureSet) {
+		CheckThrowTextureSet(atlasMaterial, textureSet.roughness, "Roughness");
+		CheckThrowTextureSet(atlasMaterial, textureSet.ao, "AO");
+		CheckThrowTextureSet(atlasMaterial, textureSet.height, "Height");
+
+		var tSet = new TextureSet() {
+			top = table.AddTextureJoin(textureSet.roughness.top, textureSet.height.top, textureSet.ao.top),
+			sides = table.AddTextureJoin(textureSet.roughness.sides, textureSet.height.sides, textureSet.ao.sides),
+			bottom = table.AddTextureJoin(textureSet.roughness.bottom, textureSet.height.bottom, textureSet.ao.bottom)
+		};
+
+		table.indices.Add(tSet);
+	}
+
+	RHOTextureTable LoadRHOTextureTable(WorldAtlas atlas) {
+		var table = new RHOTextureTable();
+
+		for (int i = 0; i < atlas.materials.Length; ++i) {
+			var m = atlas.materials[i];
+
+			if (m == null) {
+				ThrowAssetException(atlas, "Material for terrain type '" + ((EVoxelBlockType)(i + 1)).ToString() + "' is not set!");
+			}
+
+			if (m.textures != null) {
+				var set = new RHOTextureSet() {
+					roughness = m.textures.roughness,
+					height = m.textures.height,
+					ao = m.textures.ao
+				};
+				AddTextureSet(m, table, set);
+			} else {
+				ThrowAssetException(m, "Missing textures for atlas material.");
+			}
+		}
+
+		int w = -1;
+		int h = -1;
+		int mm = -1;
+
+		var settings = new ImportSettings_t() {
+			alphaSource = TextureImporterAlphaSource.FromGrayScale,
+			alphaIsTransparency = false,
+			aniso = 16,
+			filterMode = FilterMode.Trilinear,
+			mipmap = false,
+			readable = true,
+			type = TextureImporterType.Default,
+			format = TextureImporterFormat.Alpha8
+		};
+
+		foreach (var t in table.roughness) {
+			CheckTextureSizeAndFormatAndThrow(ref w, ref h, ref mm, settings, t, "Roughness");
+		}
+
+		foreach (var t in table.height) {
+			CheckTextureSizeAndFormatAndThrow(ref w, ref h, ref mm, settings, t, "Height");
+		}
+
+		foreach (var t in table.ao) {
+			CheckTextureSizeAndFormatAndThrow(ref w, ref h, ref mm, settings, t, "AO");
+		}
+
+		return table;
+	}
+
+
 	void LoadTextureChannel(WorldAtlas atlas, TextureBundle[] bundles, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> getTexSetChannel, Action<int[]> setTextureSet2ArrayIndex, Func<TextureBundle, TextureSet, TextureBundle> setBundleChannel, string channelName) {
 		List<Texture2D> textures;
 		List<TextureSet> indices;
@@ -234,6 +359,13 @@ public class WorldAtlasEditor : Editor {
 		LoadTextureList(atlas, out textures, out indices, getTexSetChannel, channelName);
 		setTextureSet2ArrayIndex(TextureSet.ToIntArray(indices));
 		TextureBundle.CopyChannelTextureSet(bundles, indices, setBundleChannel);
+	}
+
+	void LoadRHOTextureChannel(WorldAtlas atlas, TextureBundle[] bundles, WorldAtlasClientData clientData) {
+		var table = LoadRHOTextureTable(atlas);
+
+		clientData.rho.textureSet2ArrayIndex = TextureSet.ToIntArray(table.indices);
+		TextureBundle.CopyChannelTextureSet(bundles, table.indices, (b, s) => { b.rho = s; return b; });
 	}
 
 	void RebuildAtlasData() {
@@ -247,9 +379,11 @@ public class WorldAtlasEditor : Editor {
 			var bundles = new TextureBundle[atlas.materials.Length];
 			LoadTextureChannel(atlas, bundles, (x) => x.albedo, (x) => atlasClientData.albedo.textureSet2ArrayIndex = x, (b, s) => { b.albedo = s; return b; }, "Albedo");
 			LoadTextureChannel(atlas, bundles, (x) => x.normals, (x) => atlasClientData.normals.textureSet2ArrayIndex = x, (b, s) => { b.normals = s; return b; }, "Normals");
-			LoadTextureChannel(atlas, bundles, (x) => x.roughness, (x) => atlasClientData.roughness.textureSet2ArrayIndex = x, (b, s) => { b.roughness = s; return b; }, "Roughness");
-			LoadTextureChannel(atlas, bundles, (x) => x.ao, (x) => atlasClientData.ao.textureSet2ArrayIndex = x, (b, s) => { b.ao = s; return b; }, "AO");
-			LoadTextureChannel(atlas, bundles, (x) => x.height, (x) => atlasClientData.height.textureSet2ArrayIndex = x, (b, s) => { b.height = s; return b; }, "Height");
+			//LoadTextureChannel(atlas, bundles, (x) => x.roughness, (x) => atlasClientData.roughness.textureSet2ArrayIndex = x, (b, s) => { return b; }, "Roughness");
+			//LoadTextureChannel(atlas, bundles, (x) => x.ao, (x) => atlasClientData.ao.textureSet2ArrayIndex = x, (b, s) => { return b; }, "AO");
+			//LoadTextureChannel(atlas, bundles, (x) => x.height, (x) => atlasClientData.height.textureSet2ArrayIndex = x, (b, s) => { return b; }, "Height");
+
+			LoadRHOTextureChannel(atlas, bundles, atlasClientData);
 
 			atlasClientData.block2TextureSet = TextureBundle.OptimizeShaderIndices(bundles);
 			atlasClientData.renderMaterials = atlas.renderMaterials;
@@ -277,9 +411,10 @@ public class WorldAtlasEditor : Editor {
 	void LoadTerrainTextures(WorldAtlas atlas, WorldAtlasClientData clientData) {
 		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.albedo.textureArray = arr, "Albedo");
 		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.normals.textureArray = arr, "Normals");
-		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.roughness.textureArray = arr, "Roughness");
-		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.ao.textureArray = arr, "AO");
-		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.height.textureArray = arr, "Height");
+		//LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.roughness.textureArray = arr, "Roughness");
+		//LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.ao.textureArray = arr, "AO");
+		//LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.height.textureArray = arr, "Height");
+		LoadTextureArrayChannel(atlas, clientData, (cd, arr) => cd.rho.textureArray = arr, "RHO");
 	}
 
 	void CreateColorChannelTextureArray(WorldAtlas atlas, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> f, string channelName) {
@@ -300,7 +435,7 @@ public class WorldAtlasEditor : Editor {
 			mipmap = true,
 			readable = true,
 			type = TextureImporterType.Default,
-			format = TextureImporterFormat.DXT1
+			format = COLOR_TEXTURE_FORMAT
 		};
 
 		CreateTextureArray(atlas, settings, textures, channelName);
@@ -324,10 +459,71 @@ public class WorldAtlasEditor : Editor {
 			mipmap = true,
 			readable = true,
 			type = TextureImporterType.NormalMap,
-			format = TextureImporterFormat.DXT5
+			format = NORMALS_TEXTURE_FORMAT
 		};
 
 		CreateTextureArray(atlas, settings, textures, channelName);
+	}
+
+	Texture2D JoinTextures(RHOTextureTable table, RHOTextureJoin join, TextureImporterFormat format) {
+		var t = new Texture2D(table.roughness[0].width, table.roughness[0].height, TextureFormat.ARGB32, true);
+		var pixels = t.GetPixels32();
+
+		var r = table.roughness[join.roughnessIndex];
+		var h = table.height[join.heightIndex];
+		var ao = table.height[join.aoIndex];
+
+		var rPixels = r.GetPixels32();
+		var hPixels = h.GetPixels32();
+		var aoPixels = ao.GetPixels32();
+
+		var numPixels = pixels.Length;
+		for (int i = 0; i < numPixels; ++i) {
+			var p = new Color32(rPixels[i].a, aoPixels[i].a, 0, hPixels[i].a);
+			pixels[i] = p;
+		}
+
+		t.SetPixels32(pixels);
+		t.Apply();
+
+		if ((format == TextureImporterFormat.DXT1) || (format == TextureImporterFormat.DXT5)) {
+			EditorUtility.CompressTexture(t, (TextureFormat)format, TextureCompressionQuality.Best);
+			t.Apply();
+		}
+
+		return t;
+	}
+
+	void CreateRHOTextureArray(WorldAtlas atlas) {
+		var table = LoadRHOTextureTable(atlas); // this sets the incoming texture formats to Alpha8
+
+		if (table.textures.Count < 1) {
+			throw new Exception("No textures defined in atlas!");
+		}
+
+		var textureList = new List<Texture2D>(table.textures.Count);
+
+		foreach (var t in table.textures) {
+			var joined = JoinTextures(table, t, RHO_TEXTURE_FORMAT);
+			textureList.Add(joined);
+		}
+
+		var settings = new ImportSettings_t() {
+			alphaSource = TextureImporterAlphaSource.FromInput,
+			alphaIsTransparency = false,
+			aniso = 16,
+			filterMode = FilterMode.Trilinear,
+			mipmap = true,
+			readable = true,
+			type = TextureImporterType.Default,
+			format = RHO_TEXTURE_FORMAT
+		};
+
+		UncheckedCreateTextureArray(atlas, settings, textureList, "RHO");
+
+		foreach (var t in textureList) {
+			DestroyImmediate(t);
+		}
 	}
 
 	void RebuildTextureArray() {
@@ -336,9 +532,7 @@ public class WorldAtlasEditor : Editor {
 
 			CreateColorChannelTextureArray(atlas, x => x.albedo, "Albedo");
 			CreateNormalsChannelTextureArray(atlas, x => x.normals, "Normals");
-			CreateColorChannelTextureArray(atlas, x => x.roughness, "Roughness");
-			CreateColorChannelTextureArray(atlas, x => x.ao, "AO");
-			CreateColorChannelTextureArray(atlas, x => x.height, "Height");
+			CreateRHOTextureArray(atlas);
 		}
 	}
 
@@ -396,8 +590,13 @@ public class WorldAtlasEditor : Editor {
 				changed = true;
 			}
 
-			if (s.textureCompression != TextureImporterCompression.CompressedHQ) {
-				s.textureCompression = TextureImporterCompression.CompressedHQ;
+			if ((format == TextureImporterFormat.DXT1) || (format == TextureImporterFormat.DXT5)) {
+				if (s.textureCompression != TextureImporterCompression.CompressedHQ) {
+					s.textureCompression = TextureImporterCompression.CompressedHQ;
+					changed = true;
+				}
+			} else if (s.textureCompression != TextureImporterCompression.Uncompressed) {
+				s.textureCompression = TextureImporterCompression.Uncompressed;
 				changed = true;
 			}
 
@@ -465,7 +664,12 @@ public class WorldAtlasEditor : Editor {
 			CheckTextureSizeAndFormatAndThrow(ref w, ref h, ref mm, settings, textures[i], channelName);
 		}
 
-		var arr = new Texture2DArray(w, h, textures.Count, (TextureFormat)settings.format, true, false);
+		UncheckedCreateTextureArray(atlas, settings, textures, channelName);
+	}
+
+	void UncheckedCreateTextureArray(WorldAtlas atlas, ImportSettings_t settings, List<Texture2D> textures, string channelName) {
+
+		var arr = new Texture2DArray(textures[0].width, textures[0].height, textures.Count, (TextureFormat)settings.format, true, false);
 		arr.Apply(false, true);
 		arr.wrapMode = TextureWrapMode.Repeat;
 

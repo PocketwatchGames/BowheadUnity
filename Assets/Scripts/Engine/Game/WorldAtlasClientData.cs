@@ -18,9 +18,10 @@ public sealed class WorldAtlasClientData : ScriptableObject, ISerializationCallb
 
 	public TerrainTextureChannel albedo;
 	public TerrainTextureChannel normals;
-	public TerrainTextureChannel roughness;
-	public TerrainTextureChannel ao;
-	public TerrainTextureChannel height;
+	//public TerrainTextureChannel roughness;
+	//public TerrainTextureChannel ao;
+	//public TerrainTextureChannel height;
+	public TerrainTextureChannel rho;
 	public int[] block2TextureSet;
 
 	public WorldAtlas.RenderMaterials_t renderMaterials;

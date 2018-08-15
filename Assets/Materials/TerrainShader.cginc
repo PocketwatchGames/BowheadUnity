@@ -5,15 +5,17 @@
 // Common terrain shading shit.
 UNITY_DECLARE_TEX2DARRAY(_AlbedoTextureArray);
 UNITY_DECLARE_TEX2DARRAY(_NormalsTextureArray);
-UNITY_DECLARE_TEX2DARRAY(_RoughnessTextureArray);
-UNITY_DECLARE_TEX2DARRAY(_AOTextureArray);
-UNITY_DECLARE_TEX2DARRAY(_HeightTextureArray);
+//UNITY_DECLARE_TEX2DARRAY(_RoughnessTextureArray);
+//UNITY_DECLARE_TEX2DARRAY(_AOTextureArray);
+//UNITY_DECLARE_TEX2DARRAY(_HeightTextureArray);
+UNITY_DECLARE_TEX2DARRAY(_RHOTextureArray);
 
 float _AlbedoTextureArrayIndices[12];
 float _NormalsTextureArrayIndices[12];
-float _RoughnessTextureArrayIndices[12];
-float _AOTextureArrayIndices[12];
-float _HeightTextureArrayIndices[12];
+//float _RoughnessTextureArrayIndices[12];
+//float _AOTextureArrayIndices[12];
+//float _HeightTextureArrayIndices[12];
+float _RHOTextureArrayIndices[12];
 
 struct Input {
 	//float2 uv_MainTex;
@@ -123,10 +125,10 @@ half3 triplanarWorldNormal(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[1
 half4 sampleTerrainHeight(float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
 	half4 height;
 
-	height.r = triplanarSampleColor(0, UNITY_PASS_TEX2DARRAY(_HeightTextureArray), _HeightTextureArrayIndices, uvs, triblend, signNormal).r * texBlend[0];
-	height.g = triplanarSampleColor(1, UNITY_PASS_TEX2DARRAY(_HeightTextureArray), _HeightTextureArrayIndices, uvs, triblend, signNormal).r * texBlend[1];
-	height.b = triplanarSampleColor(2, UNITY_PASS_TEX2DARRAY(_HeightTextureArray), _HeightTextureArrayIndices, uvs, triblend, signNormal).r * texBlend[2];
-	height.a = triplanarSampleColor(3, UNITY_PASS_TEX2DARRAY(_HeightTextureArray), _HeightTextureArrayIndices, uvs, triblend, signNormal).r * texBlend[3];
+	height.r = triplanarSampleColor(0, UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal).a * texBlend[0];
+	height.g = triplanarSampleColor(1, UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal).a * texBlend[1];
+	height.b = triplanarSampleColor(2, UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal).a * texBlend[2];
+	height.a = triplanarSampleColor(3, UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal).a * texBlend[3];
 
 	return height;
 }
@@ -140,11 +142,11 @@ half3 sampleTerrainWorldNormal(float2 uvs[3], half3 triblend, half3 signNormal, 
 }
 
 fixed sampleTerrainAO(float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
-	return triplanarColor(UNITY_PASS_TEX2DARRAY(_AOTextureArray), _AOTextureArrayIndices, uvs, triblend, signNormal, texBlend).r;
+	return triplanarColor(UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal, texBlend).g;
 }
 
 fixed sampleTerrainRoughness(float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
-	return triplanarColor(UNITY_PASS_TEX2DARRAY(_RoughnessTextureArray), _RoughnessTextureArrayIndices, uvs, triblend, signNormal, texBlend).r;
+	return triplanarColor(UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal, texBlend).r;
 }
 
 void clip(Input IN) {

@@ -38,12 +38,14 @@ public partial class World {
 			public static readonly int _AlbedoTextureArray = Shader.PropertyToID("_AlbedoTextureArray");
 			public static readonly int _NormalsTextureArrayIndices = Shader.PropertyToID("_NormalsTextureArrayIndices");
 			public static readonly int _NormalsTextureArray = Shader.PropertyToID("_NormalsTextureArray");
-			public static readonly int _RoughnessTextureArrayIndices = Shader.PropertyToID("_RoughnessTextureArrayIndices");
-			public static readonly int _RoughnessTextureArray = Shader.PropertyToID("_RoughnessTextureArray");
-			public static readonly int _AOTextureArrayIndices = Shader.PropertyToID("_AOTextureArrayIndices");
-			public static readonly int _AOTextureArray = Shader.PropertyToID("_AOTextureArray");
-			public static readonly int _HeightTextureArrayIndices = Shader.PropertyToID("_HeightTextureArrayIndices");
-			public static readonly int _HeightTextureArray = Shader.PropertyToID("_HeightTextureArray");
+			//public static readonly int _RoughnessTextureArrayIndices = Shader.PropertyToID("_RoughnessTextureArrayIndices");
+			//public static readonly int _RoughnessTextureArray = Shader.PropertyToID("_RoughnessTextureArray");
+			//public static readonly int _AOTextureArrayIndices = Shader.PropertyToID("_AOTextureArrayIndices");
+			//public static readonly int _AOTextureArray = Shader.PropertyToID("_AOTextureArray");
+			//public static readonly int _HeightTextureArrayIndices = Shader.PropertyToID("_HeightTextureArrayIndices");
+			//public static readonly int _HeightTextureArray = Shader.PropertyToID("_HeightTextureArray");
+			public static readonly int _RHOTextureArrayIndices = Shader.PropertyToID("_RHOTextureArrayIndices");
+			public static readonly int _RHOTextureArray = Shader.PropertyToID("_RHOTextureArray");
 		};
 
 		public CountersThisFrame_t countersThisFrame;
@@ -183,9 +185,10 @@ public partial class World {
 
 			SetMaterialTextureArray(ShaderID._AlbedoTextureArray, clientData.albedo.textureArray);
 			SetMaterialTextureArray(ShaderID._NormalsTextureArray, clientData.normals.textureArray);
-			SetMaterialTextureArray(ShaderID._RoughnessTextureArray, clientData.roughness.textureArray);
-			SetMaterialTextureArray(ShaderID._AOTextureArray, clientData.ao.textureArray);
-			SetMaterialTextureArray(ShaderID._HeightTextureArray, clientData.height.textureArray);
+			//SetMaterialTextureArray(ShaderID._RoughnessTextureArray, clientData.roughness.textureArray);
+			//SetMaterialTextureArray(ShaderID._AOTextureArray, clientData.ao.textureArray);
+			//SetMaterialTextureArray(ShaderID._HeightTextureArray, clientData.height.textureArray);
+			SetMaterialTextureArray(ShaderID._RHOTextureArray, clientData.rho.textureArray);
 		}
 
 		void DisposeClientData() {
@@ -824,9 +827,10 @@ public partial class World {
 
 			staticMaterialProperties.SetFloatArray(ShaderID._AlbedoTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.albedo));
 			staticMaterialProperties.SetFloatArray(ShaderID._NormalsTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.normals));
-			staticMaterialProperties.SetFloatArray(ShaderID._RoughnessTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.roughness));
-			staticMaterialProperties.SetFloatArray(ShaderID._AOTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.ao));
-			staticMaterialProperties.SetFloatArray(ShaderID._HeightTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.height));
+			//staticMaterialProperties.SetFloatArray(ShaderID._RoughnessTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.roughness));
+			//staticMaterialProperties.SetFloatArray(ShaderID._AOTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.ao));
+			//staticMaterialProperties.SetFloatArray(ShaderID._HeightTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.height));
+			staticMaterialProperties.SetFloatArray(ShaderID._RHOTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.rho));
 		}
 
 		void CreateChunkMesh(ref ChunkMeshGen.CompiledChunkData jobData, ref WorldChunkComponent root, Vector3 pos, int layer, ref int baseIndex, ref int baseVertex) {
