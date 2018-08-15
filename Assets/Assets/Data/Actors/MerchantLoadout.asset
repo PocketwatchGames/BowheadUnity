@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Name: MerchantLoadout
   m_EditorClassIdentifier: 
   loot: []
-  inventory: []
+  inventory:
+  - {fileID: 11400000, guid: c4cae3e25ad7b3740acc178ae5dc4ba3, type: 2}
+  - {fileID: 11400000, guid: 0142bce150c456c4f9783a2755bf37c1, type: 2}
+  - {fileID: 11400000, guid: ed53fb9a24de05e4c9c184295e621648, type: 2}
+  - {fileID: 11400000, guid: 1966101ed621fdc4589312e9eb8da18e, type: 2}
