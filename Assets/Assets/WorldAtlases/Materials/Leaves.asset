@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Name: Leaves
   m_EditorClassIdentifier: 
   physics: {fileID: 0}
-  textures: {fileID: 11400000, guid: f4caf4293d58155489bb88fc482d384a, type: 2}
+  textures: {fileID: 11400000, guid: 0bc221a2e7478a34ba4c2417c305a608, type: 2}

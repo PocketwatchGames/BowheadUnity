@@ -9,25 +9,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d4129b2176e76c044b0c0646095d6faf, type: 3}
-  m_Name: Sand
+  m_Name: Soil
   m_EditorClassIdentifier: 
   albedo:
-    top: {fileID: 2800000, guid: 1853e78a45cfa4f4da50b80a9debe3bb, type: 3}
-    sides: {fileID: 2800000, guid: 1853e78a45cfa4f4da50b80a9debe3bb, type: 3}
-    bottom: {fileID: 2800000, guid: 1853e78a45cfa4f4da50b80a9debe3bb, type: 3}
+    top: {fileID: 2800000, guid: 1662722a403d6424882e938d5a7dd43b, type: 3}
+    sides: {fileID: 2800000, guid: 1662722a403d6424882e938d5a7dd43b, type: 3}
+    bottom: {fileID: 2800000, guid: 1662722a403d6424882e938d5a7dd43b, type: 3}
   normals:
-    top: {fileID: 2800000, guid: d7fddb2797c16c5488abfaf715eaba8e, type: 3}
-    sides: {fileID: 2800000, guid: d7fddb2797c16c5488abfaf715eaba8e, type: 3}
-    bottom: {fileID: 2800000, guid: d7fddb2797c16c5488abfaf715eaba8e, type: 3}
+    top: {fileID: 2800000, guid: 5431eba61fd34734ebd06fb79275ddc4, type: 3}
+    sides: {fileID: 2800000, guid: 5431eba61fd34734ebd06fb79275ddc4, type: 3}
+    bottom: {fileID: 2800000, guid: 5431eba61fd34734ebd06fb79275ddc4, type: 3}
   roughness:
-    top: {fileID: 2800000, guid: 004215690f104fc4a8fd7a52341568d6, type: 3}
-    sides: {fileID: 2800000, guid: 004215690f104fc4a8fd7a52341568d6, type: 3}
-    bottom: {fileID: 2800000, guid: 004215690f104fc4a8fd7a52341568d6, type: 3}
+    top: {fileID: 2800000, guid: 9baa11022ab25a4479cc70dc4998f08c, type: 3}
+    sides: {fileID: 2800000, guid: 9baa11022ab25a4479cc70dc4998f08c, type: 3}
+    bottom: {fileID: 2800000, guid: 9baa11022ab25a4479cc70dc4998f08c, type: 3}
   ao:
-    top: {fileID: 2800000, guid: 26aa3e763d7570340a1b7544b9f0fb9c, type: 3}
-    sides: {fileID: 2800000, guid: 26aa3e763d7570340a1b7544b9f0fb9c, type: 3}
-    bottom: {fileID: 2800000, guid: 26aa3e763d7570340a1b7544b9f0fb9c, type: 3}
+    top: {fileID: 2800000, guid: 968601bb6078b6e45b8ba7f2ec9355a2, type: 3}
+    sides: {fileID: 2800000, guid: 968601bb6078b6e45b8ba7f2ec9355a2, type: 3}
+    bottom: {fileID: 2800000, guid: 968601bb6078b6e45b8ba7f2ec9355a2, type: 3}
   height:
-    top: {fileID: 2800000, guid: 95bbaf0bbc159dd4185b43bb7d150a2d, type: 3}
-    sides: {fileID: 2800000, guid: 95bbaf0bbc159dd4185b43bb7d150a2d, type: 3}
-    bottom: {fileID: 2800000, guid: 95bbaf0bbc159dd4185b43bb7d150a2d, type: 3}
+    top: {fileID: 2800000, guid: d5f69a91b945b5e458a081a7c902ac22, type: 3}
+    sides: {fileID: 2800000, guid: d5f69a91b945b5e458a081a7c902ac22, type: 3}
+    bottom: {fileID: 2800000, guid: d5f69a91b945b5e458a081a7c902ac22, type: 3}

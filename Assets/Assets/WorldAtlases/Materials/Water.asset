@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Name: Water
   m_EditorClassIdentifier: 
   physics: {fileID: 0}
-  textures: {fileID: 11400000, guid: a9bc4a4424195e9418538abf9793915d, type: 2}
+  textures: {fileID: 11400000, guid: 0ddebaaaeff73db479276f958936fd0a, type: 2}

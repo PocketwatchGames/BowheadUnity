@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Name: Sand
   m_EditorClassIdentifier: 
   physics: {fileID: 0}
-  textures: {fileID: 11400000, guid: 1c231ecda4de13a439bcdaf96beaeb48, type: 2}
+  textures: {fileID: 11400000, guid: 54f970d32d660bb46b6b0928fae62aaf, type: 2}

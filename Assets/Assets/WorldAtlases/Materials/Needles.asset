@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Name: Needles
   m_EditorClassIdentifier: 
   physics: {fileID: 0}
-  textures: {fileID: 11400000, guid: c1c0e88810883ab4eaa82310e60e863b, type: 2}
+  textures: {fileID: 11400000, guid: 0bc221a2e7478a34ba4c2417c305a608, type: 2}
