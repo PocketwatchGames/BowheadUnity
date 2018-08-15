@@ -81,6 +81,8 @@ namespace Bowhead {
 		public bool canTarget;
 		public Actors.ProjectileData projectile;
 		public float projectileSpeed;
+		public bool autoAimYaw;
+		public bool autoAimPitch;
 
 		[Header("Defend")]
 		public float blockAngleRange;

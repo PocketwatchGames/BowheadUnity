@@ -181,8 +181,15 @@ namespace Bowhead {
 			
 			if (data.projectile != null) {
 				Vector3 dir;
-				if (target != null) {
+				if (target == null) {
+					dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
+				} else if (data.autoAimPitch && data.autoAimYaw) {
 					dir = (target.waistPosition() - owner.headPosition()).normalized;
+				} else if (data.autoAimPitch) {
+					var diff = target.waistPosition() - owner.headPosition();
+					float pitch = Mathf.Atan2(diff.y,Mathf.Sqrt(diff.x*diff.x+diff.z*diff.z));
+					var cosPitch = Mathf.Cos(pitch);
+					dir = new Vector3(cosPitch*Mathf.Sin(owner.yaw), Mathf.Sin(pitch), cosPitch*Mathf.Cos(owner.yaw));
 				} else {
 					dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
 				}

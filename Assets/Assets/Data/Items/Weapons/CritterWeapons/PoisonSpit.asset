@@ -13,6 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 32
+  displayName: 
   description: Ranged combat spell
   monetaryValue: 10
   canUse: 1
@@ -68,6 +69,8 @@ MonoBehaviour:
   canTarget: 1
   projectile: {fileID: 11400000, guid: dff0aa6221cbebe4a9892ae5a6b3faae, type: 2}
   projectileSpeed: 20
+  autoAimYaw: 1
+  autoAimPitch: 1
   blockAngleRange: 0
   blockResult:
     knockback: 0
