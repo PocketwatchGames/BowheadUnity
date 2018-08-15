@@ -6,7 +6,8 @@ using Bowhead.Actors;
 
 namespace Bowhead.Client.UI {
 	public class BowheadHUD : HUD {
-		InventoryPanel _inventory;
+		EquipPanel _equipHUD;
+		InventoryPanel _inventoryHUD;
 		ButtonHint _interactHint;
 		LockTargetHUD _lockMarker;
 		Map _worldmap;
@@ -14,7 +15,6 @@ namespace Bowhead.Client.UI {
 
         GameObject _pawnHUDs;
         GameObject _playerHUD;
-        WeaponChargeHUD _weaponChargeLeft, _weaponChargeRight;
 		IMapMarker _spawnMarker;
 
 		class MapMarker : IMapMarker, IDisposable {
@@ -55,14 +55,13 @@ namespace Bowhead.Client.UI {
 		};
 
 		public BowheadHUD(ClientWorld world, GameState gameState) : base(world, gameState) {
-			_inventory = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPanelPrefab, hudCanvas.transform, false);
+			_equipHUD = GameObject.Instantiate(GameManager.instance.clientData.hudEquipPrefab, hudCanvas.transform, false);
+			_inventoryHUD = GameObject.Instantiate(GameManager.instance.clientData.hudInventoryPrefab, hudCanvas.transform, false);
 			_interactHint = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, hudCanvas.transform, false);
 			_lockMarker = GameObject.Instantiate(GameManager.instance.clientData.hudLockPrefab, hudCanvas.transform, false);
 			_lockMarker.gameObject.SetActive(false);
 			_worldmap = GameObject.Instantiate(GameManager.instance.clientData.worldMapPrefab, hudCanvas.transform, false);
 			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
-			_weaponChargeLeft = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
-			_weaponChargeRight = GameObject.Instantiate(GameManager.instance.clientData.weaponChargePrefab, hudCanvas.transform, false);
 			_pawnHUDs = new GameObject("PawnHuds");
 			_pawnHUDs.transform.parent = hudCanvas.transform;
 
@@ -72,6 +71,9 @@ namespace Bowhead.Client.UI {
 			_worldmap.transform.SetAsLastSibling(); // keep world-map on top of everything.
 			_worldmap.gameObject.SetActive(false);
 
+			_inventoryHUD.transform.SetAsLastSibling(); // keep world-map on top of everything.
+			_inventoryHUD.gameObject.SetActive(false);
+
 			world.CritterActiveEvent += OnCritterActive;
             world.DamageEvent += OnDamage;
             world.StatusEffectAddedEvent += OnStatusEffectAdded;
@@ -80,7 +82,7 @@ namespace Bowhead.Client.UI {
 
 		public override void OnPlayerPossessed(Player player) {
 			base.OnPlayerPossessed(player);
-			_inventory.Init(player);
+			_equipHUD.Init(player);
             _compass.Init(Camera.main, player);
 
 			_worldmap.SetStreaming(Bowhead.Server.BowheadGame.WORLD_GENERATOR_TYPE);
@@ -92,13 +94,14 @@ namespace Bowhead.Client.UI {
 			// for now, minimap reveal still kinda broke ass.
 			OnExplore(new Vector2(player.spawnPosition.x, player.spawnPosition.z), 128, false);
 
-			_weaponChargeLeft.SetTarget(player, 1);
-			_weaponChargeRight.SetTarget(player, 2);
-
             var playerHUD = GameObject.Instantiate<PlayerHUD>(GameManager.instance.clientData.playerHudPrefab, _pawnHUDs.transform);
             playerHUD.SetTarget(player);
             var directionPreview = GameObject.Instantiate<DirectionPreview>(GameManager.instance.clientData.directionPreviewPrefab, _playerHUD.transform);
             directionPreview.SetTarget(player);
+
+			localPlayer.playerPawn.OnMerchantActivated += OnMerchantActivated;
+
+			_inventoryHUD.Init(player);
         }
 
         public void OnCritterActive(Critter critter) {
@@ -116,6 +119,10 @@ namespace Bowhead.Client.UI {
 			_spawnMarker.worldPosition = pos;
 			ShowWorldMap(showMap);
         }
+
+		private void OnMerchantActivated(Pawn merchant) {
+			ShowInventory(true, merchant);
+		}
 
         private void OnDamage(Pawn target, float damage)
         {
@@ -161,10 +168,16 @@ namespace Bowhead.Client.UI {
 			//	_lockMarker.transform.position = Camera.main.WorldToScreenPoint(newTarget.headPosition());
 			//}
 
-			if (Input.GetButtonDown("Start")) {
+			if (!inventoryVisible && (Input.GetButtonDown("Y1") || (worldMapVisible && Input.GetButtonDown("B1")))) {
 				ShowWorldMap(!worldMapVisible);
 			}
-        }
+			else if (!worldMapVisible && (Input.GetButtonDown("B1") || (inventoryVisible && Input.GetButtonDown("B1")))) {
+				ShowInventory(!inventoryVisible, null);
+			}
+			else if (worldMapVisible && Input.GetButtonDown("X1")) {
+				localPlayer.playerPawn.Teleport();
+			}
+		}
 
 		public override IMapMarker CreateMapMarker<T>(T prefab, EMapMarkerStyle style) {
 			var wmMarker = _worldmap.CreateMarker(prefab, style);
@@ -179,9 +192,22 @@ namespace Bowhead.Client.UI {
 			localPlayer.playerPawn.FreezeMotion(show);
 		}
 
+		public override void ShowInventory(bool show, Pawn merchant) {
+			if (show) {
+				_inventoryHUD.SetMerchant(merchant);
+			}
+			_inventoryHUD.gameObject.SetActive(show);
+			localPlayer.playerPawn.FreezeMotion(show);
+		}
+
 		public override bool worldMapVisible {
 			get {
 				return _worldmap.gameObject.activeSelf;
+			}
+		}
+		public override bool inventoryVisible {
+			get {
+				return _inventoryHUD.gameObject.activeSelf;
 			}
 		}
 	}

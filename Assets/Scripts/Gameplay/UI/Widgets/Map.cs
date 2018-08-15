@@ -115,6 +115,7 @@ namespace Bowhead.Client.UI {
 			if (_dirty) {
 				DirtyUpdate();
 			}
+
 		}
 
 

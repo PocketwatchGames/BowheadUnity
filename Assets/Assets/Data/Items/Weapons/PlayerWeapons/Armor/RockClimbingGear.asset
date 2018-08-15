@@ -13,8 +13,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 47
+  displayName: Rock Climbing Gear
   description: 
   monetaryValue: 0
+  canUse: 1
+  canDrop: 1
   prefab:
     _assetPath: 
     _editorPath: 
@@ -41,6 +44,7 @@ MonoBehaviour:
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0
+    loudness: 0
     stunAbsorb: 0
     damageAbsorb: 3
     staminaUse: 0

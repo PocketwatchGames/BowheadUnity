@@ -13,8 +13,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 19
+  displayName: Thief's Garb
   description: 
   monetaryValue: 0
+  canUse: 1
+  canDrop: 1
   prefab:
     _assetPath: 
     _editorPath: 
@@ -26,6 +29,8 @@ MonoBehaviour:
   attacks: []
   spell: 0
   spellPower: 0
+  statusEffect: {fileID: 0}
+  statusEffectTime: 0
   waterUse: 0
   canTarget: 0
   projectile: {fileID: 0}
@@ -39,6 +44,7 @@ MonoBehaviour:
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0
+    loudness: 0
     stunAbsorb: 0
     damageAbsorb: 3
     staminaUse: 0

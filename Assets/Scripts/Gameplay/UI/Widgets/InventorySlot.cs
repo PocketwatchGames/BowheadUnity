@@ -1,79 +1,56 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 using UnityEngine.UI;
+using Bowhead.Actors;
 
 namespace Bowhead.Client.UI {
-	using Player = Bowhead.Actors.Player;
-    public class InventorySlot : MonoBehaviour {
+	public class InventorySlot : MonoBehaviour {
 
-		[SerializeField]
-		private ButtonImage _buttonHint;
-		[SerializeField]
-		private Image _useTimer;
+		private Item _item;
+		private Image _background;
+		private Player _player;
 
-        private Item _item;
-        private Button _button;
-        private Image _background;
-
+		public Button button;
 		public Sprite[] _slotBackgrounds;
 
 
-        public void Init(Player.InventorySlot slot) {
-            _button = transform.GetAnyChildComponent<Button>("Button");
-            _background = transform.GetAnyChildComponent<Image>("Background");
-            _background.sprite = _slotBackgrounds[Mathf.Min((int)slot, _slotBackgrounds.Length-1)];
-			_button.gameObject.SetActive(false);
-			_buttonHint.gameObject.SetActive(false);
-        }
-
-		public void SetButton(string b) {
-			_buttonHint.gameObject.SetActive(b != null);
-			if (b != null) {
-				_buttonHint.SetButton(b);
-			}
+		public void Init(Player.InventorySlot slot, Player p) {
+			_player = p;
+			_background = transform.GetAnyChildComponent<Image>("Background");
+			_background.sprite = _slotBackgrounds[Mathf.Min((int)slot, _slotBackgrounds.Length - 1)];
+//			button.gameObject.SetActive(false);
 		}
-
-		public void SetTimer(float t) {
-			if (t == 0) {
-				_useTimer.gameObject.SetActive(false);
-			}
-			else {
-				_useTimer.gameObject.SetActive(true);
-				_useTimer.rectTransform.localScale = new Vector3(1, t, 1);
-			}
-		}
-
 
 
 		public void SetItem(Item i) {
-            _item = i;
-            if (i == null) {
-                _button.gameObject.SetActive(false);
-            }
-            else {
-                _button.gameObject.SetActive(true);
+			_item = i;
+			if (i == null) {
+				button.GetComponentInChildren<Text>().text = "";
+				//				button.gameObject.SetActive(false);
+			} else {
+//				button.gameObject.SetActive(true);
 
 				string name;
 				Loot loot;
 				if ((loot = i as Loot) != null && loot.data.stackSize > 1) {
-					_button.GetComponentInChildren<Text>().text = i.data.name + " x" + loot.count;
-				}
-				else {
-					_button.GetComponentInChildren<Text>().text = i.data.name;
+					button.GetComponentInChildren<Text>().text = i.data.displayName + " x" + loot.count;
+				} else {
+					button.GetComponentInChildren<Text>().text = i.data.displayName;
 				}
 
 			}
-        }
+		}
 
-        public void Deselect() {
-        }
-        public void Select() {
-            _button.Select();
-        }
+		public void Deselect() {
+		}
+		public void Select() {
+			button.Select();
+		}
 
-        private void OnDestroy() {
-            gameObject.DestroyAllChildren();
-        }
-    }
+		private void OnDestroy() {
+			gameObject.DestroyAllChildren();
+		}
+	}
 }

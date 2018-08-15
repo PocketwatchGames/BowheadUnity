@@ -18,6 +18,7 @@ MonoBehaviour:
     _editorPath: 
   mapMarkerStyle: 0
   defaultSilhouetteMode: 2
+  packSize: 10
   height: 2
   maxHealth: 200
   maxWater: 100
@@ -74,7 +75,6 @@ MonoBehaviour:
   fallDamageSpeed: 30
   fallSpeedLoudness: 0.25
   dropTime: 0.5
-  teleportTime: 1
   tradePartnerCancelDistance: 3
   unarmedWeaponLeft: {fileID: 11400000, guid: bab1f60a0f2deb44e9a9beeb41fa254b, type: 2}
   unarmedWeaponRight: {fileID: 11400000, guid: eda45c2588776524293a8f439e156e5e, type: 2}

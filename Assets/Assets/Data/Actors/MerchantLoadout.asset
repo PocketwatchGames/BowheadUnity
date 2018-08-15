@@ -8,12 +8,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d2bb7ea30518b14499be3a1691bdbd31, type: 3}
-  m_Name: Pack
+  m_Script: {fileID: 11500000, guid: 8c617cb0c5ca82a4aac4effb61d5940b, type: 3}
+  m_Name: MerchantLoadout
   m_EditorClassIdentifier: 
-  version: 0
-  _index: 24
-  slots: 4
-  prefab:
-    _assetPath: Items/Pack
-    _editorPath: Assets/Assets/Prefabs/Resources/Items/Pack.prefab
+  loot: []
+  inventory: []

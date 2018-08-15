@@ -12,7 +12,7 @@ public class DamageHUD : MonoBehaviour {
     {
         totalTime = time = t;
         text = GetComponent<UnityEngine.UI.Text>();
-        text.fontSize = (int)Mathf.Clamp(Mathf.Sqrt(d) * 5, 5, 40);
+        text.fontSize = (int)Mathf.Clamp(Mathf.Sqrt(d/5) * 10, 10, 40);
         text.color = Color.red;
         text.text = Mathf.CeilToInt(d).ToString();
         transform.position = startPos = Camera.main.WorldToScreenPoint(target.headPosition());

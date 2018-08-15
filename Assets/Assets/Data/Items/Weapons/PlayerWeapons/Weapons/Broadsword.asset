@@ -13,8 +13,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 10
+  displayName: Broadsword
   description: Two handed sword
   monetaryValue: 50
+  canUse: 1
+  canDrop: 1
   prefab:
     _assetPath: Items/2HSword
     _editorPath: Assets/Assets/Prefabs/Resources/Items/2HSword.prefab

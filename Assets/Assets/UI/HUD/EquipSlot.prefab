@@ -38,7 +38,7 @@ GameObject:
   - component: {fileID: 224887031799993648}
   - component: {fileID: 114301206052444334}
   m_Layer: 5
-  m_Name: InventorySlot
+  m_Name: EquipSlot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
