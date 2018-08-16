@@ -1316,6 +1316,9 @@ public partial class World {
 							if (numTris > 0) {
 								// we've packed as many triangles as we can into a TexBlend_t
 								// write out the packed submesh.
+								if (maxLayerSubmesh == MAX_CHUNK_SUBMESHES) {
+									throw new Exception("MAX_CHUNK_SUBMESHES");
+								}
 
 								++maxLayerSubmesh;
 								int numSubmeshVerts = 0;
