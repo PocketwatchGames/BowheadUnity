@@ -8,7 +8,7 @@ using Bowhead.Actors;
 namespace Bowhead.Client.UI {
 	public class InventorySlot : MonoBehaviour {
 
-		private Item _item;
+		public Item item;
 		private Image _background;
 		private Player _player;
 
@@ -25,7 +25,7 @@ namespace Bowhead.Client.UI {
 
 
 		public void SetItem(Item i) {
-			_item = i;
+			item = i;
 			if (i == null) {
 				button.GetComponentInChildren<Text>().text = "";
 				//				button.gameObject.SetActive(false);

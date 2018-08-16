@@ -6,15 +6,17 @@ using Bowhead.Actors;
 namespace Bowhead.Client.UI {
 	public class InventoryHUD : MonoBehaviour {
 
-		public InventorySlot inventorySlotPrefab;
 		public InventoryPanel equipPanel;
 		public InventoryPanel packPanel;
 		public InventoryPanel storePanel;
+		public GameObject storeGroup;
+		public UnityEngine.UI.Text storeName;
 		public ItemInfoPanel itemInfoPanel;
 		public UnityEngine.UI.Text weightClass;
 		public UnityEngine.UI.Text money;
 		private int _playerIndex = 1;
 		private float _moveX, _moveY;
+		int gridWidth = 4;
 
 		private Player _player;
 		private Pawn _merchant;
@@ -51,99 +53,138 @@ namespace Bowhead.Client.UI {
 			_player.OnWeightClassChange -= OnWeightClassChange;
 		}
 
-		private void Select(int panel, int x, int y) {
-			_selectedSlot?.Deselect();
-			_activePanel = panel;
-//			_selectedSlot = _activePanel
-			_selectedSlot.Select();
-		}
-
 		// Update is called once per frame
 		void Update() {
 			int moveX = (int)Utils.SignOrZero(Input.GetAxis("MoveHorizontal" + _playerIndex));
 			int moveY = (int)-Utils.SignOrZero(Input.GetAxis("MoveVertical" + _playerIndex));
 
-			int curRows = (_merchant != null) ? 4 : 3;
-
 			if ((_moveX != moveX && moveX != 0) || (_moveY != moveY && moveY != 0)) {
-				Vector2Int selectPos = new Vector2Int(selectSlot % columns, selectSlot / columns);
 				if (_moveX != moveX) {
-					selectPos.x += moveX;
-					if (selectPos.x < 0) {
-						selectPos.x = columns - 1;
-					} else if (selectPos.x >= columns) {
-						selectPos.x = 0;
+					_selectedX += moveX;
+					if (_selectedX < 0) {
+						_selectedX = gridWidth-1;
+						if (_selectedX + _selectedY * gridWidth > GetPanelSlotCount(_activePanel)) {
+							_selectedX = GetPanelSlotCount(_activePanel) % gridWidth - 1;
+						}
+					} else if (_selectedX >= gridWidth) {
+						_selectedX = 0;
 					}
 				}
 				if (_moveY != moveY) {
-					selectPos.y += moveY;
-					if (selectPos.y < 0) {
-						selectPos.y = curRows - 1;
-					} else if (selectPos.y >= curRows) {
-						selectPos.y = 0;
+					int maxPanel = (_merchant != null) ? 2 : 1;
+					_selectedY += moveY;
+					if (_selectedY < 0) {
+						_activePanel--;
+						if (_activePanel < 0) {
+							_activePanel = maxPanel;
+							_selectedY = 0;
+						}
+						_selectedY = ((GetPanelSlotCount(_activePanel) - 1) / gridWidth);
+						if (_selectedX + _selectedY * gridWidth > GetPanelSlotCount(_activePanel)) {
+							_selectedX = GetPanelSlotCount(_activePanel) % gridWidth - 1;
+						}
+					} else if (_selectedX + _selectedY * gridWidth > GetPanelSlotCount(_activePanel)) {
+						_activePanel++;
+						_selectedY = 0;
+						if (_activePanel > maxPanel) {
+							_activePanel = 0;
+						}
+						if (_selectedX + _selectedY * gridWidth > GetPanelSlotCount(_activePanel)) {
+							_selectedX = GetPanelSlotCount(_activePanel) % gridWidth - 1;
+						}
 					}
 				}
-				_selectedSlot.Deselect();
-				selectSlot = selectPos.x + selectPos.y * columns;
-
-				OnSlotSelected();
+				Select(_activePanel, _selectedX, _selectedY);
 			}
 			_moveX = moveX;
 			_moveY = moveY;
 
 
 			if (Input.GetButtonDown("A1")) {
-				Use(_activePanel, _selectedX, _selectedY);
+				Use(_activePanel);
 			}
 			if (Input.GetButtonDown("X1")) {
-				Drop(_activePanel, _selectedX, _selectedY);
+				Drop(_activePanel);
 			}
 
 		}
 
-
-
-		private bool isMerchantSlot(int s) {
-			return s >= (int)Player.InventorySlot.PACK + _player.data.packSize;
+		private int GetPanelSlotCount(int p) {
+			return GetPanel(p).transform.childCount;
 		}
 
 		public void SetMerchant(Pawn merchant) {
 			_merchant = merchant;
-			storePanel.gameObject.SetActive(_merchant != null);
+			storeGroup.SetActive(_merchant != null);
 			if (_merchant != null) {
 				storePanel.Init(_merchant, 0, _merchant.data.packSize);
+			} else {
+				if (_activePanel == 2) {
+					_activePanel = 0;
+					_selectedX = 0;
+					_selectedY = 0;
+				}
 			}
+
 			OnInventoryChange();
 		}
 
 		private void OnInventoryChange() {
-
+			equipPanel.OnInventoryChange();
+			packPanel.OnInventoryChange();
+			storePanel.OnInventoryChange();
 		}
 
-		private void Highlight(InventorySlot s) {
-			if (item != null) {
-				itemInfoPanel.SetItem(item);
+		private Item GetSelectedItem(int panel, int x, int y) {
+			return null;
+		}
+
+		private InventoryPanel GetPanel(int index) {
+			if (index == 0) {
+				return equipPanel;
+			} else if (index == 1) {
+				return packPanel;
 			}
-			itemInfoPanel.gameObject.SetActive(item != null);
+			return storePanel;
 		}
-		private void Use(int panel, int x, int y) {
+		private void Select(int panel, int x, int y) {
+			_selectedSlot?.Deselect();
+
+			var p = GetPanel(panel);
+			_selectedSlot = p.transform.GetChild(x + y * gridWidth)?.GetComponent<InventorySlot>();
+			_selectedSlot?.Select();
+
+			if (_selectedSlot.item != null) {
+				itemInfoPanel.SetItem(_selectedSlot.item);
+			}
+			itemInfoPanel.gameObject.SetActive(_selectedSlot.item != null);
+
+		}
+
+
+		private void Use(int panel) {
+			Item item = _selectedSlot.item;
 			if (panel == 2) {
-
-			}
-			_player.Use(item);
-		}
-		private void Drop(InventorySlot s) {
-			if (_merchant != null) {
-				_player.RemoveFromInventory(item);
-				_player.SetMoney(_player.money + item.data.monetaryValue);
+				if (_player.money >= item.data.monetaryValue) {
+					if (_player.PickUp(ItemData.Get(item.data.name).CreateItem()) ) {
+						_player.SetMoney(_player.money - item.data.monetaryValue);
+					}
+				}
 			} else {
-				_player.Drop(item);
+				_player.Use(item);
 			}
 		}
-		private void Buy(InventorySlot s) {
-			if (_player.money >= item.data.monetaryValue) {
-				_player.PickUp(ItemData.Get(item.data.name).CreateItem());
-				_player.SetMoney(_player.money - item.data.monetaryValue);
+		private void Drop(int panel) {
+			if (panel < 2) {
+				Item item = _selectedSlot.item;
+				if (item != null) {
+					if (_merchant != null) {
+						_player.RemoveFromInventory(item);
+						_player.SetMoney(_player.money + item.data.monetaryValue);
+					} else {
+						_player.Drop(item);
+					}
+				}
 			}
 		}
 

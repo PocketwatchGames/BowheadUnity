@@ -26,7 +26,7 @@ MonoBehaviour:
     type: 2}
   hudEquipPrefab: {fileID: 114904058803911864, guid: 9b4b4fb52c164b540a19582b7aedae2e,
     type: 2}
-  hudInventoryPrefab: {fileID: 114465781474822714, guid: 757736a60d5d57a4f9b3570f888414a5,
+  hudInventoryPrefab: {fileID: 114405613453756114, guid: 757736a60d5d57a4f9b3570f888414a5,
     type: 2}
   hudButtonHintPrefab: {fileID: 114042321560627920, guid: 70f2a471b6a3a4049853a27d48744fbb,
     type: 2}
@@ -47,8 +47,6 @@ MonoBehaviour:
   critterHudPrefab: {fileID: 114538792139021752, guid: 7e0094bb443e9be4384385e0d360801e,
     type: 2}
   playerHudPrefab: {fileID: 114773707752257948, guid: 9feb1d324adb7f24aa71aa15501b1391,
-    type: 2}
-  weaponChargePrefab: {fileID: 114941436716662276, guid: 6871fdeecd0cd6942a256764f5cead43,
     type: 2}
   damageHUDPrefab: {fileID: 114778370284363310, guid: b334024714589fc4db1781e269cde89a,
     type: 2}

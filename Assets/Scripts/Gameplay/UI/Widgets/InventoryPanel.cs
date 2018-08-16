@@ -8,8 +8,6 @@ namespace Bowhead.Client.UI {
 
 		public InventorySlot inventorySlotPrefab;
 		private int _playerIndex = 1;
-		public int rows;
-		public int columns;
 		public InventorySlot[] slots;
 
 		private int selectSlot;
@@ -38,7 +36,7 @@ namespace Bowhead.Client.UI {
 		}
 
 
-		private void OnInventoryChange() {
+		public void OnInventoryChange() {
 			for (int i = 0; i < slots.Length; i++) {
 				slots[i].SetItem(_pawn.GetInventorySlot(i+_startSlot));
 			}

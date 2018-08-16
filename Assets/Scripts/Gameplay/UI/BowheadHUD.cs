@@ -7,7 +7,7 @@ using Bowhead.Actors;
 namespace Bowhead.Client.UI {
 	public class BowheadHUD : HUD {
 		EquipPanel _equipHUD;
-		InventoryPanel _inventoryHUD;
+		InventoryHUD _inventoryHUD;
 		ButtonHint _interactHint;
 		LockTargetHUD _lockMarker;
 		Map _worldmap;
