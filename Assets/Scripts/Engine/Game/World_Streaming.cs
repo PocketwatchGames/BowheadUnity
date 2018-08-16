@@ -171,6 +171,12 @@ public partial class World {
 			return data;
 		}
 
+		static readonly string[] MATERIAL_KEYWORDS = new string[] {
+			"TWO_MATS",
+			"THREE_MATS",
+			"FOUR_MATS"
+		};
+
 		public void SetWorldAtlasClientData(WorldAtlasClientData clientData) {
 			DisposeClientData();
 
@@ -184,6 +190,11 @@ public partial class World {
 			for (int i = 0; i < MAX_MATERIALS_PER_SUBMESH; ++i) {
 				_materials[i].solid = new Material(clientData.renderMaterials.solid);
 				_materials[i].water = new Material(clientData.renderMaterials.water);
+
+				if (i > 0) {
+					_materials[i].solid.EnableKeyword(MATERIAL_KEYWORDS[i-1]);
+					_materials[i].water.EnableKeyword(MATERIAL_KEYWORDS[i-1]);
+				}
 			}
 			
 			SetMaterialTextureArray(ShaderID._AlbedoTextureArray, clientData.albedo.textureArray);

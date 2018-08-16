@@ -1,7 +1,15 @@
 // Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
 
 // Copyright (c) 2018 Pocketwatch Games LLC.
+#ifdef FOUR_MATS
 #define NUM_MATS 4
+#elif defined(THREE_MATS)
+#define NUM_MATS 3
+#elif defined(TWO_MATS)
+#define NUM_MATS 2
+#else
+#define NUM_MATS 1
+#endif
 #define TRIP_SAMPLE_COUNT NUM_MATS*3
 
 // Common terrain shading shit.
@@ -69,6 +77,7 @@ fixed4 triplanarSampleColor(int i, UNITY_ARGS_TEX2DARRAY(texArray), float arrayI
 fixed4 triplanarColor(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
 	fixed4 color = fixed4(0, 0, 0, 0);
 
+	[unroll]
 	for (int i = 0; i < NUM_MATS; ++i) {
 		color += triplanarSampleColor(i, UNITY_PASS_TEX2DARRAY(texArray), arrayIndices, uvs, triblend, signNormal) * texBlend[i];
 	}
@@ -111,6 +120,7 @@ half3 triplanarSampleWorldNormal(int i, UNITY_ARGS_TEX2DARRAY(texArray), float a
 half3 triplanarWorldNormal(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], float2 uvs[3], half3 triblend, half3 signNormal, half3 bumpNormals[3], half4 texBlend) {
 	float3 normal = float3(0, 0, 0);
 
+	[unroll]
 	for (int i = 0; i < NUM_MATS; ++i) {
 		normal += triplanarSampleWorldNormal(i, UNITY_PASS_TEX2DARRAY(texArray), arrayIndices, uvs, triblend, signNormal, bumpNormals) * texBlend[i];
 	}
@@ -146,6 +156,7 @@ fixed sampleTerrainRoughness(float2 uvs[3], half3 triblend, half3 signNormal, ha
 }
 
 void sampleRHO(float2 uvs[3], half3 signNormal, out fixed4 samples[TRIP_SAMPLE_COUNT]) {
+	[unroll]
 	for (int i = 0; i < NUM_MATS; ++i) {
 		samples[i*3+0] = UNITY_SAMPLE_TEX2DARRAY(_RHOTextureArray, float3(uvs[0], _RHOTextureArrayIndices[i * 3 + 1]));
 		samples[i*3+1] = UNITY_SAMPLE_TEX2DARRAY(_RHOTextureArray, float3(uvs[1], _RHOTextureArrayIndices[i * 3 + (int)(1 + signNormal.y)]));
@@ -179,11 +190,11 @@ fixed4 rho_Blend(half3 triblend, half4 texBlend, fixed4 samples[TRIP_SAMPLE_COUN
 	z = (samples[3] * triblend.x) + (samples[4] * triblend.y) + (samples[5] * triblend.z);
 	sum += z * texBlend.y;
 #endif
-#if NUM_MATS > 1
+#if NUM_MATS > 2
 	z = (samples[6] * triblend.x) + (samples[7] * triblend.y) + (samples[8] * triblend.z);
 	sum += z * texBlend.z;
 #endif
-#if NUM_MATS > 1
+#if NUM_MATS > 3
 	z = (samples[9] * triblend.x) + (samples[10] * triblend.y) + (samples[11] * triblend.z);
 	sum += z * texBlend.w;
 #endif
