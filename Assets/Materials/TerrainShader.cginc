@@ -262,12 +262,13 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	uvs[0].x *= signNormal.x;
 	uvs[1].x *= signNormal.y;
 	uvs[2].x *= -signNormal.z;
-
+	
 	fixed4 rhoSamples[TRIP_SAMPLE_COUNT];
 	sampleRHO(uvs, signNormal, rhoSamples);
-
+	
 	half4 height = rho_Height(triblend, IN.texBlend, rhoSamples);//sampleTerrainHeight(uvs, triblend, signNormal, IN.texBlend);// +(IN.texBlend * 0.1);
-	half baseHeight = max(max(max(height.x, height.y), height.z), height.w) * 0.6;// -0.3;
+	//height = pow(height, 4);
+	half baseHeight = max(max(max(height.x, height.y), height.z), height.w) * 0.3;// -0.3;
 	height = max(height - baseHeight.xxxx, half4(0, 0, 0, 0));
 	height /= dot(height, half4(1, 1, 1, 1));
 
