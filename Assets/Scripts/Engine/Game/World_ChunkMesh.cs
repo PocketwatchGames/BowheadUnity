@@ -1370,8 +1370,8 @@ public partial class World {
 									}
 								}
 
-								_finalVerts.submeshTextures[(layer*MAX_CHUNK_LAYERS)+maxLayerSubmesh] = texBlend;
-								_finalVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+maxLayerSubmesh] = numSubmeshVerts;
+								_finalVerts.submeshTextures[(layer*MAX_CHUNK_SUBMESHES)+maxLayerSubmesh] = texBlend;
+								_finalVerts.submeshes[(layer*MAX_CHUNK_SUBMESHES)+maxLayerSubmesh] = numSubmeshVerts;
 							}
 						}
 					}

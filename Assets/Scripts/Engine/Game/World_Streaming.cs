@@ -860,7 +860,7 @@ public partial class World {
 			var maxSubmesh = outputVerts.counts[layer*3+2];
 
 			for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
-				int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
+				int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_SUBMESHES)+submesh];
 				if (numSubmeshVerts > 0) {
 					++submeshidx;
 				}
@@ -871,11 +871,10 @@ public partial class World {
 			submeshidx = 0;
 
 			for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
-				int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
+				int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_SUBMESHES)+submesh];
 				if (numSubmeshVerts > 0) {
-					var texBlend = outputVerts.submeshTextures[(layer*MAX_CHUNK_LAYERS)+submesh];
+					var texBlend = outputVerts.submeshTextures[(layer*MAX_CHUNK_SUBMESHES)+submesh];
 					staticRenderMats.Add(_materials[texBlend.count-1]);
-
 					MeshCopyHelper.SetSubMeshTris(mesh, submeshidx, Copy(staticIndices, outputVerts.indices, indexOfs+baseIndex, numSubmeshVerts), numSubmeshVerts, true, 0);
 					indexOfs += numSubmeshVerts;
 					++submeshidx;
@@ -888,9 +887,9 @@ public partial class World {
 			{
 				submeshidx = 0;
 				for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
-					int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
+					int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_SUBMESHES)+submesh];
 					if (numSubmeshVerts > 0) {
-						var texBlend = outputVerts.submeshTextures[(layer*MAX_CHUNK_LAYERS)+submesh];
+						var texBlend = outputVerts.submeshTextures[(layer*MAX_CHUNK_SUBMESHES)+submesh];
 						SetMaterialPropertyBlock(texBlend);
 						component.SetPropertyBlock(staticMaterialProperties, submeshidx);
 						++submeshidx;
