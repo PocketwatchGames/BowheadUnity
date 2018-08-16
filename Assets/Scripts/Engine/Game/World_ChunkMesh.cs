@@ -689,20 +689,20 @@ public partial class World {
 				// 1f = most smooth, 0 = very faceted
 
 				_blockSmoothingFactors = new float[(int)EVoxelBlockType.NumBlockTypes - 1] {
-					1f, // BLOCK_TYPE_DIRT
-					1f, // BLOCK_TYPE_GRASS
-					1f, // BLOCK_TYPE_WATER
-					1f, // BLOCK_TYPE_SAND
-					1f, // BLOCK_TYPE_SNOW
-					1f, // BLOCK_TYPE_ROCK
-					1f, // BLOCK_TYPE_ICE
-					1f, // BLOCK_TYPE_WOOD
-					1f, // BLOCK_TYPE_LEAVES
-					1f, // BLOCK_TYPE_NEEDLES
-					1f, // BLOCK_TYPE_FLOWERS1
-					1f, // BLOCK_TYPE_FLOWERS2
-					1f, // BLOCK_TYPE_FLOWERS3
-					1f  // BLOCK_TYPE_FLOWERS4
+					0.85f, // BLOCK_TYPE_DIRT
+					0.85f, // BLOCK_TYPE_GRASS
+					0.85f, // BLOCK_TYPE_WATER
+					0.85f, // BLOCK_TYPE_SAND
+					0.85f, // BLOCK_TYPE_SNOW
+					0.85f, // BLOCK_TYPE_ROCK
+					0.85f, // BLOCK_TYPE_ICE
+					0.85f, // BLOCK_TYPE_WOOD
+					0.85f, // BLOCK_TYPE_LEAVES
+					0.85f, // BLOCK_TYPE_NEEDLES
+					0.85f, // BLOCK_TYPE_FLOWERS1
+					0.85f, // BLOCK_TYPE_FLOWERS2
+					0.85f, // BLOCK_TYPE_FLOWERS3
+					0.85f  // BLOCK_TYPE_FLOWERS4
 				};
 
 				_pinnedBlockSmoothingFactors = GCHandle.Alloc(_blockSmoothingFactors, GCHandleType.Pinned);
@@ -1067,6 +1067,10 @@ public partial class World {
 					indices[_indexCount++] = v2 = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, layer);
 				}
 
+				if (layer == 2) {
+					int b = 0;
+				}
+
 				if (v0 != -1) {
 					AddVertexMaterial(v0 & 0x00ffffff, layer, material);
 				}
@@ -1396,12 +1400,16 @@ public partial class World {
 									w += 1f;
 								}
 
-								var checkNormal = summedNormal + _smoothVerts.normals[(index*BANK_SIZE) + i];
-								var nml = checkNormal.normalized;
-								var dot = Vector3.Dot(nml, originalNormal);
-
+								var blendNormal = _smoothVerts.normals[(index*BANK_SIZE) + i];
+								var dot = Vector3.Dot(blendNormal, originalNormal);
 								if (dot >= factor) {
-									summedNormal = checkNormal;
+									var checkNormal = summedNormal + blendNormal;
+									var nml = checkNormal.normalized;
+									dot = Vector3.Dot(nml, originalNormal);
+
+									if (dot >= 0.33f) {
+										summedNormal = checkNormal;
+									}
 								}
 							}
 						}

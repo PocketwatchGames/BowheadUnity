@@ -160,7 +160,7 @@ public class WorldAtlasEditor : Editor {
 				TextureSet.Equals(a.rho, b.rho);
 		}
 	
-		public static int[] OptimizeShaderIndices(TextureBundle[] arr) {
+		public static int[] OptimizeShaderIndices(ref TextureBundle[] arr) {
 			List<int> indices = new List<int>();
 			List<TextureBundle> wkSet = new List<TextureBundle>();
 
@@ -169,6 +169,7 @@ public class WorldAtlasEditor : Editor {
 				indices.Add(index);
 			}
 
+			arr = wkSet.ToArray();
 			return indices.ToArray();
 		}
 
@@ -352,20 +353,29 @@ public class WorldAtlasEditor : Editor {
 	}
 
 
-	void LoadTextureChannel(WorldAtlas atlas, TextureBundle[] bundles, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> getTexSetChannel, Action<int[]> setTextureSet2ArrayIndex, Func<TextureBundle, TextureSet, TextureBundle> setBundleChannel, string channelName) {
+	void LoadTextureChannel(WorldAtlas atlas, TextureBundle[] bundles, Func<WorldAtlasMaterialTextures, WorldAtlasMaterialTextures.TextureSet> getTexSetChannel, Func<TextureBundle, TextureSet, TextureBundle> setBundleChannel, string channelName) {
 		List<Texture2D> textures;
 		List<TextureSet> indices;
 
 		LoadTextureList(atlas, out textures, out indices, getTexSetChannel, channelName);
-		setTextureSet2ArrayIndex(TextureSet.ToIntArray(indices));
 		TextureBundle.CopyChannelTextureSet(bundles, indices, setBundleChannel);
 	}
 
 	void LoadRHOTextureChannel(WorldAtlas atlas, TextureBundle[] bundles, WorldAtlasClientData clientData) {
 		var table = LoadRHOTextureTable(atlas);
-
-		clientData.rho.textureSet2ArrayIndex = TextureSet.ToIntArray(table.indices);
 		TextureBundle.CopyChannelTextureSet(bundles, table.indices, (b, s) => { b.rho = s; return b; });
+	}
+
+	void SetChannelTextureIndices(int[] block2TextureSet, TextureBundle[] bundles, Func<TextureBundle, TextureSet> getTexSet, Action<int[]> setTextureSet2ArrayIndex) {
+		var indices = new List<TextureSet>();
+		foreach (var i in block2TextureSet) {
+			while (i >= indices.Count) {
+				indices.Add(default(TextureSet));
+			}
+			indices[i] = getTexSet(bundles[i]);
+		}
+
+		setTextureSet2ArrayIndex(TextureSet.ToIntArray(indices));
 	}
 
 	void RebuildAtlasData() {
@@ -377,15 +387,16 @@ public class WorldAtlasEditor : Editor {
 			LoadTerrainTextures(atlas, atlasClientData);
 
 			var bundles = new TextureBundle[atlas.materials.Length];
-			LoadTextureChannel(atlas, bundles, (x) => x.albedo, (x) => atlasClientData.albedo.textureSet2ArrayIndex = x, (b, s) => { b.albedo = s; return b; }, "Albedo");
-			LoadTextureChannel(atlas, bundles, (x) => x.normals, (x) => atlasClientData.normals.textureSet2ArrayIndex = x, (b, s) => { b.normals = s; return b; }, "Normals");
-			//LoadTextureChannel(atlas, bundles, (x) => x.roughness, (x) => atlasClientData.roughness.textureSet2ArrayIndex = x, (b, s) => { return b; }, "Roughness");
-			//LoadTextureChannel(atlas, bundles, (x) => x.ao, (x) => atlasClientData.ao.textureSet2ArrayIndex = x, (b, s) => { return b; }, "AO");
-			//LoadTextureChannel(atlas, bundles, (x) => x.height, (x) => atlasClientData.height.textureSet2ArrayIndex = x, (b, s) => { return b; }, "Height");
-
+			LoadTextureChannel(atlas, bundles, (x) => x.albedo, (b, s) => { b.albedo = s; return b; }, "Albedo");
+			LoadTextureChannel(atlas, bundles, (x) => x.normals, (b, s) => { b.normals = s; return b; }, "Normals");
 			LoadRHOTextureChannel(atlas, bundles, atlasClientData);
 
-			atlasClientData.block2TextureSet = TextureBundle.OptimizeShaderIndices(bundles);
+			atlasClientData.block2TextureSet = TextureBundle.OptimizeShaderIndices(ref bundles);
+
+			SetChannelTextureIndices(atlasClientData.block2TextureSet, bundles, (x) => x.albedo, (x) => atlasClientData.albedo.textureSet2ArrayIndex = x);
+			SetChannelTextureIndices(atlasClientData.block2TextureSet, bundles, (x) => x.normals, (x) => atlasClientData.normals.textureSet2ArrayIndex = x);
+			SetChannelTextureIndices(atlasClientData.block2TextureSet, bundles, (x) => x.rho, (x) => atlasClientData.rho.textureSet2ArrayIndex = x);
+						
 			atlasClientData.renderMaterials = atlas.renderMaterials;
 
 			atlasClientData = SaveAtlasClientData(atlas, atlasClientData);
