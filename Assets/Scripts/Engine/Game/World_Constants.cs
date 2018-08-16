@@ -266,6 +266,7 @@ public partial class World {
 
 	public static readonly int MAX_CHUNK_LAYERS = Enum.GetNames(typeof(EChunkLayers)).Length;
 	public const int MAX_CHUNK_SUBMESHES = 16;
+	public const int MAX_MATERIALS_PER_SUBMESH = 4;
 	
 	public const int VOXEL_CHUNK_VIS_MAX_XZ = 16;
 	public const int VOXEL_CHUNK_VIS_MAX_Y_UP = 2;

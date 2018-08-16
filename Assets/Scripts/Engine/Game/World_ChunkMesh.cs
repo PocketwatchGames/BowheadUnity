@@ -121,7 +121,6 @@ public partial class World {
 		const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
 		const int BANK_SIZE = 24;
 		const int MAX_MATERIALS_PER_VERTEX = 16;
-		const int MAX_MATERIALS_PER_SUBMESH = 4;
 
 		const int BORDER_SIZE = 2;
 		const int NUM_VOXELS_XZ = VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE*2;

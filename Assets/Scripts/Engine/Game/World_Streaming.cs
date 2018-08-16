@@ -121,7 +121,7 @@ public partial class World {
 		ChunkWriteDelegate _chunkWrite;
 		NativeArray<int> _blockMaterialIndices;
 		WorldAtlasClientData _clientData;
-		WorldAtlas.RenderMaterials_t _materials;
+		WorldAtlas.RenderMaterials_t[] _materials;
 		bool _loading;
 		bool _flush;
 
@@ -179,15 +179,15 @@ public partial class World {
 			if ((clientData.block2TextureSet != null) && (clientData.block2TextureSet.Length > 0)) {
 				_blockMaterialIndices = new NativeArray<int>(clientData.block2TextureSet, Allocator.Persistent);
 			}
-			
-			_materials.solid = new Material(clientData.renderMaterials.solid);
-			_materials.water = new Material(clientData.renderMaterials.water);
 
+			_materials = new WorldAtlas.RenderMaterials_t[MAX_MATERIALS_PER_SUBMESH];
+			for (int i = 0; i < MAX_MATERIALS_PER_SUBMESH; ++i) {
+				_materials[i].solid = new Material(clientData.renderMaterials.solid);
+				_materials[i].water = new Material(clientData.renderMaterials.water);
+			}
+			
 			SetMaterialTextureArray(ShaderID._AlbedoTextureArray, clientData.albedo.textureArray);
 			SetMaterialTextureArray(ShaderID._NormalsTextureArray, clientData.normals.textureArray);
-			//SetMaterialTextureArray(ShaderID._RoughnessTextureArray, clientData.roughness.textureArray);
-			//SetMaterialTextureArray(ShaderID._AOTextureArray, clientData.ao.textureArray);
-			//SetMaterialTextureArray(ShaderID._HeightTextureArray, clientData.height.textureArray);
 			SetMaterialTextureArray(ShaderID._RHOTextureArray, clientData.rho.textureArray);
 		}
 
@@ -196,18 +196,20 @@ public partial class World {
 				_blockMaterialIndices.Dispose();
 			}
 
-			if (_materials.solid) {
-				GameObject.Destroy(_materials.solid);
-			}
-
-			if (_materials.water) {
-				GameObject.Destroy(_materials.water);
+			if (_materials != null) {
+				foreach (var m in _materials) {
+					GameObject.Destroy(m.solid);
+					GameObject.Destroy(m.water);
+				}
+				_materials = null;
 			}
 		}
 
 		void SetMaterialTextureArray(int name, Texture2DArray texArray) {
-			_materials.solid.SetTexture(name, texArray);
-			_materials.water.SetTexture(name, texArray);
+			foreach (var m in _materials) {
+				m.solid.SetTexture(name, texArray);
+				m.water.SetTexture(name, texArray);
+			}
 		}
 
 		long lastTick;
@@ -734,6 +736,7 @@ public partial class World {
 		static Vector4[] staticVec4 = new Vector4[ushort.MaxValue];
 		static MaterialPropertyBlock staticMaterialProperties = new MaterialPropertyBlock();
 		static float[] staticTextureArrayIndices = new float[12];
+		static List<WorldAtlas.RenderMaterials_t> staticRenderMats = new List<WorldAtlas.RenderMaterials_t>();
 		
 		static T[] Copy<T>(NativeArray<T> src, int size) where T : struct {
 			var t = new T[size];
@@ -870,13 +873,18 @@ public partial class World {
 			for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
 				int numSubmeshVerts = outputVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+submesh];
 				if (numSubmeshVerts > 0) {
+					var texBlend = outputVerts.submeshTextures[(layer*MAX_CHUNK_LAYERS)+submesh];
+					staticRenderMats.Add(_materials[texBlend.count-1]);
+
 					MeshCopyHelper.SetSubMeshTris(mesh, submeshidx, Copy(staticIndices, outputVerts.indices, indexOfs+baseIndex, numSubmeshVerts), numSubmeshVerts, true, 0);
 					indexOfs += numSubmeshVerts;
 					++submeshidx;
 				}
 			}
 
-			component.SetSubmeshMaterials(_materials, submeshidx);
+			component.SetSubmeshMaterials(staticRenderMats, submeshidx);
+			staticRenderMats.Clear();
+			
 			{
 				submeshidx = 0;
 				for (int submesh = 0; submesh <= maxSubmesh; ++submesh) {
@@ -970,7 +978,7 @@ public partial class World {
 				Vector4 v4 = (t - n * Vector3.Dot(n, t)).normalized;
 
 				// Calculate handedness
-				v4.w = (Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0f) ? -1f : 1f;
+				v4.w = (Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0f) ? 1f : -1f;
 
 				staticVec4[i] = v4;
 			}

@@ -27,12 +27,11 @@ public class WorldChunkComponent : MonoBehaviour {
 		_meshCollider.sharedMesh = mesh;
 	}
 
-	public void SetSubmeshMaterials(WorldAtlas.RenderMaterials_t materials, int submeshCount) {
+	public void SetSubmeshMaterials(IList<WorldAtlas.RenderMaterials_t> materials, int submeshCount) {
 		var mats = new Material[submeshCount];
-		var material = (gameObject.layer == Layers.Water) ? materials.water : materials.solid;
-		
+
 		for (int i = 0; i < submeshCount; ++i) {
-			mats[i] = material;
+			mats[i] = (gameObject.layer == Layers.Water) ? materials[i].water : materials[i].solid;
 		}
 
 		_meshRenderer.sharedMaterials = mats;
