@@ -21,6 +21,7 @@ namespace Bowhead.Actors {
 		public Vector3 spawnPoint;
         public Vector2 mapPos;
 		public Pawn tradePartner;
+		public bool useKeyboard;
 
 		[Header("Inventory")]
         public int money;
@@ -59,6 +60,7 @@ namespace Bowhead.Actors {
         public event Action OnWeightClassChange;
         public event Action<Vector2, int, bool> OnExplore;
 		public event Action OnInventoryChange;
+		public event Action OnInputMethodChange;
 		public event Action<Pawn> OnMerchantActivated;
 
 		public delegate void OnLandFn(float damage);
@@ -68,9 +70,34 @@ namespace Bowhead.Actors {
 
 		public Player() {
 			SetReplicates(true);
+			var joystickNames = Input.GetJoystickNames();
+			useKeyboard = joystickNames.Length == 0 || (joystickNames[0] == "");
 		}
 
-
+		public string GetButtonHint(string gpHint) {
+			if (!useKeyboard) {
+				return gpHint;
+			}
+			switch (gpHint) {
+				case "A":
+					return "SPACE";
+				case "B":
+					return "I";
+				case "X":
+					return "R";
+				case "Y":
+					return "TAB";
+				case "LT":
+					return "SHIFT";
+				case "RT":
+					return "RMB";
+				case "LB":
+					return "LMB";
+				case "RB":
+					return "CTRL";
+			}
+			return "";
+		}
 		private void RecordInputDevices() {
 
 			int pi = playerIndex + 1;
@@ -81,8 +108,13 @@ namespace Bowhead.Actors {
 
 				if (pi == 1) {
 
+					if (Input.GetButtonDown("Enter")) {
+						useKeyboard = !useKeyboard;
+						OnInputMethodChange?.Invoke();
+					}
+
 					Vector2 look;
-					if (Input.GetJoystickNames().Length == 0) {
+					if (useKeyboard) {
 						look = (Input.mousePosition - new Vector3(Screen.width / 2, Screen.height / 2)).normalized;
 						if (look != Vector2.zero) {
 							look.Normalize();
