@@ -1118,8 +1118,8 @@ public partial class World {
 				}
 			}
 
-			static bool AddSubmeshTexture(ref TexBlend_t blend, int material) {
-				if (blend.count < 1) {
+			static bool AddSubmeshTexture(ref TexBlend_t blend, int material, int max) {
+				if ((max > 0) && (blend.count < 1)) {
 					blend.x = material;
 					blend.count = 1;
 					return true;
@@ -1128,7 +1128,7 @@ public partial class World {
 					return true;
 				};
 
-				if (blend.count < 2) {
+				if ((max > 1) && (blend.count < 2)) {
 					blend.y = material;
 					blend.count = 2;
 					return true;
@@ -1137,7 +1137,7 @@ public partial class World {
 					return true;
 				}
 
-				if (blend.count < 3) {
+				if ((max > 2) && (blend.count < 3)) {
 					blend.z = material;
 					blend.count = 3;
 					return true;
@@ -1146,7 +1146,7 @@ public partial class World {
 					return true;
 				}
 
-				if (blend.count < 4) {
+				if ((max > 3) && (blend.count < 4)) {
 					blend.w = material;
 					blend.count = 4;
 					return true;
@@ -1238,10 +1238,10 @@ public partial class World {
 				return num;
 			}
 
-			bool AddSubmeshMaterials(ref TexBlend_t texBlend, int num) {
+			bool AddSubmeshMaterials(ref TexBlend_t texBlend, int num, int max) {
 				var blend = texBlend;
 				for (int i = 0; i < num; ++i) {
-					if (!AddSubmeshTexture(ref blend, _materials[i])) {
+					if (!AddSubmeshTexture(ref blend, _materials[i], max)) {
 						return false;
 					}
 				}
@@ -1268,103 +1268,108 @@ public partial class World {
 					emitFlags.Broadcast(0);
 
 					while (numEmitted < numIndices) {
-						var texBlend = default(TexBlend_t);
-						
-						int numTris = 0;
-						int firstIndex = 0;
-						
-						// pack submesh edges textures
-
-						for (int k = 0; k < numIndices; k += 3) {
-							if (emitFlags[k/3] == 0) {
-								int packedIndex0 = _smoothVerts.indices[k];
-								int vertNum0 = packedIndex0 & 0x00ffffff;
-								int vertOfs0 = packedIndex0 >> 24;
-								int bankedIndex0 = (vertNum0*BANK_SIZE)+vertOfs0;
-
-								if (_smoothVerts.layers[bankedIndex0] == layer) {
-
-									int packedIndex1 = _smoothVerts.indices[k+1];
-									int vertNum1 = packedIndex1 & 0x00ffffff;
-									int packedIndex2 = _smoothVerts.indices[k+2];
-									int vertNum2 = packedIndex2 & 0x00ffffff;
-
-									var numMats = AddVertexMaterials(layer, vertNum0, vertNum1, vertNum2);
-									if (numMats > 0) {
-										if (AddSubmeshMaterials(ref texBlend, numMats)) {
-											if (numTris == 0) {
-												firstIndex = k;
-											}
-
-											++numTris;
-										}
-									} /*else {
-										emitFlags[k/3] = 1;
-										numEmitted = 3;
-									}*/
-								} else {
-									emitFlags[k/3] = 1;
-									numEmitted += 3;
-								}
+						for (int maxMats = 1; maxMats <= 4; ++maxMats) {
+							if (numEmitted >= numIndices) {
+								break;
 							}
-						}
+							var texBlend = default(TexBlend_t);
 
-						if (numTris > 0) {
-							// we've packed as many triangles as we can into a TexBlend_t
-							// write out the packed submesh.
+							int numTris = 0;
+							int firstIndex = 0;
 
-							++maxLayerSubmesh;
-							int numSubmeshVerts = 0;
-							var curBlend = default(TexBlend_t);
-							
-							for (int k = firstIndex; k < numIndices; k += 3) {
+							// pack submesh edges textures
+
+							for (int k = 0; k < numIndices; k += 3) {
 								if (emitFlags[k/3] == 0) {
 									int packedIndex0 = _smoothVerts.indices[k];
 									int vertNum0 = packedIndex0 & 0x00ffffff;
 									int vertOfs0 = packedIndex0 >> 24;
 									int bankedIndex0 = (vertNum0*BANK_SIZE)+vertOfs0;
 
-									int packedIndex1 = _smoothVerts.indices[k+1];
-									int vertNum1 = packedIndex1 & 0x00ffffff;
-									int vertOfs1 = packedIndex1 >> 24;
-									int bankedIndex1 = (vertNum1*BANK_SIZE)+vertOfs1;
+									if (_smoothVerts.layers[bankedIndex0] == layer) {
 
-									int packedIndex2 = _smoothVerts.indices[k+2];
-									int vertNum2 = packedIndex2 & 0x00ffffff;
-									int vertOfs2 = packedIndex2 >> 24;
-									int bankedIndex2 = (vertNum2*BANK_SIZE)+vertOfs2;
+										int packedIndex1 = _smoothVerts.indices[k+1];
+										int vertNum1 = packedIndex1 & 0x00ffffff;
+										int packedIndex2 = _smoothVerts.indices[k+2];
+										int vertNum2 = packedIndex2 & 0x00ffffff;
 
-									var numMats = AddVertexMaterials(layer, vertNum0, vertNum1, vertNum2);
-									if (numMats > 0) {
-										if (AddSubmeshMaterials(ref curBlend, numMats)) {
-											Int3_t p;
-											Vector3 n;
-											Color32 c;
-											Vector4 blendFactor;
+										var numMats = AddVertexMaterials(layer, vertNum0, vertNum1, vertNum2);
+										if ((numMats > 0) && (numMats <= maxMats)) {
+											if (AddSubmeshMaterials(ref texBlend, numMats, maxMats)) {
+												if (numTris == 0) {
+													firstIndex = k;
+												}
 
-											BlendVertex(vertNum0, vertOfs0, bankedIndex0, out p, out n, out c);
-											blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum0);
-											_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
-
-											BlendVertex(vertNum1, vertOfs1, bankedIndex1, out p, out n, out c);
-											blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum1);
-											_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
-
-											BlendVertex(vertNum2, vertOfs2, bankedIndex2, out p, out n, out c);
-											blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum2);
-											_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
-
-											numSubmeshVerts += 3;
-
-											emitFlags[k/3] = 1;
-											numEmitted += 3;
-										}
+												++numTris;
+											}
+										} /*else {
+										emitFlags[k/3] = 1;
+										numEmitted = 3;
+									}*/
+									} else {
+										emitFlags[k/3] = 1;
+										numEmitted += 3;
 									}
 								}
 							}
 
-							_finalVerts.submeshTextures[(layer*MAX_CHUNK_LAYERS)+maxLayerSubmesh] = texBlend;
-							_finalVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+maxLayerSubmesh] = numSubmeshVerts;
+							if (numTris > 0) {
+								// we've packed as many triangles as we can into a TexBlend_t
+								// write out the packed submesh.
+
+								++maxLayerSubmesh;
+								int numSubmeshVerts = 0;
+								var curBlend = default(TexBlend_t);
+
+								for (int k = firstIndex; k < numIndices; k += 3) {
+									if (emitFlags[k/3] == 0) {
+										int packedIndex0 = _smoothVerts.indices[k];
+										int vertNum0 = packedIndex0 & 0x00ffffff;
+										int vertOfs0 = packedIndex0 >> 24;
+										int bankedIndex0 = (vertNum0*BANK_SIZE)+vertOfs0;
+
+										int packedIndex1 = _smoothVerts.indices[k+1];
+										int vertNum1 = packedIndex1 & 0x00ffffff;
+										int vertOfs1 = packedIndex1 >> 24;
+										int bankedIndex1 = (vertNum1*BANK_SIZE)+vertOfs1;
+
+										int packedIndex2 = _smoothVerts.indices[k+2];
+										int vertNum2 = packedIndex2 & 0x00ffffff;
+										int vertOfs2 = packedIndex2 >> 24;
+										int bankedIndex2 = (vertNum2*BANK_SIZE)+vertOfs2;
+
+										var numMats = AddVertexMaterials(layer, vertNum0, vertNum1, vertNum2);
+										if ((numMats > 0) && (numMats <= maxMats)) {
+											if (AddSubmeshMaterials(ref curBlend, numMats, maxMats)) {
+												Int3_t p;
+												Vector3 n;
+												Color32 c;
+												Vector4 blendFactor;
+
+												BlendVertex(vertNum0, vertOfs0, bankedIndex0, out p, out n, out c);
+												blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum0);
+												_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
+
+												BlendVertex(vertNum1, vertOfs1, bankedIndex1, out p, out n, out c);
+												blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum1);
+												_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
+
+												BlendVertex(vertNum2, vertOfs2, bankedIndex2, out p, out n, out c);
+												blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum2);
+												_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
+
+												numSubmeshVerts += 3;
+
+												emitFlags[k/3] = 1;
+												numEmitted += 3;
+											}
+										}
+									}
+								}
+
+								_finalVerts.submeshTextures[(layer*MAX_CHUNK_LAYERS)+maxLayerSubmesh] = texBlend;
+								_finalVerts.submeshes[(layer*MAX_CHUNK_LAYERS)+maxLayerSubmesh] = numSubmeshVerts;
+							}
 						}
 					}
 
