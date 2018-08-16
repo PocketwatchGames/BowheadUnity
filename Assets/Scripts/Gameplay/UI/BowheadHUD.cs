@@ -78,7 +78,6 @@ namespace Bowhead.Client.UI {
             world.DamageEvent += OnDamage;
             world.StatusEffectAddedEvent += OnStatusEffectAdded;
 
-			_interactHint.SetButton("X");
 
 		}
 
@@ -104,9 +103,9 @@ namespace Bowhead.Client.UI {
 			localPlayer.playerPawn.OnMerchantActivated += OnMerchantActivated;
 
 			_inventoryHUD.Init(player);
-        }
+		}
 
-        public void OnCritterActive(Critter critter) {
+		public void OnCritterActive(Critter critter) {
 			var critterHUD = GameObject.Instantiate<PawnHUD>(GameManager.instance.clientData.critterHudPrefab, _pawnHUDs.transform);
 			critterHUD.SetTarget(critter);
 		}
@@ -156,6 +155,7 @@ namespace Bowhead.Client.UI {
 			}
 			_interactHint.gameObject.SetActive(interaction != null);
             _interactHint.SetHint(interaction);
+			_interactHint.SetButton(localPlayer.playerPawn.GetButtonHint("X"));
 
 
 			float angle;
