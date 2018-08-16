@@ -78,6 +78,8 @@ namespace Bowhead.Client.UI {
             world.DamageEvent += OnDamage;
             world.StatusEffectAddedEvent += OnStatusEffectAdded;
 
+			_interactHint.SetButton("X");
+
 		}
 
 		public override void OnPlayerPossessed(Player player) {
@@ -152,7 +154,7 @@ namespace Bowhead.Client.UI {
 			else {
 				_interactHint.SetTarget(target);
 			}
-			_interactHint.SetButton((interaction != null) ? "X" : "");
+			_interactHint.gameObject.SetActive(interaction != null);
             _interactHint.SetHint(interaction);
 
 
