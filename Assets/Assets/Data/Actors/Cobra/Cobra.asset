@@ -18,6 +18,7 @@ MonoBehaviour:
     _editorPath: 
   mapMarkerStyle: 0
   defaultSilhouetteMode: 2
+  packSize: 0
   height: 1.5
   maxHealth: 40
   maxWater: 0
@@ -27,8 +28,10 @@ MonoBehaviour:
   staminaRechargeTime: 3
   staminaRechargeTimeDuringStun: 2
   dodgeTime: 0
+  dodgeDistance: 0
   postStunInvincibilityTime: 1
   backStabAngle: 90
+  directHitWidth: 0.5
   runSound: 0
   sprintSound: 0
   sprintDamageMultiplierSpeed: 0
@@ -79,6 +82,7 @@ MonoBehaviour:
   nightVisionDistance: 10
   visionAngleExponent: 1
   visionDistanceExponent: 0.5
+  visionMotionWeight: 0.5
   visionAngleRange: 120
   visionAngleRangeUp: 25
   visionAngleRangeDown: 60

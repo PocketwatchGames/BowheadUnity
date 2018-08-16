@@ -14,19 +14,16 @@ namespace Bowhead.Actors {
 		public float silhouetteDistanceThreshold;
 		public float waryLimit;
 		public float investigateLimit;
-		public float visionWeight;
-		public float smellWeight;
-		public float hearingWeight;
 		public float dayVisionDistance;
 		public float nightVisionDistance;
 		public float visionAngleExponent;
 		public float visionDistanceExponent;
+		public float visionMotionWeight;
 		public float visionAngleRange;
 		public float visionAngleRangeUp;
 		public float visionAngleRangeDown;
 		public float hearingDistance;
 		public float hearingDistanceExponent;
-		public float scentDistance;
 		public bool canMount;
 
 		public float waryCooldownTime;
