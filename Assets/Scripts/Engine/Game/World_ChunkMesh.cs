@@ -1119,40 +1119,48 @@ public partial class World {
 			}
 
 			static bool AddSubmeshTexture(ref TexBlend_t blend, int material, int max) {
-				if ((max > 0) && (blend.count < 1)) {
-					blend.x = material;
-					blend.count = 1;
-					return true;
-				}
-				if (blend.x == material) {
-					return true;
-				};
+				if (max > 0) {
+					if (blend.count < 1) {
+						blend.x = material;
+						blend.count = 1;
+						return true;
+					}
+					if (blend.x == material) {
+						return true;
+					};
 
-				if ((max > 1) && (blend.count < 2)) {
-					blend.y = material;
-					blend.count = 2;
-					return true;
-				}
-				if (blend.y == material) {
-					return true;
-				}
+					if (max > 1) {
+						if (blend.count < 2) {
+							blend.y = material;
+							blend.count = 2;
+							return true;
+						}
+						if (blend.y == material) {
+							return true;
+						}
 
-				if ((max > 2) && (blend.count < 3)) {
-					blend.z = material;
-					blend.count = 3;
-					return true;
-				}
-				if (blend.z == material) {
-					return true;
-				}
+						if (max > 2) {
+							if (blend.count < 3) {
+								blend.z = material;
+								blend.count = 3;
+								return true;
+							}
+							if (blend.z == material) {
+								return true;
+							}
 
-				if ((max > 3) && (blend.count < 4)) {
-					blend.w = material;
-					blend.count = 4;
-					return true;
-				}
-				if (blend.w == material) {
-					return true;
+							if (max > 3) {
+								if (blend.count < 4) {
+									blend.w = material;
+									blend.count = 4;
+									return true;
+								}
+								if (blend.w == material) {
+									return true;
+								}
+							}
+						}
+					}
 				}
 
 				return false;

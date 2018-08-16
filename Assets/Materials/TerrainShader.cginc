@@ -272,7 +272,7 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	height /= dot(height, half4(1, 1, 1, 1));
 
 	fixed4 rho = rho_Blend(triblend, height, rhoSamples);
-
+	
 	fixed4 albedo = sampleTerrainAlbedo(uvs, triblend, signNormal, height);
 
 	half3 bumpNormals[3];
@@ -285,7 +285,7 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	// Albedo comes from a texture tinted by color
 	o.Albedo = albedo * _Color;
 
-	o.Normal = WorldToTangentNormalVector(IN, normal);
+	o.Normal = fixed3(0, 0, 1);// WorldToTangentNormalVector(IN, normal);
 	o.Occlusion = rho.y;
 
 	// Metallic and smoothness come from slider variables
