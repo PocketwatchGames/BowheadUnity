@@ -7,7 +7,7 @@ using Bowhead.Actors;
 namespace Bowhead.Client.UI {
 	public class BowheadHUD : HUD {
 		EquipPanel _equipHUD;
-		InventoryPanel _inventoryHUD;
+		InventoryHUD _inventoryHUD;
 		ButtonHint _interactHint;
 		LockTargetHUD _lockMarker;
 		Map _worldmap;
@@ -81,6 +81,14 @@ namespace Bowhead.Client.UI {
 
 		}
 
+		public override void Dispose() {
+			base.Dispose();
+
+			world.CritterActiveEvent -= OnCritterActive;
+			world.DamageEvent -= OnDamage;
+			world.StatusEffectAddedEvent -= OnStatusEffectAdded;
+		}
+
 		public override void OnPlayerPossessed(Player player) {
 			base.OnPlayerPossessed(player);
 			_equipHUD.Init(player);
@@ -104,6 +112,8 @@ namespace Bowhead.Client.UI {
 
 			_inventoryHUD.Init(player);
 		}
+
+	
 
 		public void OnCritterActive(Critter critter) {
 			var critterHUD = GameObject.Instantiate<PawnHUD>(GameManager.instance.clientData.critterHudPrefab, _pawnHUDs.transform);

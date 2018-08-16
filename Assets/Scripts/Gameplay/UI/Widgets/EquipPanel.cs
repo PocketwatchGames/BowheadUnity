@@ -42,6 +42,11 @@ namespace Bowhead.Client.UI {
             Rebuild();
 		}
 
+		private void OnDestroy() {
+			_player.OnInventoryChange -= OnInventoryChange;
+			_player.OnInputMethodChange -= OnInputMethodChange;
+		}
+
 		private void OnStatusEffectAdded(Pawn target, StatusEffect e) {
             if (target != _player) {
                 return;

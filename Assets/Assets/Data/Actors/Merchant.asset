@@ -18,7 +18,7 @@ MonoBehaviour:
     _editorPath: Assets/Assets/Prefabs/Resources/MapMarkers/MapMerchantMarker.prefab
   mapMarkerStyle: 0
   defaultSilhouetteMode: 2
-  packSize: 0
+  packSize: 4
   height: 3
   maxHealth: 100
   maxWater: 0
@@ -28,8 +28,10 @@ MonoBehaviour:
   staminaRechargeTime: 3
   staminaRechargeTimeDuringStun: 0
   dodgeTime: 0
+  dodgeDistance: 0
   postStunInvincibilityTime: 0
   backStabAngle: 45
+  directHitWidth: 0.5
   runSound: 2
   sprintSound: 4
   sprintDamageMultiplierSpeed: 0
