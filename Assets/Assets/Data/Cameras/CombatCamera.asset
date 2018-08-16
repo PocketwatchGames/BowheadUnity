@@ -15,6 +15,7 @@ MonoBehaviour:
   lookAtFriction: 15
   lookAtAcceleration: 100
   lookAtLeadDist: 1
+  targetOffsetAcceleration: 5
   friction: 20
   leashFollowVelocityRate: 0.5
   minDistance: 15

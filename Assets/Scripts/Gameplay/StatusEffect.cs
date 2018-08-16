@@ -42,7 +42,7 @@ namespace Bowhead {
                 if (data.healthPerSecond > 0) {
                     owner.health = Mathf.Min(owner.maxHealth, owner.health + data.healthPerSecond * dt);
                 } else if (data.healthPerSecond < 0) {
-                    owner.Damage(-data.healthPerSecond * dt, PawnData.DamageType.Poison);
+                    owner.Damage(-data.healthPerSecond * dt, PawnData.DamageType.Poison, false);
                 }
 				if (data.staminaPerSecond > 0) {
 					owner.stamina = Mathf.Min(owner.maxStamina, owner.stamina + data.staminaPerSecond * dt);

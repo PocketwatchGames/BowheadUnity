@@ -28,8 +28,10 @@ MonoBehaviour:
   staminaRechargeTime: 3
   staminaRechargeTimeDuringStun: 2
   dodgeTime: 0.25
+  dodgeDistance: 5
   postStunInvincibilityTime: 1
   backStabAngle: 45
+  directHitWidth: 0.5
   runSound: 1
   sprintSound: 2
   sprintDamageMultiplierSpeed: 10

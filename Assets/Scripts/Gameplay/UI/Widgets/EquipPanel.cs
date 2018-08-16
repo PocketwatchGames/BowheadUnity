@@ -57,6 +57,18 @@ namespace Bowhead.Client.UI {
 			hud.Init(e);
 		}
 
+		private void AddSlot(Player.InventorySlot slot, string button, ref int index) {
+			var item = _player.GetInventorySlot((int)slot);
+			if (item != null) {
+				var s = Instantiate(_equipSlotPrefab, _mainContainer.transform, false);
+				s.Init(slot, _player);
+				s.SetItem(item);
+				_slots[index] = s;
+				_slots[index].SetButton(button);
+				index++;
+			}
+
+		}
 
 		private void Rebuild() {
 
@@ -70,40 +82,28 @@ namespace Bowhead.Client.UI {
 
 			float x = slotMargin;
 			int index = 0;
-            for (int slot = 1; slot <= (int)Player.InventorySlot.PACK-1; slot++) {
-				var item = _player.GetInventorySlot(slot);
-				if (item != null) {
-					var s = Instantiate(_equipSlotPrefab, _mainContainer.transform, false);
-					s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
-					s.Init((Player.InventorySlot)slot, _player);
-					s.SetItem(item);
-					_slots[index] = s;
-					x += slotSize.x + slotMargin;
-
-					switch ((Player.InventorySlot)slot) {
-						case Player.InventorySlot.LEFT_HAND:
-							_slots[index].SetButton("LT"); break;
-						case Player.InventorySlot.RIGHT_HAND:
-							_slots[index].SetButton("RT"); break;
-						case Player.InventorySlot.LEFT_RANGED:
-							_slots[index].SetButton("LB"); break;
-						case Player.InventorySlot.RIGHT_RANGED:
-							_slots[index].SetButton("RB"); break;
-					}
-					index++;
-				}
-            }
 
 			{
 				var s = Instantiate(_equipSlotPrefab, _mainContainer.transform, false);
 				s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
-				s.Init(Player.InventorySlot.PACK, _player);
+				s.Init(Player.InventorySlot.CLOTHING, _player, "Dash");
 				_slots[index] = s;
-				x += slotSize.x + slotMargin;
+				_slots[index].SetButton("LB");
+				index++;
+			}
+
+			AddSlot(Player.InventorySlot.SPELL, "RB", ref index);
+			AddSlot(Player.InventorySlot.LEFT_HAND, "LT", ref index);
+			AddSlot(Player.InventorySlot.RIGHT_HAND, "RT", ref index);
+
+			{
+				var s = Instantiate(_equipSlotPrefab, _mainContainer.transform, false);
+				s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
+				s.Init(Player.InventorySlot.PACK, _player, "Pack");
+				_slots[index] = s;
 				_slots[index].SetButton("B");
 			}
 
-			x += slotMargin;
             _mainContainer.GetComponent<RectTransform>().sizeDelta = new Vector2(x, 54);
         }
 

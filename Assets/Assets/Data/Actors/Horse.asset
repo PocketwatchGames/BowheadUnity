@@ -18,19 +18,23 @@ MonoBehaviour:
     _editorPath: 
   mapMarkerStyle: 0
   defaultSilhouetteMode: 2
+  packSize: 0
   height: 3
   maxHealth: 100
   maxWater: 0
   maxStamina: 200
   minStamina: 0
-  recoveryTime: 1
+  staminaRecoveryTime: 1
   staminaRechargeTime: 3
-  staminaRechargeTimeDuringRecovery: 0
+  staminaRechargeTimeDuringStun: 2
   dodgeTime: 0
+  dodgeDistance: 0
   postStunInvincibilityTime: 0
   backStabAngle: 45
+  directHitWidth: 0.5
   runSound: 2
   sprintSound: 4
+  sprintDamageMultiplierSpeed: 0
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
   jumpSpeed: 11
@@ -47,6 +51,7 @@ MonoBehaviour:
   sprintSpeed: 14
   sprintStaminaUse: 50
   sprintGracePeriodTime: 0.4
+  slideModifier: 0
   gravity: -30
   fallJumpTime: 0
   fallAcceleration: 30
@@ -88,5 +93,6 @@ MonoBehaviour:
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
+  idleBehavior: 0
   panicBehavior: 1
   defaultLoadout: {fileID: 0}

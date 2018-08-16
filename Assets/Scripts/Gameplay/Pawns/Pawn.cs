@@ -13,6 +13,7 @@ namespace Bowhead.Actors {
     }
     public enum InputType {
         Jump,
+		Dodge,
 		Interact,
         AttackLeft,
 		AttackRight,
@@ -65,7 +66,8 @@ namespace Bowhead.Actors {
         public bool stunned;
         public float staminaRecoveryTimer;
 		public float stunInvulnerabilityTimer;
-        public float dodgeTimer;
+		public float dodgeTimer;
+		public Vector3 dodgeRemaining;
 		public float damageMultiplier;
 		public float resistPoison;
 		public float resistFire;
@@ -79,7 +81,6 @@ namespace Bowhead.Actors {
         public float fallJumpTimer;
         public float maxHorizontalSpeed;
 		public float sprintTimer;
-		public float sprintGracePeriodTime;
 		public bool skidding;
         public bool canMove;
         public bool canRun;
@@ -374,9 +375,6 @@ namespace Bowhead.Actors {
                 }
             }
 
-			if (dodgeTimer > 0) {
-				dodgeTimer = Math.Max(0, dodgeTimer - dt);
-			}
 
 			if (stunInvulnerabilityTimer > 0) {
 				stunInvulnerabilityTimer = Math.Max(0, stunInvulnerabilityTimer - dt);
@@ -414,9 +412,27 @@ namespace Bowhead.Actors {
                 UpdateFalling(dt, input);
             }
 
+			Vector3 impulseMove = Vector3.zero;
+			if (moveImpulseTimer > 0) {
+				var m = moveImpulse * (dt / moveImpulseTimer);
+				//impulseMove = m * block.speedModifier;
+				impulseMove += m;
+				moveImpulse -= m;
+				moveImpulseTimer = Math.Max(0, moveImpulseTimer - dt);
+			}
+
+			if (dodgeTimer > 0) {
+				var m = dodgeRemaining * Mathf.Sqrt(dt / dodgeTimer);
+				//impulseMove = m * block.speedModifier;
+				impulseMove += m;
+				dodgeRemaining -= m;
+				dodgeTimer = Math.Max(0, dodgeTimer - dt);
+			}
+
+
 
 			if (activity != Activity.Climbing) {
-				SetPosition(new Vector3(position.x, position.y + velocity.y * dt, position.z));
+				SetPosition(new Vector3(position.x, position.y + velocity.y * dt + impulseMove.y, position.z));
 			}
 
             // Collide feet
@@ -455,7 +471,7 @@ namespace Bowhead.Actors {
 
             if (activity != Activity.Climbing) {
                 // Collide XY
-                Vector3 moveXZ = new Vector3(velocity.x, 0, velocity.z) * dt;
+                Vector3 moveXZ = new Vector3(velocity.x * dt + impulseMove.x, 0, velocity.z * dt + impulseMove.z);
                 Move(moveXZ);
             }
 
@@ -606,18 +622,16 @@ namespace Bowhead.Actors {
 				if (input.IsPressed(InputType.Jump)) {
 					sprintTimer = sprintTimer += dt;
 				} else if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
-                    if (canJump) {
-                        var jumpDir = input.movement * data.jumpHorizontalSpeed;
-                        jumpDir.y += getGroundJumpVelocity();
-                        Jump(jumpDir);
-                    }
-                    fallJumpTimer = 0;
+					if (canJump) {
+						var jumpDir = input.movement * data.jumpHorizontalSpeed;
+						jumpDir.y += getGroundJumpVelocity();
+						Jump(jumpDir);
+					}
+					fallJumpTimer = 0;
 					sprintTimer = 0;
-					sprintGracePeriodTime = 0;
 				}
 			} else {
 				sprintTimer = 0;
-				sprintGracePeriodTime = 0;
 			}
 
 			velocity.y += data.gravity * dt;
@@ -653,30 +667,35 @@ namespace Bowhead.Actors {
 			bool jumped = false;
 			if (canJump) {
 
-				if (input.IsPressed(InputType.Jump)) {
+				if (input.JustPressed(InputType.Jump)) {
+					var jumpDir = input.movement * data.jumpHorizontalSpeed;
+					jumpDir.y += getGroundJumpVelocity();
+					Jump(jumpDir);
+					jumped = true;
+					fallJumpTimer = 0;
+				}
+
+				if (input.IsPressed(InputType.Dodge)) {
 					sprintTimer = sprintTimer += dt;
-					if (sprintTimer > data.sprintTime) {
-						sprintGracePeriodTime = data.sprintGracePeriodTime;
-					}
-					if (input.JustPressed(InputType.Jump)) {
+					if (input.JustPressed(InputType.Dodge)) {
 						dodgeTimer = dodgeTimer + data.dodgeTime;
 					}
 				} else {
 					if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
-						if (canJump) {
-							var jumpDir = input.movement * data.jumpHorizontalSpeed;
-							jumpDir.y += getGroundJumpVelocity();
-							Jump(jumpDir);
-							jumped = true;
+						Vector3 jumpDir;
+						if (input.movement != Vector3.zero) {
+							jumpDir = input.movement * data.dodgeDistance;
+						} else {
+							jumpDir = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw)) * data.dodgeDistance;
 						}
+						Dodge(jumpDir, data.dodgeTime);
 						fallJumpTimer = 0;
 					}
 					sprintTimer = 0;
-					sprintGracePeriodTime = Mathf.Max(0, sprintGracePeriodTime - dt);
 				}
+
 			} else {
 				sprintTimer = 0;
-				sprintGracePeriodTime = 0;
 				dodgeTimer = 0;
 			}
 
@@ -755,16 +774,6 @@ namespace Bowhead.Actors {
 				velocity += acceleration * dt;
 			}
 
-			if (moveImpulseTimer > 0) {
-				var m = moveImpulse * (dt / moveImpulseTimer);
-				velocity = m / dt * block.speedModifier;
-				moveImpulse -= m;
-				moveImpulseTimer = Math.Max(0, moveImpulseTimer - dt);
-				if (moveImpulseTimer <= 0) {
-					velocity = Vector3.zero;
-				}
-			}
-
 			//{
 			//    // Wind blowing you while running or skidding
 			//    var wind = gameMode.GetWind(position);
@@ -778,12 +787,7 @@ namespace Bowhead.Actors {
 
 
 			Vector2 horizontalVel = new Vector2(velocity.x, velocity.z);
-
-			if (sprintGracePeriodTime > 0) {
-				maxHorizontalSpeed = Mathf.Max(maxHorizontalSpeed, horizontalVel.magnitude);
-			} else {
-				maxHorizontalSpeed = horizontalVel.magnitude;
-			}
+			maxHorizontalSpeed = horizontalVel.magnitude;
 
 			if (data.sprintTime > 0 && sprintTimer >= data.sprintTime && input.movement != Vector3.zero) {
 				UseStamina(data.sprintStaminaUse * dt, false);
@@ -793,7 +797,6 @@ namespace Bowhead.Actors {
 		private void UpdateSwimming(float dt, Input_t input) {
 
 			sprintTimer = 0;
-			sprintGracePeriodTime = 0;
 			skidding = false;
 
 			if (input.inputs[(int)InputType.Jump] == InputState.JustReleased) {
@@ -843,7 +846,6 @@ namespace Bowhead.Actors {
             maxHorizontalSpeed = data.jumpHorizontalSpeed;
 
 			sprintTimer = 0;
-			sprintGracePeriodTime = 0;
 			skidding = false;
 
 
@@ -886,7 +888,6 @@ namespace Bowhead.Actors {
 									jumpDir += input.movement * data.groundMaxSpeed;
 									jumpDir.y = data.jumpSpeed;
 									maxHorizontalSpeed = data.sprintSpeed;
-									sprintGracePeriodTime = 0.1f;
 								}
 							}
 							Jump(jumpDir);
@@ -1104,12 +1105,6 @@ namespace Bowhead.Actors {
 			UseStamina(data.jumpStaminaUse, false);
 
 			float curSpeedXZ = Mathf.Sqrt(velocity.x * velocity.x + velocity.z * velocity.z);
-			float launchSpeedXZ;
-			if (sprintGracePeriodTime > 0) {
-				launchSpeedXZ = data.sprintSpeed;
-			} else {
-				launchSpeedXZ = curSpeedXZ;
-			}
 
 			float jumpSpeedXZ = Mathf.Sqrt(dir.x * dir.x + dir.z * dir.z);
 			velocity += dir;
@@ -1117,14 +1112,14 @@ namespace Bowhead.Actors {
 
 
 			float velY = velocity.y;
-			float newSpeedXZ = Mathf.Min(launchSpeedXZ, combinedSpeedXZ);
+			float newSpeedXZ = Mathf.Min(curSpeedXZ, combinedSpeedXZ);
 			velocity = velocity.normalized * newSpeedXZ;
 			velocity.y = velY;
 		}
 		public void Dodge(Vector3 dir, float time) {
 			UseStamina(data.jumpStaminaUse, false);
 			dodgeTimer = time;
-			velocity = dir;
+			dodgeRemaining = dir;
 		}
 
 		public void Stun(float s) {
@@ -1148,7 +1143,7 @@ namespace Bowhead.Actors {
 		}
 
 
-        public void Damage(float d, PawnData.DamageType t) {
+        public void Damage(float d, PawnData.DamageType t, bool directHit) {
             health = health - d;
 
 			if (t == PawnData.DamageType.Blade) {
@@ -1156,14 +1151,10 @@ namespace Bowhead.Actors {
 				blood.transform.localPosition = waistPosition() - rigidBody.position;
 			}
 
-            GameManager.instance.clientWorld.OnDamage(this, d);
+            GameManager.instance.clientWorld.OnDamage(this, d, directHit);
         }
 
-		public void Hit(Projectile projectile, Actor owner) {
-
-			if (dodgeTimer > 0) {
-				return;
-			}
+		public void Hit(Projectile projectile, Actor owner, bool directHit) {
 
 			float remainingStun = projectile.data.stun;
 			float remainingDamage = projectile.data.damage;
@@ -1180,7 +1171,7 @@ namespace Bowhead.Actors {
 			//}
 
 			if (remainingDamage > 0) {
-				Damage(remainingDamage, projectile.data.damageType);
+				Damage(remainingDamage, projectile.data.damageType, directHit);
 			}
 
 			if (remainingStun > 0) {
@@ -1195,7 +1186,7 @@ namespace Bowhead.Actors {
 			onHit?.Invoke(owner as Pawn);
 		}
 
-		public bool Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, float multiplier, bool canBlock) {
+		public bool Hit(Pawn attacker, Weapon weapon, WeaponData.AttackResult attackResult, float multiplier, bool canBlock, bool directHit) {
             float remainingStun;
             float remainingDamage;
 
@@ -1210,10 +1201,6 @@ namespace Bowhead.Actors {
             remainingDamage = attackResult.damage * multiplier;
 
 
-            if (dodgeTimer > 0) {
-                return false;
-            }
-
 			// Check if we're blocking with shield
 			if (canBlock) {
 				foreach (var w in getInventory()) {
@@ -1225,7 +1212,7 @@ namespace Bowhead.Actors {
 			}
 
             if (remainingDamage > 0) {
-                Damage(remainingDamage, attackResult.damageType);
+                Damage(remainingDamage, attackResult.damageType, directHit);
             }
 
             if (remainingStun > 0) {

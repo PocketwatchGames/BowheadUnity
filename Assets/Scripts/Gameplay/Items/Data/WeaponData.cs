@@ -60,8 +60,9 @@ namespace Bowhead {
 			public bool unblockable;
 			public bool interruptOnHit;
 			public bool canBackstab;
-			public AttackResult attackResult;
-			public AttackResult backstabResult;
+			public AttackResult attackResultDirectHit;
+			public AttackResult attackResultGlancingBlow;
+			public AttackResult attackResultBackstab;
 
 		}
 
@@ -81,10 +82,13 @@ namespace Bowhead {
 		public bool canTarget;
 		public Actors.ProjectileData projectile;
 		public float projectileSpeed;
+		public bool autoAimYaw;
+		public bool autoAimPitch;
 
 		[Header("Defend")]
 		public float blockAngleRange;
-		public DefendResult blockResult;
+		public DefendResult blockResultDirectHit;
+		public DefendResult blockResultGlancingBlow;
 
 		public float sprintSpeed;
 

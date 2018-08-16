@@ -28,9 +28,10 @@ public class PlayerHUD : MonoBehaviour {
             return;
         }
 
-		var mountOrTarget = _target.mount ?? _target;
+		//var mountOrTarget = _target.mount ?? _target;
+		var mountOrTarget = _target;
 
-        float h = _target.health / _target.maxHealth;
+		float h = _target.health / _target.maxHealth;
         float s = mountOrTarget.stamina / mountOrTarget.maxStamina;
         float w = _target.water / _target.maxWater;
 		float wm = 0;
