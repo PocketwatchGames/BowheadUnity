@@ -114,10 +114,10 @@ namespace Bowhead.Actors {
 					cmd.buttons |= 1 << (int)InputType.AttackRight;
 				}
 				if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
-					cmd.buttons |= 1 << (int)InputType.AttackLeft;
+					cmd.buttons |= 1 << (int)InputType.Dodge;
 				}
 				if (Input.GetButton("ShoulderLeft" + pi)) {
-					cmd.buttons |= 1 << (int)InputType.Dodge;
+					cmd.buttons |= 1 << (int)InputType.AttackLeft;
 				}
 				if (Input.GetButton("ShoulderRight" + pi)) {
 					cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
@@ -170,10 +170,7 @@ namespace Bowhead.Actors {
 
 			var head = go.GetChildComponent<MeshRenderer>("Head");
 			if (head != null) {
-				if (dodgeTimer > 0) {
-					head.material.color = Color.black;
-				}
-				else if (stunInvulnerabilityTimer > 0) {
+				if (stunInvulnerabilityTimer > 0) {
 					head.material.color = Color.gray;
 				}
 				else if (skidding) {
@@ -501,7 +498,7 @@ namespace Bowhead.Actors {
             if (fallSpeed > data.fallDamageSpeed) {
                 d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * gameMode.GetTerrainData(position).fallDamage * data.maxHealth;
                 if (d > 0) {
-                    Damage(d, PawnData.DamageType.Falling);
+                    Damage(d, PawnData.DamageType.Falling, true);
                     UseStamina((float)d, true);
                     Stun((float)d);
                 }

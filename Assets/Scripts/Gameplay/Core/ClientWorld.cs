@@ -22,7 +22,7 @@ namespace Bowhead.Client {
 		ActorSingleton<Bowhead.Actors.GameState> _gameState;
 
 		public event Action<Bowhead.Actors.Critter> CritterActiveEvent;
-        public event Action<Bowhead.Actors.Pawn, float> DamageEvent;
+        public event Action<Bowhead.Actors.Pawn, float, bool> DamageEvent;
         public event Action<Bowhead.Actors.Pawn, StatusEffect> StatusEffectAddedEvent;
 
         public ClientWorld(
@@ -277,9 +277,9 @@ namespace Bowhead.Client {
             CritterActiveEvent?.Invoke(c);
         }
 
-        public void OnDamage(Bowhead.Actors.Pawn p, float d)
+        public void OnDamage(Bowhead.Actors.Pawn p, float d, bool directHit)
         {
-            DamageEvent?.Invoke(p, d);
+            DamageEvent?.Invoke(p, d, directHit);
         }
 
         public void OnStatusEffectAdded(Bowhead.Actors.Pawn target, StatusEffect effect)

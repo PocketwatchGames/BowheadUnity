@@ -135,16 +135,27 @@ namespace Bowhead {
             float dist = diff.magnitude;
             if (dist <= data.attacks[attackHand].radius + critterRadius) {
 
+				bool directHit = true;
 				WeaponData.AttackResult attackType;
 				float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(diff.x, diff.z)*Mathf.Rad2Deg, enemy.yaw * Mathf.Rad2Deg));
 				if (data.attacks[attackHand].canBackstab && angleToEnemysBack < enemy.data.backStabAngle) {
-					attackType = data.attacks[attackHand].backstabResult;
+					attackType = data.attacks[attackHand].attackResultBackstab;
 				}
 				else {
-					attackType = data.attacks[attackHand].attackResult;
+
+					Vector2 diffXZ = new Vector2(enemy.position.x - owner.position.x, enemy.position.z - owner.position.z);
+					Vector2 attackDirXZ = new Vector2(attackPos.x-owner.position.x, attackerPos.z-owner.position.z);
+					float angleDelta = Mathf.DeltaAngle(Mathf.Rad2Deg * Mathf.Atan2(diffXZ.y, diffXZ.x), Mathf.Rad2Deg * Mathf.Atan2(attackDirXZ.y, attackDirXZ.x));
+					float enemyAngleWidth = Mathf.Rad2Deg * Mathf.Atan2(critterRadius,diffXZ.magnitude);
+					if (Mathf.Abs(angleDelta) > enemyAngleWidth*enemy.data.directHitWidth) {
+						attackType = data.attacks[attackHand].attackResultGlancingBlow;
+						directHit = false;
+					} else {
+						attackType = data.attacks[attackHand].attackResultDirectHit;
+					}
 				}
 
-				if (enemy.Hit(owner, this, attackType, GetMultiplier(owner, attackCharge), !data.attacks[attackHand].unblockable)) {
+				if (enemy.Hit(owner, this, attackType, GetMultiplier(owner, attackCharge), !data.attacks[attackHand].unblockable, directHit)) {
 					Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
 					if (data.attacks[attackHand].interruptOnHit) {
 						Interrupt(owner);
@@ -379,10 +390,13 @@ namespace Bowhead {
 				return;
 			}
 
-			owner.UseStamina(data.blockResult.staminaUse, false);
-			remainingDamage = Mathf.Max(0, remainingDamage - data.blockResult.damageAbsorb);
-			remainingStun = Mathf.Max(0, remainingStun - data.blockResult.stunAbsorb);
-			attacker.Hit(owner, this, data.blockResult, 1, false);
+			WeaponData.DefendResult blockResult = data.blockResultDirectHit;
+
+
+			owner.UseStamina(blockResult.staminaUse, false);
+			remainingDamage = Mathf.Max(0, remainingDamage - blockResult.damageAbsorb);
+			remainingStun = Mathf.Max(0, remainingStun - blockResult.stunAbsorb);
+			attacker.Hit(owner, this, blockResult, 1, false, true);
 
         }
 

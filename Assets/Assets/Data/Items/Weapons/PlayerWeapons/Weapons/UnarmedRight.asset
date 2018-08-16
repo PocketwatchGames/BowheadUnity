@@ -29,7 +29,7 @@ MonoBehaviour:
     maxCharge: 2
     castTime: 0.05
     activeTime: 0.1
-    cooldown: 0.1
+    cooldown: 0.4
     cooldownNextAttackQueueTime: 0.1
     range: 1
     radius: 0.25
@@ -43,24 +43,33 @@ MonoBehaviour:
     unblockable: 0
     interruptOnHit: 1
     canBackstab: 1
-    attackResult:
-      knockback: 0.1
-      damage: 1
+    attackResultDirectHit:
+      knockback: 2
+      damage: 5
       stun: 5
-      interrupt: 0
-      damageType: 1
-      statusEffect: {fileID: 0}
-      statusEffectTime: 0
-      loudness: 1
-    backstabResult:
-      knockback: 0
-      damage: 1
-      stun: 20
       interrupt: 1
       damageType: 1
       statusEffect: {fileID: 0}
       statusEffectTime: 0
-      loudness: 0.25
+      loudness: 0
+    attackResultGlancingBlow:
+      knockback: 0.5
+      damage: 3
+      stun: 2
+      interrupt: 1
+      damageType: 1
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
+      loudness: 0
+    attackResultBackstab:
+      knockback: 3
+      damage: 5
+      stun: 10
+      interrupt: 1
+      damageType: 1
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
+      loudness: 0
   spell: 0
   spellPower: 0
   statusEffect: {fileID: 0}
@@ -69,8 +78,22 @@ MonoBehaviour:
   canTarget: 0
   projectile: {fileID: 0}
   projectileSpeed: 0
+  autoAimYaw: 0
+  autoAimPitch: 0
   blockAngleRange: 0
-  blockResult:
+  blockResultDirectHit:
+    knockback: 0
+    damage: 0
+    stun: 0
+    interrupt: 0
+    damageType: 0
+    statusEffect: {fileID: 0}
+    statusEffectTime: 0
+    loudness: 0
+    stunAbsorb: 0
+    damageAbsorb: 0
+    staminaUse: 0
+  blockResultGlancingBlow:
     knockback: 0
     damage: 0
     stun: 0

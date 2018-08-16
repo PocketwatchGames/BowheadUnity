@@ -27,8 +27,10 @@ namespace Bowhead.Actors {
         public float staminaRechargeTime;
 		public float staminaRechargeTimeDuringStun;
 		public float dodgeTime;
+		public float dodgeDistance;
 		public float postStunInvincibilityTime;
 		public float backStabAngle;
+		public float directHitWidth = 0.5f;
 		public float runSound;
 		public float sprintSound;
 		public float sprintDamageMultiplierSpeed;

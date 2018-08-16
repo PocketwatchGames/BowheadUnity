@@ -124,7 +124,7 @@ namespace Bowhead.Client.UI {
 			ShowInventory(true, merchant);
 		}
 
-        private void OnDamage(Pawn target, float damage)
+        private void OnDamage(Pawn target, float damage, bool directHit)
         {
 			if (damage < 0.5f) {
 				return;
