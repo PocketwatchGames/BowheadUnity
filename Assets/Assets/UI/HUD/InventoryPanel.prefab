@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 224716018465512224}
   - component: {fileID: 114465781474822714}
-  - component: {fileID: 114986833045811946}
+  - component: {fileID: 114124475435907558}
   m_Layer: 5
   m_Name: InventoryPanel
   m_TagString: Untagged
@@ -150,6 +150,29 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &114124475435907558
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1262966422210046}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -2095666955, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Padding:
+    m_Left: 5
+    m_Right: 5
+    m_Top: 5
+    m_Bottom: 5
+  m_ChildAlignment: 0
+  m_StartCorner: 0
+  m_StartAxis: 0
+  m_CellSize: {x: 48, y: 48}
+  m_Spacing: {x: 5, y: 5}
+  m_Constraint: 1
+  m_ConstraintCount: 4
 --- !u!114 &114157827042642946
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -231,16 +254,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inventorySlotPrefab: {fileID: 114622634533599420, guid: b0f51f34666fdc14cbe80d430fbd6060,
     type: 2}
-  equipSlots: {fileID: 224552117791938384}
-  packSlots: {fileID: 224312139841432762}
-  storeSlots: {fileID: 224401735609716444}
-  itemInfoPanelPrefab: {fileID: 114067544684217502, guid: 217afa1cd01b93c46b2c3c6e08c34284,
-    type: 2}
-  weightClass: {fileID: 114501412752182748}
-  money: {fileID: 114649917112395278}
-  columns: 5
-  rows: 3
-  merchantSlots: 5
+  slots: []
 --- !u!114 &114488541167437614
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -456,28 +470,6 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_Spacing: 5
   m_ChildForceExpandWidth: 0
-  m_ChildForceExpandHeight: 0
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
---- !u!114 &114986833045811946
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1262966422210046}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 1297475563, guid: f70555f144d8491a825f0804e09c671c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 0
-  m_Spacing: 10
-  m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 0
   m_ChildControlWidth: 0
   m_ChildControlHeight: 0
