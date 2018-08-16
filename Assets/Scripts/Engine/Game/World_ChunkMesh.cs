@@ -1066,10 +1066,6 @@ public partial class World {
 					indices[_indexCount++] = v2 = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, layer);
 				}
 
-				if (layer == 2) {
-					int b = 0;
-				}
-
 				if (v0 != -1) {
 					AddVertexMaterial(v0 & 0x00ffffff, layer, material);
 				}
