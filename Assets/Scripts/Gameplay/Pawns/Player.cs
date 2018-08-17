@@ -29,6 +29,7 @@ namespace Bowhead.Actors {
         public float dropTimer;
 		public Weapon unarmedWeaponLeft;
 		public Weapon unarmedWeaponRight;
+		public int activeWeapon;
 
 		[Header("Player Stats")]
         public float temperature;
@@ -60,6 +61,7 @@ namespace Bowhead.Actors {
         public event Action OnWeightClassChange;
         public event Action<Vector2, int, bool> OnExplore;
 		public event Action OnInventoryChange;
+		public event Action OnSwapWeapon;
 		public event Action OnInputMethodChange;
 		public event Action<Pawn> OnMerchantActivated;
 
@@ -82,19 +84,19 @@ namespace Bowhead.Actors {
 				case "A":
 					return "SPACE";
 				case "B":
-					return "I";
+					return "SHIFT";
 				case "X":
 					return "R";
 				case "Y":
-					return "TAB";
+					return "I";
 				case "LT":
-					return "SHIFT";
+					return "LMB";
 				case "RT":
 					return "RMB";
 				case "LB":
-					return "LMB";
+					return "Q";
 				case "RB":
-					return "CTRL";
+					return "E";
 			}
 			return "";
 		}
@@ -146,13 +148,10 @@ namespace Bowhead.Actors {
 					cmd.buttons |= 1 << (int)InputType.AttackRight;
 				}
 				if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
-					cmd.buttons |= 1 << (int)InputType.Dodge;
-				}
-				if (Input.GetButton("ShoulderLeft" + pi)) {
 					cmd.buttons |= 1 << (int)InputType.AttackLeft;
 				}
-				if (Input.GetButton("ShoulderRight" + pi)) {
-					cmd.buttons |= 1 << (int)InputType.AttackRangedRight;
+				if (Input.GetButton("B" + pi)) {
+					cmd.buttons |= 1 << (int)InputType.Swap;
 				}
 				//if (Input.GetButton("ShoulderLeft" + pi)) {
 				//	cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
@@ -330,13 +329,26 @@ namespace Bowhead.Actors {
                 return;
             }
 
-
 			if (tradePartner != null) {
 				var diff = tradePartner.position - position;
 				if (diff.magnitude > data.tradePartnerCancelDistance) {
 					SetTradePartner(null);
 				}
 			}
+
+			if (input.JustPressed(InputType.Swap)) {
+				if (tradePartner != null) {
+					SetTradePartner(null);
+				} else if (mount != null) {
+					SetMount(null);
+				} else {
+					activeWeapon++;
+					if (activeWeapon > 1) {
+						activeWeapon = 0;
+					}
+				}				
+			}
+
 
 			if (input.JustPressed(InputType.Interact)) {
 				Interact();
@@ -390,21 +402,6 @@ namespace Bowhead.Actors {
 					}
 				}
 
-				Weapon itemRangedRight = GetInventorySlot((int)InventorySlot.SPELL) as Weapon;
-				if (itemRangedRight != null) {
-					if (itemRangedRight.CanCast()) {
-						if (input.IsPressed(InputType.AttackRangedRight)) {
-							itemRangedRight.Charge(dt, 0);
-							isCasting = true;
-						} else {
-							if (input.JustReleased(InputType.AttackRangedRight)) {
-								itemRangedRight.Attack(this);
-								isCasting = true;
-							}
-							itemRangedRight.chargeTime = 0;
-						}
-					}
-				}
 			}
 
 			attackTargetPreview = GetAttackTarget(yaw, 20, 360 * Mathf.Deg2Rad, null);
@@ -419,11 +416,11 @@ namespace Bowhead.Actors {
         }
 
 		public void GetEquippedWeapons(out Weapon itemLeft, out Weapon itemRight) {
-			itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
+			itemRight = GetInventorySlot((int)((activeWeapon == 0) ? InventorySlot.RIGHT_HAND : InventorySlot.SPELL)) as Weapon;
 			if (itemRight?.data.hand == WeaponData.Hand.BOTH) {
 				itemLeft = itemRight;
 			} else {
-				itemLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND) as Weapon;
+				itemLeft = GetInventorySlot((int)((activeWeapon == 0) ? InventorySlot.LEFT_HAND : InventorySlot.SPELL)) as Weapon;
 			}
 		}
 
@@ -879,14 +876,6 @@ namespace Bowhead.Actors {
 			Vector3? targetPos;
             GetInteractTarget(out target, out targetPos, out interaction);
 
-			if (tradePartner == target) {
-				SetTradePartner(null);
-				return;
-			} else if (mount == target) {
-				SetMount(null);
-				return;
-			}
-
 
 			WorldItem worldItem;
             Critter critter;
@@ -939,12 +928,7 @@ namespace Bowhead.Actors {
             interactionType = null;
 
 			if (tradePartner != null) {
-				target = tradePartner;
-				targetPos = null;
-				return;
-			}
-			if (mount != null) {
-				target = mount;
+				target = null;
 				targetPos = null;
 				return;
 			}

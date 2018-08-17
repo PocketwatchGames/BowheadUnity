@@ -148,21 +148,18 @@ namespace Bowhead.Actors {
 				_oldMousePosition = m;
 			} else {
 				int delta = 0;
-				float r = Utils.SignOrZero(Input.GetAxis("DPadX"));
-				if (r != 0 && _dpadX == 0) {
-					if (r < 0) {
-						delta--;
-					} else if (r > 0) {
-						delta++;
-					}
-					if (delta != 0) {
-						float curAngle = (Utils.NormalizeAngle(_yaw * Mathf.Rad2Deg + 45)) / (360);
-						int newDir = Mathf.FloorToInt(curAngle * 4) + delta;
-						_isAdjustingYaw = true;
-						_adjustYaw = (float)newDir / 4 * Mathf.PI * 2;
-					}
+				if (Input.GetButtonDown("ShoulderLeft")) {
+					delta--;
 				}
-				_dpadX = r;
+				if (Input.GetButtonDown("ShoulderRight")) {
+					delta++;
+				}
+				if (delta != 0) {
+					float curAngle = (Utils.NormalizeAngle(_yaw * Mathf.Rad2Deg + 45)) / (360);
+					int newDir = Mathf.FloorToInt(curAngle * 4) + delta;
+					_isAdjustingYaw = true;
+					_adjustYaw = (float)newDir / 4 * Mathf.PI * 2;
+				}
 			}
 		}
 

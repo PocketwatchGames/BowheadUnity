@@ -94,16 +94,6 @@ namespace Bowhead.Client.UI {
 			float x = slotMargin;
 			int index = 0;
 
-			{
-				var s = Instantiate(_equipSlotPrefab, _mainContainer.transform, false);
-				s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
-				s.Init(Player.InventorySlot.CLOTHING, _player, "Dash");
-				_slots[index] = s;
-				_slots[index].SetButton(_player.GetButtonHint("LB"));
-				index++;
-			}
-
-			AddSlot(Player.InventorySlot.SPELL, _player.GetButtonHint("RB"), ref index);
 			AddSlot(Player.InventorySlot.LEFT_HAND, _player.GetButtonHint("LT"), ref index);
 			AddSlot(Player.InventorySlot.RIGHT_HAND, _player.GetButtonHint("RT"), ref index);
 
@@ -112,7 +102,7 @@ namespace Bowhead.Client.UI {
 				s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
 				s.Init(Player.InventorySlot.PACK, _player, "Pack");
 				_slots[index] = s;
-				_slots[index].SetButton(_player.GetButtonHint("B"));
+				_slots[index].SetButton(_player.GetButtonHint("Y"));
 			}
 
             _mainContainer.GetComponent<RectTransform>().sizeDelta = new Vector2(x, 54);

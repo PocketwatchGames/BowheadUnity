@@ -17,8 +17,7 @@ namespace Bowhead.Actors {
 		Interact,
         AttackLeft,
 		AttackRight,
-		AttackRangedLeft,
-		AttackRangedRight,
+		Swap,
 		Count
 	}
 
@@ -394,7 +393,6 @@ namespace Bowhead.Actors {
 					yaw = Mathf.Atan2(input.look.x, input.look.z);
 				}
 			}
-
 
             if (mount != null) {
                 return;

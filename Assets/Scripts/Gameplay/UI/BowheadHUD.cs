@@ -180,10 +180,10 @@ namespace Bowhead.Client.UI {
 			//	_lockMarker.transform.position = Camera.main.WorldToScreenPoint(newTarget.headPosition());
 			//}
 
-			if (!inventoryVisible && (Input.GetButtonDown("Y1") || (worldMapVisible && Input.GetButtonDown("B1")))) {
+			if (!inventoryVisible && (Input.GetButtonDown("Back") || (worldMapVisible && Input.GetButtonDown("B1")))) {
 				ShowWorldMap(!worldMapVisible);
 			}
-			else if (!worldMapVisible && (Input.GetButtonDown("B1") || (inventoryVisible && Input.GetButtonDown("B1")))) {
+			else if (!worldMapVisible && (Input.GetButtonDown("Y1") || (inventoryVisible && Input.GetButtonDown("B1")))) {
 				ShowInventory(!inventoryVisible, null);
 			}
 			else if (worldMapVisible && Input.GetButtonDown("X1")) {
