@@ -33,7 +33,6 @@ namespace Bowhead.Client.UI {
 			_player.OnInventoryChange += OnInventoryChange;
 			GameManager.instance.clientWorld.StatusEffectAddedEvent += OnStatusEffectAdded;
 			_player.OnInputMethodChange += OnInputMethodChange;
-			_player.OnSwapWeapon += OnSwapWeapon;
 
 			OnInventoryChange();
 		}
@@ -46,7 +45,6 @@ namespace Bowhead.Client.UI {
 		private void OnDestroy() {
 			_player.OnInventoryChange -= OnInventoryChange;
 			_player.OnInputMethodChange -= OnInputMethodChange;
-			_player.OnSwapWeapon -= OnSwapWeapon;
 		}
 
 		private void OnStatusEffectAdded(Pawn target, StatusEffect e) {
@@ -65,10 +63,6 @@ namespace Bowhead.Client.UI {
 			hud.Init(e);
 		}
 
-		private void OnSwapWeapon() {
-			SetSlot((_player.activeWeapon == 0) ? Player.InventorySlot.LEFT_HAND : Player.InventorySlot.CLOTHING, 0);
-			SetSlot((_player.activeWeapon == 0) ? Player.InventorySlot.RIGHT_HAND : Player.InventorySlot.SPELL, 1);
-		}
 
 		private void SetSlot(Player.InventorySlot slot, int index) {
 			var item = _player.GetInventorySlot((int)slot);

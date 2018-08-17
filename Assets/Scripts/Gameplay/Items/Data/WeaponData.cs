@@ -10,7 +10,6 @@ namespace Bowhead {
             LEFT,
             RIGHT,
             BOTH,
-            RANGED,
 			ARMOR
         }
 
