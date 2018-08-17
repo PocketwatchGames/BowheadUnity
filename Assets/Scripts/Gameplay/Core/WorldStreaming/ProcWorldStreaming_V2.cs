@@ -80,12 +80,14 @@ namespace Bowhead {
 					GenerateElevation(ref noise, x, z, out plateauElevation, out slopedElevation);
 
 					bool fullVoxel;
-					blockType = GetBlockType(ref noise, x, (int)plateauElevation, z, (int)plateauElevation, out fullVoxel);
-
-					if (IsRoad(ref noise, x, z, plateauElevation)) {
+					if (plateauElevation < waterLevel) {
+						blockType = EVoxelBlockType.Water;
+					} else if (IsRoad(ref noise, x, z, plateauElevation)) {
 						blockType = EVoxelBlockType.Dirt;
 					} else if (IsRiver(ref noise, x, z, plateauElevation)) {
 						blockType = EVoxelBlockType.Water;
+					} else {
+							blockType = GetBlockType(ref noise, x, (int)plateauElevation, z, (int)plateauElevation, out fullVoxel);
 					}
 
 					elevation = plateauElevation;

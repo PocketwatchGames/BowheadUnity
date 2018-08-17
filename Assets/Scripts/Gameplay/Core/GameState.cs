@@ -110,6 +110,8 @@ namespace Bowhead.Actors {
 		}
 
 		void SyncEnviroSkyTime() {
+			_sky.GameTime.Hours = 12;
+			return; // Disabled passage of time for now
 			_sky.GameTime.Years = 1;
 			_sky.GameTime.Days = gameTime.days + 1;
 			_sky.GameTime.Hours = gameTime.hours;

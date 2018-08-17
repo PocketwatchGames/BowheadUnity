@@ -28,8 +28,6 @@ namespace Bowhead.Actors {
 		#endregion
 
 
-		public float canSmell, canSee, canHear;
-
 		#region core
 
 		SilhouetteRenderer.Mode _defaultSilhouetteMode;
@@ -348,11 +346,7 @@ namespace Bowhead.Actors {
 					continue;
 				}
 
-				canSmell = CanSmell(p);
-				canHear = CanHear(p);
-				canSee = CanSee(p);
-
-				float awareness = (canSee * data.visionWeight + canSmell * data.smellWeight + canHear * data.hearingWeight) / (data.visionWeight + data.smellWeight + data.hearingWeight);
+				float awareness = CanSee(p);
 
 				float waryIncrease = IsPanicked() ? data.waryIncreaseAtMaxAwarenessWhilePanicked : data.waryIncreaseAtMaxAwareness;
 				waryIncrease *= awareness;
@@ -389,103 +383,23 @@ namespace Bowhead.Actors {
 			panic = 1;
 		}
 
-        public float CanSmell(Pawn player) {
-            float basicSmellDist = 1;
-
-            var diff = position - player.position;
-            float dist = diff.magnitude;
-            if (dist == 0)
-                return 1;
-
-            float smell = 0;
-            if (dist < basicSmellDist) {
-                smell = Math.Max(0f, Mathf.Pow(1f - dist / basicSmellDist, 2));
-            }
-
-            float windCarryTime = 5f;
-            var wind = gameMode.GetWind(player.position);
-            float maxWindCarryDist = Mathf.Sqrt(wind.magnitude) * windCarryTime;
-            float windCarrySmell = 0;
-            if (dist < maxWindCarryDist && wind != Vector3.zero) {
-                windCarrySmell = 1f - dist / maxWindCarryDist;
-				float angleDiff = Mathf.Abs(Mathf.DeltaAngle(Mathf.Rad2Deg * Mathf.Atan2(diff.z, diff.x), Mathf.Rad2Deg * Mathf.Atan2(wind.z, wind.x)));
-				float maxAngle = gameMode.data.smellDisperseAngle;
-				if (angleDiff < maxAngle) {
-					windCarrySmell *= Mathf.Pow((maxAngle - angleDiff)/ maxAngle, gameMode.data.smellDisperseAnglePower);
-				}
-				else {
-					windCarrySmell = 0;
-				}
-			}
-
-            return Math.Max(smell, windCarrySmell) * (1.0f - player.stealthBonusSmell);
-        }
-		public float CanHear(Pawn player) {
-			if (player.mount != null) {
-				player = player.mount;
-			}
-            if (player.activity != Activity.OnGround)
-                return 0;
-
-			float playerSpeed = player.velocity.magnitude;
-			if (playerSpeed == 0)
-				return 0;
-
-			float playerSpeedLevel = player.data.sprintSound;
-			var playerBlock = gameMode.GetTerrainData(position + new Vector3(0, -0.1f, 0));
-			if (playerSpeed < player.data.groundMaxSpeed*playerBlock.speedModifier*1.01f) {
-				playerSpeedLevel = player.data.runSound;
-			}
-
-            var diff = player.position - position;
-            float distance = diff.magnitude;
-
-            if (distance == 0)
-                return 1f;
-
-            float playerSound = Mathf.Pow(Mathf.Clamp01(1f - (distance / data.hearingDistance)) * playerSpeedLevel, data.hearingDistanceExponent);
-            if (playerSound <= 0)
-                return 0;
-
-
-			playerSound *= playerBlock.soundModifier * (1.0f - player.stealthBonusSound);
-
-            return playerSound;
-        }
         public float CanSee(Pawn player) {
             var diff = player.position - position;
             float dist = diff.magnitude;
 
-            float visionDistance = data.nightVisionDistance;
-			float sunriseTime = 2;
-			float sunsetTime = 22;
-			float sunChangeTime = 0.5f;
-			float timeOfDay = gameMode.gameTime.timeOfDay * 24;
-			if (timeOfDay >= sunriseTime + sunChangeTime && timeOfDay < sunsetTime - sunChangeTime) {
-				visionDistance += 15;
-			}
-			else if (timeOfDay >= sunriseTime && timeOfDay < sunriseTime + sunChangeTime) {
-				visionDistance += 15f * (timeOfDay - sunriseTime) / sunChangeTime;
-			}
-			else if (timeOfDay >= sunsetTime - sunChangeTime && timeOfDay < sunsetTime) {
-				visionDistance += 15f * (sunsetTime - timeOfDay) / sunChangeTime;
-			}
-			else {
-				visionDistance += 0;
-			}
-			visionDistance += (data.dayVisionDistance - data.nightVisionDistance);
+			float light = 0.5f;
+            float visionDistance = (data.dayVisionDistance - data.nightVisionDistance) * light + data.nightVisionDistance;
 
             if (dist > visionDistance)
                 return 0;
 
             float angleToPlayer = Mathf.Atan2(diff.x, diff.z);
             float angleDiffXZ = Mathf.Abs(Utils.SignedMinAngleDelta(angleToPlayer * Mathf.Rad2Deg, yaw * Mathf.Rad2Deg));
-			float angleRangeXZ = data.visionAngleRange * Mathf.Deg2Rad;
 
-			if (angleDiffXZ > angleRangeXZ)
+			if (angleDiffXZ > data.visionAngleRange)
                 return 0;
 
-			float angleDeltaXZ = angleDiffXZ / angleRangeXZ;
+			float angleDeltaXZ = angleDiffXZ / data.visionAngleRange;
 
 			float angleDiffY = Mathf.Atan2(diff.y, Mathf.Sqrt(diff.x*diff.x+diff.z*diff.z));
 			float angleDeltaY = 0;
@@ -501,21 +415,17 @@ namespace Bowhead.Actors {
 				}
 				angleDeltaY = -angleDiffY / (data.visionAngleRangeDown * Mathf.Deg2Rad);
 			}
-			float angleDelta = Mathf.Sqrt(angleDeltaXZ * angleDeltaXZ + angleDeltaY * angleDeltaY);
-
-
-			float canSeeAngle = Mathf.Pow(1.0f - angleDelta, data.visionAngleExponent);
-
-
-            float canSeeDistance = Mathf.Pow(1.0f - dist / visionDistance, data.visionDistanceExponent);
-
-
 			bool hasClearLine = !Physics.Raycast(new Ray(headPosition(), (player.headPosition()-headPosition()).normalized), dist, Layers.PawnCollisionMask) || !Physics.Raycast(new Ray(headPosition(), (player.footPosition() - headPosition()).normalized), dist, Layers.PawnCollisionMask);
 			if (!hasClearLine) {
 				return 0;
 			}
 
-			return canSeeAngle * canSeeDistance * (1.0f - player.stealthBonusSight);
+			float angleDelta = Mathf.Sqrt(angleDeltaXZ * angleDeltaXZ + angleDeltaY * angleDeltaY);
+			float canSeeAngle = Mathf.Pow(1.0f - angleDelta, data.visionAngleExponent);
+			float canSeeDistance = Mathf.Pow(1.0f - dist / visionDistance, data.visionDistanceExponent);
+			float playerSpeed = (player.velocity != Vector3.zero) ? 1 : 0;
+
+			return canSeeAngle * canSeeDistance * (1.0f - player.stealthBonusSight) * (playerSpeed * data.visionMotionWeight + (1.0f-data.visionMotionWeight));
         }
 
 

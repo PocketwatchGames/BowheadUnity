@@ -12,12 +12,6 @@ public class PawnHUD : MonoBehaviour {
 	UnityEngine.UI.Slider _stamina;
 	[SerializeField]
 	UnityEngine.UI.Slider _aggro;
-	[SerializeField]
-	UnityEngine.UI.Image _sight;
-	[SerializeField]
-	UnityEngine.UI.Image _scent;
-	[SerializeField]
-	UnityEngine.UI.Image _hearing;
 
 	private Pawn _target;
 
@@ -71,9 +65,6 @@ public class PawnHUD : MonoBehaviour {
 		else {
 			_aggro.gameObject.SetActive(false);
 		}
-		_scent.gameObject.SetActive(critter.canSmell > 0 && critter.panic == 0 && critter.alive);
-		_sight.gameObject.SetActive(critter.canSee > 0 && critter.panic == 0 && critter.alive);
-		_hearing.gameObject.SetActive(critter.canHear > 0 && critter.panic == 0 && critter.alive);
 	}
 
 

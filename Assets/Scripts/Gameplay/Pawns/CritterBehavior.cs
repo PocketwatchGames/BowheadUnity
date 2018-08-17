@@ -301,7 +301,7 @@ namespace Bowhead.Actors {
 					float dist = diff.magnitude;
 
 					var player = c.gameMode.players[0].playerPawn;
-					if (c.CanSee(player) > 0 || c.CanSmell(player) > 0 || c.CanHear(player) > 0) {
+					if (c.CanSee(player) > 0) {
 						if (dist > minRange && dist < maxRange) {
 							if (c.canAttack && c.activity == Pawn.Activity.OnGround) {
 								input.look = -diff;
@@ -313,10 +313,15 @@ namespace Bowhead.Actors {
 						}
 						else {
 							input.movement = move.normalized;
-							input.look = move.normalized;
+							input.look = input.movement;
 							if (c.stamina > sprintStaminaLimit) {
 								input.inputs[(int)InputType.Jump] = InputState.Pressed;
 							}
+						}
+					} else {
+						if (move.magnitude > 0.5f) {
+							input.movement = move.normalized;
+							input.look = input.movement;
 						}
 					}
 				}
