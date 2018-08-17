@@ -86,11 +86,7 @@ fixed4 triplanarColor(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[12], f
 }
 
 // Reoriented Normal Mapping
-// http://blog.selfshadow.com/publications/blending-in-detail/
-// Altered to take normals (-1 to 1 ranges) rather than unsigned normal maps (0 to 1 ranges)
 half3 blend_rnm(half3 n1, half3 n2) {
-	n1.z += 1;
-	n2.xy = -n2.xy;
 	return n1 * dot(n1, n2) / n1.z - n2;
 }
 
@@ -99,10 +95,10 @@ half3 triplanarSampleWorldNormal(int i, UNITY_ARGS_TEX2DARRAY(texArray), float a
 	half3 y = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[1], arrayIndices[i * 3 + (int)(1 + signNormal.y)])));
 	half3 z = UnpackNormal(UNITY_SAMPLE_TEX2DARRAY(texArray, float3(uvs[2], arrayIndices[i * 3 + 1])));
 
-	x.x *= signNormal.x;
-	y.x *= signNormal.y;
-	z.x *= -signNormal.z;
-
+	x.x *= -signNormal.x;
+	y.x *= -signNormal.y;
+	z.x *= signNormal.z;
+	
 	half3 nx = blend_rnm(bumpNormals[0], x);
 	half3 ny = blend_rnm(bumpNormals[1], y);
 	half3 nz = blend_rnm(bumpNormals[2], z);
@@ -128,31 +124,12 @@ half3 triplanarWorldNormal(UNITY_ARGS_TEX2DARRAY(texArray), float arrayIndices[1
 	return (half3)normalize(normal);
 }
 
-half4 sampleTerrainHeight(float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
-	half4 height;
-
-	height.r = triplanarSampleColor(0, UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal).a * texBlend[0];
-	height.g = triplanarSampleColor(1, UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal).a * texBlend[1];
-	height.b = triplanarSampleColor(2, UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal).a * texBlend[2];
-	height.a = triplanarSampleColor(3, UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal).a * texBlend[3];
-
-	return height;
-}
-
 fixed4 sampleTerrainAlbedo(float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
 	return triplanarColor(UNITY_PASS_TEX2DARRAY(_AlbedoTextureArray), _AlbedoTextureArrayIndices, uvs, triblend, signNormal, texBlend);
 }
 
 half3 sampleTerrainWorldNormal(float2 uvs[3], half3 triblend, half3 signNormal, half3 bumpNormals[3], half4 texBlend) {
 	return triplanarWorldNormal(UNITY_PASS_TEX2DARRAY(_NormalsTextureArray), _NormalsTextureArrayIndices, uvs, triblend, signNormal, bumpNormals, texBlend);
-}
-
-fixed sampleTerrainAO(float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
-	return triplanarColor(UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal, texBlend).g;
-}
-
-fixed sampleTerrainRoughness(float2 uvs[3], half3 triblend, half3 signNormal, half4 texBlend) {
-	return triplanarColor(UNITY_PASS_TEX2DARRAY(_RHOTextureArray), _RHOTextureArrayIndices, uvs, triblend, signNormal, texBlend).r;
 }
 
 void sampleRHO(float2 uvs[3], half3 signNormal, out fixed4 samples[TRIP_SAMPLE_COUNT]) {
@@ -276,9 +253,9 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	fixed4 albedo = sampleTerrainAlbedo(uvs, triblend, signNormal, height);
 
 	half3 bumpNormals[3];
-	bumpNormals[0] = half3(worldNormal.zy, absNormal.x);
-	bumpNormals[1] = half3(worldNormal.xz, absNormal.y);
-	bumpNormals[2] = half3(worldNormal.xy, absNormal.z);
+	bumpNormals[0] = half3(worldNormal.zy, absNormal.x + 1);
+	bumpNormals[1] = half3(worldNormal.xz, absNormal.y + 1);
+	bumpNormals[2] = half3(worldNormal.xy, absNormal.z + 1);
 		
 	half3 normal = sampleTerrainWorldNormal(uvs, triblend, signNormal, bumpNormals, height);
 	
