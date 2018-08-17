@@ -22,6 +22,8 @@ MonoBehaviour:
     _assetPath: 
     _editorPath: 
   hand: 1
+  staminaRechargeTime: 1
+  staminaRechargePause: 1
   moveSpeedChargeDelay: 0.2
   traits: []
   attacks:
@@ -33,7 +35,7 @@ MonoBehaviour:
     cooldownNextAttackQueueTime: 0
     range: 1
     radius: 1
-    staminaUse: 10
+    staminaUse: 0.1
     stepDistance: 4
     moveSpeedWhileCharging: 0
     moveSpeedWhileFullyCharged: 0
@@ -46,16 +48,16 @@ MonoBehaviour:
     attackResultDirectHit:
       knockback: 0.5
       damage: 10
-      stun: 5
+      stun: 0.2
       interrupt: 1
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
     attackResultGlancingBlow:
-      knockback: 0
+      knockback: 0.2
       damage: 7
-      stun: 0
+      stun: 0.1
       interrupt: 0
       damageType: 0
       statusEffect: {fileID: 0}
@@ -64,7 +66,7 @@ MonoBehaviour:
     attackResultBackstab:
       knockback: 2
       damage: 20
-      stun: 5
+      stun: 0.5
       interrupt: 1
       damageType: 0
       statusEffect: {fileID: 0}
@@ -74,7 +76,6 @@ MonoBehaviour:
   spellPower: 0
   statusEffect: {fileID: 0}
   statusEffectTime: 0
-  waterUse: 0
   canTarget: 0
   projectile: {fileID: 0}
   projectileSpeed: 0

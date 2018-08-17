@@ -52,7 +52,11 @@ namespace Bowhead.Client.UI {
 			}
 		}
 
-
+		private void Update() {
+			if (_item != null) {
+				SetTimer(1.0f - (_item as Weapon).stamina);
+			}
+		}
 
 		public void SetItem(Item i) {
 			_item = i;

@@ -43,10 +43,6 @@ namespace Bowhead.Actors {
 			spawnPosition = pos;
 			maxHealth = data.maxHealth;
 			health = maxHealth;
-			maxWater = data.maxWater;
-			water = maxWater;
-			maxStamina = data.maxStamina;
-			stamina = maxStamina;
 			this.team = team;
             active = false;
             canClimb = false;
@@ -109,20 +105,16 @@ namespace Bowhead.Actors {
 			canStrafe = true;
 
 			if (stunned) {
-                canRun = false;
+				canRun = false;
 				canSprint = false;
 				canJump = false;
-                canClimb = false;
-                canAttack = false;
-                canMove = false;
+				canClimb = false;
+				canAttack = false;
+				canMove = false;
 				canTurn = false;
 			}
-			if (stamina <= 0) {
-				canAttack = false;
-				canSprint = false;
-			}
 
-            if (moveImpulseTimer > 0)
+			if (moveImpulseTimer > 0)
             {
                 canAttack = false;
             }
@@ -159,19 +151,15 @@ namespace Bowhead.Actors {
 
 			var head = go.GetChildComponent<MeshRenderer>("Head");
 			if (head != null) {
-				if (dodgeTimer > 0) {
-					head.material.color = Color.black;
-				}
-				else if (stunInvulnerabilityTimer > 0) {
-					head.material.color = Color.gray;
-				}
-				else if (skidding) {
-					head.material.color = Color.cyan;
-				}
-				else if (stunned) {
+				if (stunned) {
 					head.material.color = Color.yellow;
-				}
-				else {
+				} else if (stunInvincibilityTimer > 0) {
+					head.material.color = Color.gray;
+				} else if (dodgeTimer > 0) {
+					head.material.color = Color.black;
+				} else if (skidding) {
+					head.material.color = Color.cyan;
+				} else {
 					head.material.color = Color.white;
 				}
 			}

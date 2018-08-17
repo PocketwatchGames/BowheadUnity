@@ -201,20 +201,19 @@ namespace Bowhead.Actors {
 
 			var head = go.GetChildComponent<MeshRenderer>("Head");
 			if (head != null) {
-				if (stunInvulnerabilityTimer > 0) {
-					head.material.color = Color.gray;
-				}
-				else if (skidding) {
-					head.material.color = Color.cyan;
-				}
-				else if (stunned) {
+				if (stunned) {
 					head.material.color = Color.yellow;
-				}
-				else {
+				} else if (stunInvincibilityTimer > 0) {
+					head.material.color = Color.gray;
+				} else if (dodgeTimer > 0) {
+					head.material.color = Color.black;
+				} else if (skidding) {
+					head.material.color = Color.cyan;
+				} else {
 					head.material.color = Color.white;
 				}
 			}
-        }
+		}
 
         override public void PreSimulate(float dt) {
 
@@ -239,12 +238,8 @@ namespace Bowhead.Actors {
 				canRun = false;
 				canSprint = false;
 				canJump = false;
-                canClimb = false;
-                canAttack = false;
-            }
-			if (stamina <= 0) {
+				canClimb = false;
 				canAttack = false;
-				canSprint = false;
 			}
 
 			if (activity == Activity.Swimming || activity == Activity.Climbing) {
@@ -346,6 +341,7 @@ namespace Bowhead.Actors {
 					if (activeWeapon > 1) {
 						activeWeapon = 0;
 					}
+					OnSwapWeapon?.Invoke();
 				}				
 			}
 
@@ -453,6 +449,8 @@ namespace Bowhead.Actors {
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
 			PickUp(ItemData.Get("SpellHeal").CreateItem());
 			SetMoney(50);
+			PickUp(ItemData.Get("Rapier").CreateItem());
+			PickUp(ItemData.Get("Buckler").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
@@ -479,10 +477,6 @@ namespace Bowhead.Actors {
             position = spawnPoint;
             maxHealth = data.maxHealth;
             health = maxHealth;
-            maxStamina = data.maxStamina;
-            stamina = maxStamina;
-            maxWater = data.maxWater;
-            water = maxWater;
         }
 
         public void SetSpawnPoint(Vector3 sp) {
@@ -528,7 +522,6 @@ namespace Bowhead.Actors {
                 d = (fallSpeed - data.fallDamageSpeed) / data.fallDamageSpeed * gameMode.GetTerrainData(position).fallDamage * data.maxHealth;
                 if (d > 0) {
                     Damage(d, PawnData.DamageType.Falling, true);
-                    UseStamina((float)d, true);
                     Stun((float)d);
                 }
             }

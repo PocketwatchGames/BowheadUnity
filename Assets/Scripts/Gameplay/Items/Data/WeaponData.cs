@@ -68,6 +68,8 @@ namespace Bowhead {
 
 		public GameObject_WRef prefab;
         public Hand hand;
+		public float staminaRechargeTime = 1;
+		public float staminaRechargePause;
 		public float moveSpeedChargeDelay = 0.2f;
 		public List<TraitData> traits = new List<TraitData>();
 
@@ -78,7 +80,6 @@ namespace Bowhead {
 		public float spellPower;
 		public StatusEffectData statusEffect;
 		public float statusEffectTime;
-		public float waterUse;
 		public bool canTarget;
 		public Actors.ProjectileData projectile;
 		public float projectileSpeed;
@@ -89,9 +90,7 @@ namespace Bowhead {
 		public float blockAngleRange;
 		public DefendResult blockResultDirectHit;
 		public DefendResult blockResultGlancingBlow;
-
 		public float sprintSpeed;
-
 		public float jabChargeTime;
 	}
 }

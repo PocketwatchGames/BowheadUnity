@@ -19,11 +19,11 @@ MonoBehaviour:
   friction: 20
   leashFollowVelocityRate: 0.5
   minDistance: 15
-  maxDistance: 25
+  maxDistance: 20
   standardLeashDistance: 20
   maxLeashDistance: 25
-  pitch: 65
-  fov: 75
+  pitch: 62
+  fov: 85
   climbingYawMaxAngle: 40
   climbingYawAdjustmentAcceleration: 20
   climbingYawTurnSpeed: 10

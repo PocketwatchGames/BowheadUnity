@@ -8,7 +8,6 @@ namespace Bowhead {
 		public enum UseType {
 			None,
 			Food,
-			Water,
 		}
 		public UseType useType;
         public float power;

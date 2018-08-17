@@ -21,14 +21,12 @@ MonoBehaviour:
   packSize: 10
   height: 2
   maxHealth: 200
-  maxWater: 100
-  maxStamina: 100
-  minStamina: -50
-  staminaRecoveryTime: 1
-  staminaRechargeTime: 3
-  staminaRechargeTimeDuringStun: 2
   dodgeTime: 0.25
   dodgeDistance: 5
+  stunRechargePause: 1
+  stunRechargeTime: 3
+  stunTime: 2
+  maxStun: 1
   postStunInvincibilityTime: 1
   backStabAngle: 45
   directHitWidth: 0.5
@@ -38,7 +36,6 @@ MonoBehaviour:
   bloodParticle: {fileID: 198779312261414576, guid: 4ec81e4566e55b94680b2225277134c9,
     type: 2}
   jumpSpeed: 13
-  jumpStaminaUse: 10
   jumpHorizontalSpeed: 12
   groundAcceleration: 16
   crouchSpeed: 3.5
@@ -49,7 +46,6 @@ MonoBehaviour:
   groundWindDrag: 0.01
   sprintTime: 0.25
   sprintSpeed: 12
-  sprintStaminaUse: 50
   sprintGracePeriodTime: 0.4
   slideModifier: 1
   gravity: -40

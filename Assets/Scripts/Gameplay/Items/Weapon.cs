@@ -17,6 +17,9 @@ namespace Bowhead {
 		public float chargeTime;
 		public float cooldown;
 		public bool attackWhenCooldownComplete;
+		public float stamina;
+		public float staminaRechargeTimer;
+		public bool stunned;
 
 		public List<Pawn> hitTargets = new List<Pawn>();
 
@@ -30,7 +33,7 @@ namespace Bowhead {
 		}
 
 		public bool CanCast() {
-			return castTime == 0 && activeTime == 0 && data.attacks.Length > 0 && cooldown <= data.attacks[attackHand].cooldownNextAttackQueueTime;
+			return stamina > 0 && !stunned && castTime == 0 && activeTime == 0 && data.attacks.Length > 0 && cooldown <= data.attacks[attackHand].cooldownNextAttackQueueTime;
 		}
 
 		public override void OnSlotChange(int newSlot, int oldSlot, Pawn owner) {
@@ -105,13 +108,14 @@ namespace Bowhead {
 			hitTargets.Clear();
 
 
-			if (data.waterUse > owner.water) {
-				return false;
-			}
-
 			target = null;
 			if (data.canTarget) {
 				target = owner.GetAttackTarget(owner.yaw, data.projectile.lifetime * data.projectileSpeed, 60 * Mathf.Deg2Rad, null);
+			}
+			staminaRechargeTimer = data.staminaRechargePause;
+			stamina -= data.attacks[attackHand].staminaUse;
+			if (stamina <= 0) {
+				stunned = true;
 			}
 			castTime = data.attacks[attackHand].castTime;
 			attackCharge = chargeTime;
@@ -212,9 +216,6 @@ namespace Bowhead {
 				ActivateSpell(owner);
 			}
 
-			owner.UseStamina(data.attacks[attackHand].staminaUse, false);
-			owner.UseWater(data.waterUse);
-
         }
 
 		public Pawn GetProjectileTarget(Pawn owner, float yaw, float range) {
@@ -257,6 +258,18 @@ namespace Bowhead {
 		}
 
         override public void Tick(float dt, Pawn owner) {
+
+			if (castTime == 0 && activeTime == 0 && cooldown == 0) {
+				if (staminaRechargeTimer > 0) {
+					staminaRechargeTimer = Mathf.Max(0, staminaRechargeTimer - dt / Mathf.Max(0.0001f, data.staminaRechargePause));
+				} else {
+					stamina = Mathf.Min(1.0f, stamina + dt / Mathf.Max(0.0001f, data.staminaRechargeTime));
+					if (stunned && stamina == 1) {
+						stunned = false;
+					}
+				}
+			}
+
 
 			if (castTime > 0) {
 				castTime = Mathf.Max(0, castTime - dt);
@@ -385,17 +398,25 @@ namespace Bowhead {
 			else {
 				dirToEnemy.Normalize();
 			}
-			float angleToEnemy = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) * Mathf.Rad2Deg, owner.yaw * Mathf.Rad2Deg))*Mathf.Rad2Deg;
-			if (angleToEnemy > data.blockAngleRange*Mathf.Deg2Rad && Mathf.PI * 2 - angleToEnemy > data.blockAngleRange * Mathf.Deg2Rad) {
+			float angleToEnemy = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) * Mathf.Rad2Deg, owner.yaw * Mathf.Rad2Deg));
+			if (angleToEnemy > data.blockAngleRange && Mathf.PI * 2 - angleToEnemy > data.blockAngleRange) {
 				return;
 			}
 
 			WeaponData.DefendResult blockResult = data.blockResultDirectHit;
 
-
-			owner.UseStamina(blockResult.staminaUse, false);
 			remainingDamage = Mathf.Max(0, remainingDamage - blockResult.damageAbsorb);
-			remainingStun = Mathf.Max(0, remainingStun - blockResult.stunAbsorb);
+
+			float stunAbsorb = Mathf.Min(blockResult.stunAbsorb, remainingStun);
+			remainingStun -= stunAbsorb;
+
+			stamina -= stunAbsorb;
+			staminaRechargeTimer = data.staminaRechargePause;
+			if (stamina <= 0) {
+				stunned = true;
+			}
+
+
 			attacker.Hit(owner, this, blockResult, 1, false, true);
 
         }

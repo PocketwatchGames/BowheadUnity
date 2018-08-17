@@ -8,7 +8,6 @@ namespace Bowhead {
 
 		public float damageMultiplier;
 		public float maxHealthBonus;
-		public float maxStaminaBonus;
 		public float resistPoison;
 		public float resistFire;
 		public float resistCold;
@@ -28,10 +27,6 @@ namespace Bowhead {
 		public void Remove(Actors.Pawn pawn) {
 			if (damageMultiplier != 0) {
 				pawn.damageMultiplier -= damageMultiplier;
-			}
-			if (maxStaminaBonus != 0) {
-				pawn.maxStamina -= maxStaminaBonus;
-				pawn.stamina = Mathf.Min(pawn.stamina, pawn.maxStamina);
 			}
 			if (maxHealthBonus != 0) {
 				pawn.maxHealth -= maxHealthBonus;
@@ -60,9 +55,6 @@ namespace Bowhead {
 		public void Add(Actors.Pawn pawn) {
 			if (damageMultiplier != 0) {
 				pawn.damageMultiplier += damageMultiplier;
-			}
-			if (maxStaminaBonus != 0) {
-				pawn.maxStamina += maxStaminaBonus;
 			}
 			if (maxHealthBonus != 0) {
 				pawn.maxHealth += maxHealthBonus;

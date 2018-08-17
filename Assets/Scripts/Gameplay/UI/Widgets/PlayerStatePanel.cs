@@ -18,10 +18,6 @@ namespace Bowhead.Client.UI {
 
 		[SerializeField]
 		Slider _health;
-		[SerializeField]
-		Slider _water;
-		[SerializeField]
-		Slider _stamina;
 
 
 
@@ -41,8 +37,6 @@ namespace Bowhead.Client.UI {
             }
 
             _health.value = _player.health / _player.maxHealth;
-            _water.value = _player.water / _player.maxWater;
-            _stamina.value = _player.stamina / _player.maxStamina;
 
 		}
 

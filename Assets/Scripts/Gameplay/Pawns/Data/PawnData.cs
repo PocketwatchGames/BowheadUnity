@@ -20,14 +20,12 @@ namespace Bowhead.Actors {
 		public int packSize;
 		public float height;
         public float maxHealth;
-		public float maxWater;
-        public float maxStamina;
-		public float minStamina;
-        public float staminaRecoveryTime;
-        public float staminaRechargeTime;
-		public float staminaRechargeTimeDuringStun;
 		public float dodgeTime;
 		public float dodgeDistance;
+		public float stunRechargePause = 1;
+		public float stunRechargeTime = 1;
+		public float stunTime = 1;
+		public float maxStun;
 		public float postStunInvincibilityTime;
 		public float backStabAngle;
 		public float directHitWidth = 0.5f;
@@ -38,7 +36,6 @@ namespace Bowhead.Actors {
 
         [Header("Ground")]
         public float jumpSpeed;
-        public float jumpStaminaUse;
 		public float jumpHorizontalSpeed;
         public float groundAcceleration; // accel = veldiff * groundAccel * dt
         public float crouchSpeed;
@@ -49,7 +46,6 @@ namespace Bowhead.Actors {
         public float groundWindDrag;
 		public float sprintTime;
 		public float sprintSpeed;
-		public float sprintStaminaUse;
 		public float sprintGracePeriodTime;
 		public float slideModifier;
 

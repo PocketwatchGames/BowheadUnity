@@ -12,8 +12,6 @@ namespace Bowhead {
 		}
 
         public float healthPerSecond;
-		public float staminaPerSecond;
-		public float waterPerSecond;
 
 		public bool canStack;
 

@@ -44,16 +44,6 @@ namespace Bowhead {
                 } else if (data.healthPerSecond < 0) {
                     owner.Damage(-data.healthPerSecond * dt, PawnData.DamageType.Poison, false);
                 }
-				if (data.staminaPerSecond > 0) {
-					owner.stamina = Mathf.Min(owner.maxStamina, owner.stamina + data.staminaPerSecond * dt);
-				} else if (data.staminaPerSecond < 0) {
-					owner.stamina = Mathf.Max(0, Mathf.Max(owner.stamina, owner.stamina + data.staminaPerSecond * dt));
-				}
-				if (data.waterPerSecond > 0) {
-					owner.water = Mathf.Min(owner.maxWater, owner.water + data.waterPerSecond * dt);
-				} else if (data.waterPerSecond < 0) {
-					owner.water = Mathf.Max(0, Mathf.Max(owner.water, owner.water + data.waterPerSecond * dt));
-				}
 				time -= dt;
                 if (time <= 0) {
 					foreach (var t in data.traits) {

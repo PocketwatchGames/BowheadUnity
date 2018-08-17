@@ -22,6 +22,8 @@ MonoBehaviour:
     _assetPath: Items/Sword
     _editorPath: Assets/Assets/Prefabs/Resources/Items/Sword.prefab
   hand: 1
+  staminaRechargeTime: 1
+  staminaRechargePause: 1
   moveSpeedChargeDelay: 0.2
   traits: []
   attacks:
@@ -33,7 +35,7 @@ MonoBehaviour:
     cooldownNextAttackQueueTime: 0.1
     range: 1.5
     radius: 0.25
-    staminaUse: 20
+    staminaUse: 0.15
     stepDistance: 0
     moveSpeedWhileCharging: 0.8
     moveSpeedWhileFullyCharged: 0.25
@@ -46,7 +48,7 @@ MonoBehaviour:
     attackResultDirectHit:
       knockback: 0
       damage: 10
-      stun: 1
+      stun: 0.1
       interrupt: 0
       damageType: 0
       statusEffect: {fileID: 0}
@@ -55,7 +57,7 @@ MonoBehaviour:
     attackResultGlancingBlow:
       knockback: 0
       damage: 2
-      stun: 1
+      stun: 0.05
       interrupt: 0
       damageType: 0
       statusEffect: {fileID: 0}
@@ -74,7 +76,6 @@ MonoBehaviour:
   spellPower: 0
   statusEffect: {fileID: 0}
   statusEffectTime: 0
-  waterUse: 0
   canTarget: 0
   projectile: {fileID: 0}
   projectileSpeed: 0

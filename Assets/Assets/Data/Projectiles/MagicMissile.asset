@@ -19,7 +19,7 @@ MonoBehaviour:
   _projectileClass: Bowhead.Actors.Projectile, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   lifetime: 0.5
-  damage: 50
+  damage: 10
   stun: 0
   heatSeeking: 0
   damageType: 4
