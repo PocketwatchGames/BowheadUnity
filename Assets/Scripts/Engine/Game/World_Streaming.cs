@@ -922,11 +922,11 @@ public partial class World {
 			Vector3 v;
 
 			if (Mathf.Abs(Vector3.Dot(n, Vector3.up)) < 0.9f) {
-				v = Vector3.Cross(n, Vector3.down);
+				v = Vector3.Cross(n, Vector3.up);
 				u = Vector3.Cross(n, v);
 				v = Vector3.Cross(u, n);
 			} else {
-				v = Vector3.Cross(n, Vector3.left);
+				v = Vector3.Cross(n, Vector3.right);
 				u = Vector3.Cross(n, v);
 				v = Vector3.Cross(u, n);
 			}
@@ -988,7 +988,7 @@ public partial class World {
 				Vector4 v4 = (t - n * Vector3.Dot(n, t)).normalized;
 
 				// Calculate handedness
-				v4.w = (Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0f) ? 1f : -1f;
+				v4.w = (Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0f) ? -1f : 1f;
 
 				staticVec4[i] = v4;
 			}
