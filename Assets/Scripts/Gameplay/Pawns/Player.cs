@@ -39,8 +39,8 @@ namespace Bowhead.Actors {
             CLOTHING = 0,
             LEFT_HAND = 1,
             RIGHT_HAND = 2,
-			LEFT_HAND2 = 3,
-			RIGHT_HAND2 = 4,
+			LEFT_HAND_ALT = 3,
+			RIGHT_HAND_ALT = 4,
 			PACK = 5,
         }
         public enum WeightClass {
@@ -142,6 +142,9 @@ namespace Bowhead.Actors {
 					cmd.buttons |= 1 << (int)InputType.Jump;
 				}
 				if (Input.GetButton("X" + pi)) {
+					cmd.buttons |= 1 << (int)InputType.Swap;
+				}
+				if (Input.GetButton("Y" + pi)) {
 					cmd.buttons |= 1 << (int)InputType.Interact;
 				}
 				if (Input.GetButton("AttackRight" + pi) || Input.GetAxis("RightTrigger" + pi) != 0) {
@@ -149,9 +152,6 @@ namespace Bowhead.Actors {
 				}
 				if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
 					cmd.buttons |= 1 << (int)InputType.AttackLeft;
-				}
-				if (Input.GetButton("B" + pi)) {
-					cmd.buttons |= 1 << (int)InputType.Swap;
 				}
 				//if (Input.GetButton("ShoulderLeft" + pi)) {
 				//	cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
@@ -217,11 +217,21 @@ namespace Bowhead.Actors {
 
         override public void PreSimulate(float dt) {
 
-			if (GetInventorySlot((int)InventorySlot.LEFT_HAND) == null && unarmedWeaponLeft != null) {
-				Equip(unarmedWeaponLeft);
+			if (unarmedWeaponLeft != null) {
+				var left = GetInventorySlot((int)InventorySlot.LEFT_HAND);
+				if (left == null) {
+					SetInventorySlot((int)InventorySlot.LEFT_HAND, unarmedWeaponLeft);
+				} else if (left != unarmedWeaponLeft && GetInventorySlot((int)InventorySlot.LEFT_HAND_ALT) == null) {
+					SetInventorySlot((int)InventorySlot.LEFT_HAND_ALT, unarmedWeaponLeft);
+				}
 			}
-			if (GetInventorySlot((int)InventorySlot.RIGHT_HAND) == null && unarmedWeaponRight != null) {
-				Equip(unarmedWeaponRight);
+			if (unarmedWeaponRight != null) {
+				var right = GetInventorySlot((int)InventorySlot.RIGHT_HAND);
+				if (right == null) {
+					SetInventorySlot((int)InventorySlot.RIGHT_HAND, unarmedWeaponRight);
+				} else if (right != unarmedWeaponRight && GetInventorySlot((int)InventorySlot.RIGHT_HAND_ALT) == null) {
+					SetInventorySlot((int)InventorySlot.RIGHT_HAND_ALT, unarmedWeaponRight);
+				}
 			}
 
 			canMove = weight < WeightClass.IMMOBILE;
@@ -337,13 +347,7 @@ namespace Bowhead.Actors {
 				} else if (mount != null) {
 					SetMount(null);
 				} else {
-					var l = GetInventorySlot((int)InventorySlot.LEFT_HAND);
-					var r = GetInventorySlot((int)InventorySlot.RIGHT_HAND);
-					SetInventorySlot((int)InventorySlot.LEFT_HAND, GetInventorySlot((int)InventorySlot.LEFT_HAND2));
-					SetInventorySlot((int)InventorySlot.RIGHT_HAND, GetInventorySlot((int)InventorySlot.RIGHT_HAND2));
-					SetInventorySlot((int)InventorySlot.LEFT_HAND2, l);
-					SetInventorySlot((int)InventorySlot.RIGHT_HAND2, r);
-					OnSwapWeapon?.Invoke();
+					SwapWeapons();
 				}				
 			}
 
@@ -413,6 +417,16 @@ namespace Bowhead.Actors {
 
         }
 
+		public void SwapWeapons() {
+			var l = GetInventorySlot((int)InventorySlot.LEFT_HAND);
+			var r = GetInventorySlot((int)InventorySlot.RIGHT_HAND);
+			SetInventorySlot((int)InventorySlot.LEFT_HAND, GetInventorySlot((int)InventorySlot.LEFT_HAND_ALT));
+			SetInventorySlot((int)InventorySlot.RIGHT_HAND, GetInventorySlot((int)InventorySlot.RIGHT_HAND_ALT));
+			SetInventorySlot((int)InventorySlot.LEFT_HAND_ALT, l);
+			SetInventorySlot((int)InventorySlot.RIGHT_HAND_ALT, r);
+			OnSwapWeapon?.Invoke();
+		}
+
 		public void GetEquippedWeapons(out Weapon itemLeft, out Weapon itemRight) {
 			itemRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND) as Weapon;
 			if (itemRight?.data.hand == WeaponData.Hand.BOTH) {
@@ -448,11 +462,11 @@ namespace Bowhead.Actors {
 			unarmedWeaponRight = ItemData.Get(data.unarmedWeaponRight.name).CreateItem() as Weapon;
 			PickUp(unarmedWeaponLeft);
 			PickUp(unarmedWeaponRight);
+			PickUp(ItemData.Get("Rapier").CreateItem());
+			PickUp(ItemData.Get("Buckler").CreateItem());
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
 			PickUp(ItemData.Get("SpellHeal").CreateItem());
 			SetMoney(50);
-			PickUp(ItemData.Get("Rapier").CreateItem());
-			PickUp(ItemData.Get("Buckler").CreateItem());
 
 			//Equip(new game.items.Clothing("Cloak"));
 			//AddInventory(new Clothing("Backpack"));
@@ -563,7 +577,10 @@ namespace Bowhead.Actors {
             Weapon weapon;
             if ((weapon = item as Weapon) != null) {
 
-                if (weapon.data.hand == WeaponData.Hand.BOTH && GetInventorySlot((int)InventorySlot.LEFT_HAND) == null && GetInventorySlot((int)InventorySlot.RIGHT_HAND) == null) {
+				var curLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND);
+				var curRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND);
+
+				if (weapon.data.hand == WeaponData.Hand.BOTH && (curLeft == null || curLeft == unarmedWeaponLeft) && (curRight == null || curRight == unarmedWeaponRight)) {
                     SetInventorySlot((int)InventorySlot.RIGHT_HAND, item);
                     return true;
                 }
@@ -577,7 +594,8 @@ namespace Bowhead.Actors {
 				else if (weapon.data.hand == WeaponData.Hand.ARMOR) {
 					slot = (int)InventorySlot.CLOTHING;
 				}
-				if (slot >= 0 && GetInventorySlot(slot) == null) {
+				var i = GetInventorySlot(slot);
+				if (slot >= 0 && (i == null || i == unarmedWeaponRight || i == unarmedWeaponLeft)) {
                     SetInventorySlot(slot, item);
                     return true;
                 }
@@ -639,7 +657,8 @@ namespace Bowhead.Actors {
                 if (loot.count <= 0) {
                     RemoveFromInventory(item);
                 }
-                return true;
+				OnInventoryChange?.Invoke();
+				return true;
             }
 
 			Weapon weapon;

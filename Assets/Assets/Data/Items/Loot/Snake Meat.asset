@@ -13,8 +13,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 35
+  displayName: Snake Meat
   description: 
   monetaryValue: 0
+  canUse: 1
+  canDrop: 1
   useType: 1
   power: 50
   stackSize: 4

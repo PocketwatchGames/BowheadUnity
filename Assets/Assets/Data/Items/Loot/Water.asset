@@ -13,6 +13,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 22
+  displayName: Water
+  description: 
+  monetaryValue: 0
+  canUse: 1
+  canDrop: 1
   useType: 2
   power: 50
   stackSize: 4
+  statusEffect: {fileID: 0}
+  statusEffectTime: 0

@@ -22,6 +22,7 @@ namespace Bowhead {
 		[System.Serializable]
 		public class AttackResult {
 			public float knockback;
+			public float knockbackTime;
 			public float damage;
 			public float stun;
 			public bool interrupt;

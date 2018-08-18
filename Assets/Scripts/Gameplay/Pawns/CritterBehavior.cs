@@ -116,6 +116,7 @@ namespace Bowhead.Actors {
 		float destinationTolerance;
 		float enemyElevationDeltaToJump;
 		float fleeRange;
+		float fleeStunLimit;
 		Vector3 desiredOffset;
 		SubBehavior curSubBehavior;
 
@@ -134,6 +135,7 @@ namespace Bowhead.Actors {
 
 			enemyElevationDeltaToJump = 3;
 			fleeRange = 10;
+			fleeStunLimit = 0.5f;
 		}
 
 
@@ -145,7 +147,11 @@ namespace Bowhead.Actors {
 			if (!c.hasLastKnownPosition) {
 				curSubBehavior = SubBehavior.Idle;
 			} else {
-				curSubBehavior = SubBehavior.MeleeAttack;
+				if (c.stunAmount > c.data.maxStun * fleeStunLimit) {
+					curSubBehavior = SubBehavior.FleeAndRecover;
+				} else {
+					curSubBehavior = SubBehavior.MeleeAttack;
+				}
 			}
 
 			// execute sub Behavior
@@ -221,8 +227,9 @@ namespace Bowhead.Actors {
 					}
 				}
 			} else {
-				input.movement = move.normalized;
-				input.look = move.normalized;
+				float speed = dist > 4 ? 1.0f : 0.5f;
+				input.movement = move.normalized * speed;
+				input.look = -diff;
 				if (diff.y <= -enemyElevationDeltaToJump) {
 					if (c.canJump && c.activity == Pawn.Activity.OnGround) {
 						input.inputs[(int)InputType.Jump] = InputState.JustPressed;
@@ -239,12 +246,15 @@ namespace Bowhead.Actors {
 		float maxRange;
 		float enemyElevationDeltaToJump;
 		Vector3 desiredOffset;
-
+		float fleeRange;
+		float fleeStunLimit;
 
 		public CritterBehaviorRangedAttack(Critter c) : base(c) {
 			minRange = 5;
 			maxRange = 10;
 			enemyElevationDeltaToJump = 3;
+			fleeRange = 12;
+			fleeStunLimit = 0.5f;
 		}
 
 		override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
@@ -256,18 +266,17 @@ namespace Bowhead.Actors {
 			if (c.hasLastKnownPosition) {
 				var diff = c.rigidBody.position - c.lastKnownPosition;
 
-				//if (c.stamina < fleeStaminaLimit) {
-				//	var desiredPos = c.lastKnownPosition + diff.normalized * fleeRange;
-				//	var move = desiredPos - c.position;
-				//	move.y = 0;
+				if (c.stunAmount > c.data.maxStun * 0.5f) {
+					var desiredPos = c.lastKnownPosition + diff.normalized * fleeRange;
+					var move = desiredPos - c.position;
+					move.y = 0;
 
-				//	float dist = diff.magnitude;
+					float dist = diff.magnitude;
 
-				//	input.movement = move.normalized;
-				//	input.look = -diff;
+					input.movement = move.normalized;
+					input.look = -diff;
 
-				//}
-				//else {
+				} else {
 
 					if (diff.y <= -enemyElevationDeltaToJump) {
 						if (c.canJump && c.activity == Pawn.Activity.OnGround) {
@@ -298,18 +307,15 @@ namespace Bowhead.Actors {
 						else {
 							input.movement = move.normalized;
 							input.look = input.movement;
-							//if (c.stamina > sprintStaminaLimit) {
-							//	input.inputs[(int)InputType.Jump] = InputState.Pressed;
-							//}
 						}
 					} else {
 						if (move.magnitude > 0.5f) {
-							input.movement = move.normalized;
+							input.movement = move.normalized * 0.5f;
 							input.look = input.movement;
 						}
 					}
 				}
-			//}
+			}
 
 		}
 

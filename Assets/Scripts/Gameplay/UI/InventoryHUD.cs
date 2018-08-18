@@ -16,7 +16,7 @@ namespace Bowhead.Client.UI {
 		public UnityEngine.UI.Text money;
 		private int _playerIndex = 1;
 		private float _moveX, _moveY;
-		int gridWidth = 4;
+		public int gridWidth = 4;
 
 		private Player _player;
 		private Pawn _merchant;
@@ -103,8 +103,11 @@ namespace Bowhead.Client.UI {
 			if (Input.GetButtonDown("A1")) {
 				Use(_activePanel);
 			}
-			if (Input.GetButtonDown("X1")) {
+			if (Input.GetButtonDown("Y1")) {
 				Drop(_activePanel);
+			}
+			if (Input.GetButtonDown("X1")) {
+				_player.SwapWeapons();
 			}
 
 		}
@@ -148,10 +151,15 @@ namespace Bowhead.Client.UI {
 			return storePanel;
 		}
 		private void Select(int panel, int x, int y) {
+			var p = GetPanel(panel);
+			int i = x + y * gridWidth;
+			if (p.transform.childCount <= i) {
+				return;
+			}
+
 			_selectedSlot?.Deselect();
 
-			var p = GetPanel(panel);
-			_selectedSlot = p.transform.GetChild(x + y * gridWidth)?.GetComponent<InventorySlot>();
+			_selectedSlot = p.transform.GetChild(i)?.GetComponent<InventorySlot>();
 			_selectedSlot?.Select();
 
 			if (_selectedSlot.item != null) {

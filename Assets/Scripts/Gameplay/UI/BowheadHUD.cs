@@ -165,7 +165,7 @@ namespace Bowhead.Client.UI {
 			}
 			_interactHint.gameObject.SetActive(interaction != null);
             _interactHint.SetHint(interaction);
-			_interactHint.SetButton(localPlayer.playerPawn.GetButtonHint("X"));
+			_interactHint.SetButton(localPlayer.playerPawn.GetButtonHint("Y"));
 
 
 			float angle;
@@ -183,7 +183,7 @@ namespace Bowhead.Client.UI {
 			if (!inventoryVisible && (Input.GetButtonDown("Back") || (worldMapVisible && Input.GetButtonDown("B1")))) {
 				ShowWorldMap(!worldMapVisible);
 			}
-			else if (!worldMapVisible && (Input.GetButtonDown("Y1") || (inventoryVisible && Input.GetButtonDown("B1")))) {
+			else if (!worldMapVisible && (Input.GetButtonDown("B1") || (inventoryVisible && Input.GetButtonDown("B1")))) {
 				ShowInventory(!inventoryVisible, null);
 			}
 			else if (worldMapVisible && Input.GetButtonDown("X1")) {

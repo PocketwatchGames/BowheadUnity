@@ -11,8 +11,10 @@ namespace Bowhead.Client.UI {
 		private ButtonImage _buttonHint;
 		[SerializeField]
 		private Image _useTimer;
+		[SerializeField]
+		private Text _altSlot;
 
-        private Item _item;
+		private Item _item, _alt;
         private Button _button;
         private Image _background;
 		private Player _player;
@@ -20,19 +22,14 @@ namespace Bowhead.Client.UI {
 		public Sprite[] _slotBackgrounds;
 
 
-		public void Init(Player.InventorySlot slot, Player p, string text=null) {
+		public void Init(Player p, int slotBackground) {
 			_player = p;
 			_button = transform.GetAnyChildComponent<Button>("Button");
 			_background = transform.GetAnyChildComponent<Image>("Background");
-			_background.sprite = _slotBackgrounds[Mathf.Min((int)slot, _slotBackgrounds.Length - 1)];
+			_background.sprite = _slotBackgrounds[Mathf.Min(slotBackground, _slotBackgrounds.Length - 1)];
 			_button.gameObject.SetActive(false);
 			_buttonHint.gameObject.SetActive(false);
 			SetTimer(0);
-
-			if (text != null) {
-				_button.gameObject.SetActive(true);
-				_button.GetComponentInChildren<Text>().text = text;
-			}
 		}
 
 		public void SetButton(string b) {
@@ -58,26 +55,28 @@ namespace Bowhead.Client.UI {
 			}
 		}
 
-		public void SetItem(Item i) {
+		public void SetItem(Item i, Item alt) {
 			_item = i;
-			if (i == null) {
+			_alt = alt;
+
+			if (_item == null) {
 				_button.gameObject.SetActive(false);
 			} else {
 				_button.gameObject.SetActive(true);
-
-				string name;
-				Loot loot;
-				if ((loot = i as Loot) != null && loot.data.stackSize > 1) {
-					_button.GetComponentInChildren<Text>().text = i.data.displayName + " x" + loot.count;
-				} else {
-					_button.GetComponentInChildren<Text>().text = i.data.displayName;
-				}
-
+				_button.GetComponentInChildren<Text>().text = _item.data.displayName;
 			}
+
+			if (_alt == null) {
+				_altSlot.text = "";
+			} else {
+				_altSlot.text = _alt.data.displayName;
+			}
+
+
 		}
 
 
-        private void OnDestroy() {
+		private void OnDestroy() {
             gameObject.DestroyAllChildren();
         }
     }

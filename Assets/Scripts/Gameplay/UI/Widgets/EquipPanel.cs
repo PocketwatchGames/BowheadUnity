@@ -9,16 +9,17 @@ namespace Bowhead.Client.UI {
         [SerializeField]
         Player _player;
 
-        [SerializeField]
+		[SerializeField]
 		Transform _mainContainer;
 		[SerializeField]
-		EquipSlot _equipSlotPrefab;
+		Transform _buttonHintContainer;
+		[SerializeField]
+		EquipSlot _equipSlotLeft;
+		[SerializeField]
+		EquipSlot _equipSlotRight;
 		[SerializeField]
 		StatusEffectHUD _statusEffectPrefab;
 
-
-		public int slotMargin = 8;
-        private Vector3 slotSize;
 
         private EquipSlot[] _slots = new EquipSlot[Player.MaxInventorySize];
 
@@ -27,12 +28,13 @@ namespace Bowhead.Client.UI {
 
 		public void Init(Player player) {
             _player = player;
-            var r = _equipSlotPrefab.GetComponent<RectTransform>().rect;
-            slotSize = new Vector3(r.width, r.height, 0);
+			_equipSlotLeft.Init(_player, 0);
+			_equipSlotRight.Init(_player, 1);
 
 			_player.OnInventoryChange += OnInventoryChange;
 			GameManager.instance.clientWorld.StatusEffectAddedEvent += OnStatusEffectAdded;
 			_player.OnInputMethodChange += OnInputMethodChange;
+			_player.OnMountChange += OnInventoryChange;
 
 			OnInventoryChange();
 		}
@@ -44,6 +46,7 @@ namespace Bowhead.Client.UI {
 
 		private void OnDestroy() {
 			_player.OnInventoryChange -= OnInventoryChange;
+			_player.OnMountChange -= OnInventoryChange;
 			_player.OnInputMethodChange -= OnInputMethodChange;
 		}
 
@@ -64,57 +67,36 @@ namespace Bowhead.Client.UI {
 		}
 
 
-		private void SetSlot(Player.InventorySlot slot, int index) {
-			var item = _player.GetInventorySlot((int)slot);
-			_slots[index].SetItem(item);		
-		}
-
-		private void AddSlot(Player.InventorySlot slot, string button, ref int index) {
-			var item = _player.GetInventorySlot((int)slot);
-			if (item != null) {
-				var s = Instantiate(_equipSlotPrefab, _mainContainer.transform, false);
-				s.Init(slot, _player);
-				s.SetItem(item);
-				_slots[index] = s;
-				_slots[index].SetButton(button);
-				index++;
-			}
-
-		}
-
 		private void OnInputMethodChange() 
 		{
 			Rebuild();
 		}
 
 		private void Rebuild() {
+			_equipSlotLeft.SetItem(_player.GetInventorySlot((int)Player.InventorySlot.LEFT_HAND), _player.GetInventorySlot((int)Player.InventorySlot.LEFT_HAND_ALT));
+			_equipSlotRight.SetItem(_player.GetInventorySlot((int)Player.InventorySlot.RIGHT_HAND), _player.GetInventorySlot((int)Player.InventorySlot.RIGHT_HAND_ALT));
 
-			foreach (var i in _slots) {
-				if (i != null) {
-					GameObject.Destroy(i.gameObject);
-				}
-			}
-			System.Array.Clear(_slots, 0, _slots.Length);
-
-
-			float x = slotMargin;
-			int index = 0;
-
-			AddSlot(Player.InventorySlot.LEFT_HAND, _player.GetButtonHint("LT"), ref index);
-			AddSlot(Player.InventorySlot.RIGHT_HAND, _player.GetButtonHint("RT"), ref index);
+			_buttonHintContainer.DestroyAllChildren();
 
 			{
-				var s = Instantiate(_equipSlotPrefab, _mainContainer.transform, false);
-				s.GetComponent<RectTransform>().anchoredPosition = new Vector2(x + slotSize.x / 2, 0);
-				s.Init(Player.InventorySlot.PACK, _player, "Pack");
-				_slots[index] = s;
-				_slots[index].SetButton(_player.GetButtonHint("Y"));
+				var b = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, _buttonHintContainer.transform, false);
+				b.SetButton(_player.GetButtonHint("B"));
+				b.SetHint("Pack");
+				b.GetComponent<RectTransform>().pivot = new Vector2(0, 0.5f);
 			}
+			{
+				var b = GameObject.Instantiate(GameManager.instance.clientData.hudButtonHintPrefab, _buttonHintContainer.transform, false);
+				b.SetButton(_player.GetButtonHint("X"));
+				if (_player.mount != null) {
+					b.SetHint("Dismount");
+				} else {
+					b.SetHint("Swap");
+				}
+				b.GetComponent<RectTransform>().pivot = new Vector2(0, 0.5f);
+			}
+		}
 
-            _mainContainer.GetComponent<RectTransform>().sizeDelta = new Vector2(x, 54);
-        }
 
-		
 
-    }
+	}
 }

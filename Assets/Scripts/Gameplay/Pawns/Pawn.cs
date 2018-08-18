@@ -100,6 +100,7 @@ namespace Bowhead.Actors {
         protected Item[] _inventory = new Item[Pawn.MaxInventorySize];
 
 		protected event Action<Pawn> onHit;
+		public event Action OnMountChange;
 
 		Client.UI.IMapMarker _marker;
 		SilhouetteRenderer _silhouetteRenderer;
@@ -387,6 +388,10 @@ namespace Bowhead.Actors {
 				}
 			}
 
+			if (moveImpulseTimer > 0) {
+				input.movement = Vector3.zero;
+			}
+
             if (mount != null) {
                 return;
             }
@@ -405,7 +410,7 @@ namespace Bowhead.Actors {
 
 			Vector3 impulseMove = Vector3.zero;
 			if (moveImpulseTimer > 0) {
-				var m = moveImpulse * (dt / moveImpulseTimer);
+				var m = moveImpulse * Mathf.Sqrt(dt / moveImpulseTimer);
 				//impulseMove = m * block.speedModifier;
 				impulseMove += m;
 				moveImpulse -= m;
@@ -1080,6 +1085,7 @@ namespace Bowhead.Actors {
 			float newSpeedXZ = Mathf.Min(curSpeedXZ, combinedSpeedXZ);
 			velocity = velocity.normalized * newSpeedXZ;
 			velocity.y = velY;
+
 		}
 		public void Dodge(Vector3 dir, float time) {
 			dodgeTimer = time;
@@ -1204,7 +1210,7 @@ namespace Bowhead.Actors {
 
             if (attackResult.knockback != 0)
             {
-                moveImpulseTimer = 0.1f;
+                moveImpulseTimer = attackResult.knockbackTime;
                 var kb = (rigidBody.position - attacker.rigidBody.position);
                 kb.y = 0;
                 kb.Normalize();
@@ -1298,6 +1304,7 @@ namespace Bowhead.Actors {
 				go.transform.parent = null;
             }
 
+			OnMountChange?.Invoke();
 			return true;
         }
 

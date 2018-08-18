@@ -42,7 +42,7 @@ MonoBehaviour:
   walkSpeed: 7
   walkStartTime: 0.1
   walkStopTime: 0.1
-  groundMaxSpeed: 7
+  groundMaxSpeed: 12
   groundWindDrag: 0.01
   sprintTime: 0.1
   sprintSpeed: 12

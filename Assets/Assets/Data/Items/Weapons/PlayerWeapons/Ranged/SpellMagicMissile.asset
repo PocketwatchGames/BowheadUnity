@@ -21,7 +21,7 @@ MonoBehaviour:
   prefab:
     _assetPath: 
     _editorPath: 
-  hand: 3
+  hand: 1
   staminaRechargeTime: 1
   staminaRechargePause: 1
   moveSpeedChargeDelay: 0
