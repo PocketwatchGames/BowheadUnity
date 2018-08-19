@@ -8,16 +8,19 @@ public class DamageHUD : MonoBehaviour {
     float time;
     Vector3 startPos;
     UnityEngine.UI.Text text;
+	Color startColor;
     public void Init(float d, float t, Bowhead.Actors.Pawn target)
     {
         totalTime = time = t;
         text = GetComponent<UnityEngine.UI.Text>();
-        text.fontSize = (int)Mathf.Clamp(Mathf.Sqrt(d/5) * 10, 10, 40);
+        text.fontSize = (int)Mathf.Clamp(Mathf.Sqrt(d/5) * 20, 20, 40);
         text.color = Color.red;
         text.text = Mathf.CeilToInt(d).ToString();
-        transform.position = startPos = Camera.main.WorldToScreenPoint(target.headPosition());
+		startPos = target.headPosition();
+		transform.position = Camera.main.WorldToScreenPoint(startPos);
+		startColor = Color.red;
 
-        Destroy(gameObject, time);
+		Destroy(gameObject, time);
     }
 
     public void Init(string s, int size, float t, Bowhead.Actors.Pawn target)
@@ -27,9 +30,10 @@ public class DamageHUD : MonoBehaviour {
         text.fontSize = size;
         text.color = Color.red;
         text.text = s;
-        transform.position = startPos = Camera.main.WorldToScreenPoint(target.headPosition());
+		startPos = target.headPosition();
+		transform.position = Camera.main.WorldToScreenPoint(startPos);
 
-        Destroy(gameObject, time);
+		Destroy(gameObject, time);
     }
 
 
@@ -41,7 +45,7 @@ public class DamageHUD : MonoBehaviour {
         }
         float posT = 1 - Mathf.Pow(time / totalTime, 3);
         float t = (totalTime - time) / totalTime;
-        transform.position = startPos + new Vector3(0,posT  * 40, 0);
-        text.color = Color.Lerp(Color.red, new Color(1, 0, 0, 0), t);
+        transform.position = Camera.main.WorldToScreenPoint(startPos) + new Vector3(0,posT  * 100, 0);
+        text.color = new Color(startColor.r,startColor.g,startColor.b,1.0f-t);
 	}
 }

@@ -62,6 +62,7 @@ namespace Bowhead.Client.UI {
 			_lockMarker.gameObject.SetActive(false);
 			_worldmap = GameObject.Instantiate(GameManager.instance.clientData.worldMapPrefab, hudCanvas.transform, false);
 			_compass = GameObject.Instantiate(GameManager.instance.clientData.compassPrefab, hudCanvas.transform, false);
+
 			_pawnHUDs = new GameObject("PawnHuds");
 			_pawnHUDs.transform.parent = hudCanvas.transform;
 
