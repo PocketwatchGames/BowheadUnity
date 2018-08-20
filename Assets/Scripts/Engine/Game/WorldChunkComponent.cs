@@ -8,6 +8,8 @@ using UnityEngine;
 public class WorldChunkComponent : MonoBehaviour {
 	[SerializeField]
 	MeshFilter _meshFilter;
+	[SerializeField]
+	Material _debugMaterial;
 		
 	MeshCollider _meshCollider;
 	MeshRenderer _meshRenderer;
@@ -25,6 +27,14 @@ public class WorldChunkComponent : MonoBehaviour {
 		}
 		_meshCollider = gameObject.AddComponent<MeshCollider>();
 		_meshCollider.sharedMesh = mesh;
+	}
+
+	public void SetupDebugMesh() {
+		if (_meshCollider != null) {
+			Utils.DestroyComponent(_meshCollider);
+		}
+		_meshCollider = null;
+		_meshRenderer.sharedMaterial = _debugMaterial;
 	}
 
 	public void SetSubmeshMaterials(IList<WorldAtlas.RenderMaterials_t> materials, int submeshCount) {

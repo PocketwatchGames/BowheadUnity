@@ -763,6 +763,10 @@ public partial class World {
 						CreateChunkMesh(ref jobData.jobData, ref chunk.goChunk, wpos, layer, ref baseIndex, ref baseVertex);
 					}
 				}
+
+#if DEBUG_VOXEL_MESH
+				CreateChunkDebugMesh(ref jobData.jobData, ref chunk.goChunk, wpos);
+#endif
 			}
 		}
 
@@ -867,9 +871,6 @@ public partial class World {
 
 			staticMaterialProperties.SetFloatArray(ShaderID._AlbedoTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.albedo));
 			staticMaterialProperties.SetFloatArray(ShaderID._NormalsTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.normals));
-			//staticMaterialProperties.SetFloatArray(ShaderID._RoughnessTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.roughness));
-			//staticMaterialProperties.SetFloatArray(ShaderID._AOTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.ao));
-			//staticMaterialProperties.SetFloatArray(ShaderID._HeightTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.height));
 			staticMaterialProperties.SetFloatArray(ShaderID._RHOTextureArrayIndices, SetTextureChannelIndices(texBlend, _clientData.rho));
 		}
 
@@ -942,7 +943,36 @@ public partial class World {
 			component.UpdateCollider();
 		}
 
-		// axial UV
+#if DEBUG_VOXEL_MESH
+		void CreateChunkDebugMesh(ref ChunkMeshGen.CompiledChunkData jobData, ref WorldChunkComponent root, Vector3 pos) {
+			var outputVerts = jobData.outputVertsDebug;
+
+			var vertCount = outputVerts.counts[0];
+			if (vertCount < 1) {
+				return;
+			}
+
+			var indexCount = outputVerts.counts[1];
+
+			CreateChunkMeshForLayer(ref root, pos, 0);
+			var component = root.GetChildComponent<WorldChunkComponent>("DebugMesh");
+			if (component == null) {
+				component = GameObject.Instantiate(_chunkPrefab, root.transform, false);
+				component.SetupDebugMesh();
+				component.gameObject.layer = Layers.Terrain;
+				component.gameObject.name = "DebugMesh";
+				component.gameObject.SetActive(false);
+			}
+			var mesh = component.mesh;
+
+			mesh.Clear();
+
+			MeshCopyHelper.SetMeshVerts(mesh, Copy(staticVec3, outputVerts.positions, 0, vertCount), vertCount);
+			MeshCopyHelper.SetMeshColors(mesh, Copy(staticColors, outputVerts.colors, 0, vertCount), vertCount);
+			MeshCopyHelper.SetSubMeshTris(mesh, 0, Copy(staticIndices, outputVerts.indices, 0, indexCount), indexCount, true, 0);
+		}
+#endif
+
 		static Vector2 GetUV(Vector3 p, Vector3 n) {
 			Vector3 u;
 			Vector3 v;

@@ -262,8 +262,8 @@ public partial class World {
 
 				var bankedIndex = (index*BANK_SIZE)+ofs;
 				
-				outColor = _smoothVerts.colors[bankedIndex];
 				outPos = _smoothVerts.positions[index];
+				outColor = _smoothVerts.colors[bankedIndex];
 			}
 		};
 
@@ -370,8 +370,27 @@ public partial class World {
 				}
 			}
 
-			void GetBlockColor(EVoxelBlockType blocktype, out Color32 color) {
+			void GetBlockColor(EVoxelBlockType blocktype, int x, int y, int z, out Color32 color) {
 				color = _tables.blockColors[(int)blocktype - 1];
+
+				if ((x & 1) != 0) {
+					Color cc = color;
+					cc *= 0.9f;
+					cc.a = 1f;
+					color = cc;
+				}
+				if ((z & 1) != 0) {
+					Color cc = color;
+					cc *= 0.9f;
+					cc.a = 1f;
+					color = cc;
+				}
+				if ((y & 1) != 0) {
+					Color cc = color;
+					cc *= 0.9f;
+					cc.a = 1f;
+					color = cc;
+				}
 			}
 
 			void EmitVoxelFaces(int index, int x, int y, int z, EVoxelBlockType blocktype, bool isBorderVoxel) {
@@ -382,7 +401,7 @@ public partial class World {
 					if (_vnc[i] < contents) {
 						Color32 color;
 
-						GetBlockColor(blocktype, out color);
+						GetBlockColor(blocktype, x, y, z, out color);
 
 						var v0 = _tables.voxelFaces[i][0];
 

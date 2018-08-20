@@ -110,3 +110,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _meshFilter: {fileID: 33775271890215504}
+  _debugMaterial: {fileID: 2100000, guid: 176a178ce86c0864b8944fd0ae7922fb, type: 2}
