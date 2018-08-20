@@ -9,7 +9,7 @@ public class DamageHUD : MonoBehaviour {
     Vector3 startPos;
     UnityEngine.UI.Text text;
 	Color startColor;
-    public void Init(float d, float t, Bowhead.Actors.Pawn target)
+    public void Init(float d, float t, Color c, Bowhead.Actors.Pawn target)
     {
         totalTime = time = t;
         text = GetComponent<UnityEngine.UI.Text>();
@@ -18,7 +18,7 @@ public class DamageHUD : MonoBehaviour {
         text.text = Mathf.CeilToInt(d).ToString();
 		startPos = target.headPosition();
 		transform.position = Camera.main.WorldToScreenPoint(startPos);
-		startColor = Color.red;
+		startColor = c;
 
 		Destroy(gameObject, time);
     }

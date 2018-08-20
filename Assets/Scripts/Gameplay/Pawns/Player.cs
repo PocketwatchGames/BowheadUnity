@@ -221,16 +221,20 @@ namespace Bowhead.Actors {
 				var left = GetInventorySlot((int)InventorySlot.LEFT_HAND);
 				if (left == null) {
 					SetInventorySlot((int)InventorySlot.LEFT_HAND, unarmedWeaponLeft);
+					SetSilhouetteDirty();
 				} else if (left != unarmedWeaponLeft && GetInventorySlot((int)InventorySlot.LEFT_HAND_ALT) == null) {
 					SetInventorySlot((int)InventorySlot.LEFT_HAND_ALT, unarmedWeaponLeft);
+					SetSilhouetteDirty();
 				}
 			}
 			if (unarmedWeaponRight != null) {
 				var right = GetInventorySlot((int)InventorySlot.RIGHT_HAND);
 				if (right == null) {
 					SetInventorySlot((int)InventorySlot.RIGHT_HAND, unarmedWeaponRight);
+					SetSilhouetteDirty();
 				} else if (right != unarmedWeaponRight && GetInventorySlot((int)InventorySlot.RIGHT_HAND_ALT) == null) {
 					SetInventorySlot((int)InventorySlot.RIGHT_HAND_ALT, unarmedWeaponRight);
+					SetSilhouetteDirty();
 				}
 			}
 
