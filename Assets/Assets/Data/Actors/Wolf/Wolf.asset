@@ -28,7 +28,7 @@ MonoBehaviour:
   stunTime: 3
   maxStun: 1
   postStunInvincibilityTime: 1
-  backStabAngle: 90
+  backStabAngle: 45
   directHitWidth: 0.5
   runSound: 0
   sprintSound: 0

@@ -142,7 +142,7 @@ namespace Bowhead.Client.UI {
 				return;
 			}
             var damageHUD = GameObject.Instantiate<DamageHUD>(GameManager.instance.clientData.damageHUDPrefab, _pawnHUDs.transform);
-            damageHUD.Init(damage, 1.5f, target);
+            damageHUD.Init(damage, 1.5f, directHit ? Color.red : Color.yellow, target);
         }
         private void OnStatusEffectAdded(Pawn target, StatusEffect e)
         {
