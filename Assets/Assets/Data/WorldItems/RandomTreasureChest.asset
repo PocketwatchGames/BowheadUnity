@@ -16,8 +16,7 @@ MonoBehaviour:
   prefab:
     _assetPath: WorldItems/TreasureChest
     _editorPath: Assets/Assets/Prefabs/Resources/WorldItems/TreasureChest.prefab
-  _itemClass: Bowhead.Actors.WorldItem, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
+  _itemClass: Bowhead.Actors.WorldItem, Game, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   mapMarker:
     _assetPath: MapMarkers/MapTreasureMarker
     _editorPath: Assets/Assets/Prefabs/Resources/MapMarkers/MapTreasureMarker.prefab

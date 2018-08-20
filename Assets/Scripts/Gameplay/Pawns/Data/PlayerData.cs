@@ -29,7 +29,10 @@ namespace Bowhead.Actors {
 			if (string.IsNullOrEmpty(_playerClass)) {
 				playerClass = null;
 			} else {
-				playerClass = Type.GetType(_playerClass);
+				playerClass = Utils.GetType(_playerClass);
+				if (playerClass == null) {
+					throw new Exception("Unable to find type for " + _playerClass);
+				}
 			}
 		}
 

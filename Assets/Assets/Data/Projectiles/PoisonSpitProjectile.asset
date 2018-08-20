@@ -16,7 +16,7 @@ MonoBehaviour:
   prefab:
     _assetPath: Projectiles/PoisonSpitProjectilePrefab
     _editorPath: Assets/Assets/Prefabs/Resources/Projectiles/PoisonSpitProjectilePrefab.prefab
-  _projectileClass: Bowhead.Actors.Projectile, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+  _projectileClass: Bowhead.Actors.Projectile, Game, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   lifetime: 1
   damage: 5

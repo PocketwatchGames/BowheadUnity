@@ -63,8 +63,7 @@ MonoBehaviour:
   swimMaxSpeed: 10
   swimDragVertical: 5
   swimDragHorizontal: 0.25
-  _critterClass: Bowhead.Actors.Critter, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
+  _critterClass: Bowhead.Actors.Critter, Game, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   prefab:
     _assetPath: Actors/Critters/Cobra
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Critters/Cobra.prefab

@@ -158,17 +158,6 @@ namespace Bowhead {
 			}
 		}
 
-		public static Assembly[] GetModuleAssemblies() {
-			if (_moduleAssemblies == null) {
-				//#if RELEASE
-				//				_moduleAssemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-				//#else
-				_moduleAssemblies = new[] { Assembly.GetExecutingAssembly(), Assembly.Load("Engine") };
-				//#endif
-			}
-			return _moduleAssemblies;
-		}
-
 		void Awake() {
 
 			if (_instance != null) {
@@ -188,7 +177,7 @@ namespace Bowhead {
 			MainThreadTaskQueue.maxFrameTimeMicroseconds = int.MaxValue;
 
 #if LEAK_TRACKER
-			_leakTracker = new LeakTracker(GetModuleAssemblies());
+			_leakTracker = new LeakTracker(Utils.GetModuleAssemblies());
 #endif
 
 			matchTime = DEFAULT_MATCH_TIME;
@@ -410,7 +399,7 @@ namespace Bowhead {
 			StartCoroutine(CORunSteamWebCommands());
 #endif
 
-			cvarMethods = Console.GetCFuncs(GetModuleAssemblies());
+			cvarMethods = Console.GetCFuncs(Utils.GetModuleAssemblies());
 
 			Application.logMessageReceived += LogCallback;
 
@@ -1216,7 +1205,7 @@ namespace Bowhead {
 			serverName = onlineLocalPlayer.name + "'s Server";
 #endif
 
-			var asms = GetModuleAssemblies();
+			var asms = Utils.GetModuleAssemblies();
 			_netDriver = (INetDriver)System.Activator.CreateInstance(netDriverType);
 
 			_server = new Bowhead.Server.ServerWorld(this, dedicatedServer ? staticData.serverTerrainChunkComponent : clientData.clientTerrainChunkComponent, _serverObjectGroup.transform, serverName, null, asms, _netDriver);
@@ -1269,7 +1258,7 @@ namespace Bowhead {
 				port = int.Parse(parts[1]);
 			}
 
-			var asms = GetModuleAssemblies();
+			var asms = Utils.GetModuleAssemblies();
 			_netDriver = (INetDriver)Activator.CreateInstance(netDriverType);
 
 			_client = new Client.ClientWorld(this, null, clientData.clientTerrainChunkComponent, _clientObjectGroup.transform, asms, _netDriver);
@@ -1307,7 +1296,7 @@ namespace Bowhead {
 				LoadClientSettings();
 			}
 
-			var asms = GetModuleAssemblies();
+			var asms = Utils.GetModuleAssemblies();
 
 			if ((PIENumPlayers > 1) || PIEServerOnly) {
 				_netDriver = new SocketNetDriver();

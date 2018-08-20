@@ -66,6 +66,7 @@ public partial class World {
 #if UNITY_EDITOR
 		const int MAX_STREAMING_CHUNKS = 4;
 		static bool _debugDraw;
+		static bool _debugVoxels;
 		static bool _loadedPrefs;
 
 		[MenuItem("Bowhead/Options/Debug Chunk Display")]
@@ -75,19 +76,27 @@ public partial class World {
 
 		static bool debugDraw {
 			get {
-				if (!_loadedPrefs) {
-					_loadedPrefs = true;
-					_debugDraw = EditorPrefs.GetBool("Bowhead_DebugChunkDisplay", false);
-					Menu.SetChecked("Bowhead/Options/Debug Chunk Display", _debugDraw);
-				}
+				LoadPrefs();
 				return _debugDraw;
 			}
 			set {
 				_debugDraw = value;
-				_loadedPrefs = true;
-				EditorPrefs.SetBool("Bowhead_DebugChunkDisplay", value);
-				Menu.SetChecked("Bowhead/Options/Debug Chunk Display", value);
+				SavePrefs();
 			}
+		}
+		
+		static void LoadPrefs() {
+			if (!_loadedPrefs) {
+				_loadedPrefs = true;
+				_debugDraw = EditorPrefs.GetBool("Bowhead_DebugChunkDisplay", false);
+				Menu.SetChecked("Bowhead/Options/Debug Chunk Display", _debugDraw);
+			}
+		}
+
+		static void SavePrefs() {
+			_loadedPrefs = true;
+			EditorPrefs.SetBool("Bowhead_DebugChunkDisplay", _debugDraw);
+			Menu.SetChecked("Bowhead/Options/Debug Chunk Display", _debugDraw);
 		}
 #else
 		const int MAX_STREAMING_CHUNKS = 16;
@@ -303,6 +312,9 @@ public partial class World {
 			while (_usedJobData != null) {
 				var job = _usedJobData;
 				job.jobHandle.Complete();
+#if DEBUG_VOXEL_MESH
+				job.jobHandleDebug.Complete();
+#endif
 				CompleteJob(job, true);
 				_usedJobData = job.next;
 				job.next = _freeJobData;
@@ -511,7 +523,7 @@ public partial class World {
 
 			chunk.jobData.jobData.voxelStorage.Pin();
 
-			var dependancies = new NativeArray<JobHandle>(_neighbors.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
+			var dependencies = new NativeArray<JobHandle>(_neighbors.Length, Allocator.Temp, NativeArrayOptions.UninitializedMemory);
 
 			for (int i = 0; i < _neighbors.Length; ++i) {
 				var neighbor = _neighbors[i];
@@ -521,17 +533,22 @@ public partial class World {
 					AddRef(neighbor);
 					neighbor.chunkData.Pin();
 					chunk.jobData.jobData.neighbors[i] = ChunkMeshGen.NewPinnedChunkData_t(neighbor.chunkData);
-					dependancies[i] = neighbor.jobData != null ? neighbor.jobData.jobHandle : default(JobHandle);
+					dependencies[i] = neighbor.jobData != null ? neighbor.jobData.jobHandle : default(JobHandle);
 				} else {
 					chunk.jobData.jobData.neighbors[i] = default(PinnedChunkData_t);
-					dependancies[i] = default(JobHandle);
+					dependencies[i] = default(JobHandle);
 				}
 			}
 
+			var depJobs = JobHandle.CombineDependencies(dependencies);
+
 			unsafe {
-				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, chunk.chunkData.pinnedTimingData, _blockMaterialIndices, JobHandle.CombineDependencies(dependancies));
+				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, chunk.chunkData.pinnedTimingData, _blockMaterialIndices, depJobs);
+#if DEBUG_VOXEL_MESH
+				chunk.jobData.jobHandleDebug = ChunkMeshGen.ScheduleGenTrisDebugJob(ref chunk.jobData.jobData, _blockMaterialIndices, depJobs);
+#endif
 			}
-			dependancies.Dispose();
+			dependencies.Dispose();
 
 #if DEBUG_DRAW
 			chunk.dbgDraw.state = EDebugDrawState.GENERATING_TRIS;
@@ -552,9 +569,15 @@ public partial class World {
 				next = job.next;
 
 				var jobComplete = job.jobHandle.IsCompleted;
-				
+#if DEBUG_VOXEL_MESH
+				jobComplete = jobComplete && job.jobHandleDebug.IsCompleted;
+#endif
+
 				if (jobComplete) {
 					job.jobHandle.Complete();
+#if DEBUG_VOXEL_MESH
+					job.jobHandleDebug.Complete();
+#endif
 
 					if ((job.mmappedChunkData == null) && ((job.flags&EJobFlags.TRIS) == EJobFlags.TRIS)) {
 						_chunkWrite?.Invoke(job.chunk);
@@ -689,6 +712,9 @@ public partial class World {
 
 			job.chunk = null;
 			job.jobHandle = default(JobHandle);
+#if DEBUG_VOXEL_MESH
+			job.jobHandleDebug = default(JobHandle);
+#endif
 			job.subJobHandle = default(JobHandle);
 
 			if (!flush && (chunk.refCount > 0)) {
@@ -1156,6 +1182,9 @@ public partial class World {
 			public ChunkMeshGen.CompiledChunkData jobData = ChunkMeshGen.CompiledChunkData.New();
 			public EJobFlags flags;
 			public JobHandle jobHandle;
+#if DEBUG_VOXEL_MESH
+			public JobHandle jobHandleDebug;
+#endif
 			public JobHandle subJobHandle;
 			public IMMappedChunkData mmappedChunkData;
 			public bool hasSubJob;

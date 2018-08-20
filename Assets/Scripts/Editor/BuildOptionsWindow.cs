@@ -14,6 +14,7 @@ public class BuildOptionsWindow : EditorWindow {
 		AddFlag("Shipping Build", "Remove code not meant for public consumption", "SHIP", false);
 		AddFlag("Enable Profiling", "Enable Profiling", "PROFILING", false);
 		AddFlag("Steam Integration", "Use Steam API", "STEAM_API", false);
+		AddFlag("Voxel Debug Mesh", "Generates debug voxel mesh", "DEBUG_VOXEL_MESH", false);
 	}
 
 	static BuildOptionsWindow() {

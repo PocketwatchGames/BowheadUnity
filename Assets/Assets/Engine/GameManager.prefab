@@ -254,7 +254,7 @@ MonoBehaviour:
   hudOverlays: {fileID: 0}
   staticData: {fileID: 11400000, guid: b01fed52530dac7489d593f386fcc5ea, type: 2}
   _tooltipCanvas: {fileID: 0}
-  PIEGameMode: Bowhead.Server.BowheadGame, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+  PIEGameMode: Bowhead.Server.BowheadGame, Game, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   PIENumPlayers: 0
   PIEMatchTime: 300

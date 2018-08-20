@@ -16,8 +16,8 @@ MonoBehaviour:
   prefab:
     _assetPath: WorldItems/Map
     _editorPath: Assets/Assets/Prefabs/Resources/WorldItems/Map.prefab
-  _itemClass: Bowhead.Actors.WorldItemMapReveal, Assembly-CSharp, Version=0.0.0.0,
-    Culture=neutral, PublicKeyToken=null
+  _itemClass: Bowhead.Actors.WorldItemMapReveal, Game, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
   mapMarker:
     _assetPath: 
     _editorPath: 

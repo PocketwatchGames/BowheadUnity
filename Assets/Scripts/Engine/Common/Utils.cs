@@ -1176,6 +1176,34 @@ public static class Utils {
 		}
 	}
 
+	static System.Threading.Mutex _getTypeMutex = new System.Threading.Mutex();
+	static Assembly[] _getTypeAsms;
+	
+	public static System.Type GetType(string name) {
+		var t = System.Type.GetType(name);
+		if (t == null) {
+			var asms = GetModuleAssemblies();
+			foreach (var asm in asms) {
+				t = asm.GetType(name);
+				if (t != null) {
+					return t;
+				}
+			}
+		}
+		return t;
+	}
+
+	public static Assembly[] GetModuleAssemblies() {
+		if (_getTypeAsms == null) {
+			_getTypeMutex.WaitOne();
+			if (_getTypeAsms == null) {
+				_getTypeAsms = new[] { Assembly.Load("Engine"), Assembly.Load("Game") };
+			}
+			_getTypeMutex.ReleaseMutex();
+		}
+		return _getTypeAsms;
+	}
+
 #if UNITY_EDITOR
 	public static string[] tagNames {
 		get {

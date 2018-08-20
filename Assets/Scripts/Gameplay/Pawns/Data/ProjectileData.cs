@@ -24,7 +24,10 @@ namespace Bowhead.Actors {
 			if (string.IsNullOrEmpty(_projectileClass)) {
 				projectileClass = null;
 			} else {
-				projectileClass = Type.GetType(_projectileClass);
+				projectileClass = Utils.GetType(_projectileClass);
+				if (projectileClass == null) {
+					throw new Exception("Unable to find type for " + _projectileClass);
+				}
 			}
 		}
 

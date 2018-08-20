@@ -63,8 +63,7 @@ MonoBehaviour:
   swimMaxSpeed: 6
   swimDragVertical: 2
   swimDragHorizontal: 0.25
-  _playerClass: Bowhead.Actors.Player, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
-    PublicKeyToken=null
+  _playerClass: Bowhead.Actors.Player, Game, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   prefab:
     _assetPath: Actors/Player
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Player.prefab

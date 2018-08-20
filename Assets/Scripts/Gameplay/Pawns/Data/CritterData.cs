@@ -44,7 +44,10 @@ namespace Bowhead.Actors {
 			if (string.IsNullOrEmpty(_critterClass)) {
 				critterClass = null;
 			} else {
-				critterClass = Type.GetType(_critterClass);
+				critterClass = Utils.GetType(_critterClass);
+				if (critterClass == null) {
+					throw new Exception("Unable to find type for " + _critterClass);
+				}
 			}
 
 			_silhouetteDistanceSq = silhouetteDistanceThreshold*silhouetteDistanceThreshold;

@@ -22,7 +22,10 @@ namespace Bowhead.Actors {
 			if (string.IsNullOrEmpty(_itemClass)) {
 				itemClass = null;
 			} else {
-				itemClass = Type.GetType(_itemClass);
+				itemClass = Utils.GetType(_itemClass);
+				if (itemClass == null) {
+					throw new Exception("Unable to find type for " + _itemClass);
+				}
 			}
 		}
 
