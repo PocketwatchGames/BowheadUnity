@@ -1,0 +1,13 @@
+{
+    "name": "Game",
+    "references": [
+        "Engine",
+        "ThirdParty",
+        "ThirdParty_HighlightingSystem",
+        "Unity.TextMeshPro"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true
+}

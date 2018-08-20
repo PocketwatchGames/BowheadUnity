@@ -1,0 +1,18 @@
+{
+    "name": "GameEditor",
+    "references": [
+        "Game",
+        "Engine",
+        "EngineEditor",
+        "ThirdParty",
+        "ThirdParty_EDEEditor",
+        "ThirdParty_HighlightingSystem",
+        "ThirdParty_UBEREditor"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false
+}
