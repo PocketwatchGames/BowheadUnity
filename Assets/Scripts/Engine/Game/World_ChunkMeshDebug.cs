@@ -4,12 +4,8 @@
 //#define NO_SMOOTHING
 
 using System;
-using System.Runtime.InteropServices;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
-using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using static UnityEngine.Debug;
 
@@ -293,81 +289,11 @@ public partial class World {
 				};
 			}
 
-			/*
-			=======================================
-			AddVoxel
-
-			A normal voxel has 0-6 visible outward faces. Faces are visible if the neighboring block is an air block. Any visible faces is
-			a candidate for collapsing along the two orthogonal facing directions. Since it's ambiguous which axis to collapse, they are ordered
-			by priority: Z,Y,X. The direction along the collapse axis is also ambiguous so we decide to collapse from (+) -> (-) first. Because
-			a face may have vertices that collapse in both directions we only collapse from (-) -> (+) if the opposite vertex doesn't also collapse
-			(otherwise this would cause a crossing fold).
-
-			Takes each visible face and mark all vertices on the faces as collapsable along the two orthogonal axes of the face if the face on the orthogonal 
-			axis opposite the collapse direction is visible.
-			=======================================
-			*/
-
 			void AddVoxel(int x, int y, int z, Voxel_t voxel) {
 				var blendVoxel = _voxels[_numVoxels++];
-
 				ZeroInts(blendVoxel->vertexFlags, 8);
-				ZeroInts(blendVoxel->neighbors, 6);
-				
+				ZeroInts(blendVoxel->neighbors, 6);				
 				blendVoxel->touched = true;
-
-				if ((voxel.flags & EVoxelBlockFlags.FullVoxel) != 0) {
-					return;
-				}
-
-				var faceCounts = stackalloc int[8];
-				ZeroInts(faceCounts, 8);
-
-				var contents = _tables.blockContents[(int)voxel.type];
-
-				for (int i = 0; i < 6; ++i) {
-					if (_vnc[i] == EVoxelBlockContents.None) {
-						foreach (var vi in _tables.voxelFaces[i]) {
-							++faceCounts[vi];
-						}
-					}
-				}
-
-				for (int i = 0; i < 6; ++i) {
-					if ((_vnc[i] == EVoxelBlockContents.None) && (_vnc[i ^ 1] >= contents)) { // we can only collapse faces whose opposite face is hidden.
-
-						int numOver2 = 0;
-
-						foreach (var vi in _tables.voxelFaces[i]) {
-							if (faceCounts[vi] > 2) {
-								++numOver2;
-							}
-						}
-
-						if (numOver2 < 4) {
-							// don't collapse a face that is exposed by air on all sides.
-
-							// this face can potentially be collapsed, assuming it won't expose
-							// a non-visible face on the voxel.
-							// NOTE: the collapse may expose a non-visible face on a neighboring voxel
-							// but that case is handled by the voxel emitting the faces.
-
-							int axis = i / 2;
-							var spanning = _tables.spanningAxis[axis];
-
-							foreach (var vi in _tables.voxelFaces[i]) {
-								foreach (var spaxis in spanning) {
-									var signbit = 1 << spaxis;
-									var side = (vi & signbit) != 0 ? 1 : 0;
-									// we can collapse in this direction if the face on the vertex-side of the spanning axis is visible.
-									if (_vnc[(spaxis * 2) + (side ^ 1)] == EVoxelBlockContents.None) {
-										blendVoxel->vertexFlags[vi] |= signbit;
-									}
-								}
-							}
-						}
-					}
-				}
 			}
 
 			void GetBlockColor(EVoxelBlockType blocktype, int x, int y, int z, out Color32 color) {
