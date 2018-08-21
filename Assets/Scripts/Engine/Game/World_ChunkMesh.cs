@@ -1471,12 +1471,19 @@ public partial class World {
 			public const int NUM_VOXELS = MAX_VIS_VOXELS;
 
 			public VoxelArray1D voxels;
-
 			BlendedVoxel_t[] _voxels;
 			GCHandle _pinnedVoxels;
 
+#if DEBUG_VOXEL_MESH
+			public VoxelArray1D voxelsDebug;
+			BlendedVoxel_t[] _voxelsDebug;
+			GCHandle _pinnedVoxelsDebug;
+#endif
 			public static VoxelStorage_t New() {
 				return new VoxelStorage_t {
+#if DEBUG_VOXEL_MESH
+					_voxelsDebug = new BlendedVoxel_t[NUM_VOXELS],
+#endif
 					_voxels = new BlendedVoxel_t[NUM_VOXELS]
 				};
 			}
@@ -1487,12 +1494,23 @@ public partial class World {
 				unsafe {
 					voxels = VoxelArray1D.New((BlendedVoxel_t*)_pinnedVoxels.AddrOfPinnedObject().ToPointer(), _voxels.Length);
 				}
+#if DEBUG_VOXEL_MESH
+				_pinnedVoxelsDebug = GCHandle.Alloc(_voxelsDebug, GCHandleType.Pinned);
+				unsafe {
+					voxelsDebug = VoxelArray1D.New((BlendedVoxel_t*)_pinnedVoxelsDebug.AddrOfPinnedObject().ToPointer(), _voxels.Length);
+				}
+#endif
 			}
 
 			public void Unpin() {
 				Assert(_pinnedVoxels.IsAllocated);
 				voxels = new VoxelArray1D();
 				_pinnedVoxels.Free();
+
+#if DEBUG_VOXEL_MESH
+				voxelsDebug = new VoxelArray1D();
+				_pinnedVoxelsDebug.Free();
+#endif
 			}
 		};
 

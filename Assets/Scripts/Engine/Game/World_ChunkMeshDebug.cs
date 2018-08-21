@@ -319,15 +319,19 @@ public partial class World {
 				}
 			}
 
-			void EmitVoxelFaces(int index, int x, int y, int z, EVoxelBlockType blocktype, bool isBorderVoxel) {
-				var voxel = _voxels[index];
-				var contents = _tables.blockContents[(int)blocktype];
+			void EmitVoxelFaces(int index, int x, int y, int z, Voxel_t voxel, bool isBorderVoxel) {
+				var contents = _tables.blockContents[(int)voxel.type];
+
+				Color32 color;
+
+				if ((voxel.flags & EVoxelBlockFlags.FullVoxel) != 0) {
+					color = Color.red;
+				} else {
+					GetBlockColor(voxel.type, x, y, z, out color);
+				}
 
 				for (int i = 0; i < 6; ++i) {
 					if (_vnc[i] < contents) {
-						Color32 color;
-
-						GetBlockColor(blocktype, x, y, z, out color);
 
 						var v0 = _tables.voxelFaces[i][0];
 
@@ -602,7 +606,7 @@ public partial class World {
 
 #if DEBUG_VOXEL_MESH
 		public unsafe static JobHandle ScheduleGenTrisDebugJob(ref CompiledChunkData jobData, NativeArray<int> blockMaterials, JobHandle dependsOn = default(JobHandle)) {
-			var genChunkVerts = GenerateChunkVertsDebug_t.New(jobData.smoothVertsDebug, jobData.voxelStorage.voxels, jobData.neighbors, tableStorage, blockMaterials).Schedule(dependsOn);
+			var genChunkVerts = GenerateChunkVertsDebug_t.New(jobData.smoothVertsDebug, jobData.voxelStorage.voxelsDebug, jobData.neighbors, tableStorage, blockMaterials).Schedule(dependsOn);
 			return GenerateFinalVerticesDebug_t.New(SmoothingVertsInDebug_t.New(jobData.smoothVertsDebug), jobData.outputVertsDebug).Schedule(genChunkVerts);
 		}
 #endif

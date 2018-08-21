@@ -643,8 +643,9 @@ public abstract class Actor : ActorRPCObject {
 	}
 
 	public void SetLifetime(float time) {
-		_lifetime = time;
-		_pendingKill = false;
+		if (!_pendingKill) {
+			_lifetime = time;
+		}
 	}
 
 	protected virtual void OnDestroy() {}

@@ -23,7 +23,7 @@ public class CritterDecal : MonoBehaviour {
 	// Update is called once per frame
 	void LateUpdate () {
 
-		if (_target == null || !_target.alive) {
+		if (_target == null || !_target.alive || _target.pendingKill || _target.disposed) {
 			GameObject.Destroy(gameObject);
 			Bowhead.GameManager.instance.clientWorld.DamageEvent -= OnDamage;
 		} else { 
