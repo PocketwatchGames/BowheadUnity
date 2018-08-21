@@ -16,14 +16,14 @@ MonoBehaviour:
   displayName: Heal
   description: Healing spell
   monetaryValue: 10
-  canUse: 1
   canDrop: 1
   prefab:
-    _assetPath: 
-    _editorPath: 
+    _assetPath: Items/Fist
+    _editorPath: Assets/Assets/Prefabs/Resources/Items/Fist.prefab
   hand: 0
   staminaRechargeTime: 1
   staminaRechargePause: 0
+  staminaUseDuringCharge: 0
   moveSpeedChargeDelay: 0
   traits: []
   attacks:
@@ -42,51 +42,66 @@ MonoBehaviour:
     canMoveDuringCooldown: 1
     canMoveDuringCast: 1
     canMoveDuringActive: 1
-    unblockable: 0
     interruptOnHit: 0
     canBackstab: 0
+    canTarget: 0
     attackResultDirectHit:
       knockback: 0
+      knockbackTime: 0
       damage: 0
       stun: 0
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
     attackResultGlancingBlow:
       knockback: 0
+      knockbackTime: 0
       damage: 0
       stun: 0
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
     attackResultBackstab:
       knockback: 0
+      knockbackTime: 0
       damage: 0
       stun: 0
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
-  spell: 1
-  spellPower: 50
-  statusEffect: {fileID: 11400000, guid: dac19424df206fa479e52cdbbd028d09, type: 2}
-  statusEffectTime: 2
-  canTarget: 0
-  projectile: {fileID: 0}
-  projectileSpeed: 0
-  autoAimYaw: 0
-  autoAimPitch: 0
+    projectile:
+      speed: 0
+      lifetime: 0
+      damage: 0
+      stun: 0
+      heatSeeking: 0
+      autoAimYaw: 0
+      autoAimPitch: 0
+      damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
+      prefab:
+        _assetPath: 
+        _editorPath: 
+    statusEffect: {fileID: 11400000, guid: dac19424df206fa479e52cdbbd028d09, type: 2}
+    statusEffectTime: 0
   blockAngleRange: 0
   blockResultDirectHit:
     knockback: 0
+    knockbackTime: 0
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0
@@ -96,9 +111,11 @@ MonoBehaviour:
     staminaUse: 0
   blockResultGlancingBlow:
     knockback: 0
+    knockbackTime: 0
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0

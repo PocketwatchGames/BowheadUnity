@@ -10,14 +10,23 @@ namespace Bowhead {
             LEFT,
             RIGHT,
             BOTH,
-			ARMOR
         }
 
-		public enum Spell {
-			None,
-			StatusEffect,
-		}
+		[System.Serializable]
+		public class ProjectileData {
+			public float speed;
+			public float lifetime;
+			public float damage;
+			public float stun;
+			public bool heatSeeking;
+			public bool autoAimYaw;
+			public bool autoAimPitch;
+			public Actors.PawnData.DamageType damageType;
+			public StatusEffectData statusEffect;
+			public float statusEffectTime;
+			public GameObject_WRef prefab;
 
+		}
 
 		[System.Serializable]
 		public class AttackResult {
@@ -26,6 +35,7 @@ namespace Bowhead {
 			public float damage;
 			public float stun;
 			public bool interrupt;
+			public bool unblockable;
 			public Actors.PawnData.DamageType damageType;
 			public StatusEffectData statusEffect;
 			public float statusEffectTime;
@@ -57,12 +67,17 @@ namespace Bowhead {
 			public bool canMoveDuringCooldown;
 			public bool canMoveDuringCast;
 			public bool canMoveDuringActive;
-			public bool unblockable;
 			public bool interruptOnHit;
 			public bool canBackstab;
+			public bool canTarget;
+
+			[Header("AttackResults")]
 			public AttackResult attackResultDirectHit;
 			public AttackResult attackResultGlancingBlow;
 			public AttackResult attackResultBackstab;
+			public List<ProjectileData> projectiles = new List<ProjectileData>();
+			public StatusEffectData statusEffect;
+			public float statusEffectTime;
 
 		}
 
@@ -75,17 +90,6 @@ namespace Bowhead {
 		public List<TraitData> traits = new List<TraitData>();
 
 		public AttackData[] attacks;
-
-		[Header("Spells")]
-		public Spell spell;
-		public float spellPower;
-		public StatusEffectData statusEffect;
-		public float statusEffectTime;
-		public bool canTarget;
-		public Actors.ProjectileData projectile;
-		public float projectileSpeed;
-		public bool autoAimYaw;
-		public bool autoAimPitch;
 
 		[Header("Defend")]
 		public float blockAngleRange;

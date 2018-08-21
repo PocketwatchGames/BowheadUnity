@@ -6,10 +6,11 @@ using System;
 namespace Bowhead.Actors {
 
 
-	public class Projectile : Interactable<Projectile, ProjectileData> {
+	public class Projectile : Actor {
 
 		#region State
 
+		public WeaponData.ProjectileData data;
 		public Team team;
 		public Vector3 velocity;
 		public Actor owner;
@@ -22,8 +23,8 @@ namespace Bowhead.Actors {
 
 		public Vector3 position { get { return go.transform.position; } set { go.transform.position = value; } }
 
-		public void Spawn(EntityData data, Vector3 pos, Vector3 velocity, Pawn target, Actor instigator, Actor owner, Team team) {
-			base.ConstructEntity(data);
+		public void Spawn(WeaponData.ProjectileData data, Vector3 pos, Vector3 velocity, Pawn target, Actor instigator, Actor owner, Team team) {
+			this.data = data;
 			AttachExternalGameObject(GameObject.Instantiate(this.data.prefab.Load(), pos, Quaternion.identity, null));
 			this.team = team;
 			SetLifetime(this.data.lifetime);
@@ -34,6 +35,10 @@ namespace Bowhead.Actors {
 
 		public override void Tick() {
 			base.Tick();
+
+			if (pendingKill) {
+				return;
+			}
 
 			if (!hasAuthority) {
 				return;

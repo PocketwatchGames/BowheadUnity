@@ -36,7 +36,7 @@ namespace Bowhead.Actors {
 		#endregion
 
 		public enum InventorySlot {
-            CLOTHING = 0,
+            ARMOR = 0,
             LEFT_HAND = 1,
             RIGHT_HAND = 2,
 			LEFT_HAND_ALT = 3,
@@ -576,34 +576,46 @@ namespace Bowhead.Actors {
                 return true;
             }
 
-            Weapon weapon;
-            if ((weapon = item as Weapon) != null) {
+			Armor armor;
+			if ((armor = item as Armor) != null) {
+
+				int slot = -1;
+				slot = (int)InventorySlot.ARMOR;
+				if (slot >= 0) {
+					var i = GetInventorySlot(slot);
+					if (i == null) {
+						SetInventorySlot(slot, item);
+						return true;
+					}
+				}
+			}
+
+			Weapon weapon;
+			if ((weapon = item as Weapon) != null) {
 
 				var curLeft = GetInventorySlot((int)InventorySlot.LEFT_HAND);
 				var curRight = GetInventorySlot((int)InventorySlot.RIGHT_HAND);
 
 				if (weapon.data.hand == WeaponData.Hand.BOTH && (curLeft == null || curLeft == unarmedWeaponLeft) && (curRight == null || curRight == unarmedWeaponRight)) {
-                    SetInventorySlot((int)InventorySlot.RIGHT_HAND, item);
-                    return true;
-                }
+					SetInventorySlot((int)InventorySlot.RIGHT_HAND, item);
+					return true;
+				}
 				int slot = -1;
 				if (weapon.data.hand == WeaponData.Hand.LEFT) {
 					slot = (int)InventorySlot.LEFT_HAND;
-				}
-				else if (weapon.data.hand == WeaponData.Hand.RIGHT) {
+				} else if (weapon.data.hand == WeaponData.Hand.RIGHT) {
 					slot = (int)InventorySlot.RIGHT_HAND;
 				}
-				else if (weapon.data.hand == WeaponData.Hand.ARMOR) {
-					slot = (int)InventorySlot.CLOTHING;
+				if (slot >= 0) {
+					var i = GetInventorySlot(slot);
+					if (i == null || i == unarmedWeaponRight || i == unarmedWeaponLeft) {
+						SetInventorySlot(slot, item);
+						return true;
+					}
 				}
-				var i = GetInventorySlot(slot);
-				if (slot >= 0 && (i == null || i == unarmedWeaponRight || i == unarmedWeaponLeft)) {
-                    SetInventorySlot(slot, item);
-                    return true;
-                }
-            }
+			}
 
-            Loot loot;
+			Loot loot;
             if ((loot = item as Loot) != null) {
                 if (loot.data.stackSize > 0) {
                     for (int i = 0; i < MaxInventorySize; i++) {
@@ -681,7 +693,7 @@ namespace Bowhead.Actors {
             for (int i = 0; i < MaxInventorySize; i++) {
                 if (GetInventorySlot(i) == item) {
                     // unequip
-                    if (i == (int)InventorySlot.CLOTHING || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND) {
+                    if (i == (int)InventorySlot.ARMOR || i == (int)InventorySlot.LEFT_HAND || i == (int)InventorySlot.RIGHT_HAND) {
                         if (FindEmptyPackSlots(1, ref emptyPackSlots)) {
                             SetInventorySlot(emptyPackSlots[0], GetInventorySlot(i));
                             return true;
@@ -698,24 +710,26 @@ namespace Bowhead.Actors {
 
 			//////////////////
 			// EQUIP
-            Weapon weapon;
-            if ((weapon = item as Weapon) != null) {
+			Armor armor;
+			if ((armor = item as Armor) != null) {
 
 				// clothing
-				if (weapon.data.hand == WeaponData.Hand.ARMOR) {
-					if (GetInventorySlot((int)InventorySlot.CLOTHING) == null) {
-						SetInventorySlot((int)InventorySlot.CLOTHING, item);
+				if (GetInventorySlot((int)InventorySlot.ARMOR) == null) {
+					SetInventorySlot((int)InventorySlot.ARMOR, item);
+					return true;
+				} else {
+					if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
+						SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.ARMOR));
+						SetInventorySlot((int)InventorySlot.ARMOR, item);
 						return true;
 					}
-					else {
-						if (inInventory || FindEmptyPackSlots(1, ref emptyPackSlots)) {
-							SetInventorySlot(emptyPackSlots[0], GetInventorySlot((int)InventorySlot.CLOTHING));
-							SetInventorySlot((int)InventorySlot.CLOTHING, item);
-							return true;
-						}
-					}
-					return false;
 				}
+				return false;
+			}
+
+
+			Weapon weapon;
+            if ((weapon = item as Weapon) != null) {
 
 				// when equipping a two handed weapon, we need to make sure we have pack space to be able to unequip left and right handed weapons
 				if (weapon.data.hand == WeaponData.Hand.BOTH) {
@@ -814,7 +828,7 @@ namespace Bowhead.Actors {
                 }
             }
 
-            if (slot == (int)InventorySlot.CLOTHING) {
+            if (slot == (int)InventorySlot.ARMOR) {
                 SetInventorySlot(slot, null);
             }
             else if (slot == (int)InventorySlot.LEFT_HAND) {

@@ -5,7 +5,7 @@ using System;
 
 namespace Bowhead.Actors {
 	
-    public class Critter : Pawn<Critter, CritterData> {
+    public partial class Critter : Pawn<Critter, CritterData> {
 
 		public override System.Type serverType => typeof(Critter);
 		public override System.Type clientType => typeof(Critter);
@@ -22,8 +22,8 @@ namespace Bowhead.Actors {
         public Vector3 lastKnownPosition;
 
         public Item[] loot = new Item[MaxInventorySize];
-		public CritterBehavior behaviorPanic;
-		public CritterBehavior behaviorIdle;
+		public CritterBehavior curBehavior;
+		public List<CritterBehavior> behaviors = new List<CritterBehavior>();
 
 		#endregion
 
@@ -34,8 +34,9 @@ namespace Bowhead.Actors {
 
 		public override void Spawn(EntityData d, int index, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
 			base.Spawn(d, index, pos, yaw, instigator, owner, team);
-			behaviorIdle = CritterBehavior.Create(data.idleBehavior, this);
-			behaviorPanic = CritterBehavior.Create(data.panicBehavior, this);
+			foreach (var b in data.behaviors) {
+				behaviors.Add(CritterBehavior.Create(b, this));
+			}
 			_defaultSilhouetteMode = SilhouetteRenderer.Mode.Off;
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
             position = pos;
@@ -293,41 +294,41 @@ namespace Bowhead.Actors {
 		private Input_t GetInputFromAI(float dt) {
 
             Input_t input = new Input_t();
+			input.look = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
 
 			if (team == gameMode.teams[0]) {
 				return input;
 			}
 
-			UpdatePanic(dt);
-			
-            input.look = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw));
-            if (IsPanicked() && behaviorPanic != null) {
-                behaviorPanic.Tick(this, dt, ref input);
-            }
-            else if (behaviorIdle != null) {
-				behaviorIdle.Tick(this, dt, ref input);
-            }
+			UpdateAggro(dt);
 
-            //float yawDiff = constrainAngle(input.yaw - yaw);
-            //float turnSpeed = 4;
-            //float turn = 0;
-            //if (yawDiff > 0)
-            //{
-            //	turn = dt * turnSpeed;
-            //}
-            //else if (yawDiff < 0)
-            //{
-            //	turn = -dt * turnSpeed;
-            //}
-            //input.yaw = constrainAngle(yaw + turn);
+			// Evaluate behaviors
+			List<CritterBehavior> possibleBehaviors = new List<CritterBehavior>();
+			foreach (var b in behaviors) {
+				var score = b.Evaluate();
+				if (score.score >0) {
+					possibleBehaviors.Add(b);
+				}
+			}
+
+			// Choose a behavior
+			if (possibleBehaviors.Count > 0) {
+				curBehavior = possibleBehaviors[0];
+			}
+
+			// Execute the behavior
+			if (curBehavior != null) {
+				curBehavior.Tick(dt, ref input);
+			}
+
             return input;
         }
 
-		protected virtual void UpdatePanic(float dt) {
-			UpdatePanic<Player>(dt);
+		protected virtual void UpdateAggro(float dt) {
+			UpdateAggro<Player>(dt);
 		}
 
-		protected void UpdatePanic<T>(float dt) where T: Pawn {
+		protected void UpdateAggro<T>(float dt) where T: Pawn {
 			foreach (var p in world.GetActorIterator<T>()) {
 
 				if (p.team == team) {
