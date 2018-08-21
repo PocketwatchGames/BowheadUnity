@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using System;
 using Unity.Jobs;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace Bowhead.Client {
 	public partial class ClientWorld : global::Client.ClientWorld {
 
@@ -12,6 +16,16 @@ namespace Bowhead.Client {
 			BloodAndExplosions,
             General
 		}
+
+#if UNITY_EDITOR
+		[MenuItem("Bowhead/Options/HQ Terrain")]
+		static void ToggleShaderQuality() {
+			Streaming.debugHQShaderLevel = (Streaming.debugHQShaderLevel == Streaming.EShaderQualityLevel.HIGH) ? Streaming.EShaderQualityLevel.DEFAULT : Streaming.EShaderQualityLevel.HIGH;
+			if ((GameManager.instance != null) && (GameManager.instance.clientWorld != null)) {
+				GameManager.instance.clientWorld.worldStreaming.shaderQualityLevel = Streaming.debugHQShaderLevel;
+			}
+		}
+#endif
 
 		static readonly int NUM_DECAL_GROUPS = Enum.GetNames(typeof(EDecalGroup)).Length;
 
@@ -27,12 +41,15 @@ namespace Bowhead.Client {
 
         public ClientWorld(
 			IGameInstance gameInstance,
-			Streaming serverStreaming,
+			Streaming sharedStreaming,
 			WorldChunkComponent chunkComponent,
 			Transform sceneGroup,
 			System.Reflection.Assembly[] assemblies,
 			INetDriver driver
-		) : base(gameInstance, serverStreaming, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
+		) : base(gameInstance, sharedStreaming, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
+#if UNITY_EDITOR
+			worldStreaming.shaderQualityLevel = Streaming.debugHQShaderLevel;
+#endif
 		}
 
 		public Decal NewDecal(float lifetime, Decal.UpdateDecalDelegate update, Vector3 position, Vector3 scale, Quaternion rotation, Material material, bool visible) {

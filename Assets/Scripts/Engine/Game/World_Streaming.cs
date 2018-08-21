@@ -14,6 +14,10 @@ using Unity.Collections.LowLevel.Unsafe;
 
 public partial class World {
 	public sealed class Streaming : IDisposable {
+		public enum EShaderQualityLevel {
+			HIGH,
+			DEFAULT
+		};
 
 		public struct CountersTotal_t {
 			public uint completedJobs;
@@ -66,11 +70,15 @@ public partial class World {
 #if UNITY_EDITOR
 		const int MAX_STREAMING_CHUNKS = 4;
 		static bool _debugDraw;
-		static bool _debugVoxels;
+		static bool _debugHQShaderLevel;
 		static bool _loadedPrefs;
 
+		static Streaming() {
+			LoadPrefs();
+		}
+
 		[MenuItem("Bowhead/Options/Debug Chunk Display")]
-		static void MenuToggle() {
+		static void ToggleChunkDisplay() {
 			debugDraw = !debugDraw;
 		}
 
@@ -80,23 +88,43 @@ public partial class World {
 				return _debugDraw;
 			}
 			set {
-				_debugDraw = value;
-				SavePrefs();
+				if (_debugDraw != value) {
+					_debugDraw = value;
+					SavePrefs();
+				}
 			}
 		}
-		
+
+		public static EShaderQualityLevel debugHQShaderLevel {
+			get {
+				LoadPrefs();
+				return _debugHQShaderLevel ? EShaderQualityLevel.HIGH : EShaderQualityLevel.DEFAULT;
+			}
+			set {
+				var hq = value == EShaderQualityLevel.HIGH;
+				if (_debugHQShaderLevel != hq) {
+					_debugHQShaderLevel = hq;
+					SavePrefs();
+				}
+			}
+		}
+
 		static void LoadPrefs() {
 			if (!_loadedPrefs) {
 				_loadedPrefs = true;
 				_debugDraw = EditorPrefs.GetBool("Bowhead_DebugChunkDisplay", false);
+				_debugHQShaderLevel = EditorPrefs.GetBool("Bowhead_DebugHQTerrain", true);
 				Menu.SetChecked("Bowhead/Options/Debug Chunk Display", _debugDraw);
+				Menu.SetChecked("Bowhead/Options/HQ Terrain", _debugHQShaderLevel);
 			}
 		}
 
 		static void SavePrefs() {
 			_loadedPrefs = true;
 			EditorPrefs.SetBool("Bowhead_DebugChunkDisplay", _debugDraw);
+			EditorPrefs.SetBool("Bowhead_DebugHQTerrain", _debugHQShaderLevel);
 			Menu.SetChecked("Bowhead/Options/Debug Chunk Display", _debugDraw);
+			Menu.SetChecked("Bowhead/Options/HQ Terrain", _debugHQShaderLevel);
 		}
 #else
 		const int MAX_STREAMING_CHUNKS = 16;
@@ -133,6 +161,7 @@ public partial class World {
 		WorldAtlas.RenderMaterials_t[] _materials;
 		bool _loading;
 		bool _flush;
+		bool _highQualityShader;
 
 		public static void StaticInit() {
 			ChunkMeshGen.tableStorage = ChunkMeshGen.TableStorage.New();
@@ -209,6 +238,36 @@ public partial class World {
 			SetMaterialTextureArray(ShaderID._AlbedoTextureArray, clientData.albedo.textureArray);
 			SetMaterialTextureArray(ShaderID._NormalsTextureArray, clientData.normals.textureArray);
 			SetMaterialTextureArray(ShaderID._RHOTextureArray, clientData.rho.textureArray);
+			SetShaderQualityLevel();
+		}
+
+		void SetShaderQualityLevel() {
+			if (_materials != null) {
+				if (_highQualityShader) {
+					for (int i = 0; i < MAX_MATERIALS_PER_SUBMESH; ++i) {
+						_materials[i].solid.EnableKeyword("HIGH_QUALITY");
+						_materials[i].water.EnableKeyword("HIGH_QUALITY");
+					}
+				} else {
+					for (int i = 0; i < MAX_MATERIALS_PER_SUBMESH; ++i) {
+						_materials[i].solid.DisableKeyword("HIGH_QUALITY");
+						_materials[i].water.DisableKeyword("HIGH_QUALITY");
+					}
+				}
+			}
+		}
+
+		public EShaderQualityLevel shaderQualityLevel {
+			get {
+				return _highQualityShader ? EShaderQualityLevel.HIGH : EShaderQualityLevel.DEFAULT;
+			}
+			set {
+				var hq = value == EShaderQualityLevel.HIGH;
+				if (hq != _highQualityShader) {
+					_highQualityShader = hq;
+					SetShaderQualityLevel();
+				}
+			}
 		}
 
 		void DisposeClientData() {

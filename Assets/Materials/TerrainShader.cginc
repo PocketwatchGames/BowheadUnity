@@ -216,7 +216,10 @@ void terrainVert(inout appdata_full v, out Input o) {
 
 void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	clip(IN);
+
+#if HIGH_QUALITY
 	IN.worldNormal = WorldNormalVector(IN, float3(0, 0, 1));
+#endif
 
 	half3 worldNormal = normalize(IN.worldNormal);
 	half3 signNormal = worldNormal < 0 ? -1 : 1;
@@ -240,6 +243,7 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	uvs[1].x *= signNormal.y;
 	uvs[2].x *= -signNormal.z;
 	
+#ifdef HIGH_QUALITY
 	fixed4 rhoSamples[TRIP_SAMPLE_COUNT];
 	sampleRHO(uvs, signNormal, rhoSamples);
 	
@@ -258,15 +262,16 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	bumpNormals[2] = half3(worldNormal.xy, absNormal.z + 1);
 		
 	half3 normal = sampleTerrainWorldNormal(uvs, triblend, signNormal, bumpNormals, height);
-	
-	// Albedo comes from a texture tinted by color
-	o.Albedo = albedo * _Color;
-
 	o.Normal = WorldToTangentNormalVector(IN, normal);
 	o.Occlusion = rho.y;
-
+	o.Smoothness = rho.x;// _Glossiness;
+#else
+	fixed4 albedo = sampleTerrainAlbedo(uvs, triblend, signNormal, IN.texBlend);
+#endif
+	// Albedo comes from a texture tinted by color
+	o.Albedo = albedo * _Color;
+		
 	// Metallic and smoothness come from slider variables
 	o.Metallic = 0;// _Metallic;
-	o.Smoothness = rho.x;// _Glossiness;
 	o.Alpha = albedo.a * _Color.a;
 }
