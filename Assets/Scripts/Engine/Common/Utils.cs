@@ -8,11 +8,11 @@ using System.Net.Sockets;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine.Assertions;
+using System.Reflection;
 
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditorInternal;
-using System.Reflection;
 using System.Collections;
 #endif
 
