@@ -22,8 +22,9 @@ MonoBehaviour:
     _assetPath: Items/Sword
     _editorPath: Assets/Assets/Prefabs/Resources/Items/Sword.prefab
   hand: 1
-  staminaRechargeTime: 1
+  staminaRechargeTime: 2
   staminaRechargePause: 1
+  staminaUseDuringCharge: 0.1
   moveSpeedChargeDelay: 0.2
   traits: []
   attacks:

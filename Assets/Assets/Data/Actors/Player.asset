@@ -22,7 +22,7 @@ MonoBehaviour:
   height: 2
   maxHealth: 200
   dodgeTime: 0.25
-  dodgeDistance: 5
+  dodgeDistance: 3
   stunRechargePause: 1
   stunRechargeTime: 3
   stunTime: 2

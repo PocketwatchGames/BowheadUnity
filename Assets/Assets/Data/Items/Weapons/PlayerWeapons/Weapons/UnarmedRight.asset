@@ -24,6 +24,7 @@ MonoBehaviour:
   hand: 1
   staminaRechargeTime: 1
   staminaRechargePause: 1
+  staminaUseDuringCharge: 0.1
   moveSpeedChargeDelay: 0.2
   traits: []
   attacks:

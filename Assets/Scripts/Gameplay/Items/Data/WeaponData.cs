@@ -70,6 +70,7 @@ namespace Bowhead {
         public Hand hand;
 		public float staminaRechargeTime = 1;
 		public float staminaRechargePause;
+		public float staminaUseDuringCharge;
 		public float moveSpeedChargeDelay = 0.2f;
 		public List<TraitData> traits = new List<TraitData>();
 

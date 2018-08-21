@@ -50,7 +50,9 @@ MonoBehaviour:
     type: 2}
   damageHUDPrefab: {fileID: 114778370284363310, guid: b334024714589fc4db1781e269cde89a,
     type: 2}
-  directionPreviewPrefab: {fileID: 114308667210803786, guid: 2828d6d684d38d94dbb034260d667517,
+  playerDecalPrefab: {fileID: 114308667210803786, guid: 2828d6d684d38d94dbb034260d667517,
+    type: 2}
+  critterDecalPrefab: {fileID: 114308667210803786, guid: 9db764181d8c55844a1a2d2c9ecbf0eb,
     type: 2}
   isDualAnalogAiming: 1
   dialogDarkenCanvasPrefab: {fileID: 0}

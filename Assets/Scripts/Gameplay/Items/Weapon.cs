@@ -81,6 +81,11 @@ namespace Bowhead {
 			}
 			attackHand = hand;
 
+			if (data.staminaUseDuringCharge > 0) {
+				staminaRechargeTimer = data.staminaRechargePause;
+				stamina -= data.staminaUseDuringCharge * dt;
+			}
+
 			attackWhenCooldownComplete = false;
 			if (CanCast()) {
 				if (cooldown <= 0) {
@@ -135,20 +140,19 @@ namespace Bowhead {
             }
 
             float critterRadius = 1.0f;
-            var diff = enemy.waistPosition() - attackPos;
-            float dist = diff.magnitude;
+            float dist = (enemy.waistPosition() - attackPos).magnitude;
             if (dist <= data.attacks[attackHand].radius + critterRadius) {
 
 				bool directHit = true;
 				WeaponData.AttackResult attackType;
-				float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(diff.x, diff.z)*Mathf.Rad2Deg, enemy.yaw * Mathf.Rad2Deg));
+				Vector2 diffXZ = new Vector2(enemy.position.x - owner.position.x, enemy.position.z - owner.position.z);
+				float angleToEnemysBack = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(diffXZ.x, diffXZ.y)*Mathf.Rad2Deg, enemy.yaw * Mathf.Rad2Deg));
 				if (data.attacks[attackHand].canBackstab && angleToEnemysBack < enemy.data.backStabAngle) {
 					attackType = data.attacks[attackHand].attackResultBackstab;
 				}
 				else {
 
-					Vector2 diffXZ = new Vector2(enemy.position.x - owner.position.x, enemy.position.z - owner.position.z);
-					Vector2 attackDirXZ = new Vector2(attackPos.x-owner.position.x, attackerPos.z-owner.position.z);
+					Vector2 attackDirXZ = new Vector2(attackPos.x-owner.position.x, attackPos.z-owner.position.z);
 					float angleDelta = Mathf.DeltaAngle(Mathf.Rad2Deg * Mathf.Atan2(diffXZ.y, diffXZ.x), Mathf.Rad2Deg * Mathf.Atan2(attackDirXZ.y, attackDirXZ.x));
 					float enemyAngleWidth = Mathf.Rad2Deg * Mathf.Atan2(critterRadius,diffXZ.magnitude);
 					if (Mathf.Abs(angleDelta) > enemyAngleWidth*enemy.data.directHitWidth) {
@@ -399,7 +403,7 @@ namespace Bowhead {
 				dirToEnemy.Normalize();
 			}
 			float angleToEnemy = Mathf.Abs(Utils.SignedMinAngleDelta(Mathf.Atan2(dirToEnemy.x, dirToEnemy.z) * Mathf.Rad2Deg, owner.yaw * Mathf.Rad2Deg));
-			if (angleToEnemy > data.blockAngleRange && Mathf.PI * 2 - angleToEnemy > data.blockAngleRange) {
+			if (angleToEnemy > data.blockAngleRange) {
 				return;
 			}
 
@@ -411,6 +415,7 @@ namespace Bowhead {
 			remainingStun -= stunAbsorb;
 
 			stamina -= stunAbsorb;
+			stamina -= blockResult.staminaUse;
 			staminaRechargeTimer = data.staminaRechargePause;
 			if (stamina <= 0) {
 				stunned = true;

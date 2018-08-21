@@ -22,8 +22,9 @@ MonoBehaviour:
     _assetPath: Items/Shield
     _editorPath: Assets/Assets/Prefabs/Resources/Items/Shield.prefab
   hand: 0
-  staminaRechargeTime: 1
+  staminaRechargeTime: 3
   staminaRechargePause: 1
+  staminaUseDuringCharge: 0.1
   moveSpeedChargeDelay: 0
   traits: []
   attacks:
@@ -95,9 +96,9 @@ MonoBehaviour:
     statusEffect: {fileID: 0}
     statusEffectTime: 0
     loudness: 2
-    stunAbsorb: 0.1
+    stunAbsorb: 0.2
     damageAbsorb: 5
-    staminaUse: 0.1
+    staminaUse: 0.5
   blockResultGlancingBlow:
     knockback: 2
     knockbackTime: 1
@@ -108,8 +109,8 @@ MonoBehaviour:
     statusEffect: {fileID: 0}
     statusEffectTime: 0
     loudness: 1
-    stunAbsorb: 0.3
+    stunAbsorb: 0.5
     damageAbsorb: 5
-    staminaUse: 0.1
+    staminaUse: 0.3
   sprintSpeed: 0.8
   jabChargeTime: 0.25

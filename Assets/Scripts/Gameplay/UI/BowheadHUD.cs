@@ -106,8 +106,8 @@ namespace Bowhead.Client.UI {
 
             var playerHUD = GameObject.Instantiate<PlayerHUD>(GameManager.instance.clientData.playerHudPrefab, _pawnHUDs.transform);
             playerHUD.SetTarget(player);
-            var directionPreview = GameObject.Instantiate<DirectionPreview>(GameManager.instance.clientData.directionPreviewPrefab, _playerHUD.transform);
-            directionPreview.SetTarget(player);
+            var playerDecal = GameObject.Instantiate<PlayerDecal>(GameManager.instance.clientData.playerDecalPrefab, _playerHUD.transform);
+			playerDecal.SetTarget(player);
 
 			localPlayer.playerPawn.OnMerchantActivated += OnMerchantActivated;
 
@@ -119,6 +119,8 @@ namespace Bowhead.Client.UI {
 		public void OnCritterActive(Critter critter) {
 			var critterHUD = GameObject.Instantiate<PawnHUD>(GameManager.instance.clientData.critterHudPrefab, _pawnHUDs.transform);
 			critterHUD.SetTarget(critter);
+			var critterDecal = GameObject.Instantiate<CritterDecal>(GameManager.instance.clientData.critterDecalPrefab, _playerHUD.transform);
+			critterDecal.SetTarget(critter);
 		}
 
 		private void OnExplore(Vector2 pos, int radius, bool showMap) {

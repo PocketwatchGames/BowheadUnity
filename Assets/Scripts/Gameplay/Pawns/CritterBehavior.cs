@@ -217,7 +217,7 @@ namespace Bowhead.Actors {
 			float dist = diff.magnitude;
 
 
-			if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround && move.magnitude < destinationTolerance) {
+			if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround) {
 				input.look = -diff;
 				var weapon = c.GetInventorySlot(0) as Weapon;
 				if (weapon.CanCast()) {

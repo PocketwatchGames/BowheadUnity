@@ -156,6 +156,9 @@ namespace Bowhead.Actors {
 				//if (Input.GetButton("ShoulderLeft" + pi)) {
 				//	cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
 				//}
+				if (Input.GetButton("R3" + pi)) {
+					cmd.buttons |= 1 << (int)InputType.Dodge;
+				}
 			}
 
 			UpdatePlayerCmd(cmd);
@@ -382,28 +385,23 @@ namespace Bowhead.Actors {
 					}
 				}
 				if (itemLeft != null) {
-					if (itemLeft.CanCast()) {
-						if (input.IsPressed(InputType.AttackLeft)) {
-							itemLeft.Charge(dt, 0);
-							isCasting = true;
-						}
-						else {
-							if (itemLeft.attackHand == 0) {
-								itemLeft.chargeTime = 0;
-							}
+					if (itemLeft.CanCast() && input.IsPressed(InputType.AttackLeft)) {
+						itemLeft.Charge(dt, 0);
+						isCasting = true;
+					}
+					else {
+						if (itemLeft.attackHand == 0) {
+							itemLeft.chargeTime = 0;
 						}
 					}
                 }
 				if (itemRight != null) {
-					if (itemRight.CanCast()) {
-						if (input.IsPressed(InputType.AttackRight)) {
-							itemRight.Charge(dt, 1);
-							isCasting = true;
-						}
-						else {
-							if (itemRight.attackHand == 1) {
-								itemRight.chargeTime = 0;
-							}
+					if (itemRight.CanCast() && input.IsPressed(InputType.AttackRight)) {
+						itemRight.Charge(dt, 1);
+						isCasting = true;
+					} else {
+						if (itemRight.attackHand == 1) {
+							itemRight.chargeTime = 0;
 						}
 					}
 				}

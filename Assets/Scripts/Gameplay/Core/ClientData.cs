@@ -119,9 +119,10 @@ namespace Bowhead {
 		public PawnHUD critterHudPrefab;
         public PlayerHUD playerHudPrefab;
         public DamageHUD damageHUDPrefab;
-        public DirectionPreview directionPreviewPrefab;
+		public PlayerDecal playerDecalPrefab;
+		public CritterDecal critterDecalPrefab;
 
-        public bool isDualAnalogAiming;
+		public bool isDualAnalogAiming;
 
 		public Canvas dialogDarkenCanvasPrefab;
 		public Canvas dialogNormalCanvasPrefab;
