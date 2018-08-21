@@ -303,17 +303,26 @@ namespace Bowhead.Actors {
 			UpdateAggro(dt);
 
 			// Evaluate behaviors
-			List<CritterBehavior> possibleBehaviors = new List<CritterBehavior>();
+			List<CritterBehavior.EvaluationScore> possibleBehaviors = new List<CritterBehavior.EvaluationScore>();
+			float totalScore = 0;
 			foreach (var b in behaviors) {
 				var score = b.Evaluate();
 				if (score.score >0) {
-					possibleBehaviors.Add(b);
+					possibleBehaviors.Add(score);
+					totalScore += score.score;
 				}
 			}
 
 			// Choose a behavior
 			if (possibleBehaviors.Count > 0) {
-				curBehavior = possibleBehaviors[0];
+				float chooseScore = GameManager.instance.randomNumber * totalScore;
+				foreach (var b in possibleBehaviors) {
+					chooseScore -= b.score;
+					if (chooseScore <= 0) {
+						curBehavior = b.behavior;
+						break;
+					}
+				}
 			}
 
 			// Execute the behavior
