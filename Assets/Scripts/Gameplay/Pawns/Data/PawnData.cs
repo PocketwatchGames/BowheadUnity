@@ -26,6 +26,7 @@ namespace Bowhead.Actors {
 		public float stunRechargeTime = 1;
 		public float stunTime = 1;
 		public float maxStun;
+		public float stunLimit;
 		public float postStunInvincibilityTime;
 		public float backStabAngle;
 		public float directHitWidth = 0.5f;

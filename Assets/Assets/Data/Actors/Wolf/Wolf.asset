@@ -26,7 +26,8 @@ MonoBehaviour:
   stunRechargePause: 1
   stunRechargeTime: 3
   stunTime: 3
-  maxStun: 1
+  maxStun: 2
+  stunLimit: 1
   postStunInvincibilityTime: 1
   backStabAngle: 45
   directHitWidth: 0.5

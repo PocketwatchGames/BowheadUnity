@@ -1098,8 +1098,8 @@ namespace Bowhead.Actors {
 				return;
 			}
 
-			stunAmount += s;
-			if (stunAmount > data.maxStun) {
+			stunAmount = Mathf.Min(data.maxStun, stunAmount + s);
+			if (stunAmount > data.stunLimit) {
 				stunned = true;
 
 				foreach (var i in getInventory()) {
