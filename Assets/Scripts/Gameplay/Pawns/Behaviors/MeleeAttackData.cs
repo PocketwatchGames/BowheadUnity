@@ -5,23 +5,18 @@ using UnityEngine;
 namespace Bowhead.Actors {
 	[CreateAssetMenu(menuName = "Behaviors/MeleeAttack")]
 	public class MeleeAttackData : BehaviorData<Critter.MeleeAttack> {
+		public float minRange = 2;
+		public float maxRange = 5;
+		public float destinationTolerance = 1.5f;
+		public float enemyElevationDeltaToJump = 3;
 	}
 
 	public partial class Critter : Pawn<Critter, CritterData> {
 		public class MeleeAttack : CritterBehavior<MeleeAttackData> {
 
-			float minRange;
-			float maxRange;
-			float destinationTolerance;
-			float enemyElevationDeltaToJump;
 			Vector3 desiredOffset;
 
 			public MeleeAttack() {
-				minRange = 2;
-				maxRange = 5;
-				destinationTolerance = 1.5f;
-
-				enemyElevationDeltaToJump = 3;
 			}
 
 			public override EvaluationScore Evaluate() {
@@ -44,14 +39,14 @@ namespace Bowhead.Actors {
 					desiredOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
 				}
 
-				var desiredPos = _critter.lastKnownPosition + desiredOffset * ((maxRange - minRange) / 2 + minRange);
+				var desiredPos = _critter.lastKnownPosition + desiredOffset * ((data.maxRange - data.minRange) / 2 + data.minRange);
 				var move = desiredPos - _critter.position;
 				move.y = 0;
 
 				float dist = diff.magnitude;
 
 
-				if (dist > minRange && dist < maxRange && _critter.canAttack && _critter.activity == Pawn.Activity.OnGround) {
+				if (dist > data.minRange && dist < data.maxRange && _critter.canAttack && _critter.activity == Pawn.Activity.OnGround) {
 					input.look = -diff;
 					var weapon = _critter.GetInventorySlot(0) as Weapon;
 					if (weapon.CanCast()) {
@@ -64,7 +59,7 @@ namespace Bowhead.Actors {
 					float speed = dist > 4 ? 1.0f : 0.5f;
 					input.movement = move.normalized * speed;
 					input.look = -diff;
-					if (diff.y <= -enemyElevationDeltaToJump) {
+					if (diff.y <= -data.enemyElevationDeltaToJump) {
 						if (_critter.canJump && _critter.activity == Pawn.Activity.OnGround) {
 							input.inputs[(int)InputType.Jump] = InputState.JustPressed;
 						}

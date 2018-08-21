@@ -5,24 +5,17 @@ using UnityEngine;
 namespace Bowhead.Actors {
 	[CreateAssetMenu(menuName = "Behaviors/RangedAttack")]
 	public class RangedAttackData : BehaviorData<Critter.RangedAttack> {
+		public float minRange = 5;
+		public float maxRange = 10;
+		public float enemyElevationDeltaToJump = 3;
+		public float fleeRange = 12;
+		public float fleeStunLimit = 0.5f;
 	}
 	public partial class Critter : Pawn<Critter, CritterData> {
 
 		public class RangedAttack : CritterBehavior<RangedAttackData> {
 
-			float minRange;
-			float maxRange;
-			float enemyElevationDeltaToJump;
-			Vector3 desiredOffset;
-			float fleeRange;
-			float fleeStunLimit;
-
 			public RangedAttack() {
-				minRange = 5;
-				maxRange = 10;
-				enemyElevationDeltaToJump = 3;
-				fleeRange = 12;
-				fleeStunLimit = 0.5f;
 			}
 
 			public override EvaluationScore Evaluate() {
@@ -42,7 +35,7 @@ namespace Bowhead.Actors {
 					var diff = _critter.rigidBody.position - _critter.lastKnownPosition;
 
 					if (_critter.stunAmount > _critter.data.maxStun * 0.5f) {
-						var desiredPos = _critter.lastKnownPosition + diff.normalized * fleeRange;
+						var desiredPos = _critter.lastKnownPosition + diff.normalized * data.fleeRange;
 						var move = desiredPos - _critter.position;
 						move.y = 0;
 
@@ -53,7 +46,7 @@ namespace Bowhead.Actors {
 
 					} else {
 
-						if (diff.y <= -enemyElevationDeltaToJump) {
+						if (diff.y <= -data.enemyElevationDeltaToJump) {
 							if (_critter.canJump && _critter.activity == Pawn.Activity.OnGround) {
 								input.inputs[(int)InputType.Jump] = InputState.JustPressed;
 							}
@@ -62,7 +55,7 @@ namespace Bowhead.Actors {
 						if (diff == Vector3.zero) {
 							diff.x = 1;
 						}
-						var desiredPos = _critter.lastKnownPosition + diff.normalized * maxRange;
+						var desiredPos = _critter.lastKnownPosition + diff.normalized * data.maxRange;
 						var move = desiredPos - _critter.position;
 						move.y = 0;
 
@@ -70,7 +63,7 @@ namespace Bowhead.Actors {
 
 						var player = _critter.gameMode.players[0].playerPawn;
 						if (_critter.CanSee(player) > 0) {
-							if (dist > minRange && dist < maxRange) {
+							if (dist > data.minRange && dist < data.maxRange) {
 								if (_critter.canAttack && _critter.activity == Pawn.Activity.OnGround) {
 									input.look = -diff;
 									var weapon = _critter.GetInventorySlot(0) as Weapon;

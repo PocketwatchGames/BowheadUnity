@@ -6,14 +6,13 @@ namespace Bowhead.Actors {
 
 	[CreateAssetMenu(menuName = "Behaviors/Flee")]
 	public class FleeData : BehaviorData<Critter.Flee> {
+		public float destinationTolerance = 0.5f;
 	}
 
 	public partial class Critter : Pawn<Critter, CritterData> {
 
 
 		public class Flee : CritterBehavior<FleeData> {
-
-			public float destinationTolerance = 0.5f;
 
 			public override EvaluationScore Evaluate() {
 				if (_critter.IsPanicked()) {
@@ -28,7 +27,7 @@ namespace Bowhead.Actors {
 				if (_critter.hasLastKnownPosition) {
 					var diff = _critter.position - _critter.lastKnownPosition;
 					diff.y = 0;
-					if (diff.magnitude > destinationTolerance) {
+					if (diff.magnitude > data.destinationTolerance) {
 						input.movement = diff.normalized;
 						input.look = input.movement;
 					}

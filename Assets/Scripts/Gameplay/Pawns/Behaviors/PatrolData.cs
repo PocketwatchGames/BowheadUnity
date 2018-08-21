@@ -5,17 +5,16 @@ using UnityEngine;
 namespace Bowhead.Actors {
 	[CreateAssetMenu(menuName = "Behaviors/Patrol")]
 	public class PatrolData : BehaviorData<Critter.Patrol> {
+		public float destinationTolerance = 0.5f;
+		public float patrolRange = 5.0f;
+		public float patrolTimeMin = 4.0f;
+		public float patrolTimeMax = 8.0f;
+		public float patrolSpeed = 0.25f;
 	}
 
 	public partial class Critter : Pawn<Critter, CritterData> {
 
 		public class Patrol : CritterBehavior<PatrolData> {
-
-			public float destinationTolerance = 0.5f;
-			public float patrolRange = 5.0f;
-			public float patrolTimeMin = 4.0f;
-			public float patrolTimeMax = 8.0f;
-			public float patrolSpeed = 0.25f;
 
 			Vector3 patrolPos;
 			float patrolTimer;
@@ -35,14 +34,14 @@ namespace Bowhead.Actors {
 				} else {
 					patrolTimer -= dt;
 					if (patrolTimer <= 0) {
-						patrolTimer = Random.Range(patrolTimeMin, patrolTimeMax);
+						patrolTimer = Random.Range(data.patrolTimeMin, data.patrolTimeMax);
 						GetNewPatrolPoint(_critter);
 					}
 
 					var diff = patrolPos - _critter.position;
 					diff.y = 0;
-					if (diff.magnitude > destinationTolerance) {
-						input.movement = diff.normalized * patrolSpeed;
+					if (diff.magnitude > data.destinationTolerance) {
+						input.movement = diff.normalized * data.patrolSpeed;
 						input.look = input.movement;
 					}
 
@@ -52,7 +51,7 @@ namespace Bowhead.Actors {
 			private void GetNewPatrolPoint(Critter c) {
 				var angle = Random.Range(0, Mathf.PI * 2);
 				var desiredOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
-				patrolPos = _critter.position + desiredOffset * patrolRange;
+				patrolPos = _critter.position + desiredOffset * data.patrolRange;
 			}
 		}
 

@@ -5,13 +5,13 @@ using UnityEngine;
 namespace Bowhead.Actors {
 	[CreateAssetMenu(menuName = "Behaviors/FleeAndRecover")]
 	public class FleeAndRecoverData : BehaviorData<Critter.FleeAndRecover> {
+		public float fleeStunLimit = 0.5f;
+		public float fleeRange = 10;
 	}
 
 	public partial class Critter : Pawn<Critter, CritterData> {
 
 		public class FleeAndRecover : CritterBehavior<FleeAndRecoverData> {
-			float fleeStunLimit = 0.5f;
-			float fleeRange = 10;
 
 			public override EvaluationScore Evaluate() {
 
@@ -19,7 +19,7 @@ namespace Bowhead.Actors {
 					return fail;
 				}
 
-				if (_critter.stunAmount > _critter.data.maxStun * fleeStunLimit) {
+				if (_critter.stunAmount > _critter.data.maxStun * data.fleeStunLimit) {
 					return new EvaluationScore(this, 1.0f);
 				}
 
@@ -36,7 +36,7 @@ namespace Bowhead.Actors {
 				} else {
 					var diff = _critter.rigidBody.position - _critter.lastKnownPosition;
 
-					var desiredPos = _critter.lastKnownPosition + diff.normalized * fleeRange;
+					var desiredPos = _critter.lastKnownPosition + diff.normalized * data.fleeRange;
 					var move = desiredPos - _critter.position;
 					move.y = 0;
 
