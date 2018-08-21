@@ -1272,7 +1272,7 @@ public partial class World {
 					emitFlags.Broadcast(0);
 
 					while (numEmitted < numIndices) {
-						for (int maxMats = 1; maxMats <= 4; ++maxMats) {
+						for (int maxMats = 1; maxMats <= MAX_MATERIALS_PER_SUBMESH; ++maxMats) {
 							if (numEmitted >= numIndices) {
 								break;
 							}

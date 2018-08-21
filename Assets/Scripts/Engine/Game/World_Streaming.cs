@@ -95,6 +95,7 @@ public partial class World {
 			}
 		}
 
+#if !DEV_STREAMING
 		public static EShaderQualityLevel debugHQShaderLevel {
 			get {
 				LoadPrefs();
@@ -108,6 +109,7 @@ public partial class World {
 				}
 			}
 		}
+#endif
 
 		static void LoadPrefs() {
 			if (!_loadedPrefs) {
@@ -115,7 +117,9 @@ public partial class World {
 				_debugDraw = EditorPrefs.GetBool("Bowhead_DebugChunkDisplay", false);
 				_debugHQShaderLevel = EditorPrefs.GetBool("Bowhead_DebugHQTerrain", true);
 				Menu.SetChecked("Bowhead/Options/Debug Chunk Display", _debugDraw);
+#if !DEV_STREAMING
 				Menu.SetChecked("Bowhead/Options/HQ Terrain", _debugHQShaderLevel);
+#endif
 			}
 		}
 
@@ -124,7 +128,9 @@ public partial class World {
 			EditorPrefs.SetBool("Bowhead_DebugChunkDisplay", _debugDraw);
 			EditorPrefs.SetBool("Bowhead_DebugHQTerrain", _debugHQShaderLevel);
 			Menu.SetChecked("Bowhead/Options/Debug Chunk Display", _debugDraw);
+#if !DEV_STREAMING
 			Menu.SetChecked("Bowhead/Options/HQ Terrain", _debugHQShaderLevel);
+#endif
 		}
 #else
 		const int MAX_STREAMING_CHUNKS = 16;

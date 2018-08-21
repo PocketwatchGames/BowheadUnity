@@ -17,7 +17,7 @@ namespace Bowhead.Client {
             General
 		}
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !DEV_STREAMING
 		[MenuItem("Bowhead/Options/HQ Terrain")]
 		static void ToggleShaderQuality() {
 			Streaming.debugHQShaderLevel = (Streaming.debugHQShaderLevel == Streaming.EShaderQualityLevel.HIGH) ? Streaming.EShaderQualityLevel.DEFAULT : Streaming.EShaderQualityLevel.HIGH;
@@ -48,7 +48,11 @@ namespace Bowhead.Client {
 			INetDriver driver
 		) : base(gameInstance, sharedStreaming, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
 #if UNITY_EDITOR
+#if DEV_STREAMING
+			worldStreaming.shaderQualityLevel = Streaming.EShaderQualityLevel.DEFAULT;
+#else
 			worldStreaming.shaderQualityLevel = Streaming.debugHQShaderLevel;
+#endif
 #endif
 		}
 

@@ -15,6 +15,7 @@ public class BuildOptionsWindow : EditorWindow {
 		AddFlag("Enable Profiling", "Enable Profiling", "PROFILING", false);
 		AddFlag("Steam Integration", "Use Steam API", "STEAM_API", false);
 		AddFlag("Voxel Debug Mesh", "Generates debug voxel mesh", "DEBUG_VOXEL_MESH", false);
+		AddFlag("Streaming Mode", "Ugly but fast!", "DEV_STREAMING", false);
 	}
 
 	static BuildOptionsWindow() {

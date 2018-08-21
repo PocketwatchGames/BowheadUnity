@@ -144,12 +144,19 @@ namespace Bowhead.Client {
 
 		public void ApplyNonResolution() {
 			ApplyShadows(); // this sets quality level globally
-			QualitySettings.vSyncCount = vsync ? 1 : 0;
 			ApplyWaterReflections();
 			ApplyCameraSettings();
+#if DEV_STREAMING
+			QualitySettings.vSyncCount = 0;
+			QualitySettings.realtimeReflectionProbes = false;
+			QualitySettings.anisotropicFiltering = AnisotropicFiltering.ForceEnable;
+			QualitySettings.blendWeights = BlendWeights.FourBones;
+#else
+			QualitySettings.vSyncCount = vsync ? 1 : 0;
 			QualitySettings.realtimeReflectionProbes = reflectionProbes;
 			QualitySettings.anisotropicFiltering = anisoTextures ? AnisotropicFiltering.ForceEnable : AnisotropicFiltering.Disable;
 			QualitySettings.blendWeights = (animationQuality == 0) ? BlendWeights.OneBone : (animationQuality == 1) ? BlendWeights.TwoBones : BlendWeights.FourBones;
+#endif
 		}
 
 		public void ApplyCameraSettings() {
@@ -214,6 +221,7 @@ namespace Bowhead.Client {
 		}
 
 		void ApplyShadows() {
+#if !DEV_STREAMING
 			if (shadows > 3) {
 				QualitySettings.SetQualityLevel(4);
 			} else if (shadows > 2) {
@@ -223,8 +231,11 @@ namespace Bowhead.Client {
 			} else if (shadows > 0) {
 				QualitySettings.SetQualityLevel(1);
 			} else {
+#endif
 				QualitySettings.SetQualityLevel(0);
-			}
+#if !DEV_STREAMING
+		}
+#endif
 		}
 
 		public bool ApplyResolution() {
