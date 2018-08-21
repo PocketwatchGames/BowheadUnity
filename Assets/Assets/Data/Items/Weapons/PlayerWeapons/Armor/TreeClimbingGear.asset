@@ -8,45 +8,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c384a6b4c08e5e479f79662660fc81f, type: 3}
+  m_Script: {fileID: 11500000, guid: 18adaecd34762a04199c695b2e3eaa67, type: 3}
   m_Name: TreeClimbingGear
   m_EditorClassIdentifier: 
   version: 0
-  _index: 51
-  displayName: Tree Climbing Gear
+  _index: 44
+  displayName: 
   description: 
   monetaryValue: 0
   canUse: 1
   canDrop: 1
-  prefab:
-    _assetPath: 
-    _editorPath: 
-  hand: 4
-  moveSpeedChargeDelay: 0.2
   traits:
-  - {fileID: 11400000, guid: a9efea36cf2969642a31b30ccbb86432, type: 2}
   - {fileID: 11400000, guid: 72c3b09742c50e7459fff56156ee2e37, type: 2}
-  attacks: []
-  spell: 0
-  spellPower: 0
-  statusEffect: {fileID: 0}
-  statusEffectTime: 0
-  waterUse: 0
-  canTarget: 0
-  projectile: {fileID: 0}
-  projectileSpeed: 0
-  blockAngleRange: 0
-  blockResult:
-    knockback: 0
-    damage: 0
-    stun: 0
-    interrupt: 0
-    damageType: 0
-    statusEffect: {fileID: 0}
-    statusEffectTime: 0
-    loudness: 0
-    stunAbsorb: 0
-    damageAbsorb: 3
-    staminaUse: 0
-  sprintSpeed: 0
-  jabChargeTime: 0
+  - {fileID: 11400000, guid: a9efea36cf2969642a31b30ccbb86432, type: 2}

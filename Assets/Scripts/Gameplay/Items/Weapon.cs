@@ -110,19 +110,21 @@ namespace Bowhead {
 				return true;
 			}
 
+			var attack = data.attacks[attackHand];
+
 			hitTargets.Clear();
 
 
 			target = null;
-			if (data.canTarget) {
-				target = owner.GetAttackTarget(owner.yaw, data.projectile.lifetime * data.projectileSpeed, 60 * Mathf.Deg2Rad, null);
+			if (attack.canTarget) {
+				target = owner.GetAttackTarget(owner.yaw, attack.projectile.lifetime * attack.projectile.speed, 60 * Mathf.Deg2Rad, null);
 			}
 			staminaRechargeTimer = data.staminaRechargePause;
-			stamina -= data.attacks[attackHand].staminaUse;
+			stamina -= attack.staminaUse;
 			if (stamina <= 0) {
 				stunned = true;
 			}
-			castTime = data.attacks[attackHand].castTime;
+			castTime = attack.castTime;
 			attackCharge = chargeTime;
 			chargeTime = 0;
             if (castTime <= 0) {
@@ -163,7 +165,7 @@ namespace Bowhead {
 					}
 				}
 
-				if (enemy.Hit(owner, this, attackType, GetMultiplier(owner, attackCharge), !data.attacks[attackHand].unblockable, directHit)) {
+				if (enemy.Hit(owner, this, attackType, GetMultiplier(owner, attackCharge), !attackType.unblockable, directHit)) {
 					Client.Actors.ClientPlayerController.localPlayer.cameraController.Shake(0.15f, 0.05f, 0.01f);
 					if (data.attacks[attackHand].interruptOnHit) {
 						Interrupt(owner);
@@ -183,28 +185,30 @@ namespace Bowhead {
 				owner.velocity = Vector3.zero;
 			}
 
-			castTime = 0;
-            cooldown = data.attacks[attackHand].cooldown;
+			var attack = data.attacks[attackHand];
 
-			if (data.attacks[attackHand].radius > 0) {
+			castTime = 0;
+            cooldown = attack.cooldown;
+
+			if (attack.radius > 0) {
 				_damageIndicator = GameObject.Instantiate(GameManager.instance.clientData.damageIndicatorPrefab);
-				_damageIndicator.Init(data.attacks[attackHand].activeTime > 0 ? data.attacks[attackHand].activeTime : 0.05f, data.attacks[attackHand].radius*2);
+				_damageIndicator.Init(attack.activeTime > 0 ? attack.activeTime : 0.05f, attack.radius*2);
 			}
 
-			if (data.attacks[attackHand].activeTime == 0) {
+			if (attack.activeTime == 0) {
 				DoActiveTick(owner);
 			}
 			else {
-				activeTime = data.attacks[attackHand].activeTime;
+				activeTime = attack.activeTime;
 			}
 			
-			if (data.projectile != null) {
+			if (attack.projectile != null) {
 				Vector3 dir;
 				if (target == null) {
 					dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
-				} else if (data.autoAimPitch && data.autoAimYaw) {
+				} else if (attack.projectile.autoAimPitch && attack.projectile.autoAimYaw) {
 					dir = (target.waistPosition() - owner.headPosition()).normalized;
-				} else if (data.autoAimPitch) {
+				} else if (attack.projectile.autoAimPitch) {
 					var diff = target.waistPosition() - owner.headPosition();
 					float pitch = Mathf.Atan2(diff.y,Mathf.Sqrt(diff.x*diff.x+diff.z*diff.z));
 					var cosPitch = Mathf.Cos(pitch);
@@ -213,11 +217,8 @@ namespace Bowhead {
 					dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
 				}
 
-				data.projectile.SpawnAndFireProjectile<Actors.Projectile>(owner.world, owner.headPosition(), dir * data.projectileSpeed, target, null, owner, owner.team);
-			}
-
-			if (data.spell != WeaponData.Spell.None) {
-				ActivateSpell(owner);
+				var p = (Actors.Projectile)owner.world.Spawn(typeof(Actors.Projectile), null, default(SpawnParameters));
+				p.Spawn(attack.projectile, owner.headPosition(), dir * attack.projectile.speed, target, null, owner, owner.team);
 			}
 
         }
@@ -253,12 +254,6 @@ namespace Bowhead {
 			}
 			return bestTarget;
 
-		}
-
-		private void ActivateSpell(Pawn owner) {
-			if (data.spell == WeaponData.Spell.StatusEffect) {
-				owner.AddStatusEffect(data.statusEffect, data.statusEffectTime);
-			}
 		}
 
         override public void Tick(float dt, Pawn owner) {

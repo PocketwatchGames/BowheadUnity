@@ -85,7 +85,7 @@ MonoBehaviour:
     cooldownNextAttackQueueTime: 0.1
     range: 4
     radius: 1
-    staminaUse: 25
+    staminaUse: 0.5
     stepDistance: 2
     moveSpeedWhileCharging: 0
     moveSpeedWhileFullyCharged: 0

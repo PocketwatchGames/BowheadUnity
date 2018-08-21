@@ -16,14 +16,14 @@ MonoBehaviour:
   displayName: Magic Missile!
   description: Ranged combat spell
   monetaryValue: 10
-  canUse: 1
   canDrop: 1
   prefab:
-    _assetPath: 
-    _editorPath: 
+    _assetPath: Items/Fist
+    _editorPath: Assets/Assets/Prefabs/Resources/Items/Fist.prefab
   hand: 1
   staminaRechargeTime: 1
   staminaRechargePause: 1
+  staminaUseDuringCharge: 0
   moveSpeedChargeDelay: 0
   traits: []
   attacks:
@@ -42,51 +42,66 @@ MonoBehaviour:
     canMoveDuringCooldown: 1
     canMoveDuringCast: 1
     canMoveDuringActive: 1
-    unblockable: 0
     interruptOnHit: 0
     canBackstab: 0
+    canTarget: 0
     attackResultDirectHit:
       knockback: 0
+      knockbackTime: 0
       damage: 0
       stun: 0
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
     attackResultGlancingBlow:
       knockback: 0
+      knockbackTime: 0
       damage: 0
       stun: 0
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
     attackResultBackstab:
       knockback: 0
+      knockbackTime: 0
       damage: 0
       stun: 0
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
-  spell: 0
-  spellPower: 1
-  statusEffect: {fileID: 0}
-  statusEffectTime: 0
-  canTarget: 1
-  projectile: {fileID: 11400000, guid: 3153fb8bcefe50a44af717fe0aa81363, type: 2}
-  projectileSpeed: 20
-  autoAimYaw: 0
-  autoAimPitch: 1
+    projectile:
+      speed: 20
+      lifetime: 3
+      damage: 10
+      stun: 0
+      heatSeeking: 0
+      autoAimYaw: 0
+      autoAimPitch: 0
+      damageType: 4
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
+      prefab:
+        _assetPath: Projectiles/MagicMissile
+        _editorPath: Assets/Assets/Prefabs/Resources/Projectiles/MagicMissile.prefab
+    statusEffect: {fileID: 0}
+    statusEffectTime: 0
   blockAngleRange: 0
   blockResultDirectHit:
     knockback: 0
+    knockbackTime: 0
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0
@@ -96,9 +111,11 @@ MonoBehaviour:
     staminaUse: 0
   blockResultGlancingBlow:
     knockback: 0
+    knockbackTime: 0
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0

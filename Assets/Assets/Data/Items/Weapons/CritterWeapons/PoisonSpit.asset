@@ -16,7 +16,6 @@ MonoBehaviour:
   displayName: 
   description: Ranged combat spell
   monetaryValue: 10
-  canUse: 1
   canDrop: 1
   prefab:
     _assetPath: 
@@ -24,6 +23,7 @@ MonoBehaviour:
   hand: 3
   staminaRechargeTime: 1
   staminaRechargePause: 1
+  staminaUseDuringCharge: 0
   moveSpeedChargeDelay: 0
   traits: []
   attacks:
@@ -42,51 +42,66 @@ MonoBehaviour:
     canMoveDuringCooldown: 1
     canMoveDuringCast: 0
     canMoveDuringActive: 0
-    unblockable: 0
     interruptOnHit: 0
     canBackstab: 0
+    canTarget: 0
     attackResultDirectHit:
       knockback: 0
+      knockbackTime: 0
       damage: 0
       stun: 0
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
     attackResultGlancingBlow:
       knockback: 0
+      knockbackTime: 0
       damage: 0
       stun: 0
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
     attackResultBackstab:
       knockback: 0
+      knockbackTime: 0
       damage: 0
       stun: 0
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
-  spell: 0
-  spellPower: 1
-  statusEffect: {fileID: 0}
-  statusEffectTime: 0
-  canTarget: 1
-  projectile: {fileID: 11400000, guid: dff0aa6221cbebe4a9892ae5a6b3faae, type: 2}
-  projectileSpeed: 20
-  autoAimYaw: 1
-  autoAimPitch: 1
+    projectile:
+      speed: 20
+      lifetime: 5
+      damage: 10
+      stun: 0.1
+      heatSeeking: 0
+      autoAimYaw: 0
+      autoAimPitch: 0
+      damageType: 3
+      statusEffect: {fileID: 11400000, guid: 0158100635f9f2e43ade93eb91655e9c, type: 2}
+      statusEffectTime: 10
+      prefab:
+        _assetPath: Projectiles/PoisonSpitProjectilePrefab
+        _editorPath: Assets/Assets/Prefabs/Resources/Projectiles/PoisonSpitProjectilePrefab.prefab
+    statusEffect: {fileID: 0}
+    statusEffectTime: 0
   blockAngleRange: 0
   blockResultDirectHit:
     knockback: 0
+    knockbackTime: 0
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0
@@ -96,9 +111,11 @@ MonoBehaviour:
     staminaUse: 0
   blockResultGlancingBlow:
     knockback: 0
+    knockbackTime: 0
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0

@@ -7,7 +7,6 @@ namespace Bowhead {
 		public string displayName;
 		public string description;
 		public int monetaryValue;
-		public bool canUse = true;
 		public bool canDrop = true;
 
 
