@@ -12,6 +12,10 @@ namespace Bowhead.Actors {
 
 		public GameObject_WRef prefab;
 		public float silhouetteDistanceThreshold;
+		public bool canMount;
+		public ItemLoadoutData defaultLoadout;
+
+		[Header("Aggro")]
 		public float waryLimit;
 		public float investigateLimit;
 		public float dayVisionDistance;
@@ -24,15 +28,11 @@ namespace Bowhead.Actors {
 		public float visionAngleRangeDown;
 		public float hearingDistance;
 		public float hearingDistanceExponent;
-		public bool canMount;
-
 		public float waryCooldownTime;
 		public float panicCooldownTime;
 		public float waryIncreaseAtMaxAwareness;
 		public float waryIncreaseAtMaxAwarenessWhilePanicked;
-		public ECritterBehaviorType idleBehavior;
-		public ECritterBehaviorType panicBehavior;
-		public ItemLoadoutData defaultLoadout;
+		public List<Critter.ECritterBehaviorType> behaviors = new List<Critter.ECritterBehaviorType>();
 
 		public Type critterClass { get; private set; }
 

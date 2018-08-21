@@ -117,7 +117,7 @@ namespace Bowhead {
 
 			target = null;
 			if (attack.canTarget) {
-				target = owner.GetAttackTarget(owner.yaw, attack.projectile.lifetime * attack.projectile.speed, 60 * Mathf.Deg2Rad, null);
+				target = owner.GetAttackTarget(owner.yaw, attack.range, 60 * Mathf.Deg2Rad, null);
 			}
 			staminaRechargeTimer = data.staminaRechargePause;
 			stamina -= attack.staminaUse;
@@ -201,24 +201,26 @@ namespace Bowhead {
 			else {
 				activeTime = attack.activeTime;
 			}
-			
-			if (attack.projectile != null) {
-				Vector3 dir;
-				if (target == null) {
-					dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
-				} else if (attack.projectile.autoAimPitch && attack.projectile.autoAimYaw) {
-					dir = (target.waistPosition() - owner.headPosition()).normalized;
-				} else if (attack.projectile.autoAimPitch) {
-					var diff = target.waistPosition() - owner.headPosition();
-					float pitch = Mathf.Atan2(diff.y,Mathf.Sqrt(diff.x*diff.x+diff.z*diff.z));
-					var cosPitch = Mathf.Cos(pitch);
-					dir = new Vector3(cosPitch*Mathf.Sin(owner.yaw), Mathf.Sin(pitch), cosPitch*Mathf.Cos(owner.yaw));
-				} else {
-					dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
-				}
 
-				var p = (Actors.Projectile)owner.world.Spawn(typeof(Actors.Projectile), null, default(SpawnParameters));
-				p.Spawn(attack.projectile, owner.headPosition(), dir * attack.projectile.speed, target, null, owner, owner.team);
+			if (attack.projectiles != null) {
+				foreach (var p in attack.projectiles) {
+					Vector3 dir;
+					if (target == null) {
+						dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
+					} else if (p.autoAimPitch && p.autoAimYaw) {
+						dir = (target.waistPosition() - owner.headPosition()).normalized;
+					} else if (p.autoAimPitch) {
+						var diff = target.waistPosition() - owner.headPosition();
+						float pitch = Mathf.Atan2(diff.y, Mathf.Sqrt(diff.x * diff.x + diff.z * diff.z));
+						var cosPitch = Mathf.Cos(pitch);
+						dir = new Vector3(cosPitch * Mathf.Sin(owner.yaw), Mathf.Sin(pitch), cosPitch * Mathf.Cos(owner.yaw));
+					} else {
+						dir = new Vector3(Mathf.Sin(owner.yaw), 0, Mathf.Cos(owner.yaw));
+					}
+
+					var pEnt = (Actors.Projectile)owner.world.Spawn(typeof(Actors.Projectile), null, default(SpawnParameters));
+					pEnt.Spawn(p, owner.headPosition(), dir * p.speed, target, null, owner, owner.team);
+				}
 			}
 
         }

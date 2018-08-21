@@ -75,7 +75,7 @@ namespace Bowhead {
 			public AttackResult attackResultDirectHit;
 			public AttackResult attackResultGlancingBlow;
 			public AttackResult attackResultBackstab;
-			public ProjectileData projectile;
+			public List<ProjectileData> projectiles = new List<ProjectileData>();
 			public StatusEffectData statusEffect;
 			public float statusEffectTime;
 

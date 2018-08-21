@@ -68,6 +68,8 @@ MonoBehaviour:
     _assetPath: Actors/Critters/Bunny
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Critters/Bunny.prefab
   silhouetteDistanceThreshold: 10
+  canMount: 0
+  defaultLoadout: {fileID: 11400000, guid: 156822b01e35ab74095441287fb85e32, type: 2}
   waryLimit: 1
   investigateLimit: 3
   dayVisionDistance: 30
@@ -80,11 +82,8 @@ MonoBehaviour:
   visionAngleRangeDown: 60
   hearingDistance: 30
   hearingDistanceExponent: 2
-  canMount: 0
   waryCooldownTime: 3
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
-  idleBehavior: 1
-  panicBehavior: 2
-  defaultLoadout: {fileID: 11400000, guid: 156822b01e35ab74095441287fb85e32, type: 2}
+  behaviors: 0000000002000000

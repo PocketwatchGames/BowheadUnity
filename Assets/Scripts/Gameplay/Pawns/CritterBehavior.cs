@@ -4,314 +4,265 @@ using UnityEngine;
 
 namespace Bowhead.Actors {
 
-    public enum ECritterBehaviorType {
+	public partial class Critter : Pawn<Critter, CritterData> {
+		public enum ECritterBehaviorType {
 		Idle,
 		Patrol,
-        Flee,
-        MeleeAttack,
+		Flee,
+		FleeAndRecover,
+		Investigate,
+		MeleeAttack,
 		RangedAttack
     }
 
-    abstract public class CritterBehavior {
-		public CritterBehavior(Critter c) {	}
+		abstract public class CritterBehavior {
 
-        abstract public void Tick(Critter c, float dt, ref Pawn.Input_t input);
+			protected static EvaluationScore fail = new EvaluationScore() { score = 0 };
+			public struct EvaluationScore {
+				public EvaluationScore(CritterBehavior b, float score=0) { this.behavior = b; this.score = score; }
 
-        public static CritterBehavior Create(ECritterBehaviorType t, Critter c) {
-            switch (t) {
-				case ECritterBehaviorType.Idle:
-					return new CritterBehaviorIdle(c);
-				case ECritterBehaviorType.Patrol:
-					return new CritterBehaviorPatrol(c);
-                case ECritterBehaviorType.Flee:
-                    return new CritterBehaviorFlee(c);
-				case ECritterBehaviorType.MeleeAttack:
-					return new CritterBehaviorMeleeAttack(c);
-				case ECritterBehaviorType.RangedAttack:
-					return new CritterBehaviorRangedAttack(c);
+				public float score;
+				public CritterBehavior behavior;
 			}
-			return null;
-        }
-    }
 
-	public class CritterBehaviorIdle : CritterBehavior {
-		public CritterBehaviorIdle(Critter c) : base(c) { }
-		public override void Tick(Critter c, float dt, ref Pawn.Input_t input) {
-			input.movement = Vector3.zero;
-			if (c.hasLastKnownPosition) {
-				var diff = c.lastKnownPosition - c.position;
-				input.look = diff.normalized;
+			protected Critter _critter;
+			public CritterBehavior(Critter c) { _critter = c; }
+
+			abstract public void Tick(float dt, ref Pawn.Input_t input);
+			abstract public EvaluationScore Evaluate();
+
+			public static CritterBehavior Create(ECritterBehaviorType t, Critter c) {
+				switch (t) {
+					case ECritterBehaviorType.Idle:
+						return new CritterBehaviorIdle(c);
+					case ECritterBehaviorType.Patrol:
+						return new CritterBehaviorPatrol(c);
+					case ECritterBehaviorType.Flee:
+						return new CritterBehaviorFlee(c);
+					case ECritterBehaviorType.Investigate:
+						return new CritterBehaviorInvestigate(c);
+					case ECritterBehaviorType.FleeAndRecover:
+						return new CritterBehaviorFleeAndRecover(c);
+					case ECritterBehaviorType.MeleeAttack:
+						return new CritterBehaviorMeleeAttack(c);
+					case ECritterBehaviorType.RangedAttack:
+						return new CritterBehaviorRangedAttack(c);
+				}
+				return null;
 			}
 		}
-	}
 
-	public class CritterBehaviorPatrol : CritterBehavior {
+		public class CritterBehaviorIdle : CritterBehavior {
+			public CritterBehaviorIdle(Critter c) : base(c) { }
 
-		public float destinationTolerance = 0.5f;
-		public float patrolRange = 5.0f;
-		public float patrolTimeMin = 4.0f;
-		public float patrolTimeMax = 8.0f;
-		public float patrolSpeed = 0.25f;
+			public override EvaluationScore Evaluate() {
+				return new EvaluationScore() { score = _critter.IsPanicked() ? 0 : 1 };
+			}
 
-		Vector3 patrolPos;
-		float patrolTimer;
-
-		public CritterBehaviorPatrol(Critter c) : base(c) { }
-		public override void Tick(Critter c, float dt, ref Pawn.Input_t input) {
-			if (c.hasLastKnownPosition && c.wary > 0) {
-				var diff = c.lastKnownPosition - c.position;
-				input.look = diff.normalized;
+			public override void Tick(float dt, ref Pawn.Input_t input) {
 				input.movement = Vector3.zero;
-			} else {
-				patrolTimer -= dt;
-				if (patrolTimer <= 0) {
-					patrolTimer = Random.Range(patrolTimeMin,patrolTimeMax);
-					GetNewPatrolPoint(c);
-				}
-
-				var diff = patrolPos - c.position;
-				diff.y = 0;
-				if (diff.magnitude > destinationTolerance) {
-					input.movement = diff.normalized* patrolSpeed;
-					input.look = input.movement;
-				}
-
-			}
-		}
-
-		private void GetNewPatrolPoint(Critter c) {
-			var angle = Random.Range(0, Mathf.PI * 2);
-			var desiredOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
-			patrolPos = c.position + desiredOffset * patrolRange;
-		}
-	}
-
-	public class CritterBehaviorFlee : CritterBehavior {
-
-		public float destinationTolerance = 0.5f;
-
-		public CritterBehaviorFlee(Critter c) : base(c) { }
-
-        override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
-            input.inputs[(int)InputType.Jump] = InputState.Released;
-            input.inputs[(int)InputType.AttackRight] = InputState.Released;
-            if (c.hasLastKnownPosition) {
-                var diff = c.position - c.lastKnownPosition;
-                diff.y = 0;
-				if (diff.magnitude > destinationTolerance) {
-					input.movement = diff.normalized;
-					input.look = input.movement;
+				if (_critter.hasLastKnownPosition) {
+					var diff = _critter.lastKnownPosition - _critter.position;
+					input.look = diff.normalized;
 				}
 			}
-            if (c.canJump && c.activity == Pawn.Activity.OnGround) {
-                input.inputs[(int)InputType.Jump] = InputState.JustPressed;
-            }
-
-        }
-    }
-	public class CritterBehaviorMeleeAttack : CritterBehavior {
-
-		float minRange;
-		float maxRange;
-		float destinationTolerance;
-		float enemyElevationDeltaToJump;
-		float fleeRange;
-		float fleeStunLimit;
-		Vector3 desiredOffset;
-		SubBehavior curSubBehavior;
-
-
-		private enum SubBehavior {
-			Idle,
-			MeleeAttack,
-			FleeAndRecover,
 		}
 
+		public class CritterBehaviorPatrol : CritterBehavior {
 
-		public CritterBehaviorMeleeAttack(Critter c) : base(c) {
-			minRange = 2;
-			maxRange = 5;
-			destinationTolerance = 1.5f;
+			public float destinationTolerance = 0.5f;
+			public float patrolRange = 5.0f;
+			public float patrolTimeMin = 4.0f;
+			public float patrolTimeMax = 8.0f;
+			public float patrolSpeed = 0.25f;
 
-			enemyElevationDeltaToJump = 3;
-			fleeRange = 10;
-			fleeStunLimit = 0.5f;
-		}
+			Vector3 patrolPos;
+			float patrolTimer;
 
+			public CritterBehaviorPatrol(Critter c) : base(c) { }
 
+			public override EvaluationScore Evaluate() {
+				if (_critter.IsPanicked()) {
+					return fail;
+				}
+				return new EvaluationScore(this, 1.0f);
+			}
 
-		override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
-
-
-			// choose sub behavior
-			if (!c.hasLastKnownPosition) {
-				curSubBehavior = SubBehavior.Idle;
-			} else {
-				if (c.stunAmount > c.data.maxStun * fleeStunLimit) {
-					curSubBehavior = SubBehavior.FleeAndRecover;
+			public override void Tick(float dt, ref Pawn.Input_t input) {
+				if (_critter.hasLastKnownPosition && _critter.wary > 0) {
+					var diff = _critter.lastKnownPosition - _critter.position;
+					input.look = diff.normalized;
+					input.movement = Vector3.zero;
 				} else {
-					curSubBehavior = SubBehavior.MeleeAttack;
+					patrolTimer -= dt;
+					if (patrolTimer <= 0) {
+						patrolTimer = Random.Range(patrolTimeMin, patrolTimeMax);
+						GetNewPatrolPoint(_critter);
+					}
+
+					var diff = patrolPos - _critter.position;
+					diff.y = 0;
+					if (diff.magnitude > destinationTolerance) {
+						input.movement = diff.normalized * patrolSpeed;
+						input.look = input.movement;
+					}
+
 				}
 			}
 
-			// execute sub Behavior
-			switch (curSubBehavior) {
-				case SubBehavior.MeleeAttack:
-					MeleeAttack(c, dt, ref input);
-					break;
-				case SubBehavior.FleeAndRecover:
-					Flee(c, dt, ref input);
-					break;
-				case SubBehavior.Idle:
-				default:
-					Idle(ref input);
-					break;
+			private void GetNewPatrolPoint(Critter c) {
+				var angle = Random.Range(0, Mathf.PI * 2);
+				var desiredOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+				patrolPos = _critter.position + desiredOffset * patrolRange;
+			}
+		}
+
+		public class CritterBehaviorFlee : CritterBehavior {
+
+			public float destinationTolerance = 0.5f;
+
+			public CritterBehaviorFlee(Critter c) : base(c) { }
+
+			public override EvaluationScore Evaluate() {
+				if (_critter.IsPanicked()) {
+					return fail;
+				}
+				return new EvaluationScore(this, 1.0f);
 			}
 
-		}
-
-		private void Idle(ref Pawn.Input_t input) {
-			input.movement = Vector3.zero;
-			input.inputs[(int)InputType.Jump] = InputState.Released;
-			input.inputs[(int)InputType.AttackRight] = InputState.Released;
-		}
-
-		private void Flee(Critter c, float dt, ref Pawn.Input_t input) {
-			var diff = c.rigidBody.position - c.lastKnownPosition;
-
-			var desiredPos = c.lastKnownPosition + diff.normalized * fleeRange;
-			var move = desiredPos - c.position;
-			move.y = 0;
-
-			float dist = diff.magnitude;
-
-			input.movement = move.normalized;
-			input.look = -diff;
-
-			desiredOffset = Vector3.zero;
-
-			if (diff.y <= -enemyElevationDeltaToJump) {
-				if (c.canJump && c.activity == Pawn.Activity.OnGround) {
+			override public void Tick(float dt, ref Pawn.Input_t input) {
+				input.inputs[(int)InputType.Jump] = InputState.Released;
+				input.inputs[(int)InputType.AttackRight] = InputState.Released;
+				if (_critter.hasLastKnownPosition) {
+					var diff = _critter.position - _critter.lastKnownPosition;
+					diff.y = 0;
+					if (diff.magnitude > destinationTolerance) {
+						input.movement = diff.normalized;
+						input.look = input.movement;
+					}
+				}
+				if (_critter.canJump && _critter.activity == Pawn.Activity.OnGround) {
 					input.inputs[(int)InputType.Jump] = InputState.JustPressed;
 				}
-			}
 
+			}
 		}
 
-		private void MeleeAttack(Critter c, float dt, ref Pawn.Input_t input) {
-			var diff = c.rigidBody.position - c.lastKnownPosition;
-			diff.y = 0;
-			if (diff == Vector3.zero) {
-				diff.x = 1;
-			}
+		public class CritterBehaviorInvestigate : CritterBehavior {
+			public CritterBehaviorInvestigate(Critter c) : base(c) { }
 
-			if (desiredOffset == Vector3.zero) {
-				var angle = Random.Range(0, Mathf.PI * 2);
-				desiredOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
-			}
-
-			var desiredPos = c.lastKnownPosition + desiredOffset * ((maxRange - minRange) / 2 + minRange);
-			var move = desiredPos - c.position;
-			move.y = 0;
-
-			float dist = diff.magnitude;
-
-
-			if (dist > minRange && dist < maxRange && c.canAttack && c.activity == Pawn.Activity.OnGround) {
-				input.look = -diff;
-				var weapon = c.GetInventorySlot(0) as Weapon;
-				if (weapon.CanCast()) {
-					if (c.CanSee(c.gameMode.players[0].playerPawn) > 0) {
-						input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
-						desiredOffset = Vector3.zero;
-					}
+			public override EvaluationScore Evaluate() {
+				if (!_critter.IsPanicked() || _critter.hasLastKnownPosition) {
+					return fail;
 				}
-			} else {
-				float speed = dist > 4 ? 1.0f : 0.5f;
-				input.movement = move.normalized * speed;
-				input.look = -diff;
-				if (diff.y <= -enemyElevationDeltaToJump) {
-					if (c.canJump && c.activity == Pawn.Activity.OnGround) {
-						input.inputs[(int)InputType.Jump] = InputState.JustPressed;
-					}
-				}
+				return new EvaluationScore(this, 1.0f);
+			}
+
+			public override void Tick(float dt, ref Input_t input) {
+				input.movement = Vector3.zero;
+				input.inputs[(int)InputType.Jump] = InputState.Released;
+				input.inputs[(int)InputType.AttackRight] = InputState.Released;
 			}
 		}
+		public class CritterBehaviorFleeAndRecover : CritterBehavior {
+			float fleeStunLimit = 0.5f;
+			float fleeRange = 10;
 
-	}
+			public CritterBehaviorFleeAndRecover(Critter c) : base(c) { }
 
-	public class CritterBehaviorRangedAttack : CritterBehavior {
+			public override EvaluationScore Evaluate() {
 
-		float minRange;
-		float maxRange;
-		float enemyElevationDeltaToJump;
-		Vector3 desiredOffset;
-		float fleeRange;
-		float fleeStunLimit;
+				if (!_critter.IsPanicked()) {
+					return fail;
+				}
 
-		public CritterBehaviorRangedAttack(Critter c) : base(c) {
-			minRange = 5;
-			maxRange = 10;
-			enemyElevationDeltaToJump = 3;
-			fleeRange = 12;
-			fleeStunLimit = 0.5f;
-		}
+				if (_critter.stunAmount > _critter.data.maxStun * fleeStunLimit) {
+					return new EvaluationScore(this, 1.0f);
+				}
 
-		override public void Tick(Critter c, float dt, ref Pawn.Input_t input) {
+				return fail;
 
-			input.movement = Vector3.zero;
-			input.inputs[(int)InputType.Jump] = InputState.Released;
-			input.inputs[(int)InputType.AttackRight] = InputState.Released;
+			}
 
-			if (c.hasLastKnownPosition) {
-				var diff = c.rigidBody.position - c.lastKnownPosition;
+			public override void Tick(float dt, ref Input_t input) {
 
-				if (c.stunAmount > c.data.maxStun * 0.5f) {
-					var desiredPos = c.lastKnownPosition + diff.normalized * fleeRange;
-					var move = desiredPos - c.position;
+				if (!_critter.hasLastKnownPosition) {
+					input.movement = Vector3.zero;
+					input.inputs[(int)InputType.Jump] = InputState.Released;
+					input.inputs[(int)InputType.AttackRight] = InputState.Released;
+				} else {
+					var diff = _critter.rigidBody.position - _critter.lastKnownPosition;
+
+					var desiredPos = _critter.lastKnownPosition + diff.normalized * fleeRange;
+					var move = desiredPos - _critter.position;
 					move.y = 0;
 
 					float dist = diff.magnitude;
 
 					input.movement = move.normalized;
 					input.look = -diff;
+				}
+			}
+		}
+		public class CritterBehaviorMeleeAttack : CritterBehavior {
 
+			float minRange;
+			float maxRange;
+			float destinationTolerance;
+			float enemyElevationDeltaToJump;
+			Vector3 desiredOffset;
+
+			public CritterBehaviorMeleeAttack(Critter c) : base(c) {
+				minRange = 2;
+				maxRange = 5;
+				destinationTolerance = 1.5f;
+
+				enemyElevationDeltaToJump = 3;
+			}
+
+			public override EvaluationScore Evaluate() {
+				if (!_critter.IsPanicked() || !_critter.hasLastKnownPosition) {
+					return fail;
+				}
+				return new EvaluationScore(this, 1.0f);
+			}
+
+
+			override public void Tick(float dt, ref Pawn.Input_t input) {
+				var diff = _critter.rigidBody.position - _critter.lastKnownPosition;
+				diff.y = 0;
+				if (diff == Vector3.zero) {
+					diff.x = 1;
+				}
+
+				if (desiredOffset == Vector3.zero) {
+					var angle = Random.Range(0, Mathf.PI * 2);
+					desiredOffset = new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+				}
+
+				var desiredPos = _critter.lastKnownPosition + desiredOffset * ((maxRange - minRange) / 2 + minRange);
+				var move = desiredPos - _critter.position;
+				move.y = 0;
+
+				float dist = diff.magnitude;
+
+
+				if (dist > minRange && dist < maxRange && _critter.canAttack && _critter.activity == Pawn.Activity.OnGround) {
+					input.look = -diff;
+					var weapon = _critter.GetInventorySlot(0) as Weapon;
+					if (weapon.CanCast()) {
+						if (_critter.CanSee(_critter.gameMode.players[0].playerPawn) > 0) {
+							input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
+							desiredOffset = Vector3.zero;
+						}
+					}
 				} else {
-
+					float speed = dist > 4 ? 1.0f : 0.5f;
+					input.movement = move.normalized * speed;
+					input.look = -diff;
 					if (diff.y <= -enemyElevationDeltaToJump) {
-						if (c.canJump && c.activity == Pawn.Activity.OnGround) {
+						if (_critter.canJump && _critter.activity == Pawn.Activity.OnGround) {
 							input.inputs[(int)InputType.Jump] = InputState.JustPressed;
-						}
-					}
-					diff.y = 0;
-					if (diff == Vector3.zero) {
-						diff.x = 1;
-					}
-					var desiredPos = c.lastKnownPosition + diff.normalized * maxRange;
-					var move = desiredPos - c.position;
-					move.y = 0;
-
-					float dist = diff.magnitude;
-
-					var player = c.gameMode.players[0].playerPawn;
-					if (c.CanSee(player) > 0) {
-						if (dist > minRange && dist < maxRange) {
-							if (c.canAttack && c.activity == Pawn.Activity.OnGround) {
-								input.look = -diff;
-								var weapon = c.GetInventorySlot(0) as Weapon;
-								if (weapon.CanCast()) {
-									input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
-								}
-							}
-						}
-						else {
-							input.movement = move.normalized;
-							input.look = input.movement;
-						}
-					} else {
-						if (move.magnitude > 0.5f) {
-							input.movement = move.normalized * 0.5f;
-							input.look = input.movement;
 						}
 					}
 				}
@@ -319,6 +270,91 @@ namespace Bowhead.Actors {
 
 		}
 
+		public class CritterBehaviorRangedAttack : CritterBehavior {
 
+			float minRange;
+			float maxRange;
+			float enemyElevationDeltaToJump;
+			Vector3 desiredOffset;
+			float fleeRange;
+			float fleeStunLimit;
+
+			public CritterBehaviorRangedAttack(Critter c) : base(c) {
+				minRange = 5;
+				maxRange = 10;
+				enemyElevationDeltaToJump = 3;
+				fleeRange = 12;
+				fleeStunLimit = 0.5f;
+			}
+
+			public override EvaluationScore Evaluate() {
+				if (!_critter.IsPanicked() || !_critter.hasLastKnownPosition) {
+					return fail;
+				}
+				return new EvaluationScore(this, 1.0f);
+			}
+
+			override public void Tick(float dt, ref Pawn.Input_t input) {
+
+				input.movement = Vector3.zero;
+				input.inputs[(int)InputType.Jump] = InputState.Released;
+				input.inputs[(int)InputType.AttackRight] = InputState.Released;
+
+				if (_critter.hasLastKnownPosition) {
+					var diff = _critter.rigidBody.position - _critter.lastKnownPosition;
+
+					if (_critter.stunAmount > _critter.data.maxStun * 0.5f) {
+						var desiredPos = _critter.lastKnownPosition + diff.normalized * fleeRange;
+						var move = desiredPos - _critter.position;
+						move.y = 0;
+
+						float dist = diff.magnitude;
+
+						input.movement = move.normalized;
+						input.look = -diff;
+
+					} else {
+
+						if (diff.y <= -enemyElevationDeltaToJump) {
+							if (_critter.canJump && _critter.activity == Pawn.Activity.OnGround) {
+								input.inputs[(int)InputType.Jump] = InputState.JustPressed;
+							}
+						}
+						diff.y = 0;
+						if (diff == Vector3.zero) {
+							diff.x = 1;
+						}
+						var desiredPos = _critter.lastKnownPosition + diff.normalized * maxRange;
+						var move = desiredPos - _critter.position;
+						move.y = 0;
+
+						float dist = diff.magnitude;
+
+						var player = _critter.gameMode.players[0].playerPawn;
+						if (_critter.CanSee(player) > 0) {
+							if (dist > minRange && dist < maxRange) {
+								if (_critter.canAttack && _critter.activity == Pawn.Activity.OnGround) {
+									input.look = -diff;
+									var weapon = _critter.GetInventorySlot(0) as Weapon;
+									if (weapon.CanCast()) {
+										input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
+									}
+								}
+							} else {
+								input.movement = move.normalized;
+								input.look = input.movement;
+							}
+						} else {
+							if (move.magnitude > 0.5f) {
+								input.movement = move.normalized * 0.5f;
+								input.look = input.movement;
+							}
+						}
+					}
+				}
+
+			}
+
+		}
 	}
 }

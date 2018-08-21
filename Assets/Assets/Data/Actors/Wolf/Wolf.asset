@@ -68,6 +68,8 @@ MonoBehaviour:
     _assetPath: Actors/Critters/Wolf
     _editorPath: Assets/Assets/Prefabs/Resources/Actors/Critters/Wolf.prefab
   silhouetteDistanceThreshold: 10
+  canMount: 0
+  defaultLoadout: {fileID: 11400000, guid: aed3b51089462144abc792f1413f0c29, type: 2}
   waryLimit: 1
   investigateLimit: 3
   dayVisionDistance: 30
@@ -80,11 +82,8 @@ MonoBehaviour:
   visionAngleRangeDown: 60
   hearingDistance: 20
   hearingDistanceExponent: 2
-  canMount: 0
   waryCooldownTime: 3
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
-  idleBehavior: 1
-  panicBehavior: 3
-  defaultLoadout: {fileID: 11400000, guid: aed3b51089462144abc792f1413f0c29, type: 2}
+  behaviors: 0000000001000000030000000400000005000000
