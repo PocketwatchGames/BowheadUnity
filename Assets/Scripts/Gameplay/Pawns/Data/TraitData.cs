@@ -20,8 +20,8 @@ namespace Bowhead {
 
 
 
-		new public static ItemData Get(string name) {
-			return DataManager.GetData<ItemData>(name);
+		new public static TraitData Get(string name) {
+			return DataManager.GetData<TraitData>(name);
 		}
 
 		public void Remove(Actors.Pawn pawn) {

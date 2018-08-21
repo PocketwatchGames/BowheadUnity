@@ -22,6 +22,7 @@ namespace Bowhead.Actors {
         public Vector3 lastKnownPosition;
 
         public Item[] loot = new Item[MaxInventorySize];
+		public float behaviorUpdateTimer;
 		public CritterBehavior curBehavior;
 		public List<CritterBehavior> behaviors = new List<CritterBehavior>();
 
@@ -35,7 +36,7 @@ namespace Bowhead.Actors {
 		public override void Spawn(EntityData d, int index, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
 			base.Spawn(d, index, pos, yaw, instigator, owner, team);
 			foreach (var b in data.behaviors) {
-				behaviors.Add(CritterBehavior.Create(b, this));
+				behaviors.Add(b.Create(this));
 			}
 			_defaultSilhouetteMode = SilhouetteRenderer.Mode.Off;
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
@@ -302,25 +303,34 @@ namespace Bowhead.Actors {
 
 			UpdateAggro(dt);
 
-			// Evaluate behaviors
-			List<CritterBehavior.EvaluationScore> possibleBehaviors = new List<CritterBehavior.EvaluationScore>();
-			float totalScore = 0;
-			foreach (var b in behaviors) {
-				var score = b.Evaluate();
-				if (score.score >0) {
-					possibleBehaviors.Add(score);
-					totalScore += score.score;
-				}
+			if (curBehavior != null && !curBehavior.IsValid()) {
+				behaviorUpdateTimer = 0;
 			}
 
-			// Choose a behavior
-			if (possibleBehaviors.Count > 0) {
-				float chooseScore = GameManager.instance.randomNumber * totalScore;
-				foreach (var b in possibleBehaviors) {
-					chooseScore -= b.score;
-					if (chooseScore <= 0) {
-						curBehavior = b.behavior;
-						break;
+			behaviorUpdateTimer -= dt;
+			if (behaviorUpdateTimer <= 0) {
+				behaviorUpdateTimer += data.behaviorUpdateTime;
+
+				// Evaluate behaviors
+				List<CritterBehavior.EvaluationScore> possibleBehaviors = new List<CritterBehavior.EvaluationScore>();
+				float totalScore = 0;
+				foreach (var b in behaviors) {
+					var score = b.Evaluate();
+					if (score.score > 0) {
+						possibleBehaviors.Add(score);
+						totalScore += score.score;
+					}
+				}
+
+				// Choose a behavior
+				if (possibleBehaviors.Count > 0) {
+					float chooseScore = GameManager.instance.randomNumber * totalScore;
+					foreach (var b in possibleBehaviors) {
+						chooseScore -= b.score;
+						if (chooseScore <= 0) {
+							curBehavior = b.behavior;
+							break;
+						}
 					}
 				}
 			}

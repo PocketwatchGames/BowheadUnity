@@ -87,4 +87,8 @@ MonoBehaviour:
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
-  behaviors: 0000000002000000
+  behaviorUpdateTime: 2
+  behaviors:
+  - {fileID: 11400000, guid: 951fb8738fae8254d97f58e338d9831a, type: 2}
+  - {fileID: 11400000, guid: f8f61d54efed20c4891c1d048d3c77fc, type: 2}
+  - {fileID: 11400000, guid: 1c8ac26a03b0a6f4ba4545d6cc997059, type: 2}

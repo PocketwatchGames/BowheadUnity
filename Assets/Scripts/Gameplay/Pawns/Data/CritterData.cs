@@ -32,7 +32,8 @@ namespace Bowhead.Actors {
 		public float panicCooldownTime;
 		public float waryIncreaseAtMaxAwareness;
 		public float waryIncreaseAtMaxAwarenessWhilePanicked;
-		public List<Critter.ECritterBehaviorType> behaviors = new List<Critter.ECritterBehaviorType>();
+		public float behaviorUpdateTime = 2;
+		public List<BehaviorData> behaviors = new List<BehaviorData>();
 
 		public Type critterClass { get; private set; }
 
