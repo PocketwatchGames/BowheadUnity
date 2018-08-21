@@ -174,7 +174,7 @@ namespace Bowhead {
 			World.Streaming.StaticInit();
 			DataManager.InitData();
 
-			MainThreadTaskQueue.maxFrameTimeMicroseconds = int.MaxValue;
+			MainThreadTaskQueue.maxFrameTimeMicroseconds = 1000;// int.MaxValue;
 
 #if LEAK_TRACKER
 			_leakTracker = new LeakTracker(Utils.GetModuleAssemblies());
