@@ -78,11 +78,11 @@ MonoBehaviour:
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
-    projectile:
-      speed: 20
-      lifetime: 5
+    projectiles:
+    - speed: 20
+      lifetime: 3
       damage: 10
-      stun: 0.1
+      stun: 0
       heatSeeking: 0
       autoAimYaw: 0
       autoAimPitch: 0

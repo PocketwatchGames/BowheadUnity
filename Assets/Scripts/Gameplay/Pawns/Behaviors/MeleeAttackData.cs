@@ -5,10 +5,13 @@ using UnityEngine;
 namespace Bowhead.Actors {
 	[CreateAssetMenu(menuName = "Behaviors/MeleeAttack")]
 	public class MeleeAttackData : BehaviorData<Critter.MeleeAttack> {
-		public float minRange = 2;
+		public float minRange;
 		public float maxRange = 5;
 		public float destinationTolerance = 1.5f;
 		public float enemyElevationDeltaToJump = 3;
+		public float walkDistance = 4;
+		public float walkSpeed = 0.4f;
+		public float runSpeed = 1.0f;
 	}
 
 	public partial class Critter : Pawn<Critter, CritterData> {
@@ -56,10 +59,14 @@ namespace Bowhead.Actors {
 						}
 					}
 				} else {
-					float speed = dist > 4 ? 1.0f : 0.5f;
-					input.movement = move.normalized * speed;
-					input.look = -diff;
-					if (diff.y <= -data.enemyElevationDeltaToJump) {
+					if (dist > data.walkDistance) {
+						input.movement = move.normalized * data.runSpeed;
+						input.look = input.movement.normalized;
+					} else {
+						input.movement = move.normalized * data.walkSpeed;
+						input.look = -diff;
+					}
+					if (_critter.rigidBody.position.y - _critter.lastKnownPosition.y <= -data.enemyElevationDeltaToJump) {
 						if (_critter.canJump && _critter.activity == Pawn.Activity.OnGround) {
 							input.inputs[(int)InputType.Jump] = InputState.JustPressed;
 						}

@@ -11,7 +11,7 @@ namespace Bowhead.Actors {
 		public class Idle : CritterBehavior<IdleData> {
 
 			public override EvaluationScore Evaluate() {
-				if (!_critter.IsPanicked()) {
+				if (_critter.IsPanicked()) {
 					return fail;
 				}
 				return new EvaluationScore(this, 1.0f);

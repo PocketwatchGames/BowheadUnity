@@ -7,6 +7,7 @@ namespace Bowhead.Actors {
 	public class FleeAndRecoverData : BehaviorData<Critter.FleeAndRecover> {
 		public float fleeStunLimit = 0.5f;
 		public float fleeRange = 10;
+		public float fleeStunPower = 2;
 	}
 
 	public partial class Critter : Pawn<Critter, CritterData> {
@@ -20,7 +21,7 @@ namespace Bowhead.Actors {
 				}
 
 				if (_critter.stunAmount > _critter.data.maxStun * data.fleeStunLimit) {
-					return new EvaluationScore(this, 1.0f);
+					return new EvaluationScore(this, Mathf.Pow((_critter.stunAmount - _critter.data.maxStun * data.fleeStunLimit) / _critter.data.maxStun, data.fleeStunPower));
 				}
 
 				return fail;

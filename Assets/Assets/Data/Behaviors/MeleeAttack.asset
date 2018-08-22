@@ -13,3 +13,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 51
+  minRange: 0
+  maxRange: 5
+  destinationTolerance: 1.5
+  enemyElevationDeltaToJump: 3
+  walkDistance: 4
+  walkSpeed: 0.4
+  runSpeed: 1
