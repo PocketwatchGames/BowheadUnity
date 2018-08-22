@@ -11,6 +11,13 @@ using UnityEngine;
 
 using static World;
 
+#if EDGE_COLLAPSE
+using static World.ChunkMeshGen.EdgeCollapse;
+#elif SURFACE_NETS
+using static World.ChunkMeshGen.SurfaceNets;
+#endif
+
+
 public sealed class WorldFile : IDisposable {
 	
 	const int VERSION = 5;
@@ -294,7 +301,7 @@ public sealed class WorldFile : IDisposable {
 		}
 	};
 
-	public static unsafe PinnedChunkData_t DecompressChunkData(byte* ptr, int len, PinnedChunkData_t chunk, ChunkMeshGen.FinalMeshVerts_t verts) {
+	public static unsafe PinnedChunkData_t DecompressChunkData(byte* ptr, int len, PinnedChunkData_t chunk, FinalMeshVerts_t verts) {
 		var src = ptr;
 
 		{

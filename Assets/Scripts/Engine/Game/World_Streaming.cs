@@ -699,7 +699,7 @@ public partial class World {
 			public byte* ptr;
 			public int len;
 			public PinnedChunkData_t chunk;
-			public ChunkMeshGen.FinalMeshVerts_t verts;
+			public FinalMeshVerts_t verts;
 
 			public void Execute() {
 				chunk = WorldFile.DecompressChunkData(ptr, len, chunk, verts);
@@ -1209,7 +1209,7 @@ public partial class World {
 				}
 			}
 
-			ChunkMeshGen.FinalMeshVerts_t IChunkIO.verts => jobData.jobData.outputVerts;
+			FinalMeshVerts_t IChunkIO.verts => jobData.jobData.outputVerts;
 
 			public event ChunkGeneratedDelegate onChunkVoxelsLoaded;
 			public event ChunkGeneratedDelegate onChunkVoxelsUpdated;
@@ -1440,7 +1440,7 @@ public partial class World {
 
 		public interface IChunkIO : IChunk {
 			new EChunkFlags flags { get; set; }
-			ChunkMeshGen.FinalMeshVerts_t verts { get; }
+			FinalMeshVerts_t verts { get; }
 		};
 
 		public IChunk GetChunk(WorldChunkPos_t pos) {
