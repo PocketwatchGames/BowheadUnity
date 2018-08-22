@@ -13,3 +13,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 58
+  _behaviorClass: Bowhead.Actors.Critter+Flee, Game, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  destinationTolerance: 0.5

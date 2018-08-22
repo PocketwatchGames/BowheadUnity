@@ -20,7 +20,7 @@ namespace Bowhead.Client {
 #if UNITY_EDITOR && !DEV_STREAMING
 		[MenuItem("Bowhead/Options/HQ Terrain")]
 		static void ToggleShaderQuality() {
-			Streaming.debugHQShaderLevel = (Streaming.debugHQShaderLevel == Streaming.EShaderQualityLevel.HIGH) ? Streaming.EShaderQualityLevel.DEFAULT : Streaming.EShaderQualityLevel.HIGH;
+			Streaming.debugHQShaderLevel = (Streaming.debugHQShaderLevel == Streaming.EShaderQualityLevel.HIGH) ? Streaming.EShaderQualityLevel.LOW : Streaming.EShaderQualityLevel.HIGH;
 			if ((GameManager.instance != null) && (GameManager.instance.clientWorld != null)) {
 				GameManager.instance.clientWorld.worldStreaming.shaderQualityLevel = Streaming.debugHQShaderLevel;
 			}

@@ -16,11 +16,18 @@ namespace Bowhead.Actors {
 	}
 
 	public abstract class BehaviorData<T> : BehaviorData where T : Critter.CritterBehavior, new() {
+		[ClassDropdown(typeof(Critter.CritterBehavior)), SerializeField]
+		string _behaviorClass;
+				
+		public System.Type behaviorClass { get; private set; }
+
 		protected override Critter.CritterBehavior _Create(Critter c) {
+			var t = typeof(T);
 			return Create(c);
 		}
+
 		new public T Create(Critter c) {
-			T behavior = new T();
+			T behavior = (T)System.Activator.CreateInstance(behaviorClass);
 			behavior.Init(c, this);
 			return behavior;
 		}
@@ -28,7 +35,21 @@ namespace Bowhead.Actors {
 		new public static BehaviorData<T> Get(string name) {
 			return DataManager.GetData<BehaviorData<T>>(name);
 		}
+
+		public override void OnAfterDeserialize() {
+			base.OnAfterDeserialize();
+
+			if (string.IsNullOrEmpty(_behaviorClass)) {
+				behaviorClass = null;
+			} else {
+				behaviorClass = Utils.GetType(_behaviorClass);
+				if (behaviorClass == null) {
+					throw new System.Exception("Unable to find type for " + _behaviorClass);
+				}
+			}
+		}
 	}
+
 	public partial class Critter : Pawn<Critter, CritterData> {
 
 

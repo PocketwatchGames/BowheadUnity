@@ -99,7 +99,7 @@ public partial class World {
 		public static EShaderQualityLevel debugHQShaderLevel {
 			get {
 				LoadPrefs();
-				return _debugHQShaderLevel ? EShaderQualityLevel.HIGH : EShaderQualityLevel.DEFAULT;
+				return _debugHQShaderLevel ? EShaderQualityLevel.HIGH : EShaderQualityLevel.LOW;
 			}
 			set {
 				var hq = value == EShaderQualityLevel.HIGH;

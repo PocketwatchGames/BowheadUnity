@@ -13,6 +13,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 66
+  _behaviorClass: Bowhead.Actors.Critter+DodgeBack, Game, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
   minDist: 1
   maxDist: 4
   distPower: 2
