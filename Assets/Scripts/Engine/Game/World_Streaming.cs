@@ -12,6 +12,16 @@ using Unity.Jobs;
 using Unity.Collections;
 using Unity.Collections.LowLevel.Unsafe;
 
+#if DEBUG_VOXEL_MESH
+using static World.ChunkMeshGen.Debug;
+#endif
+
+#if EDGE_COLLAPSE
+using static World.ChunkMeshGen.EdgeCollapse;
+#elif SURFACE_NETS
+using static World.ChunkMeshGen.SurfaceNets;
+#endif
+
 public partial class World {
 	public sealed class Streaming : IDisposable {
 		public enum EShaderQualityLevel {
@@ -433,7 +443,7 @@ public partial class World {
 													if (neighbor.jobData == null) {
 														if (TryMMapLoad(neighbor)) {
 															if (neighbor.jobData == null) {
-																return ScheduleGenVoxelsJob(neighbor);
+																return QueueGenVoxelsJob(neighbor);
 															}
 														} else {
 															return false;
@@ -449,9 +459,9 @@ public partial class World {
 						}
 
 						if (canGenerateTris) {
-							return ScheduleGenTrisJob(chunk);
+							return QueueGenTrisJob(chunk);
 						} else if (!chunk.hasVoxelData && (chunk.jobData == null)) {
-							return ScheduleGenVoxelsJob(chunk);
+							return QueueGenVoxelsJob(chunk);
 						}
 					}
 				}
@@ -522,7 +532,7 @@ public partial class World {
 			++countersThisFrame.submittedJobs;
 		}
 
-		bool ScheduleGenVoxelsJob(Chunk chunk) {
+		bool QueueGenVoxelsJob(Chunk chunk) {
 			var jobData = GetFreeJobData();
 			if (jobData == null) {
 				return false;
@@ -551,7 +561,7 @@ public partial class World {
 			return true;
 		}
 
-		bool ScheduleGenTrisJob(Chunk chunk) {
+		bool QueueGenTrisJob(Chunk chunk) {
 			bool existingJob = chunk.jobData != null;
 
 			if (existingJob) {
@@ -608,9 +618,9 @@ public partial class World {
 			var depJobs = JobHandle.CombineDependencies(dependencies);
 
 			unsafe {
-				chunk.jobData.jobHandle = ChunkMeshGen.ScheduleGenTrisJob(ref chunk.jobData.jobData, chunk.chunkData.pinnedTimingData, _blockMaterialIndices, depJobs);
+				chunk.jobData.jobHandle = NewGenTrisJob(ref chunk.jobData.jobData, chunk.chunkData.pinnedTimingData, _blockMaterialIndices, depJobs);
 #if DEBUG_VOXEL_MESH
-				chunk.jobData.jobHandleDebug = ChunkMeshGen.ScheduleGenTrisDebugJob(ref chunk.jobData.jobData, _blockMaterialIndices, depJobs);
+				chunk.jobData.jobHandleDebug = NewGenTrisDebugJob(ref chunk.jobData.jobData, _blockMaterialIndices, depJobs);
 #endif
 			}
 			dependencies.Dispose();
