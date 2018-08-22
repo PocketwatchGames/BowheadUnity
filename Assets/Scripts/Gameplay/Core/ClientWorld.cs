@@ -49,7 +49,7 @@ namespace Bowhead.Client {
 		) : base(gameInstance, sharedStreaming, chunkComponent, sceneGroup, GameManager.instance.staticData.defaultActorPrefab, () => GameManager.instance.staticObjectPoolRoot, () => GameManager.instance.transientObjectPoolRoot, assemblies, driver) {
 #if UNITY_EDITOR
 #if DEV_STREAMING
-			worldStreaming.shaderQualityLevel = Streaming.EShaderQualityLevel.DEFAULT;
+			worldStreaming.shaderQualityLevel = Streaming.EShaderQualityLevel.LOW;
 #else
 			worldStreaming.shaderQualityLevel = Streaming.debugHQShaderLevel;
 #endif

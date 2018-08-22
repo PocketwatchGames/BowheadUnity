@@ -15,8 +15,8 @@ using Unity.Collections.LowLevel.Unsafe;
 public partial class World {
 	public sealed class Streaming : IDisposable {
 		public enum EShaderQualityLevel {
-			HIGH,
-			DEFAULT
+			LOW,
+			HIGH
 		};
 
 		public struct CountersTotal_t {
@@ -265,7 +265,7 @@ public partial class World {
 
 		public EShaderQualityLevel shaderQualityLevel {
 			get {
-				return _highQualityShader ? EShaderQualityLevel.HIGH : EShaderQualityLevel.DEFAULT;
+				return _highQualityShader ? EShaderQualityLevel.HIGH : EShaderQualityLevel.LOW;
 			}
 			set {
 				var hq = value == EShaderQualityLevel.HIGH;
