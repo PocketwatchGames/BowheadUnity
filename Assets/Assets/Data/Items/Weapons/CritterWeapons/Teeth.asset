@@ -83,14 +83,14 @@ MonoBehaviour:
     statusEffectTime: 0
   - chargeTime: 0
     maxCharge: 0
-    castTime: 0.2
+    castTime: 0.1
     activeTime: 0.1
     cooldown: 0.1
     cooldownNextAttackQueueTime: 0
     range: 1
     radius: 1
     staminaUse: 0.1
-    stepDistance: 0.2
+    stepDistance: 1
     moveSpeedWhileCharging: 0
     moveSpeedWhileFullyCharged: 0
     canMoveDuringCooldown: 0

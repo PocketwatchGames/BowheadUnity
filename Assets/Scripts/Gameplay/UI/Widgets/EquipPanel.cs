@@ -19,7 +19,8 @@ namespace Bowhead.Client.UI {
 		EquipSlot _equipSlotRight;
 		[SerializeField]
 		StatusEffectHUD _statusEffectPrefab;
-
+		[SerializeField]
+		HealthSlot _healthSlot;
 
         private EquipSlot[] _slots = new EquipSlot[Player.MaxInventorySize];
 
@@ -30,6 +31,7 @@ namespace Bowhead.Client.UI {
             _player = player;
 			_equipSlotLeft.Init(_player, 0);
 			_equipSlotRight.Init(_player, 1);
+			_healthSlot.Init(_player);
 
 			_player.OnInventoryChange += OnInventoryChange;
 			GameManager.instance.clientWorld.StatusEffectAddedEvent += OnStatusEffectAdded;

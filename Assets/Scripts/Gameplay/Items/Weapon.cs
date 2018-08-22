@@ -46,12 +46,14 @@ namespace Bowhead {
                 GameObject.Destroy(_mesh);
 				_mesh = null;
             }
-            if (data.prefab != null && owner != null) {
+            if (data.prefab != null && owner != null && owner.go != null) {
                 if (newSlot == (int)Player.InventorySlot.LEFT_HAND || newSlot == (int)Player.InventorySlot.RIGHT_HAND) {
                     var prefab = data.prefab.Load();
-                    _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
-					UpdateAnimation(owner);
-					owner.SetSilhouetteDirty();
+					if (prefab != null) {
+						_mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
+						UpdateAnimation(owner);
+						owner.SetSilhouetteDirty();
+					}
                 }
             }
 

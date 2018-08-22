@@ -1153,6 +1153,7 @@ namespace Bowhead.Actors {
 			}
 
 			stunAmount = Mathf.Min(data.maxStun, stunAmount + s);
+			stunRechargeTimer = data.stunRechargePause;
 			if (stunAmount > data.stunLimit) {
 				stunned = true;
 

@@ -13,10 +13,12 @@ namespace Bowhead.Client.UI {
 		private Image _useTimer;
 		[SerializeField]
 		private Text _altSlot;
+		[SerializeField]
+		private Text _text;
+		[SerializeField]
+		private Image _background;
 
 		private Item _item, _alt;
-        private Button _button;
-        private Image _background;
 		private Player _player;
 
 		public Sprite[] _slotBackgrounds;
@@ -24,10 +26,8 @@ namespace Bowhead.Client.UI {
 
 		public void Init(Player p, int slotBackground) {
 			_player = p;
-			_button = transform.GetAnyChildComponent<Button>("Button");
-			_background = transform.GetAnyChildComponent<Image>("Background");
 			_background.sprite = _slotBackgrounds[Mathf.Min(slotBackground, _slotBackgrounds.Length - 1)];
-			_button.gameObject.SetActive(false);
+			_text.gameObject.SetActive(false);
 			_buttonHint.gameObject.SetActive(false);
 			SetTimer(0);
 		}
@@ -45,13 +45,14 @@ namespace Bowhead.Client.UI {
 			}
 			else {
 				_useTimer.gameObject.SetActive(true);
-				_useTimer.rectTransform.localScale = new Vector3(1, t, 1);
+				_useTimer.rectTransform.localScale = new Vector3(1, Mathf.Clamp01(t), 1);
 			}
 		}
 
 		private void Update() {
 			if (_item != null) {
 				SetTimer(1.0f - (_item as Weapon).stamina);
+				_useTimer.color = (_item as Weapon).stunned ? Color.red * 0.8f : Color.black * 0.8f;
 			}
 		}
 
@@ -60,10 +61,10 @@ namespace Bowhead.Client.UI {
 			_alt = alt;
 
 			if (_item == null) {
-				_button.gameObject.SetActive(false);
+				_text.gameObject.SetActive(false);
 			} else {
-				_button.gameObject.SetActive(true);
-				_button.GetComponentInChildren<Text>().text = _item.data.displayName;
+				_text.gameObject.SetActive(true);
+				_text.text = _item.data.displayName;
 			}
 
 			if (_alt == null) {

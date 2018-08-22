@@ -13,17 +13,24 @@ namespace Bowhead.Actors {
 
 		public class Investigate : CritterBehavior<InvestigateData> {
 
+			public override bool IsValid() {
+				if (_critter.hasLastKnownPosition) {
+					return false;
+				}
+				return base.IsValid();
+			}
 			public override EvaluationScore Evaluate() {
-				if (!_critter.IsPanicked() || _critter.hasLastKnownPosition) {
+				if (_critter.IsPanicked() || !_critter.hasLastKnownPosition) {
 					return fail;
 				}
 				return new EvaluationScore(this, 1.0f);
 			}
 
 			public override void Tick(float dt, ref Input_t input) {
-				input.movement = Vector3.zero;
-				input.inputs[(int)InputType.Jump] = InputState.Released;
-				input.inputs[(int)InputType.AttackRight] = InputState.Released;
+				var move = _critter.lastKnownPosition - _critter.position;
+				move.y = 0;
+				input.movement = move;
+				input.look = move.normalized;
 			}
 		}
 

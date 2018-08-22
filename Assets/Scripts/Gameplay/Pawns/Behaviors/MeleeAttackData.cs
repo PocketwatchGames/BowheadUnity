@@ -12,6 +12,7 @@ namespace Bowhead.Actors {
 		public float runSpeed = 1.0f;
 		public int attackCount;
 		public float waitTime;
+		public float weaponStaminaScorePower;
 	}
 
 	public partial class Critter : Pawn<Critter, CritterData> {
@@ -45,7 +46,7 @@ namespace Bowhead.Actors {
 				if (!_critter.IsPanicked() || !_critter.hasLastKnownPosition) {
 					return fail;
 				}
-				return new EvaluationScore(this, 1.0f);
+				return new EvaluationScore(this, Mathf.Pow(weapon.stamina,data.weaponStaminaScorePower));
 			}
 
 			public override bool IsValid() {
@@ -82,10 +83,14 @@ namespace Bowhead.Actors {
 			override public void Tick(float dt, ref Pawn.Input_t input) {
 				float dist = getDistToAttackPos();
 
+				bool isInAttackChain = attackCount < data.attackCount;
+				bool canStartAttacking = dist > minRange && dist < maxRange && _critter.canAttack && _critter.activity == Pawn.Activity.OnGround;
 
 				if (data.attackCount > 0 && attackCount == 0) {
-				} else if (dist > minRange && dist < maxRange && _critter.canAttack && _critter.activity == Pawn.Activity.OnGround) {
-					input.look = _critter.lastKnownPosition - _critter.position;
+				} else if (isInAttackChain || canStartAttacking) {
+					if (canStartAttacking) {
+						input.look = _critter.lastKnownPosition - _critter.position;
+					}
 					var weapon = _critter.GetInventorySlot(weaponIndex) as Weapon;
 					if (weapon.CanCast()) {
 						if (_critter.CanSee(_critter.gameMode.players[0].playerPawn) > 0) {

@@ -117,3 +117,7 @@ MonoBehaviour:
     scoreMultiplier: 2
     weaponIndex: 0
     attackIndex: 1
+  - behavior: {fileID: 11400000, guid: f06c0fdff72e8c74088e37032b9fe499, type: 2}
+    scoreMultiplier: 2
+    weaponIndex: 0
+    attackIndex: 0

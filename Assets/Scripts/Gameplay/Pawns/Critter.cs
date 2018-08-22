@@ -327,6 +327,7 @@ namespace Bowhead.Actors {
 
 			if (curBehavior != null && !curBehavior.IsValid()) {
 				behaviorUpdateTimer = 0;
+				curBehavior = null;
 			}
 
 			behaviorUpdateTimer -= dt;

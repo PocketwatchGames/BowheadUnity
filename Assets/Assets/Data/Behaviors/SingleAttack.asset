@@ -22,3 +22,4 @@ MonoBehaviour:
   runSpeed: 1
   attackCount: 0
   waitTime: 1
+  weaponStaminaScorePower: 0.5
