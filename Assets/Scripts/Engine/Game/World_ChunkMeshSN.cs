@@ -57,14 +57,14 @@ public partial class World {
 				GCHandle _pinnedVoxels;
 
 #if DEBUG_VOXEL_MESH
-			public VoxelArray1D voxelsDebug;
-			BlendedVoxel_t[] _voxelsDebug;
-			GCHandle _pinnedVoxelsDebug;
+				public Debug.VoxelArray1D voxelsDebug;
+				Debug.BlendedVoxel_t[] _voxelsDebug;
+				GCHandle _pinnedVoxelsDebug;
 #endif
 				public static VoxelStorage_t New() {
 					return new VoxelStorage_t {
 #if DEBUG_VOXEL_MESH
-					_voxelsDebug = new BlendedVoxel_t[NUM_VOXELS],
+						_voxelsDebug = new Debug.BlendedVoxel_t[NUM_VOXELS],
 #endif
 						_voxels = new BlendedVoxel_t[NUM_VOXELS]
 					};
@@ -79,7 +79,7 @@ public partial class World {
 #if DEBUG_VOXEL_MESH
 				_pinnedVoxelsDebug = GCHandle.Alloc(_voxelsDebug, GCHandleType.Pinned);
 				unsafe {
-					voxelsDebug = VoxelArray1D.New((BlendedVoxel_t*)_pinnedVoxelsDebug.AddrOfPinnedObject().ToPointer(), _voxels.Length);
+					voxelsDebug = Debug.VoxelArray1D.New((Debug.BlendedVoxel_t*)_pinnedVoxelsDebug.AddrOfPinnedObject().ToPointer(), _voxels.Length);
 				}
 #endif
 				}
@@ -90,7 +90,7 @@ public partial class World {
 					_pinnedVoxels.Free();
 
 #if DEBUG_VOXEL_MESH
-				voxelsDebug = new VoxelArray1D();
+				voxelsDebug = new Debug.VoxelArray1D();
 				_pinnedVoxelsDebug.Free();
 #endif
 				}
