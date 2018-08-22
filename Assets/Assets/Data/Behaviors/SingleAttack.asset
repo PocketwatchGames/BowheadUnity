@@ -9,14 +9,16 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6fe0a7e2ce1f1bd429644bfe816e4f6c, type: 3}
-  m_Name: MeleeAttack
+  m_Name: SingleAttack
   m_EditorClassIdentifier: 
   version: 0
   _index: 51
-  minRange: 0
-  maxRange: 5
+  _behaviorClass: Bowhead.Actors.Critter+MeleeAttack, Game, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
   destinationTolerance: 1.5
   enemyElevationDeltaToJump: 3
   walkDistance: 4
   walkSpeed: 0.4
   runSpeed: 1
+  attackCount: 0
+  waitTime: 1

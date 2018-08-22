@@ -4,11 +4,11 @@ namespace Bowhead.Actors {
 
 	public abstract class BehaviorData : EntityData {
 
-		public Critter.CritterBehavior Create(Critter c) {
-			return _Create(c);
+		public Critter.CritterBehavior Create(Critter c, float score, int weaponIndex, int attackIndex) {
+			return _Create(c, score, weaponIndex, attackIndex);
 		}
 
-		protected abstract Critter.CritterBehavior _Create(Critter c);
+		protected abstract Critter.CritterBehavior _Create(Critter c, float score, int weaponIndex, int attackIndex);
 
 		new public static BehaviorData Get(string name) {
 			return DataManager.GetData<BehaviorData>(name);
@@ -21,14 +21,14 @@ namespace Bowhead.Actors {
 				
 		public System.Type behaviorClass { get; private set; }
 
-		protected override Critter.CritterBehavior _Create(Critter c) {
+		protected override Critter.CritterBehavior _Create(Critter c, float score, int weaponIndex, int attackIndex) {
 			var t = typeof(T);
-			return Create(c);
+			return Create(c, score, weaponIndex, attackIndex);
 		}
 
-		new public T Create(Critter c) {
+		new public T Create(Critter c, float score, int weaponIndex, int attackIndex) {
 			T behavior = (T)System.Activator.CreateInstance(behaviorClass);
-			behavior.Init(c, this);
+			behavior.Init(c, this, score, weaponIndex, attackIndex);
 			return behavior;
 		}
 
@@ -69,9 +69,16 @@ namespace Bowhead.Actors {
 				get;
 				private set;
 			}
+			public float scoreMultiplier;
+			public int weaponIndex;
+			public int attackIndex;
 
-			virtual public void Init(Critter c, BehaviorData d) {
+			virtual public void Init(Critter c, BehaviorData d, float score, int weaponIndex, int attackIndex) {
 				data = d;
+				_critter = c;
+				scoreMultiplier = score;
+				this.weaponIndex = weaponIndex;
+				this.attackIndex = attackIndex;
 			}
 			abstract public System.Type GetBehaviorDataType();
 			abstract public void Tick(float dt, ref Pawn.Input_t input);
@@ -92,9 +99,8 @@ namespace Bowhead.Actors {
 			}
 
 
-			override public void Init(Critter c, BehaviorData d) {
-				base.Init(c, d);
-				_critter = c;
+			override public void Init(Critter c, BehaviorData d, float score, int weaponIndex, int attackIndex) {
+				base.Init(c, d, score, weaponIndex, attackIndex);
 				data = (D)d;
 			}
 		}

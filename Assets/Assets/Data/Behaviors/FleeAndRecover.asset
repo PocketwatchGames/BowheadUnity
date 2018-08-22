@@ -13,7 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 63
-  _behaviorClass: Bowhead.Actors.Critter+DodgeBack, Game, Version=0.0.0.0, Culture=neutral,
+  _behaviorClass: Bowhead.Actors.Critter+FleeAndRecover, Game, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   fleeStunLimit: 0.5
   fleeRange: 10

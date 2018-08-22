@@ -370,7 +370,7 @@ namespace Bowhead.Actors {
 					if (itemLeft.CanCast()) {
 						if (input.JustReleased(InputType.AttackLeft)) {
 							if (itemLeft.chargeTime < itemLeft.data.jabChargeTime) {
-								itemLeft.Attack(this);
+								itemLeft.Attack(this, 0);
 								isCasting = true;
 							}
 						}
@@ -379,7 +379,7 @@ namespace Bowhead.Actors {
 				if (itemRight != null) {
 					if (itemRight.CanCast()) {
 						if (input.JustReleased(InputType.AttackRight)) {
-							itemRight.Attack(this);
+							itemRight.Attack(this, 0);
 							isCasting = true;
 						}
 					}

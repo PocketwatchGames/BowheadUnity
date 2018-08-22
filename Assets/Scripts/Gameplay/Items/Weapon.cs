@@ -67,19 +67,19 @@ namespace Bowhead {
 			}
 
 		}
-		public void Charge(float dt, int hand) {
+		public void Charge(float dt, int attackIndex) {
 
 			if (data.attacks.Length == 0) {
 				return;
 			}
 
-			if (hand >= data.attacks.Length) {
-				hand = 0;
+			if (attackIndex >= data.attacks.Length) {
+				return;
 			}
-			if (attackHand != hand) {
+			if (attackHand != attackIndex) {
 				chargeTime = 0;
 			}
-			attackHand = hand;
+			attackHand = attackIndex;
 
 			if (data.staminaUseDuringCharge > 0) {
 				staminaRechargeTimer = data.staminaRechargePause;
@@ -95,7 +95,7 @@ namespace Bowhead {
 		}
 
 
-		public bool Attack(Pawn owner) {
+		public bool Attack(Pawn owner, int attackIndex) {
 
 			if (data.attacks.Length == 0) {
 				return false;
@@ -110,6 +110,13 @@ namespace Bowhead {
 				return true;
 			}
 
+			if (attackIndex >= data.attacks.Length) {
+				return false;
+			}
+			if (attackHand != attackIndex) {
+				chargeTime = 0;
+			}
+			attackHand = attackIndex;
 			var attack = data.attacks[attackHand];
 
 			hitTargets.Clear();
@@ -303,7 +310,7 @@ namespace Bowhead {
 				else {
 					if (attackWhenCooldownComplete) {
 						attackWhenCooldownComplete = false;
-						Attack(owner);
+						Attack(owner, attackHand);
 					}
 				}
 			}

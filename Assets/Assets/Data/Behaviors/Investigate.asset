@@ -13,3 +13,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 33
+  _behaviorClass: Bowhead.Actors.Critter+Investigate, Game, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null

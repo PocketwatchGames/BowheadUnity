@@ -16,7 +16,6 @@ MonoBehaviour:
   displayName: 
   description: 
   monetaryValue: 0
-  canUse: 1
   canDrop: 1
   prefab:
     _assetPath: 
@@ -43,15 +42,16 @@ MonoBehaviour:
     canMoveDuringCooldown: 0
     canMoveDuringCast: 0
     canMoveDuringActive: 0
-    unblockable: 0
     interruptOnHit: 1
     canBackstab: 1
+    canTarget: 0
     attackResultDirectHit:
       knockback: 0.5
       knockbackTime: 0
       damage: 10
       stun: 0.5
       interrupt: 1
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
@@ -62,6 +62,7 @@ MonoBehaviour:
       damage: 7
       stun: 0.2
       interrupt: 0
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
@@ -72,19 +73,68 @@ MonoBehaviour:
       damage: 20
       stun: 0.8
       interrupt: 1
+      unblockable: 0
       damageType: 0
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
-  spell: 0
-  spellPower: 0
-  statusEffect: {fileID: 0}
-  statusEffectTime: 0
-  canTarget: 0
-  projectile: {fileID: 0}
-  projectileSpeed: 0
-  autoAimYaw: 0
-  autoAimPitch: 0
+    projectiles: []
+    statusEffect: {fileID: 0}
+    statusEffectTime: 0
+  - chargeTime: 0
+    maxCharge: 0
+    castTime: 0.2
+    activeTime: 0.1
+    cooldown: 0.1
+    cooldownNextAttackQueueTime: 0
+    range: 1
+    radius: 1
+    staminaUse: 0.1
+    stepDistance: 0.2
+    moveSpeedWhileCharging: 0
+    moveSpeedWhileFullyCharged: 0
+    canMoveDuringCooldown: 0
+    canMoveDuringCast: 0
+    canMoveDuringActive: 0
+    interruptOnHit: 1
+    canBackstab: 1
+    canTarget: 0
+    attackResultDirectHit:
+      knockback: 0.2
+      knockbackTime: 0
+      damage: 5
+      stun: 0.25
+      interrupt: 1
+      unblockable: 0
+      damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
+      loudness: 0
+    attackResultGlancingBlow:
+      knockback: 0
+      knockbackTime: 0
+      damage: 3
+      stun: 0.1
+      interrupt: 0
+      unblockable: 0
+      damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
+      loudness: 0
+    attackResultBackstab:
+      knockback: 0.2
+      knockbackTime: 0
+      damage: 10
+      stun: 0.5
+      interrupt: 1
+      unblockable: 0
+      damageType: 0
+      statusEffect: {fileID: 0}
+      statusEffectTime: 0
+      loudness: 0
+    projectiles: []
+    statusEffect: {fileID: 0}
+    statusEffectTime: 0
   blockAngleRange: 0
   blockResultDirectHit:
     knockback: 0
@@ -92,6 +142,7 @@ MonoBehaviour:
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0
@@ -105,6 +156,7 @@ MonoBehaviour:
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0

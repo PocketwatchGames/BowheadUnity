@@ -5,19 +5,35 @@ using System;
 
 namespace Bowhead.Actors {
 
+	public class AttackState {
+		public int weaponIndex;
+		public int attackIndex;
+		public InputState inputState;
+
+		public const int MaxAttackTypes = 10;
+
+		public AttackState(int w, int a, InputState i) {
+			weaponIndex = w;
+			attackIndex = a;
+			inputState = i;
+		}
+	}
     public enum InputState {
         Released,
         JustReleased,
         JustPressed,
-        Pressed,
-    }
-    public enum InputType {
+		Pressed,
+		Clicked,
+	}
+	public enum InputType {
         Jump,
-		Dodge,
 		Interact,
-        AttackLeft,
-		AttackRight,
 		Swap,
+		SprintDodge,
+		SprintJump,
+		AttackLeft,
+		AttackRight,
+		Dodge,
 		Count
 	}
 
@@ -135,15 +151,25 @@ namespace Bowhead.Actors {
             public Vector3 movement = Vector3.zero;
             public Vector3 look = Vector3.zero;
             public InputState[] inputs = new InputState[(int)InputType.Count];
+			public AttackState[] attacks = new AttackState[AttackState.MaxAttackTypes];
 
 			public bool IsPressed(InputType i) {
-				return inputs[(int)i] == InputState.Pressed || inputs[(int)i] == InputState.JustPressed;
+				return IsPressed(inputs[(int)i]);
 			}
 			public bool JustPressed(InputType i) {
-				return inputs[(int)i] == InputState.JustPressed;
+				return JustPressed(inputs[(int)i]);
 			}
 			public bool JustReleased(InputType i) {
-				return inputs[(int)i] == InputState.JustReleased;
+				return JustReleased(inputs[(int)i]);
+			}
+			public bool IsPressed(InputState i) {
+				return i == InputState.Pressed || i == InputState.JustPressed || i == InputState.Clicked;
+			}
+			public bool JustPressed(InputState i) {
+				return i == InputState.JustPressed || i == InputState.Clicked;
+			}
+			public bool JustReleased(InputState i) {
+				return i == InputState.JustReleased || i == InputState.Clicked;
 			}
 			public bool inMotion;
             public Vector3 position;
@@ -660,17 +686,9 @@ namespace Bowhead.Actors {
 			bool jumped = false;
 			if (canJump) {
 
-				if (input.JustPressed(InputType.Jump)) {
-					var jumpDir = input.movement * data.jumpHorizontalSpeed;
-					jumpDir.y += getGroundJumpVelocity();
-					Jump(jumpDir);
-					jumped = true;
-					fallJumpTimer = 0;
-				}
-
-				if (input.IsPressed(InputType.Dodge)) {
+				if (input.IsPressed(InputType.SprintDodge)) {
 					sprintTimer = sprintTimer += dt;
-					if (input.JustPressed(InputType.Dodge)) {
+					if (input.JustPressed(InputType.SprintDodge)) {
 						dodgeTimer = dodgeTimer + data.dodgeTime;
 					}
 				} else {
@@ -685,6 +703,42 @@ namespace Bowhead.Actors {
 						fallJumpTimer = 0;
 					}
 					sprintTimer = 0;
+				}
+
+				if (input.IsPressed(InputType.SprintJump)) {
+					sprintTimer = sprintTimer += dt;
+					if (input.JustPressed(InputType.SprintJump)) {
+						dodgeTimer = dodgeTimer + data.dodgeTime;
+					}
+				} else {
+					if (sprintTimer > 0 && sprintTimer < data.sprintTime) {
+						var jumpDir = input.movement * data.jumpHorizontalSpeed;
+						jumpDir.y += getGroundJumpVelocity();
+						Jump(jumpDir);
+						jumped = true;
+						fallJumpTimer = 0;
+					}
+					sprintTimer = 0;
+				}
+
+				if (input.JustPressed(InputType.Jump)) {
+					var jumpDir = input.movement * data.jumpHorizontalSpeed;
+					jumpDir.y += getGroundJumpVelocity();
+					Jump(jumpDir);
+					jumped = true;
+					fallJumpTimer = 0;
+				}
+
+
+				if (input.JustPressed(InputType.Dodge)) {
+					Vector3 jumpDir;
+					if (input.movement != Vector3.zero) {
+						jumpDir = input.movement * data.dodgeDistance;
+					} else {
+						jumpDir = new Vector3(Mathf.Sin(yaw), 0, Mathf.Cos(yaw)) * data.dodgeDistance;
+					}
+					Dodge(jumpDir, data.dodgeTime);
+					fallJumpTimer = 0;
 				}
 
 			} else {

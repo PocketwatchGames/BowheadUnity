@@ -13,3 +13,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 64
+  _behaviorClass: Bowhead.Actors.Critter+Patrol, Game, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
+  destinationTolerance: 0.5
+  patrolRange: 5
+  patrolTimeMin: 4
+  patrolTimeMax: 8
+  patrolSpeed: 0.25

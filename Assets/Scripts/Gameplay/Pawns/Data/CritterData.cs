@@ -7,6 +7,15 @@ namespace Bowhead.Actors {
 
 	[CreateAssetMenu(menuName = "EntityData/Critter")]
 	public class CritterData : PawnData<CritterData>, ISpawnPointSupport {
+
+		[Serializable]
+		public class BehaviorUsage {
+			public BehaviorData behavior;
+			public float scoreMultiplier;
+			public int weaponIndex;
+			public int attackIndex;
+		}
+
 		[Header("Critter"), ClassDropdown(typeof(Critter)), SerializeField]
 		string _critterClass;
 
@@ -33,7 +42,7 @@ namespace Bowhead.Actors {
 		public float waryIncreaseAtMaxAwareness;
 		public float waryIncreaseAtMaxAwarenessWhilePanicked;
 		public float behaviorUpdateTime = 2;
-		public List<BehaviorData> behaviors = new List<BehaviorData>();
+		public List<BehaviorUsage> behaviors = new List<BehaviorUsage>();
 
 		public Type critterClass { get; private set; }
 
@@ -58,24 +67,6 @@ namespace Bowhead.Actors {
 
 			var critter = (T)world.Spawn(critterClass, null, default(SpawnParameters));
 			critter.Spawn(this, 0, pos, yaw, instigator, owner, team);
-
-			if (defaultLoadout != null) {
-				var loot = defaultLoadout.loot;
-				if ((loot != null) && (loot.Length > 0)) {
-					for (int i = 0; i<loot.Length; ++i) {
-						var item = loot[i].CreateItem();
-						critter.loot[i] = item;
-					}
-				}
-
-				var inventory = defaultLoadout.inventory;
-				if ((inventory != null) && (inventory.Length > 0)) {
-					for (int i = 0; i<inventory.Length; ++i) {
-						var item = inventory[i].CreateItem();
-						critter.SetInventorySlot(i, item);
-					}
-				}
-			}
 
 			return critter;
 

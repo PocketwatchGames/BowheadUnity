@@ -15,7 +15,9 @@ namespace Bowhead.Actors {
 
 		public class RangedAttack : CritterBehavior<RangedAttackData> {
 
-			public RangedAttack() {
+			public override void Init(Critter c, BehaviorData d, float score, int weaponIndex, int attackIndex) {
+				base.Init(c, d, score, weaponIndex, attackIndex);
+
 			}
 
 			public override EvaluationScore Evaluate() {
@@ -66,9 +68,9 @@ namespace Bowhead.Actors {
 							if (dist > data.minRange && dist < data.maxRange) {
 								if (_critter.canAttack && _critter.activity == Pawn.Activity.OnGround) {
 									input.look = -diff;
-									var weapon = _critter.GetInventorySlot(0) as Weapon;
+									var weapon = _critter.GetInventorySlot(weaponIndex) as Weapon;
 									if (weapon.CanCast()) {
-										input.inputs[(int)InputType.AttackRight] = InputState.JustReleased;
+										input.attacks[weaponIndex] = new AttackState(weaponIndex, attackIndex, InputState.JustReleased);
 									}
 								}
 							} else {

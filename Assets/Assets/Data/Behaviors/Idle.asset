@@ -13,3 +13,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 7
+  _behaviorClass: Bowhead.Actors.Critter+Idle, Game, Version=0.0.0.0, Culture=neutral,
+    PublicKeyToken=null
