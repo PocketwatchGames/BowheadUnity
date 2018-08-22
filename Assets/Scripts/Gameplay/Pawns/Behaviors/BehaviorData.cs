@@ -55,6 +55,7 @@ namespace Bowhead.Actors {
 			abstract public System.Type GetBehaviorDataType();
 			abstract public void Tick(float dt, ref Pawn.Input_t input);
 			abstract public EvaluationScore Evaluate();
+			virtual public void Start() { }
 			virtual public bool IsValid() { return true; }
 
 		}

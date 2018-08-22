@@ -328,7 +328,10 @@ namespace Bowhead.Actors {
 					foreach (var b in possibleBehaviors) {
 						chooseScore -= b.score;
 						if (chooseScore <= 0) {
-							curBehavior = b.behavior;
+							if (curBehavior != b.behavior) {
+								b.behavior.Start();
+								curBehavior = b.behavior;
+							}
 							break;
 						}
 					}

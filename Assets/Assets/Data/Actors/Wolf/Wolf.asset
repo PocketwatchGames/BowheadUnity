@@ -21,8 +21,8 @@ MonoBehaviour:
   packSize: 0
   height: 1.5
   maxHealth: 100
-  dodgeTime: 0
-  dodgeDistance: 0
+  dodgeTime: 0.1
+  dodgeDistance: 3
   stunRechargePause: 1
   stunRechargeTime: 3
   stunTime: 3
@@ -94,3 +94,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 39ad7a8f831973e4f9e7ff5e8b167691, type: 2}
   - {fileID: 11400000, guid: 2bcaa7bd56dd39b4597f66b8baec7213, type: 2}
   - {fileID: 11400000, guid: f1be1ec75b7810f4caf0cbf34ad32aae, type: 2}
+  - {fileID: 11400000, guid: d3900c14b931d574390fbd1979e30a44, type: 2}
