@@ -466,6 +466,7 @@ namespace Bowhead.Actors {
 			PickUp(unarmedWeaponRight);
 			PickUp(ItemData.Get("Rapier").CreateItem());
 			PickUp(ItemData.Get("Buckler").CreateItem());
+			SwapWeapons();
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
 			PickUp(ItemData.Get("SpellHeal").CreateItem());
 			SetMoney(50);

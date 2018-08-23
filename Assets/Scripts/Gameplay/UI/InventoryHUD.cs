@@ -63,7 +63,7 @@ namespace Bowhead.Client.UI {
 					_selectedX += moveX;
 					if (_selectedX < 0) {
 						_selectedX = gridWidth-1;
-						if (_selectedX + _selectedY * gridWidth > GetPanelSlotCount(_activePanel)) {
+						if (_selectedX + _selectedY * gridWidth >= GetPanelSlotCount(_activePanel)) {
 							_selectedX = GetPanelSlotCount(_activePanel) % gridWidth - 1;
 						}
 					} else if (_selectedX >= gridWidth) {
@@ -80,16 +80,16 @@ namespace Bowhead.Client.UI {
 							_selectedY = 0;
 						}
 						_selectedY = ((GetPanelSlotCount(_activePanel) - 1) / gridWidth);
-						if (_selectedX + _selectedY * gridWidth > GetPanelSlotCount(_activePanel)) {
+						if (_selectedX + _selectedY * gridWidth >= GetPanelSlotCount(_activePanel)) {
 							_selectedX = GetPanelSlotCount(_activePanel) % gridWidth - 1;
 						}
-					} else if (_selectedX + _selectedY * gridWidth > GetPanelSlotCount(_activePanel)) {
+					} else if (_selectedX + _selectedY * gridWidth >= GetPanelSlotCount(_activePanel)) {
 						_activePanel++;
 						_selectedY = 0;
 						if (_activePanel > maxPanel) {
 							_activePanel = 0;
 						}
-						if (_selectedX + _selectedY * gridWidth > GetPanelSlotCount(_activePanel)) {
+						if (_selectedX + _selectedY * gridWidth >= GetPanelSlotCount(_activePanel)) {
 							_selectedX = GetPanelSlotCount(_activePanel) % gridWidth - 1;
 						}
 					}
