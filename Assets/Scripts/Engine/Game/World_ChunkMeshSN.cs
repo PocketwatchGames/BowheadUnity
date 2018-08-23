@@ -393,17 +393,23 @@ public partial class World {
 					return v0 | (count << 24);
 				}
 
-				public void EmitFace(int v0, int v1, int v2, int v3, uint smg, float smoothingFactor, Color32 color, int layer, int material) {
-					EmitTri(v0, v1, v2, smg, smoothingFactor, color, layer, material);
-					EmitTri(v0, v2, v3, smg, smoothingFactor, color, layer, material);
+				public void EmitFace(int v0, int v1, int v2, int v3, uint smg, float smoothingFactor, Color32 color, int layer, int material, bool isBorder) {
+					EmitTri(v0, v1, v2, smg, smoothingFactor, color, layer, material, isBorder);
+					EmitTri(v0, v2, v3, smg, smoothingFactor, color, layer, material, isBorder);
 				}
 				
-				void EmitTri(int v0, int v1, int v2, uint smg, float smoothingFactor, Color32 color, int layer, int material) {
+				void EmitTri(int v0, int v1, int v2, uint smg, float smoothingFactor, Color32 color, int layer, int material, bool isBorder) {
 					Vector3 normal;
 					if (GetNormal(v0, v1, v2, out normal)) {
-						indices[_indexCount++] = EmitVert(v0, smg, smoothingFactor, normal, color, layer);
-						indices[_indexCount++] = EmitVert(v1, smg, smoothingFactor, normal, color, layer);
-						indices[_indexCount++] = EmitVert(v2, smg, smoothingFactor, normal, color, layer);
+						if (isBorder) {
+							EmitVert(v0, smg, smoothingFactor, normal, color, layer);
+							EmitVert(v1, smg, smoothingFactor, normal, color, layer);
+							EmitVert(v2, smg, smoothingFactor, normal, color, layer);
+						} else {
+							indices[_indexCount++] = EmitVert(v0, smg, smoothingFactor, normal, color, layer);
+							indices[_indexCount++] = EmitVert(v1, smg, smoothingFactor, normal, color, layer);
+							indices[_indexCount++] = EmitVert(v2, smg, smoothingFactor, normal, color, layer);
+						}
 
 						AddVertexMaterial(v0, layer, material);
 						AddVertexMaterial(v1, layer, material);
@@ -865,7 +871,7 @@ public partial class World {
 					}
 				}
 
-				const int BUFFER_SIZE = ((VOXEL_CHUNK_SIZE_XZ+3)*(VOXEL_CHUNK_SIZE_XZ+3))*2;
+				const int BUFFER_SIZE = ((VOXEL_CHUNK_SIZE_XZ+5)*(VOXEL_CHUNK_SIZE_XZ+5))*2;
 
 				void Run(PinnedChunkData_t chunk) {
 					_smoothVerts.Init();
@@ -883,21 +889,23 @@ public partial class World {
 					float* s = stackalloc float[3];
 
 					R[0] = 1;
-					R[1] = VOXEL_CHUNK_SIZE_XZ+3;
-					R[2] = (VOXEL_CHUNK_SIZE_XZ+3)*(VOXEL_CHUNK_SIZE_XZ+3);
+					R[1] = VOXEL_CHUNK_SIZE_XZ+5;
+					R[2] = (VOXEL_CHUNK_SIZE_XZ+5)*(VOXEL_CHUNK_SIZE_XZ+5);
 
 					int bidx = 1;
 
-					for (x[2] = -1; x[2] < VOXEL_CHUNK_SIZE_Y; ++x[2], bidx ^= 1, R[2] = -R[2]) {
+					for (x[2] = -2; x[2] < VOXEL_CHUNK_SIZE_Y+1; ++x[2], bidx ^= 1, R[2] = -R[2]) {
 
-						var m = 1 + (VOXEL_CHUNK_SIZE_XZ+3) * (1 + bidx * (VOXEL_CHUNK_SIZE_XZ+3));
+						var m = 1 + (VOXEL_CHUNK_SIZE_XZ+5) * (1 + bidx * (VOXEL_CHUNK_SIZE_XZ+5));
 
-						for (x[1] = -1; x[1] < VOXEL_CHUNK_SIZE_XZ; ++x[1], m += 2) {
-							for (x[0] = -1; x[0] < VOXEL_CHUNK_SIZE_XZ; ++x[0], ++m) {
+						for (x[1] = -2; x[1] < VOXEL_CHUNK_SIZE_XZ+1; ++x[1], m += 2) {
+							for (x[0] = -2; x[0] < VOXEL_CHUNK_SIZE_XZ+1; ++x[0], ++m) {
 
 								// read voxels around this vertex
 								// note the mask, and grid verts for the cubes are X/Y/Z, but unity
 								// is Y up so we have to swap Z/Y
+
+								bool isBorder = (x[0] < 0) || (x[0] >= VOXEL_CHUNK_SIZE_XZ) || (x[1] < 0) || (x[1] >= VOXEL_CHUNK_SIZE_XZ) || (x[2] < 0) || (x[2] >= VOXEL_CHUNK_SIZE_Y);
 
 								int g = 0;
 								int mask = 0;
@@ -1017,7 +1025,7 @@ public partial class World {
 													
 								// if we have 0-level edges on the root vertex, then we can emit a quad containing this vertex
 								// and the previous 3 verts
-								if ((edgeMask&7) != 0) {
+								if (((edgeMask&7) != 0)) {
 									for (int i = 0; i < 3; ++i) {
 										if ((edgeMask&(1<<i)) == 0) {
 											continue;
@@ -1029,7 +1037,7 @@ public partial class World {
 										BoundsCheckAndThrow(iu, 0, 3);
 										BoundsCheckAndThrow(iv, 0, 3);
 
-										if ((x[iu] == -1) || (x[iv] == -1)) {
+										if ((x[iu] == -2) || (x[iv] == -2)) {
 											continue;
 										}
 
@@ -1066,9 +1074,9 @@ public partial class World {
 										BoundsCheckAndThrow(m-du-dv, 0, BUFFER_SIZE);
 
 										if ((mask&1) != 0) {
-											_smoothVerts.EmitFace(vertIdx, buffer[m-du], buffer[m-du-dv], buffer[m-dv], smg, smoothing, color, layer, mat);
+											_smoothVerts.EmitFace(vertIdx, buffer[m-du], buffer[m-du-dv], buffer[m-dv], smg, smoothing, color, layer, mat, isBorder);
 										} else {
-											_smoothVerts.EmitFace(vertIdx, buffer[m-dv], buffer[m-du-dv], buffer[m-du], smg, smoothing, color, layer, mat);
+											_smoothVerts.EmitFace(vertIdx, buffer[m-dv], buffer[m-du-dv], buffer[m-du], smg, smoothing, color, layer, mat, isBorder);
 										}
 									}
 								}
