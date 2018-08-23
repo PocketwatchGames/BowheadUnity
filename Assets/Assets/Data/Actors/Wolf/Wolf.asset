@@ -97,7 +97,7 @@ MonoBehaviour:
     scoreMultiplier: 0
     weaponIndex: 0
     attackIndex: 0
-  - behavior: {fileID: 11400000, guid: 39ad7a8f831973e4f9e7ff5e8b167691, type: 2}
+  - behavior: {fileID: 11400000, guid: f06c0fdff72e8c74088e37032b9fe499, type: 2}
     scoreMultiplier: 2
     weaponIndex: 0
     attackIndex: 0
@@ -113,11 +113,11 @@ MonoBehaviour:
     scoreMultiplier: 2
     weaponIndex: 0
     attackIndex: 0
-  - behavior: {fileID: 11400000, guid: 81fdca2c6c0f4cf4e80ccd1067770107, type: 2}
+  - behavior: {fileID: 11400000, guid: c2ed45c6e73344a49a1e851e6fa609bc, type: 2}
     scoreMultiplier: 2
     weaponIndex: 0
     attackIndex: 1
-  - behavior: {fileID: 11400000, guid: f06c0fdff72e8c74088e37032b9fe499, type: 2}
+  - behavior: {fileID: 11400000, guid: 94c61db7d3825fb4ba72896837dd6315, type: 2}
     scoreMultiplier: 2
     weaponIndex: 0
     attackIndex: 0

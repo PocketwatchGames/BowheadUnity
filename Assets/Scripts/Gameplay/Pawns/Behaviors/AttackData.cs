@@ -3,20 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace Bowhead.Actors {
-	[CreateAssetMenu(menuName = "Behaviors/MeleeAttack")]
-	public class MeleeAttackData : BehaviorData<Critter.MeleeAttack> {
+	[CreateAssetMenu(menuName = "Behaviors/Attack")]
+	public class AttackData : BehaviorData<Critter.Attack> {
 		public float destinationTolerance = 1.5f;
 		public float enemyElevationDeltaToJump = 3;
 		public float walkDistance = 4;
 		public float walkSpeed = 0.4f;
 		public float runSpeed = 1.0f;
+		public float maxApproachDistance;
 		public int attackCount;
 		public float waitTime;
 		public float weaponStaminaScorePower;
 	}
 
 	public partial class Critter : Pawn<Critter, CritterData> {
-		public class MeleeAttack : CritterBehavior<MeleeAttackData> {
+		public class Attack : CritterBehavior<AttackData> {
 
 			Vector3 desiredOffset;
 			public int attackCount;
@@ -37,13 +38,22 @@ namespace Bowhead.Actors {
 					attackData = weapon.data.attacks[attackIndex];
 				}
 				if (attackData != null) {
-					maxRange = attackData.stepDistance + attackData.range + attackData.radius * 0.5f;
-					minRange = maxRange - attackData.radius * 1.5f;
+					if (attackData.projectiles.Count > 0) {
+						maxRange = 10;
+						minRange = 4;
+					} else {
+						maxRange = attackData.stepDistance + attackData.range + attackData.radius * 0.5f;
+						minRange = maxRange - attackData.radius * 1.5f;
+					}
 				}
 			}
 
 			public override EvaluationScore Evaluate() {
 				if (!_critter.IsPanicked() || !_critter.hasLastKnownPosition) {
+					return fail;
+				}
+				float dist = getDistToAttackPos();
+				if (data.maxApproachDistance >= 0 && dist > maxRange + data.maxApproachDistance) {
 					return fail;
 				}
 				return new EvaluationScore(this, Mathf.Pow(weapon.stamina,data.weaponStaminaScorePower));
@@ -86,12 +96,13 @@ namespace Bowhead.Actors {
 				bool isInAttackChain = attackCount < data.attackCount;
 				bool canStartAttacking = dist > minRange && dist < maxRange && _critter.canAttack && _critter.activity == Pawn.Activity.OnGround;
 
-				if (data.attackCount > 0 && attackCount == 0) {
+				if (attacked) {
+					waitTimer += dt;
+				} else if (data.attackCount > 0 && attackCount == 0) {
 				} else if (isInAttackChain || canStartAttacking) {
 					if (canStartAttacking) {
 						input.look = _critter.lastKnownPosition - _critter.position;
 					}
-					var weapon = _critter.GetInventorySlot(weaponIndex) as Weapon;
 					if (weapon.CanCast()) {
 						if (_critter.CanSee(_critter.gameMode.players[0].playerPawn) > 0) {
 							input.attacks[weaponIndex] = new AttackState(weaponIndex, attackIndex, InputState.JustReleased);
@@ -101,7 +112,7 @@ namespace Bowhead.Actors {
 							}
 						}
 					}
-				} else {
+				} else if (!attacked) {
 
 					var desiredPos = _critter.lastKnownPosition + desiredOffset * ((maxRange - minRange) / 2 + minRange);
 					var move = desiredPos - _critter.position;
@@ -120,10 +131,6 @@ namespace Bowhead.Actors {
 							input.inputs[(int)InputType.Jump] = InputState.JustPressed;
 						}
 					}
-				}
-
-				if (attacked) {
-					waitTimer += dt;
 				}
 			}
 

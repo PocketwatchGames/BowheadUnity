@@ -9,10 +9,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6fe0a7e2ce1f1bd429644bfe816e4f6c, type: 3}
-  m_Name: SingleAttack
+  m_Name: SingleAttackOpportunistic
   m_EditorClassIdentifier: 
   version: 0
-  _index: 51
+  _index: 65
   _behaviorClass: Bowhead.Actors.Critter+Attack, Game, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   destinationTolerance: 1.5
@@ -20,7 +20,7 @@ MonoBehaviour:
   walkDistance: 4
   walkSpeed: 0.4
   runSpeed: 1
-  maxApproachDistance: -1
+  maxApproachDistance: 0
   attackCount: 1
   waitTime: 1
   weaponStaminaScorePower: 2

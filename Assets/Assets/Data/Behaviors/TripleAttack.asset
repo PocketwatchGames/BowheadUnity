@@ -13,13 +13,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 67
-  _behaviorClass: Bowhead.Actors.Critter+MeleeAttack, Game, Version=0.0.0.0, Culture=neutral,
+  _behaviorClass: Bowhead.Actors.Critter+Attack, Game, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
   destinationTolerance: 1.5
   enemyElevationDeltaToJump: 3
   walkDistance: 4
   walkSpeed: 0.4
   runSpeed: 1
+  maxApproachDistance: -1
   attackCount: 3
-  waitTime: 1
-  weaponStaminaScorePower: 0.5
+  waitTime: 1.5
+  weaponStaminaScorePower: 2
