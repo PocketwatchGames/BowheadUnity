@@ -56,7 +56,9 @@ namespace Bowhead.Actors {
 
 
 			foreach (var b in data.behaviors) {
-				behaviors.Add(b.behavior.Create(this, b.scoreMultiplier, b.weaponIndex, b.attackIndex));
+				if (b != null && b.behavior != null) {
+					behaviors.Add(b.behavior.Create(this, b.scoreMultiplier, b.weaponIndex, b.attackIndex));
+				}
 			}
 			_defaultSilhouetteMode = SilhouetteRenderer.Mode.Off;
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
