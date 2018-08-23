@@ -379,7 +379,7 @@ public partial class World {
 
 				int EmitVert(int v0, uint smg, float smoothingFactor, Vector3 normal, Color32 color, int layer) {
 					var count = vtoiCounts[v0];
-					Assert(count < BANK_SIZE);
+					BoundsCheckAndThrow(count, 0, BANK_SIZE);
 
 					normals[(v0*BANK_SIZE) + count] = normal;
 					colors[(v0*BANK_SIZE) + count] = color;

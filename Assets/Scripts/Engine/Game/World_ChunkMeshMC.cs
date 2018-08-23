@@ -367,19 +367,23 @@ public partial class World {
 					counts[1] = _maxLayer;
 				}
 
-				public void WriteVert(int idx, Vector3 position) {
-					positions[idx] = position;
-				}
+				public int EmitVert(Vector3 position) {
 
-				public int EmitVert() {
+					for (int i = 0; i < _vertCount; ++i) {
+						if (Vector3.Equals(positions[i], position)) {
+							return i;
+						}
+					}
+
 					var idx = _vertCount++;
+					positions[idx] = position;
 					vtoiCounts[idx] = 0;
 					return idx;
 				}
 
 				int EmitVert(int v0, uint smg, float smoothingFactor, Vector3 normal, Color32 color, int layer) {
 					var count = vtoiCounts[v0];
-					Assert(count < BANK_SIZE);
+					BoundsCheckAndThrow(count, 0, BANK_SIZE);
 
 					normals[(v0*BANK_SIZE) + count] = normal;
 					colors[(v0*BANK_SIZE) + count] = color;
@@ -393,12 +397,11 @@ public partial class World {
 					return v0 | (count << 24);
 				}
 
-				public void EmitFace(int v0, int v1, int v2, int v3, uint smg, float smoothingFactor, Color32 color, int layer, int material, bool isBorder) {
-					EmitTri(v0, v1, v2, smg, smoothingFactor, color, layer, material, isBorder);
-					EmitTri(v0, v2, v3, smg, smoothingFactor, color, layer, material, isBorder);
-				}
-				
-				void EmitTri(int v0, int v1, int v2, uint smg, float smoothingFactor, Color32 color, int layer, int material, bool isBorder) {
+				public void EmitTri(int v0, int v1, int v2, uint smg, float smoothingFactor, Color32 color, int layer, int material, bool isBorder) {
+					BoundsCheckAndThrow(v0, 0, _vertCount);
+					BoundsCheckAndThrow(v1, 0, _vertCount);
+					BoundsCheckAndThrow(v2, 0, _vertCount);
+
 					Vector3 normal;
 					if (GetNormal(v0, v1, v2, out normal)) {
 						if (isBorder) {
@@ -884,22 +887,13 @@ public partial class World {
 
 					byte* grid = stackalloc byte[8];
 					int* x = stackalloc int[3];
-					int* R = stackalloc int[3];
-					int* buffer = stackalloc int[BUFFER_SIZE];
-					float* s = stackalloc float[3];
-
-					R[0] = 1;
-					R[1] = VOXEL_CHUNK_SIZE_XZ+5;
-					R[2] = (VOXEL_CHUNK_SIZE_XZ+5)*(VOXEL_CHUNK_SIZE_XZ+5);
-
-					int bidx = 1;
-
-					for (x[2] = -2; x[2] < VOXEL_CHUNK_SIZE_Y+1; ++x[2], bidx ^= 1, R[2] = -R[2]) {
-
-						var m = 1 + (VOXEL_CHUNK_SIZE_XZ+5) * (1 + bidx * (VOXEL_CHUNK_SIZE_XZ+5));
-
-						for (x[1] = -2; x[1] < VOXEL_CHUNK_SIZE_XZ+1; ++x[1], m += 2) {
-							for (x[0] = -2; x[0] < VOXEL_CHUNK_SIZE_XZ+1; ++x[0], ++m) {
+					int* edges = stackalloc int[12];
+					byte* edgeBlocks = stackalloc byte[24];
+					float* nv = stackalloc float[3];
+					
+					for (x[2] = -1; x[2] < VOXEL_CHUNK_SIZE_Y; ++x[2]) {
+						for (x[1] = -1; x[1] < VOXEL_CHUNK_SIZE_XZ; ++x[1]) {
+							for (x[0] = -1; x[0] < VOXEL_CHUNK_SIZE_XZ; ++x[0]) {
 
 								// read voxels around this vertex
 								// note the mask, and grid verts for the cubes are X/Y/Z, but unity
@@ -907,178 +901,114 @@ public partial class World {
 
 								bool isBorder = (x[0] < 0) || (x[0] >= VOXEL_CHUNK_SIZE_XZ) || (x[1] < 0) || (x[1] >= VOXEL_CHUNK_SIZE_XZ) || (x[2] < 0) || (x[2] >= VOXEL_CHUNK_SIZE_Y);
 
-								int g = 0;
-								int mask = 0;
+								int cubeIndex = 0;
 
-								for (int zz = 0; zz < 2; ++zz) {
-									
-									var iz = x[2] + zz;
+								for (int i = 0; i < 8; ++i) {
+									var v = _tables.mc_cubeVerts[i];
+
+									var iz = x[2] + v[2];
 									var zwrap = Wrap(iz, VOXEL_CHUNK_SIZE_Y);
 									var zofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*zwrap; // zofs is really yofs in voxel data
-
 									var cz = (iz < 0) ? 0 : (iz <VOXEL_CHUNK_SIZE_Y) ? 1 : 2;
 
-									for (int yy = 0; yy < 2; ++yy) {
-										var iy = x[1] + yy;
-										var ywrap = Wrap(iy, VOXEL_CHUNK_SIZE_XZ);
-										var yofs = VOXEL_CHUNK_SIZE_XZ * ywrap; // yofs is really zofs in voxel data
+									var iy = x[1] + v[1];
+									var ywrap = Wrap(iy, VOXEL_CHUNK_SIZE_XZ);
+									var yofs = VOXEL_CHUNK_SIZE_XZ * ywrap; // yofs is really zofs in voxel data
 
-										var cy = (iy < 0) ? 0 : (iy < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
+									var cy = (iy < 0) ? 0 : (iy < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
 
-										for (int xx = 0; xx < 2; ++xx, ++g) {
-											var ix = x[0] + xx;
+									var ix = x[0] + v[0];
+									var xwrap = Wrap(ix, VOXEL_CHUNK_SIZE_XZ);
+									var xofs = xwrap;
 
-											var xwrap = Wrap(ix, VOXEL_CHUNK_SIZE_XZ);
-											var xofs = xwrap;
+									var cx = (ix < 0) ? 0 : (ix < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
 
-											var cx = (ix < 0) ? 0 : (ix < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
+									var chunkIndex = cx + (cz*Y_PITCH) + (cy*Z_PITCH);
+									var POS_X = chunkIndex + 1;
+									var NEG_X = chunkIndex - 1;
+									var POS_Y = chunkIndex + Y_PITCH;
+									var NEG_Y = chunkIndex - Y_PITCH;
+									var POS_Z = chunkIndex + Z_PITCH;
+									var NEG_Z = chunkIndex - Z_PITCH;
 
-											var chunkIndex = cx + (cz*Y_PITCH) + (cy*Z_PITCH);
-											var POS_X = chunkIndex + 1;
-											var NEG_X = chunkIndex - 1;
-											var POS_Y = chunkIndex + Y_PITCH;
-											var NEG_Y = chunkIndex - Y_PITCH;
-											var POS_Z = chunkIndex + Z_PITCH;
-											var NEG_Z = chunkIndex - Z_PITCH;
-
-											var neighbor = _area[chunkIndex];
-											var voxel = neighbor.valid != 0 ? neighbor.voxeldata[xofs + yofs + zofs] : EVoxelBlockType.Air;
-											grid[g] = voxel.raw;
-											if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
-												mask |= 1 << g;
-											}
-										}
+									var neighbor = _area[chunkIndex];
+									var voxel = neighbor.valid != 0 ? neighbor.voxeldata[xofs + yofs + zofs] : EVoxelBlockType.Air;
+									grid[i] = voxel.raw;
+									if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
+										cubeIndex |= 1 << i;
 									}
 								}
 
-								// multiple contents
+								var edgeMask = _tables.mc_edgeTable[cubeIndex];
 
-								for (int i = 0; i < 12; ++i) {
-									var v0 = _tables.sn_cubeEdges[i*2+0];
-									var v1 = _tables.sn_cubeEdges[i*2+1];
-									BoundsCheckAndThrow(v0, 0, 8);
-									BoundsCheckAndThrow(v1, 0, 8);
-									var v0v = new Voxel_t(grid[v0]);
-									var v1v = new Voxel_t(grid[v1]);
-									var v0c = _tables.blockContents[(int)v0v.type];
-									var v1c = _tables.blockContents[(int)v1v.type];
-
-									if (v0c < v1c) {
-										mask |= 1 << v0;
-									} else if (v1c < v0c) {
-										mask |= 1 << v1;
-									}
-								}
-
-								if ((mask == 0) || (mask == 255)) {
+								if (edgeMask == 0) {
 									// no contents change
 									continue;
 								}
-
-								var vertIdx = _smoothVerts.EmitVert();
-								BoundsCheckAndThrow(m, 0, BUFFER_SIZE);
-								buffer[m] = vertIdx;
 								
-								var edgeMask = _tables.sn_edgeTable[mask];
-								s[0] = 0; s[1] = 0; s[2] = 0;
-								var edgeCount = 0;
-
 								for (int i = 0; i < 12; ++i) {
+									edges[i] = -1;
+
 									if ((edgeMask & (1<<i)) == 0) {
 										continue;
 									}
 
-									var v0 = _tables.sn_cubeEdges[i*2+0];
-									var v1 = _tables.sn_cubeEdges[i*2+1];
-									BoundsCheckAndThrow(v0, 0, 8);
-									BoundsCheckAndThrow(v1, 0, 8);
+									nv[0] = 0; nv[1] = 0; nv[2] = 0;
+									var e = _tables.mc_edgeIndex[i];
+									var v0 = _tables.mc_cubeVerts[e[0]];
+									var v1 = _tables.mc_cubeVerts[e[1]];
 
-									//var v0v = new Voxel_t(grid[v0]);
-									//var v1v = new Voxel_t(grid[v1]);
-									//var v0c = _tables.blockContents[(int)v0v.type];
-									//var v1c = _tables.blockContents[(int)v1v.type];
+									edgeBlocks[i*2+0] = grid[e[0]];
+									edgeBlocks[i*2+1] = grid[e[1]];
 
-									var t = 0.5f;////(v0c < v1c) ? 0.5f : -0.5f; // we could modify this for density later...
+									var t = 0.5f;
 
-									for (int j = 0, k = 1; j < 3; ++j, k <<= 1) {
-										var a = v0 & k;
-										var b = v1 & k;
-
-										BoundsCheckAndThrow(j, 0, 3);
-
-										if (a != b) {
-											s[j] += (a != 0) ? 1.0f - t : t;
-										} else {
-											s[j] += (a != 0) ? 1.0f : 0;
-										}
+									for (int j = 0; j < 3; ++j) {
+										nv[j] = (x[j] + v0[j]) + t * (v1[j] - v0[j]);
 									}
+
+									edges[i] = _smoothVerts.EmitVert(new Vector3(nv[0], nv[2], nv[1]));
+								}
+
+								var faces = _tables.mc_triTable[cubeIndex];
+								for (int i = 0; (i < faces.length) && (faces[i] != -1); i += 3) {
+									BoundsCheckAndThrow(faces[i+0], 0, 12);
+									BoundsCheckAndThrow(faces[i+1], 0, 12);
+									BoundsCheckAndThrow(faces[i+2], 0, 12);
 									
-									++edgeCount;
-								}
-
-								{
-									var avg = 1f / edgeCount;
-									// NOTE: swapped Z/Y for Y up
-									Vector3 v = new Vector3(x[0] + s[0]*avg, x[2] + s[2]*avg, x[1] + s[1]*avg);
-									_smoothVerts.WriteVert(vertIdx, v);
-								}
-													
-								// if we have 0-level edges on the root vertex, then we can emit a quad containing this vertex
-								// and the previous 3 verts
-								if (((edgeMask&7) != 0)) {
-									for (int i = 0; i < 3; ++i) {
-										if ((edgeMask&(1<<i)) == 0) {
-											continue;
-										}
-										
-										// ortho axis
-										var iu = (i+1)%3;
-										var iv = (i+2)%3;
-										BoundsCheckAndThrow(iu, 0, 3);
-										BoundsCheckAndThrow(iv, 0, 3);
-
-										if ((x[iu] == -2) || (x[iv] == -2)) {
-											continue;
-										}
-
-										var v0 = _tables.sn_cubeEdges[i*2+0];
-										var v1 = _tables.sn_cubeEdges[i*2+1];
-
-										BoundsCheckAndThrow(v0, 0, 8);
-										BoundsCheckAndThrow(v1, 0, 8);
-
-										// figure out the material face, which comes from the crossing edge
-										int mat, layer;
-										uint smg;
-										Color32 color;
-										float smoothing;
-
-										var v0v = new Voxel_t(grid[v0]);
-										var v1v = new Voxel_t(grid[v1]);
+									Voxel_t voxel = default(Voxel_t);
+									EVoxelBlockContents vc = default(EVoxelBlockContents);
+									
+									for (int j = 0; j < 3; ++j) {
+										var v0v = new Voxel_t(edgeBlocks[faces[i+j]*2+0]);
+										var v1v = new Voxel_t(edgeBlocks[faces[i+j]*2+1]);
 										var v0c = _tables.blockContents[(int)v0v.type];
 										var v1c = _tables.blockContents[(int)v1v.type];
-
-										if (v0c > v1c) {
-											GetBlockColorAndSmoothing(v0v.type, out color, out smg, out smoothing, out layer);
-											mat = _blockMaterials[(int)v0v.type - 1];
+										if (j > 0) {
+											if (v0c > v1c) {
+												if (v0c > vc) {
+													vc = v0c;
+													voxel = v0v;
+												}
+											} else if (v1c > vc) {
+												vc = v1c;
+												voxel = v1v;
+											}
 										} else {
-											GetBlockColorAndSmoothing(v1v.type, out color, out smg, out smoothing, out layer);
-											mat = _blockMaterials[(int)v1v.type - 1];
-										}
-
-										var du = R[iu];
-										var dv = R[iv];
-
-										BoundsCheckAndThrow(m-du, 0, BUFFER_SIZE);
-										BoundsCheckAndThrow(m-dv, 0, BUFFER_SIZE);
-										BoundsCheckAndThrow(m-du-dv, 0, BUFFER_SIZE);
-
-										if ((mask&1) != 0) {
-											_smoothVerts.EmitFace(vertIdx, buffer[m-du], buffer[m-du-dv], buffer[m-dv], smg, smoothing, color, layer, mat, isBorder);
-										} else {
-											_smoothVerts.EmitFace(vertIdx, buffer[m-dv], buffer[m-du-dv], buffer[m-du], smg, smoothing, color, layer, mat, isBorder);
+											vc = (v0c > v1c) ? v0c : v1c;
+											voxel = (v0c > v1c) ? v0v : v1v;
 										}
 									}
+
+									int mat, layer;
+									uint smg;
+									Color32 color;
+									float smoothing;
+
+									GetBlockColorAndSmoothing(voxel.type, out color, out smg, out smoothing, out layer);
+									mat = _blockMaterials[(int)voxel.type - 1];
+
+									_smoothVerts.EmitTri(edges[faces[i]], edges[faces[i+2]], edges[faces[i+1]], smg, smoothing, color, layer, mat, isBorder);
 								}
 							}
 						}
