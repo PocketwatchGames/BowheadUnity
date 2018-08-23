@@ -29,6 +29,7 @@ public class TerrainTestMono : MonoBehaviour {
 		_streaming.SetWorldAtlasClientData(_clientData);
 		_volume = _streaming.NewStreamingVolume(World.VOXEL_CHUNK_VIS_MAX_XZ, World.VOXEL_CHUNK_VIS_MAX_Y_UP, World.VOXEL_CHUNK_VIS_MAX_Y_DOWN);
 		_volume.position = default(WorldChunkPos_t);
+		_streaming.shaderQualityLevel = World.Streaming.EShaderQualityLevel.HIGH;
 
 		_streaming.FinishTravel();
 	}

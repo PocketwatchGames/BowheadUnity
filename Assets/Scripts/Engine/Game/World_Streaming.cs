@@ -964,7 +964,7 @@ public partial class World {
 
 			MeshCopyHelper.SetMeshVerts(mesh, Copy(staticVec3, outputVerts.positions, baseVertex, vertCount), vertCount);
 			MeshCopyHelper.SetMeshNormals(mesh, Copy(staticVec3, outputVerts.normals, baseVertex, vertCount), vertCount);
-			MeshCopyHelper.SetMeshColors(mesh, Copy(staticColors, outputVerts.colors, baseVertex, vertCount), vertCount);
+			//MeshCopyHelper.SetMeshColors(mesh, Copy(staticColors, outputVerts.colors, baseVertex, vertCount), vertCount);
 			MeshCopyHelper.SetMeshUVs(mesh, 0, Copy(staticVec4, outputVerts.textureBlending, baseVertex, vertCount), vertCount);
 			
 			int submeshidx = 0;

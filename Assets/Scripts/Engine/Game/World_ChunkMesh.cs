@@ -1,6 +1,6 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
-//#define BOUNDS_CHECK
+#define BOUNDS_CHECK
 //#define NO_SMOOTHING
 
 using System;
@@ -115,7 +115,7 @@ public partial class World {
 		}
 	};
 
-	static void BoundsCheckAndThrow(int i, int min, int max) {
+	public static void BoundsCheckAndThrow(int i, int min, int max) {
 #if BOUNDS_CHECK
 		if ((i < min) || (i >= max)) {
 			throw new IndexOutOfRangeException();
@@ -128,15 +128,6 @@ public partial class World {
 	}
 
 	public static partial class ChunkMeshGen {
-		const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
-		const int BANK_SIZE = 24;
-		const int MAX_MATERIALS_PER_VERTEX = 16;
-
-		const int BORDER_SIZE = 2;
-		const int NUM_VOXELS_XZ = VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE*2;
-		const int NUM_VOXELS_Y = VOXEL_CHUNK_SIZE_Y + BORDER_SIZE*2;
-		const int MAX_VIS_VOXELS = NUM_VOXELS_XZ * NUM_VOXELS_XZ * NUM_VOXELS_Y;
-
 		public struct Int3_t {
 			public int x, y, z;
 		};

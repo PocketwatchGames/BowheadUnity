@@ -5,6 +5,9 @@
 //#define BOUNDS_CHECK
 //#define NO_SMOOTHING
 
+// Based on:
+// https://github.com/mikolalysenko/mikolalysenko.github.com/blob/master/Isosurface/js/surfacenets.js
+
 using System;
 using System.Runtime.InteropServices;
 using Unity.Collections;
@@ -17,6 +20,15 @@ public partial class World {
 	public static partial class ChunkMeshGen {
 
 		public static class SurfaceNets {
+
+			const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
+			const int BANK_SIZE = 24;
+			const int MAX_MATERIALS_PER_VERTEX = 4*2; // max cube crossing edges * 2
+
+			const int BORDER_SIZE = 1;
+			const int NUM_VOXELS_XZ = VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE;
+			const int NUM_VOXELS_Y = VOXEL_CHUNK_SIZE_Y + BORDER_SIZE;
+			const int MAX_VIS_VOXELS = NUM_VOXELS_XZ * NUM_VOXELS_XZ * NUM_VOXELS_Y;
 
 			public unsafe struct BlendedVoxel_t {
 				public fixed int vertexFlags[8];
@@ -65,7 +77,7 @@ public partial class World {
 				public static VoxelStorage_t New() {
 					return new VoxelStorage_t {
 #if DEBUG_VOXEL_MESH
-						_voxelsDebug = new Debug.BlendedVoxel_t[NUM_VOXELS],
+						_voxelsDebug = new Debug.BlendedVoxel_t[Debug.MAX_VIS_VOXELS],
 #endif
 						_voxels = new BlendedVoxel_t[NUM_VOXELS]
 					};
@@ -80,7 +92,7 @@ public partial class World {
 #if DEBUG_VOXEL_MESH
 				_pinnedVoxelsDebug = GCHandle.Alloc(_voxelsDebug, GCHandleType.Pinned);
 				unsafe {
-					voxelsDebug = Debug.VoxelArray1D.New((Debug.BlendedVoxel_t*)_pinnedVoxelsDebug.AddrOfPinnedObject().ToPointer(), _voxels.Length);
+					voxelsDebug = Debug.VoxelArray1D.New((Debug.BlendedVoxel_t*)_pinnedVoxelsDebug.AddrOfPinnedObject().ToPointer(), _voxelsDebug.Length);
 				}
 #endif
 				}
@@ -136,8 +148,6 @@ public partial class World {
 			};
 
 			public struct FinalMeshVerts_t : System.IDisposable {
-
-				[WriteOnly]
 				public NativeArray<Vector3> positions;
 				public NativeArray<Vector3> normals;
 				public NativeArray<Color32> colors;
@@ -150,9 +160,6 @@ public partial class World {
 				public NativeArray<int> submeshes;
 				[WriteOnly]
 				public NativeArray<TexBlend_t> submeshTextures;
-
-				NativeArray<int> _vtoi;
-				NativeArray<int> _vtoiCounts;
 
 				int _vertCount;
 				int _indexCount;
@@ -170,8 +177,6 @@ public partial class World {
 						counts = AllocatePersistentNoInit<int>(3*MAX_CHUNK_LAYERS),
 						submeshes = AllocatePersistentNoInit<int>(MAX_CHUNK_SUBMESHES*MAX_CHUNK_LAYERS),
 						submeshTextures = AllocatePersistentNoInit<TexBlend_t>(MAX_CHUNK_SUBMESHES*MAX_CHUNK_LAYERS),
-						_vtoi = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES*BANK_SIZE),
-						_vtoiCounts = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES)
 					};
 					return verts;
 				}
@@ -185,8 +190,6 @@ public partial class World {
 					counts.Dispose();
 					submeshes.Dispose();
 					submeshTextures.Dispose();
-					_vtoi.Dispose();
-					_vtoiCounts.Dispose();
 				}
 
 				public void Init() {
@@ -202,10 +205,6 @@ public partial class World {
 					_layer = layer;
 					_layerVertOfs = _vertCount;
 					_layerIndexOfs = _indexCount;
-
-					for (int i = 0; i < _vtoiCounts.Length; ++i) {
-						_vtoiCounts[i] = 0;
-					}
 				}
 
 				public void FinishLayer(int maxSubmesh) {
@@ -221,40 +220,37 @@ public partial class World {
 					(a.a == b.a);
 				}
 
-				public void EmitVert(int x, int y, int z, Vector3 normal, Color32 color, Vector4 textureBlending) {
-					int INDEX = (y*(VOXEL_CHUNK_SIZE_XZ+1)*(VOXEL_CHUNK_SIZE_XZ+1)) + (z*(VOXEL_CHUNK_SIZE_XZ+1)) + x;
+				public void EmitVert(Vector3 position, Vector3 normal, Color32 color, Vector4 textureBlending) {
+					Assert((_vertCount-_layerVertOfs) < ushort.MaxValue);
 
-					// existing vertex?
-					int vtoiCount = _vtoiCounts[INDEX];
-					for (int i = 0; i < vtoiCount; ++i) {
-						int idx = _vtoi[(INDEX*BANK_SIZE)+i];
-						if (ColorEqual(colors[idx], color) && (Vector4.Equals(this.textureBlending[idx], textureBlending)) && (Vector3.Equals(normals[idx], normal))) {
-							Assert((_indexCount-_layerIndexOfs) < ushort.MaxValue);
-							indices[_indexCount++] = idx - _layerVertOfs;
+					// this is slow as fuck
+					for (int i = _layerVertOfs; i < _vertCount; ++i) {
+						if (Vector3.Equals(positions[i], position) &&
+							Vector3.Equals(normals[i], normal) &&
+							Vector4.Equals(this.textureBlending[i], textureBlending)) {
+							EmitIndex(i);
 							return;
 						}
 					}
 
-					Assert((_vertCount-_layerVertOfs) < ushort.MaxValue);
-					Assert((_indexCount-_layerIndexOfs) < ushort.MaxValue);
-					Assert(vtoiCount < BANK_SIZE);
-
-					positions[_vertCount] = new Vector3(x, y, z);
+					positions[_vertCount] = position;
 					normals[_vertCount] = normal;
 					colors[_vertCount] = color;
 					this.textureBlending[_vertCount] = textureBlending;
 
-					_vtoi[(INDEX*BANK_SIZE)+vtoiCount] = _vertCount;
-					_vtoiCounts[INDEX] = vtoiCount + 1;
-
-					indices[_indexCount++] = _vertCount - _layerVertOfs;
+					EmitIndex(_vertCount);
 					_vertCount++;
+				}
+
+				void EmitIndex(int i) {
+					Assert((_indexCount-_layerIndexOfs) < ushort.MaxValue);
+					indices[_indexCount++] = i - _layerVertOfs;
 				}
 			};
 
 			struct SmoothingVertsIn_t {
 				[ReadOnly]
-				public NativeArray<Int3_t> positions;
+				public NativeArray<Vector3> positions;
 				[ReadOnly]
 				public NativeArray<Vector3> normals;
 				[ReadOnly]
@@ -294,8 +290,7 @@ public partial class World {
 			};
 
 			public struct SmoothingVertsOut_t : System.IDisposable {
-				[WriteOnly]
-				public NativeArray<Int3_t> positions;
+				public NativeArray<Vector3> positions;
 				[WriteOnly]
 				public NativeArray<Vector3> normals;
 				[WriteOnly]
@@ -316,23 +311,27 @@ public partial class World {
 				public NativeArray<int> vertMaterialCount;
 
 				int _maxLayer;
-
-				NativeArray<int> _vtoi;
-
 				int _vertCount;
 				int _indexCount;
 
+				public struct Vertex_t {
+					int v0;
+					uint smg;
+					float smoothing;
+					Color32 color;
+					int layer;
+				};
+
 				public static SmoothingVertsOut_t New() {
 					var verts = new SmoothingVertsOut_t {
-						positions = AllocatePersistentNoInit<Int3_t>(ushort.MaxValue),
-						normals = AllocatePersistentNoInit<Vector3>(ushort.MaxValue*BANK_SIZE),
-						colors = AllocatePersistentNoInit<Color32>(ushort.MaxValue*BANK_SIZE),
-						smoothFactor = AllocatePersistentNoInit<float>(ushort.MaxValue*BANK_SIZE),
-						smgs = AllocatePersistentNoInit<uint>(ushort.MaxValue*BANK_SIZE),
-						layers = AllocatePersistentNoInit<int>(ushort.MaxValue*BANK_SIZE),
-						indices = AllocatePersistentNoInit<int>(ushort.MaxValue),
+						positions = AllocatePersistentNoInit<Vector3>(MAX_OUTPUT_VERTICES),
+						normals = AllocatePersistentNoInit<Vector3>(MAX_OUTPUT_VERTICES*BANK_SIZE),
+						colors = AllocatePersistentNoInit<Color32>(MAX_OUTPUT_VERTICES*BANK_SIZE),
+						smoothFactor = AllocatePersistentNoInit<float>(MAX_OUTPUT_VERTICES*BANK_SIZE),
+						smgs = AllocatePersistentNoInit<uint>(MAX_OUTPUT_VERTICES*BANK_SIZE),
+						layers = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES*BANK_SIZE),
+						indices = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES),
 						counts = AllocatePersistentNoInit<int>(2),
-						_vtoi = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES),
 						vtoiCounts = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES),
 						vertMaterials = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES*MAX_MATERIALS_PER_VERTEX),
 						vertMaterialCount = AllocatePersistentNoInit<int>(MAX_OUTPUT_VERTICES)
@@ -349,7 +348,6 @@ public partial class World {
 					layers.Dispose();
 					indices.Dispose();
 					counts.Dispose();
-					_vtoi.Dispose();
 					vtoiCounts.Dispose();
 					vertMaterials.Dispose();
 					vertMaterialCount.Dispose();
@@ -359,9 +357,6 @@ public partial class World {
 					_vertCount = 0;
 					_indexCount = 0;
 					_maxLayer = 0;
-					for (int i = 0; i < _vtoi.Length; ++i) {
-						_vtoi[i] = 0;
-					}
 					for (int i = 0; i < vertMaterialCount.Length; ++i) {
 						vertMaterialCount[i] = 0;
 					}
@@ -372,96 +367,91 @@ public partial class World {
 					counts[1] = _maxLayer;
 				}
 
-				int EmitVert(int x, int y, int z, uint smg, float smoothingFactor, Color32 color, Vector3 normal, int layer) {
-					int INDEX = (y*(VOXEL_CHUNK_SIZE_XZ + 1)*(VOXEL_CHUNK_SIZE_XZ + 1)) + (z*(VOXEL_CHUNK_SIZE_XZ + 1)) + x;
-
-					var idx = _vtoi[INDEX] - 1;
-					if (idx < 0) {
-						Assert(_vertCount < ushort.MaxValue);
-						idx = _vertCount++;
-						vtoiCounts[idx] = 0;
-						_vtoi[INDEX] = idx+1;
-						positions[idx] = new Int3_t {
-							x = x,
-							y = y,
-							z = z
-						};
-					}
-
-					var count = vtoiCounts[idx];
-					Assert(count < BANK_SIZE);
-
-					normals[(idx*BANK_SIZE) + count] = normal;
-					colors[(idx*BANK_SIZE) + count] = color;
-					smoothFactor[(idx*BANK_SIZE) + count] = smoothingFactor;
-					smgs[(idx*BANK_SIZE) + count] = smg;
-					layers[(idx*BANK_SIZE) + count] = layer;
-
-					vtoiCounts[idx] = count + 1;
-					_maxLayer = (layer > _maxLayer) ? layer : _maxLayer;
-
-					return idx | (count << 24);
+				public void WriteVert(int idx, Vector3 position) {
+					positions[idx] = position;
 				}
 
-				void AddVertexMaterial(int v0, int layer, int material) {
+				public int EmitVert() {
+					var idx = _vertCount++;
+					vtoiCounts[idx] = 0;
+					return idx;
+				}
+
+				int EmitVert(int v0, uint smg, float smoothingFactor, Vector3 normal, Color32 color, int layer) {
+					var count = vtoiCounts[v0];
+					Assert(count < BANK_SIZE);
+
+					normals[(v0*BANK_SIZE) + count] = normal;
+					colors[(v0*BANK_SIZE) + count] = color;
+					smoothFactor[(v0*BANK_SIZE) + count] = smoothingFactor;
+					smgs[(v0*BANK_SIZE) + count] = smg;
+					layers[(v0*BANK_SIZE) + count] = layer;
+
+					vtoiCounts[v0] = count + 1;
+					_maxLayer = (layer > _maxLayer) ? layer : _maxLayer;
+					
+					return v0 | (count << 24);
+				}
+
+				public void EmitFace(int v0, int v1, int v2, int v3, uint smg, float smoothingFactor, Color32 color, int layer, int material) {
+					EmitTri(v0, v1, v2, smg, smoothingFactor, color, layer, material);
+					EmitTri(v0, v2, v3, smg, smoothingFactor, color, layer, material);
+				}
+				
+				void EmitTri(int v0, int v1, int v2, uint smg, float smoothingFactor, Color32 color, int layer, int material) {
+					Vector3 normal;
+					if (GetNormal(v0, v1, v2, out normal)) {
+						indices[_indexCount++] = EmitVert(v0, smg, smoothingFactor, normal, color, layer);
+						indices[_indexCount++] = EmitVert(v1, smg, smoothingFactor, normal, color, layer);
+						indices[_indexCount++] = EmitVert(v2, smg, smoothingFactor, normal, color, layer);
+
+						AddVertexMaterial(v0, layer, material);
+						AddVertexMaterial(v1, layer, material);
+						AddVertexMaterial(v2, layer, material);
+					}
+				}
+
+				public void AddVertexMaterial(int v0, int layer, int material) {
 					var count = vertMaterialCount[v0];
 					var code = material | (layer << 16);
-
-					var OFS = v0 * MAX_MATERIALS_PER_VERTEX;
-					for (int i = 0; i < count; ++i) {
-						if (vertMaterials[OFS+i] == code) {
-							return;
-						}
-					}
-
 					if (count < MAX_MATERIALS_PER_VERTEX) {
+						var OFS = v0 * MAX_MATERIALS_PER_VERTEX;
 						vertMaterials[OFS+count] = code;
 						vertMaterialCount[v0] = count + 1;
 					}
 				}
 
-				public void EmitTri(int x0, int y0, int z0, int x1, int y1, int z1, int x2, int y2, int z2, uint smg, float smoothFactor, Color32 color, int layer, int material, bool isBorderVoxel) {
-					var n = GetNormalAndAngles((float)x0, (float)y0, (float)z0, (float)x1, (float)y1, (float)z1, (float)x2, (float)y2, (float)z2);
+				bool GetNormal(int v0, int v1, int v2, out Vector3 n) {
+					n = default(Vector3);
 
-					int v0 = -1;
-					int v1 = -1;
-					int v2 = -1;
+					var a = positions[v0];
+					var b = positions[v1];
+					var c = positions[v2];
 
-					if (isBorderVoxel) {
-						if ((x0 >= 0) && (x0 <= VOXEL_CHUNK_SIZE_XZ) && (y0 >= 0) && (y0 <= VOXEL_CHUNK_SIZE_Y) && (z0 >= 0) && (z0 <= VOXEL_CHUNK_SIZE_XZ)) {
-							v0 = EmitVert(x0, y0, z0, smg, smoothFactor, color, n, layer);
-						}
-						if ((x1 >= 0) && (x1 <= VOXEL_CHUNK_SIZE_XZ) && (y1 >= 0) && (y1 <= VOXEL_CHUNK_SIZE_Y) && (z1 >= 0) && (z1 <= VOXEL_CHUNK_SIZE_XZ)) {
-							v1 = EmitVert(x1, y1, z1, smg, smoothFactor, color, n, layer);
-						}
-						if ((x2 >= 0) && (x2 <= VOXEL_CHUNK_SIZE_XZ) && (y2 >= 0) && (y2 <= VOXEL_CHUNK_SIZE_Y) && (z2 >= 0) && (z2 <= VOXEL_CHUNK_SIZE_XZ)) {
-							v2 = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, layer);
-						}
-					} else {
-						indices[_indexCount++] = v0 = EmitVert(x0, y0, z0, smg, smoothFactor, color, n, layer);
-						indices[_indexCount++] = v1 = EmitVert(x1, y1, z1, smg, smoothFactor, color, n, layer);
-						indices[_indexCount++] = v2 = EmitVert(x2, y2, z2, smg, smoothFactor, color, n, layer);
+					var u = (b - a);
+					if (u.sqrMagnitude < 1e-4f) {
+						return false;
+					}
+					u.Normalize();
+					
+					var v = (c - a);
+					if (v.sqrMagnitude < 1e-4f) {
+						return false;
 					}
 
-					if (v0 != -1) {
-						AddVertexMaterial(v0 & 0x00ffffff, layer, material);
-					}
-					if (v1 != -1) {
-						AddVertexMaterial(v1 & 0x00ffffff, layer, material);
-					}
-					if (v2 != -1) {
-						AddVertexMaterial(v2 & 0x00ffffff, layer, material);
-					}
-				}
+					v.Normalize();
 
-				static Vector3 GetNormalAndAngles(float x0, float y0, float z0, float x1, float y1, float z1, float x2, float y2, float z2) {
-					var a = new Vector3(x0, y0, z0);
-					var b = new Vector3(x1, y1, z1);
-					var c = new Vector3(x2, y2, z2);
-					var u = (b - a).normalized;
-					var v = (c - a).normalized;
+					if (Mathf.Abs(Vector3.Dot(u, v)) >= 0.9999f) {
+						return false;
+					}
 
-					return Vector3.Cross(u, v).normalized;
+					n = Vector3.Cross(u, v);
+					if (n.sqrMagnitude < 1e-4f) {
+						return false;
+					}
+					n.Normalize();
+
+					return true;
 				}
 			};
 
@@ -725,22 +715,22 @@ public partial class World {
 											var numMats = AddVertexMaterials(layer, vertNum0, vertNum1, vertNum2);
 											if ((numMats > 0) && (numMats <= maxMats)) {
 												if (AddSubmeshMaterials(ref curBlend, numMats, maxMats)) {
-													Int3_t p;
+													Vector3 p;
 													Vector3 n;
 													Color32 c;
 													Vector4 blendFactor;
 
 													BlendVertex(vertNum0, vertOfs0, bankedIndex0, out p, out n, out c);
 													blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum0);
-													_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
+													_finalVerts.EmitVert(p, n, c, blendFactor);
 
 													BlendVertex(vertNum1, vertOfs1, bankedIndex1, out p, out n, out c);
 													blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum1);
-													_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
+													_finalVerts.EmitVert(p, n, c, blendFactor);
 
 													BlendVertex(vertNum2, vertOfs2, bankedIndex2, out p, out n, out c);
 													blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum2);
-													_finalVerts.EmitVert(p.x, p.y, p.z, n, c, blendFactor);
+													_finalVerts.EmitVert(p, n, c, blendFactor);
 
 													numSubmeshVerts += 3;
 
@@ -765,7 +755,7 @@ public partial class World {
 					emitFlags.Dispose();
 				}
 
-				void BlendVertex(int index, int ofs, int bankedIndex, out Int3_t outPos, out Vector3 outNormal, out Color32 outColor) {
+				void BlendVertex(int index, int ofs, int bankedIndex, out Vector3 outPos, out Vector3 outNormal, out Color32 outColor) {
 
 					var originalNormal = _smoothVerts.normals[bankedIndex];
 					var summedNormal = originalNormal;
@@ -824,9 +814,6 @@ public partial class World {
 				VoxelNeighbors_t _vn;
 				VoxelNeighborContents_t _vnc;
 
-				int _numVoxels;
-				int _numTouched;
-
 				public static GenerateChunkVerts_t New(SmoothingVertsOut_t smoothVerts, VoxelArray1D voxels, NativeArray<PinnedChunkData_t> area, TableStorage tableStorage, NativeArray<int> blockMaterials) {
 					return new GenerateChunkVerts_t {
 						_smoothVerts = smoothVerts,
@@ -864,233 +851,226 @@ public partial class World {
 					chunk.pinnedTiming[0] = chunk.timing;
 				}
 
+				void GetBlockColorAndSmoothing(EVoxelBlockType blocktype, out Color32 color, out uint smg, out float smoothing, out int layer) {
+					color = _tables.blockColors[(int)blocktype - 1];
+					smg = _tables.blockSmoothingGroups[(int)blocktype - 1];
+					smoothing = _tables.blockSmoothingFactors[(int)blocktype - 1];
+
+					if (blocktype == EVoxelBlockType.Water) {
+						layer = EChunkLayers.Water.ToIndex();
+					} else if ((blocktype == EVoxelBlockType.Leaves) || (blocktype == EVoxelBlockType.Needles) || (blocktype == EVoxelBlockType.Wood)) {
+						layer = EChunkLayers.Trees.ToIndex();
+					} else {
+						layer = EChunkLayers.Terrain.ToIndex();
+					}
+				}
+
+				const int BUFFER_SIZE = ((VOXEL_CHUNK_SIZE_XZ+3)*(VOXEL_CHUNK_SIZE_XZ+3))*2;
+
 				void Run(PinnedChunkData_t chunk) {
 					_smoothVerts.Init();
 
-					_numVoxels = 0;
+					//if ((chunk.flags & EChunkFlags.SOLID) == 0) {
+					//	// no solid blocks in this chunk it can't have any visible faces.
+					//	_smoothVerts.Finish();
+					//	return;
+					//}
 
-					if ((chunk.flags & EChunkFlags.SOLID) == 0) {
-						// no solid blocks in this chunk it can't have any visible faces.
-						_smoothVerts.Finish();
-						return;
-					}
+					byte* grid = stackalloc byte[8];
+					int* x = stackalloc int[3];
+					int* R = stackalloc int[3];
+					int* buffer = stackalloc int[BUFFER_SIZE];
+					float* s = stackalloc float[3];
 
-					for (int y = -BORDER_SIZE; y < VOXEL_CHUNK_SIZE_Y + BORDER_SIZE; ++y) {
-						var ywrap = Wrap(y, VOXEL_CHUNK_SIZE_Y);
-						var ymin = (ywrap == 0);
-						var ymax = (ywrap == (VOXEL_CHUNK_SIZE_Y - 1));
-						var yofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*ywrap;
+					R[0] = 1;
+					R[1] = VOXEL_CHUNK_SIZE_XZ+3;
+					R[2] = (VOXEL_CHUNK_SIZE_XZ+3)*(VOXEL_CHUNK_SIZE_XZ+3);
 
-						var cy = (y < 0) ? 0 : (y <VOXEL_CHUNK_SIZE_Y) ? 1 : 2;
+					int bidx = 1;
 
-						for (int z = -BORDER_SIZE; z < VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE; ++z) {
-							var zwrap = Wrap(z, VOXEL_CHUNK_SIZE_XZ);
-							var zmin = (zwrap == 0);
-							var zmax = (zwrap == (VOXEL_CHUNK_SIZE_XZ - 1));
-							var zofs = VOXEL_CHUNK_SIZE_XZ * zwrap;
+					for (x[2] = -1; x[2] < VOXEL_CHUNK_SIZE_Y; ++x[2], bidx ^= 1, R[2] = -R[2]) {
 
-							var cz = (z < 0) ? 0 : (z < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
+						var m = 1 + (VOXEL_CHUNK_SIZE_XZ+3) * (1 + bidx * (VOXEL_CHUNK_SIZE_XZ+3));
 
-							for (int x = -BORDER_SIZE; x < VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE; ++x) {
-								var xwrap = Wrap(x, VOXEL_CHUNK_SIZE_XZ);
-								var xmin = (xwrap == 0);
-								var xmax = (xwrap == (VOXEL_CHUNK_SIZE_XZ - 1));
-								var xofs = xwrap;
+						for (x[1] = -1; x[1] < VOXEL_CHUNK_SIZE_XZ; ++x[1], m += 2) {
+							for (x[0] = -1; x[0] < VOXEL_CHUNK_SIZE_XZ; ++x[0], ++m) {
 
-								var cx = (x < 0) ? 0 : (x < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
+								// read voxels around this vertex
+								// note the mask, and grid verts for the cubes are X/Y/Z, but unity
+								// is Y up so we have to swap Z/Y
 
-								var chunkIndex = cx + (cy*Y_PITCH) + (cz*Z_PITCH);
-								var POS_X = chunkIndex + 1;
-								var NEG_X = chunkIndex - 1;
-								var POS_Y = chunkIndex + Y_PITCH;
-								var NEG_Y = chunkIndex - Y_PITCH;
-								var POS_Z = chunkIndex + Z_PITCH;
-								var NEG_Z = chunkIndex - Z_PITCH;
+								int g = 0;
+								int mask = 0;
 
-								var neighbor = _area[chunkIndex];
+								for (int zz = 0; zz < 2; ++zz) {
+									
+									var iz = x[2] + zz;
+									var zwrap = Wrap(iz, VOXEL_CHUNK_SIZE_Y);
+									var zofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*zwrap; // zofs is really yofs in voxel data
 
-								if (neighbor.valid != 0) {
-									var voxel = neighbor.voxeldata[zofs + yofs + xofs];
-									if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
-										++_numVoxels;
-										continue;
+									var cz = (iz < 0) ? 0 : (iz <VOXEL_CHUNK_SIZE_Y) ? 1 : 2;
+
+									for (int yy = 0; yy < 2; ++yy) {
+										var iy = x[1] + yy;
+										var ywrap = Wrap(iy, VOXEL_CHUNK_SIZE_XZ);
+										var yofs = VOXEL_CHUNK_SIZE_XZ * ywrap; // yofs is really zofs in voxel data
+
+										var cy = (iy < 0) ? 0 : (iy < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
+
+										for (int xx = 0; xx < 2; ++xx, ++g) {
+											var ix = x[0] + xx;
+
+											var xwrap = Wrap(ix, VOXEL_CHUNK_SIZE_XZ);
+											var xofs = xwrap;
+
+											var cx = (ix < 0) ? 0 : (ix < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
+
+											var chunkIndex = cx + (cz*Y_PITCH) + (cy*Z_PITCH);
+											var POS_X = chunkIndex + 1;
+											var NEG_X = chunkIndex - 1;
+											var POS_Y = chunkIndex + Y_PITCH;
+											var NEG_Y = chunkIndex - Y_PITCH;
+											var POS_Z = chunkIndex + Z_PITCH;
+											var NEG_Z = chunkIndex - Z_PITCH;
+
+											var neighbor = _area[chunkIndex];
+											var voxel = neighbor.valid != 0 ? neighbor.voxeldata[xofs + yofs + zofs] : EVoxelBlockType.Air;
+											grid[g] = voxel.raw;
+											if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
+												mask |= 1 << g;
+											}
+										}
 									}
-#if NO_SMOOTHING
-									voxel.flags |= EVoxelBlockFlags.FullVoxel;
-#endif
-
-									var blocktype = voxel.type;
-
-									// avoid contents-change with neighbor blocks in unloaded-space
-									_vn[0] = blocktype;
-									_vn[1] = blocktype;
-									_vn[2] = blocktype;
-									_vn[3] = blocktype;
-									_vn[4] = blocktype;
-									_vn[5] = blocktype;
-
-									if (xmin) {
-										_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
-										if (_area[NEG_X].valid != 0) {
-											_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1].type;
-										}
-									} else if (xmax) {
-										if (_area[POS_X].valid != 0) {
-											_vn[0] = _area[POS_X].voxeldata[zofs + yofs].type;
-										}
-										_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
-									} else {
-										_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
-										_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
-									}
-
-									if (ymin) {
-										_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-										if (_area[NEG_Y].valid != 0) {
-											_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs].type;
-										}
-									} else if (ymax) {
-										if (_area[POS_Y].valid != 0) {
-											_vn[2] = _area[POS_Y].voxeldata[zofs + xofs].type;
-										}
-										_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-									} else {
-										_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-										_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-									}
-
-									if (zmin) {
-										_vn[4] = neighbor.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-										if (_area[NEG_Z].valid != 0) {
-											_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs].type;
-										}
-									} else if (zmax) {
-										if (_area[POS_Z].valid != 0) {
-											_vn[4] = _area[POS_Z].voxeldata[yofs + xofs].type;
-										}
-										_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-									} else {
-										_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-										_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-									}
-
-									for (int i = 0; i < 6; ++i) {
-										_vnc[i] = _tables.blockContents[(int)_vn[i]];
-									}
-
-									//AddVoxel(x+BORDER_SIZE, y+BORDER_SIZE, z+BORDER_SIZE, voxel);
-								} else {
-									++_numVoxels;
 								}
-							}
-						}
-					}
 
-					for (int y = -BORDER_SIZE; y < VOXEL_CHUNK_SIZE_Y + BORDER_SIZE; ++y) {
-						var ywrap = Wrap(y, VOXEL_CHUNK_SIZE_Y);
-						var ymin = (ywrap == 0);
-						var ymax = (ywrap == (VOXEL_CHUNK_SIZE_Y - 1));
-						var yofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*ywrap;
+								// multiple contents
 
-						var cy = (y < 0) ? 0 : (y <VOXEL_CHUNK_SIZE_Y) ? 1 : 2;
+								for (int i = 0; i < 12; ++i) {
+									var v0 = _tables.cubeEdges[i*2+0];
+									var v1 = _tables.cubeEdges[i*2+1];
+									BoundsCheckAndThrow(v0, 0, 8);
+									BoundsCheckAndThrow(v1, 0, 8);
+									var v0v = new Voxel_t(grid[v0]);
+									var v1v = new Voxel_t(grid[v1]);
+									var v0c = _tables.blockContents[(int)v0v.type];
+									var v1c = _tables.blockContents[(int)v1v.type];
 
-						for (int z = -BORDER_SIZE; z < VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE; ++z) {
-							var zwrap = Wrap(z, VOXEL_CHUNK_SIZE_XZ);
-							var zmin = (zwrap == 0);
-							var zmax = (zwrap == (VOXEL_CHUNK_SIZE_XZ - 1));
-							var zofs = VOXEL_CHUNK_SIZE_XZ * zwrap;
+									if (v0c < v1c) {
+										mask |= 1 << v0;
+									} else if (v1c < v0c) {
+										mask |= 1 << v1;
+									}
+								}
 
-							var cz = (z < 0) ? 0 : (z < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
+								if ((mask == 0) || (mask == 255)) {
+									// no contents change
+									continue;
+								}
 
-							for (int x = -BORDER_SIZE; x < VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE; ++x) {
-								var xwrap = Wrap(x, VOXEL_CHUNK_SIZE_XZ);
-								var xmin = (xwrap == 0);
-								var xmax = (xwrap == (VOXEL_CHUNK_SIZE_XZ - 1));
-								var xofs = xwrap;
+								var vertIdx = _smoothVerts.EmitVert();
+								BoundsCheckAndThrow(m, 0, BUFFER_SIZE);
+								buffer[m] = vertIdx;
+								
+								var edgeMask = _tables.edgeTable[mask];
+								s[0] = 0; s[1] = 0; s[2] = 0;
+								var edgeCount = 0;
 
-								var cx = (x < 0) ? 0 : (x < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
-
-								var chunkIndex = cx + (cy*Y_PITCH) + (cz*Z_PITCH);
-								var POS_X = chunkIndex + 1;
-								var NEG_X = chunkIndex - 1;
-								var POS_Y = chunkIndex + Y_PITCH;
-								var NEG_Y = chunkIndex - Y_PITCH;
-								var POS_Z = chunkIndex + Z_PITCH;
-								var NEG_Z = chunkIndex - Z_PITCH;
-
-								var neighbor = _area[chunkIndex];
-
-								if (neighbor.valid != 0) {
-									var voxel = neighbor.voxeldata[zofs + yofs + xofs];
-									if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
+								for (int i = 0; i < 12; ++i) {
+									if ((edgeMask & (1<<i)) == 0) {
 										continue;
 									}
-#if NO_SMOOTHING
-									voxel.flags |= EVoxelBlockFlags.FullVoxel;
-#endif
 
-									var blocktype = voxel.type;
+									var v0 = _tables.cubeEdges[i*2+0];
+									var v1 = _tables.cubeEdges[i*2+1];
+									BoundsCheckAndThrow(v0, 0, 8);
+									BoundsCheckAndThrow(v1, 0, 8);
 
-									// avoid contents-change with neighbor blocks in unloaded-space
-									_vn[0] = blocktype;
-									_vn[1] = blocktype;
-									_vn[2] = blocktype;
-									_vn[3] = blocktype;
-									_vn[4] = blocktype;
-									_vn[5] = blocktype;
+									//var v0v = new Voxel_t(grid[v0]);
+									//var v1v = new Voxel_t(grid[v1]);
+									//var v0c = _tables.blockContents[(int)v0v.type];
+									//var v1c = _tables.blockContents[(int)v1v.type];
 
-									if (xmin) {
-										_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
-										if (_area[NEG_X].valid != 0) {
-											_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1].type;
+									var t = 0.5f;////(v0c < v1c) ? 0.5f : -0.5f; // we could modify this for density later...
+
+									for (int j = 0, k = 1; j < 3; ++j, k <<= 1) {
+										var a = v0 & k;
+										var b = v1 & k;
+
+										BoundsCheckAndThrow(j, 0, 3);
+
+										if (a != b) {
+											s[j] += (a != 0) ? 1.0f - t : t;
+										} else {
+											s[j] += (a != 0) ? 1.0f : 0;
 										}
-									} else if (xmax) {
-										if (_area[POS_X].valid != 0) {
-											_vn[0] = _area[POS_X].voxeldata[zofs + yofs].type;
-										}
-										_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
-									} else {
-										_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
-										_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
 									}
+									
+									++edgeCount;
+								}
 
-									if (ymin) {
-										_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-										if (_area[NEG_Y].valid != 0) {
-											_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs].type;
+								{
+									var avg = 1f / edgeCount;
+									// NOTE: swapped Z/Y for Y up
+									Vector3 v = new Vector3(x[0] + s[0]*avg, x[2] + s[2]*avg, x[1] + s[1]*avg);
+									_smoothVerts.WriteVert(vertIdx, v);
+								}
+													
+								// if we have 0-level edges on the root vertex, then we can emit a quad containing this vertex
+								// and the previous 3 verts
+								if ((edgeMask&7) != 0) {
+									for (int i = 0; i < 3; ++i) {
+										if ((edgeMask&(1<<i)) == 0) {
+											continue;
 										}
-									} else if (ymax) {
-										if (_area[POS_Y].valid != 0) {
-											_vn[2] = _area[POS_Y].voxeldata[zofs + xofs].type;
+										
+										// ortho axis
+										var iu = (i+1)%3;
+										var iv = (i+2)%3;
+										BoundsCheckAndThrow(iu, 0, 3);
+										BoundsCheckAndThrow(iv, 0, 3);
+
+										if ((x[iu] == -1) || (x[iv] == -1)) {
+											continue;
 										}
-										_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-									} else {
-										_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-										_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
+
+										var v0 = _tables.cubeEdges[i*2+0];
+										var v1 = _tables.cubeEdges[i*2+1];
+
+										BoundsCheckAndThrow(v0, 0, 8);
+										BoundsCheckAndThrow(v1, 0, 8);
+
+										// figure out the material face, which comes from the crossing edge
+										int mat, layer;
+										uint smg;
+										Color32 color;
+										float smoothing;
+
+										var v0v = new Voxel_t(grid[v0]);
+										var v1v = new Voxel_t(grid[v1]);
+										var v0c = _tables.blockContents[(int)v0v.type];
+										var v1c = _tables.blockContents[(int)v1v.type];
+
+										if (v0c > v1c) {
+											GetBlockColorAndSmoothing(v0v.type, out color, out smg, out smoothing, out layer);
+											mat = _blockMaterials[(int)v0v.type - 1];
+										} else {
+											GetBlockColorAndSmoothing(v1v.type, out color, out smg, out smoothing, out layer);
+											mat = _blockMaterials[(int)v1v.type - 1];
+										}
+
+										var du = R[iu];
+										var dv = R[iv];
+
+										BoundsCheckAndThrow(m-du, 0, BUFFER_SIZE);
+										BoundsCheckAndThrow(m-dv, 0, BUFFER_SIZE);
+										BoundsCheckAndThrow(m-du-dv, 0, BUFFER_SIZE);
+
+										if ((mask&1) != 0) {
+											_smoothVerts.EmitFace(vertIdx, buffer[m-du], buffer[m-du-dv], buffer[m-dv], smg, smoothing, color, layer, mat);
+										} else {
+											_smoothVerts.EmitFace(vertIdx, buffer[m-dv], buffer[m-du-dv], buffer[m-du], smg, smoothing, color, layer, mat);
+										}
 									}
-
-									if (zmin) {
-										_vn[4] = neighbor.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-										if (_area[NEG_Z].valid != 0) {
-											_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs].type;
-										}
-									} else if (zmax) {
-										if (_area[POS_Z].valid != 0) {
-											_vn[4] = _area[POS_Z].voxeldata[yofs + xofs].type;
-										}
-										_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-									} else {
-										_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-										_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-									}
-
-									for (int i = 0; i < 6; ++i) {
-										_vnc[i] = _tables.blockContents[(int)_vn[i]];
-									}
-
-									var isBorderVoxel = (x < 0) || (x >= VOXEL_CHUNK_SIZE_XZ) || (y < 0) || (y >= VOXEL_CHUNK_SIZE_Y) || (z < 0) || (z >= VOXEL_CHUNK_SIZE_XZ);
-
-									//EmitVoxelFaces((x + BORDER_SIZE) + ((z + BORDER_SIZE)*NUM_VOXELS_XZ) + ((y + BORDER_SIZE)*NUM_VOXELS_XZ*NUM_VOXELS_XZ), x + BORDER_SIZE, y + BORDER_SIZE, z + BORDER_SIZE, blocktype, isBorderVoxel);
 								}
 							}
 						}

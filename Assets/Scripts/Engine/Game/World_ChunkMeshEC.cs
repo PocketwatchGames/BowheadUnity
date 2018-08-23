@@ -20,6 +20,15 @@ public partial class World {
 
 		public static class EdgeCollapse {
 
+			const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
+			const int BANK_SIZE = 24;
+			const int MAX_MATERIALS_PER_VERTEX = 16;
+
+			const int BORDER_SIZE = 2;
+			const int NUM_VOXELS_XZ = VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE*2;
+			const int NUM_VOXELS_Y = VOXEL_CHUNK_SIZE_Y + BORDER_SIZE*2;
+			const int MAX_VIS_VOXELS = NUM_VOXELS_XZ * NUM_VOXELS_XZ * NUM_VOXELS_Y;
+
 			public unsafe struct BlendedVoxel_t {
 				public fixed int vertexFlags[8];
 				public fixed int neighbors[6];

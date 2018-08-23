@@ -17,6 +17,15 @@ public partial class World {
 	public static partial class ChunkMeshGen {
 
 		public static class Debug {
+			const int MAX_OUTPUT_VERTICES = (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_XZ+1) * (VOXEL_CHUNK_SIZE_Y+1);
+			const int BANK_SIZE = 24;
+			const int MAX_MATERIALS_PER_VERTEX = 16;
+
+			const int BORDER_SIZE = 2;
+			const int NUM_VOXELS_XZ = VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE*2;
+			const int NUM_VOXELS_Y = VOXEL_CHUNK_SIZE_Y + BORDER_SIZE*2;
+			public const int MAX_VIS_VOXELS = NUM_VOXELS_XZ * NUM_VOXELS_XZ * NUM_VOXELS_Y;
+
 			public unsafe struct BlendedVoxel_t {
 				public fixed int vertexFlags[8];
 				public fixed int neighbors[6];
@@ -458,114 +467,6 @@ public partial class World {
 						// no solid blocks in this chunk it can't have any visible faces.
 						_smoothVerts.Finish();
 						return;
-					}
-
-					for (int y = -BORDER_SIZE; y < VOXEL_CHUNK_SIZE_Y + BORDER_SIZE; ++y) {
-						var ywrap = Wrap(y, VOXEL_CHUNK_SIZE_Y);
-						var ymin = (ywrap == 0);
-						var ymax = (ywrap == (VOXEL_CHUNK_SIZE_Y - 1));
-						var yofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*ywrap;
-
-						var cy = (y < 0) ? 0 : (y <VOXEL_CHUNK_SIZE_Y) ? 1 : 2;
-
-						for (int z = -BORDER_SIZE; z < VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE; ++z) {
-							var zwrap = Wrap(z, VOXEL_CHUNK_SIZE_XZ);
-							var zmin = (zwrap == 0);
-							var zmax = (zwrap == (VOXEL_CHUNK_SIZE_XZ - 1));
-							var zofs = VOXEL_CHUNK_SIZE_XZ * zwrap;
-
-							var cz = (z < 0) ? 0 : (z < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
-
-							for (int x = -BORDER_SIZE; x < VOXEL_CHUNK_SIZE_XZ + BORDER_SIZE; ++x) {
-								var xwrap = Wrap(x, VOXEL_CHUNK_SIZE_XZ);
-								var xmin = (xwrap == 0);
-								var xmax = (xwrap == (VOXEL_CHUNK_SIZE_XZ - 1));
-								var xofs = xwrap;
-
-								var cx = (x < 0) ? 0 : (x < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
-
-								var chunkIndex = cx + (cy*Y_PITCH) + (cz*Z_PITCH);
-								var POS_X = chunkIndex + 1;
-								var NEG_X = chunkIndex - 1;
-								var POS_Y = chunkIndex + Y_PITCH;
-								var NEG_Y = chunkIndex - Y_PITCH;
-								var POS_Z = chunkIndex + Z_PITCH;
-								var NEG_Z = chunkIndex - Z_PITCH;
-
-								var neighbor = _area[chunkIndex];
-
-								if (neighbor.valid != 0) {
-									var voxel = neighbor.voxeldata[zofs + yofs + xofs];
-									if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
-										++_numVoxels;
-										continue;
-									}
-
-									var blocktype = voxel.type;
-
-									// avoid contents-change with neighbor blocks in unloaded-space
-									_vn[0] = blocktype;
-									_vn[1] = blocktype;
-									_vn[2] = blocktype;
-									_vn[3] = blocktype;
-									_vn[4] = blocktype;
-									_vn[5] = blocktype;
-
-									if (xmin) {
-										_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
-										if (_area[NEG_X].valid != 0) {
-											_vn[1] = _area[NEG_X].voxeldata[zofs + yofs + VOXEL_CHUNK_SIZE_XZ - 1].type;
-										}
-									} else if (xmax) {
-										if (_area[POS_X].valid != 0) {
-											_vn[0] = _area[POS_X].voxeldata[zofs + yofs].type;
-										}
-										_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
-									} else {
-										_vn[0] = neighbor.voxeldata[zofs + yofs + xofs + 1].type;
-										_vn[1] = neighbor.voxeldata[zofs + yofs + xofs - 1].type;
-									}
-
-									if (ymin) {
-										_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-										if (_area[NEG_Y].valid != 0) {
-											_vn[3] = _area[NEG_Y].voxeldata[(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_Y - 1)) + zofs + xofs].type;
-										}
-									} else if (ymax) {
-										if (_area[POS_Y].valid != 0) {
-											_vn[2] = _area[POS_Y].voxeldata[zofs + xofs].type;
-										}
-										_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-									} else {
-										_vn[2] = neighbor.voxeldata[yofs+(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-										_vn[3] = neighbor.voxeldata[yofs-(VOXEL_CHUNK_SIZE_XZ*VOXEL_CHUNK_SIZE_XZ) + zofs + xofs].type;
-									}
-
-									if (zmin) {
-										_vn[4] = neighbor.voxeldata[yofs + (zofs + VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-										if (_area[NEG_Z].valid != 0) {
-											_vn[5] = _area[NEG_Z].voxeldata[yofs + (VOXEL_CHUNK_SIZE_XZ*(VOXEL_CHUNK_SIZE_XZ - 1)) + xofs].type;
-										}
-									} else if (zmax) {
-										if (_area[POS_Z].valid != 0) {
-											_vn[4] = _area[POS_Z].voxeldata[yofs + xofs].type;
-										}
-										_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-									} else {
-										_vn[4] = neighbor.voxeldata[yofs + (zofs+VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-										_vn[5] = neighbor.voxeldata[yofs + (zofs-VOXEL_CHUNK_SIZE_XZ) + xofs].type;
-									}
-
-									for (int i = 0; i < 6; ++i) {
-										_vnc[i] = _tables.blockContents[(int)_vn[i]];
-									}
-
-									AddVoxel(x+BORDER_SIZE, y+BORDER_SIZE, z+BORDER_SIZE, voxel);
-								} else {
-									++_numVoxels;
-								}
-							}
-						}
 					}
 
 					for (int y = -BORDER_SIZE; y < VOXEL_CHUNK_SIZE_Y + BORDER_SIZE; ++y) {
