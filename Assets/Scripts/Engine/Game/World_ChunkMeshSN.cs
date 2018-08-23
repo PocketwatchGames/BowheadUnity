@@ -90,10 +90,10 @@ public partial class World {
 						voxels = VoxelArray1D.New((BlendedVoxel_t*)_pinnedVoxels.AddrOfPinnedObject().ToPointer(), _voxels.Length);
 					}
 #if DEBUG_VOXEL_MESH
-				_pinnedVoxelsDebug = GCHandle.Alloc(_voxelsDebug, GCHandleType.Pinned);
-				unsafe {
-					voxelsDebug = Debug.VoxelArray1D.New((Debug.BlendedVoxel_t*)_pinnedVoxelsDebug.AddrOfPinnedObject().ToPointer(), _voxelsDebug.Length);
-				}
+					_pinnedVoxelsDebug = GCHandle.Alloc(_voxelsDebug, GCHandleType.Pinned);
+					unsafe {
+						voxelsDebug = Debug.VoxelArray1D.New((Debug.BlendedVoxel_t*)_pinnedVoxelsDebug.AddrOfPinnedObject().ToPointer(), _voxelsDebug.Length);
+					}
 #endif
 				}
 

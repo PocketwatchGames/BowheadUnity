@@ -17,10 +17,10 @@ using static UnityEngine.Debug;
 using static World.ChunkMeshGen.Debug;
 #endif
 
-#if EDGE_COLLAPSE
-using static World.ChunkMeshGen.EdgeCollapse;
-#elif SURFACE_NETS
+#if SURFACE_NETS
 using static World.ChunkMeshGen.SurfaceNets;
+#else
+using static World.ChunkMeshGen.EdgeCollapse;
 #endif
 
 public partial class World {
