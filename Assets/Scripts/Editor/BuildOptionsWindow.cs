@@ -17,6 +17,7 @@ public class BuildOptionsWindow : EditorWindow {
 		AddFlag("Voxel Debug Mesh", "Generates debug voxel mesh", "DEBUG_VOXEL_MESH", false);
 		AddFlag("Streaming Mode", "Ugly but fast!", "DEV_STREAMING", false);
 		AddFlag("Surface Nets", "Surface Nets", "SURFACE_NETS", true);
+		AddFlag("Marching Cubes", "Marching Cubes", "MARCHING_CUBES", false);
 	}
 
 	static BuildOptionsWindow() {

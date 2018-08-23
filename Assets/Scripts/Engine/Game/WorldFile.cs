@@ -13,6 +13,8 @@ using static World;
 
 #if SURFACE_NETS
 using static World.ChunkMeshGen.SurfaceNets;
+#elif MARCHING_CUBES
+using static World.ChunkMeshGen.MarchingCubes;
 #else
 using static World.ChunkMeshGen.EdgeCollapse;
 #endif
