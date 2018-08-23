@@ -9,7 +9,8 @@ namespace Bowhead.Actors {
 		public float minDist;
 		public float maxDist;
 		public float distPower;
-		public float score;
+		public float staminaPower;
+		public float waitTime;
 	}
 
 	public partial class Critter : Pawn<Critter, CritterData> {
@@ -18,13 +19,17 @@ namespace Bowhead.Actors {
 		public class DodgeBack : CritterBehavior<DodgeBackData> {
 
 			float timer = 0;
-			public override bool IsValid() {
-				return timer > 0.5f;
-			}
 
 			public override void Start() {
 				base.Start();
 				timer = 0;
+			}
+
+			public override bool IsValid() {
+				if (timer > data.waitTime) {
+					return false;
+				}
+				return base.IsValid();
 			}
 
 			public override EvaluationScore Evaluate() {
@@ -46,25 +51,29 @@ namespace Bowhead.Actors {
 					if (p.team == _critter.team) {
 						continue;
 					}
-					Weapon left, right;
-					p.GetEquippedWeapons(out left, out right);
-					if (right != null && right.castTime > 0) {
-						multiplier = 5;
+					for (int i=0;i<MaxInventorySize;i++) {
+						var w = p.GetInventorySlot(i) as Weapon;
+						if (w != null) {
+							if (w.stunned) {
+								multiplier += 5;
+							} else {
+								multiplier += Mathf.Pow(w.stamina, data.staminaPower);
+							}
+						}
 					}
 				}
-				return new EvaluationScore(this, multiplier *data.score*(1.0f-Mathf.Pow(Mathf.Max(0,(dist - data.minDist))/(data.maxDist-data.minDist),data.distPower)));
+				float distScore = (1.0f - Mathf.Pow(Mathf.Max(0, (dist - data.minDist)) / (data.maxDist - data.minDist), data.distPower));
+				return new EvaluationScore(this, multiplier * distScore);
 			}
 
 			override public void Tick(float dt, ref Pawn.Input_t input) {
 				if (timer == 0) {
-					input.inputs[(int)InputType.Dodge] = InputState.JustPressed;
-				} else {
-					input.inputs[(int)InputType.Dodge] = InputState.JustReleased;
+					input.inputs[(int)InputType.Dodge] = InputState.Clicked;
+					var diff = _critter.position - _critter.lastKnownPosition;
+					diff.y = 0;
+					input.movement = diff.normalized;
+					input.look = -input.movement;
 				}
-				var diff = _critter.position - _critter.lastKnownPosition;
-				diff.y = 0;
-				input.movement = diff.normalized;
-				input.look = -input.movement;
 				timer += dt;
 			}
 		}

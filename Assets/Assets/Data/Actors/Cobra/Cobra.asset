@@ -43,10 +43,10 @@ MonoBehaviour:
   walkSpeed: 1
   walkStartTime: 0.1
   walkStopTime: 0.1
-  groundMaxSpeed: 4
+  groundMaxSpeed: 12
   groundWindDrag: 0.01
   sprintTime: 0.1
-  sprintSpeed: 9
+  sprintSpeed: 16
   sprintGracePeriodTime: 0
   slideModifier: 0
   gravity: -30
@@ -87,10 +87,33 @@ MonoBehaviour:
   panicCooldownTime: 8
   waryIncreaseAtMaxAwareness: 4
   waryIncreaseAtMaxAwarenessWhilePanicked: 8
-  behaviorUpdateTime: 2
+  behaviorUpdateTime: 4
   behaviors:
-  - {fileID: 11400000, guid: 951fb8738fae8254d97f58e338d9831a, type: 2}
-  - {fileID: 11400000, guid: f8f61d54efed20c4891c1d048d3c77fc, type: 2}
-  - {fileID: 11400000, guid: 48a154c6f0cb8924985a41929999e14b, type: 2}
-  - {fileID: 11400000, guid: 2bcaa7bd56dd39b4597f66b8baec7213, type: 2}
-  - {fileID: 11400000, guid: f1be1ec75b7810f4caf0cbf34ad32aae, type: 2}
+  - behavior: {fileID: 11400000, guid: 951fb8738fae8254d97f58e338d9831a, type: 2}
+    scoreMultiplier: 0
+    weaponIndex: 0
+    attackIndex: 0
+  - behavior: {fileID: 11400000, guid: f8f61d54efed20c4891c1d048d3c77fc, type: 2}
+    scoreMultiplier: 0
+    weaponIndex: 0
+    attackIndex: 0
+  - behavior: {fileID: 11400000, guid: f1be1ec75b7810f4caf0cbf34ad32aae, type: 2}
+    scoreMultiplier: 0
+    weaponIndex: 0
+    attackIndex: 0
+  - behavior: {fileID: 11400000, guid: 2bcaa7bd56dd39b4597f66b8baec7213, type: 2}
+    scoreMultiplier: 0
+    weaponIndex: 0
+    attackIndex: 0
+  - behavior: {fileID: 11400000, guid: c2ed45c6e73344a49a1e851e6fa609bc, type: 2}
+    scoreMultiplier: 4
+    weaponIndex: 0
+    attackIndex: 0
+  - behavior: {fileID: 11400000, guid: dfcc387f1d9a53b41ad61ed4000611e1, type: 2}
+    scoreMultiplier: 0
+    weaponIndex: 0
+    attackIndex: 1
+  - behavior: {fileID: 11400000, guid: f06c0fdff72e8c74088e37032b9fe499, type: 2}
+    scoreMultiplier: 0
+    weaponIndex: 0
+    attackIndex: 0

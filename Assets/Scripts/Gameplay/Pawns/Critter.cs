@@ -35,8 +35,28 @@ namespace Bowhead.Actors {
 
 		public override void Spawn(EntityData d, int index, Vector3 pos, float yaw, Actor instigator, Actor owner, Team team) {
 			base.Spawn(d, index, pos, yaw, instigator, owner, team);
+
+			if (data.defaultLoadout != null) {
+				var loot = data.defaultLoadout.loot;
+				if ((loot != null) && (loot.Length > 0)) {
+					for (int i = 0; i < loot.Length; ++i) {
+						var item = loot[i].CreateItem();
+						this.loot[i] = item;
+					}
+				}
+
+				var inventory = data.defaultLoadout.inventory;
+				if ((inventory != null) && (inventory.Length > 0)) {
+					for (int i = 0; i < inventory.Length; ++i) {
+						var item = inventory[i].CreateItem();
+						SetInventorySlot(i, item);
+					}
+				}
+			}
+
+
 			foreach (var b in data.behaviors) {
-				behaviors.Add(b.Create(this));
+				behaviors.Add(b.behavior.Create(this, b.scoreMultiplier, b.weaponIndex, b.attackIndex));
 			}
 			_defaultSilhouetteMode = SilhouetteRenderer.Mode.Off;
             AttachExternalGameObject(GameObject.Instantiate(data.prefab.Load(), pos, Quaternion.identity));
@@ -239,21 +259,23 @@ namespace Bowhead.Actors {
             }
 
             if (canAttack) {
-                foreach (var weapon in getInventory()) {
-                    Weapon w = weapon as Weapon;
-                    if (w != null && w.CanCast()) {
-						
-                        if (input.IsPressed(InputType.AttackRight)) {
-                            w.Charge(dt, 1);
-                        }
-                        else {
-                            if (input.JustReleased(InputType.AttackRight)) {
-                                w.Attack(this);
-                            }
-                            w.chargeTime = 0;
-                        }
-                    }
-                }
+				for (int i=0;i<AttackState.MaxAttackTypes;i++) {
+					var attackState = input.attacks[i];
+					if (attackState != null) {
+						Weapon w = GetInventorySlot(attackState.weaponIndex) as Weapon;
+						if (w != null) {
+							if (input.IsPressed(attackState.inputState)) {
+								w.Charge(dt, 1);
+							} else {
+								w.chargeTime = 0;
+							}
+
+							if (input.JustReleased(attackState.inputState)) {
+								w.Attack(this, attackState.attackIndex);
+							}
+						}
+					}
+				}
             }
             else {
                 foreach (var weapon in getInventory()) {
@@ -305,6 +327,7 @@ namespace Bowhead.Actors {
 
 			if (curBehavior != null && !curBehavior.IsValid()) {
 				behaviorUpdateTimer = 0;
+				curBehavior = null;
 			}
 
 			behaviorUpdateTimer -= dt;
@@ -317,6 +340,9 @@ namespace Bowhead.Actors {
 				foreach (var b in behaviors) {
 					var score = b.Evaluate();
 					if (score.score > 0) {
+						if (b.scoreMultiplier > 0) {
+							score.score *= b.scoreMultiplier;
+						}
 						possibleBehaviors.Add(score);
 						totalScore += score.score;
 					}

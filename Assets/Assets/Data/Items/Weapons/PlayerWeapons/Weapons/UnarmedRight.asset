@@ -14,9 +14,8 @@ MonoBehaviour:
   version: 0
   _index: 62
   displayName: Right Fist
-  description: Fast single handed weapon
-  monetaryValue: 35
-  canUse: 0
+  description: 
+  monetaryValue: 0
   canDrop: 0
   prefab:
     _assetPath: Items/Fist
@@ -30,28 +29,29 @@ MonoBehaviour:
   attacks:
   - chargeTime: 0.5
     maxCharge: 2
-    castTime: 0.05
-    activeTime: 0.1
-    cooldown: 0.4
+    castTime: 0.1
+    activeTime: 0.2
+    cooldown: 0.5
     cooldownNextAttackQueueTime: 0.1
     range: 1
     radius: 0.25
     staminaUse: 0.2
-    stepDistance: 0
+    stepDistance: 1
     moveSpeedWhileCharging: 0.8
     moveSpeedWhileFullyCharged: 0.5
     canMoveDuringCooldown: 1
     canMoveDuringCast: 1
     canMoveDuringActive: 1
-    unblockable: 0
     interruptOnHit: 1
     canBackstab: 1
+    canTarget: 0
     attackResultDirectHit:
       knockback: 5
       knockbackTime: 2
       damage: 5
       stun: 0.3
       interrupt: 1
+      unblockable: 0
       damageType: 1
       statusEffect: {fileID: 0}
       statusEffectTime: 0
@@ -62,6 +62,7 @@ MonoBehaviour:
       damage: 3
       stun: 0.1
       interrupt: 1
+      unblockable: 0
       damageType: 1
       statusEffect: {fileID: 0}
       statusEffectTime: 0
@@ -72,19 +73,14 @@ MonoBehaviour:
       damage: 5
       stun: 0.5
       interrupt: 1
+      unblockable: 0
       damageType: 1
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
-  spell: 0
-  spellPower: 0
-  statusEffect: {fileID: 0}
-  statusEffectTime: 0
-  canTarget: 0
-  projectile: {fileID: 0}
-  projectileSpeed: 0
-  autoAimYaw: 0
-  autoAimPitch: 0
+    projectiles: []
+    statusEffect: {fileID: 0}
+    statusEffectTime: 0
   blockAngleRange: 0
   blockResultDirectHit:
     knockback: 0
@@ -92,6 +88,7 @@ MonoBehaviour:
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0
@@ -105,6 +102,7 @@ MonoBehaviour:
     damage: 0
     stun: 0
     interrupt: 0
+    unblockable: 0
     damageType: 0
     statusEffect: {fileID: 0}
     statusEffectTime: 0

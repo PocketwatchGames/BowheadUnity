@@ -18,4 +18,5 @@ MonoBehaviour:
   minDist: 1
   maxDist: 4
   distPower: 2
-  score: 2
+  staminaPower: 2
+  waitTime: 1

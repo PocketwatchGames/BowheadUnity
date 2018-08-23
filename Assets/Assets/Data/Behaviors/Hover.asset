@@ -8,10 +8,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59915633707d381499f0afc9cca0a99b, type: 3}
-  m_Name: Idle
+  m_Script: {fileID: 11500000, guid: c4bd3b96d84bd664a9cbd19849616add, type: 3}
+  m_Name: Hover
   m_EditorClassIdentifier: 
   version: 0
-  _index: 7
-  _behaviorClass: Bowhead.Actors.Critter+Idle, Game, Version=0.0.0.0, Culture=neutral,
+  _index: 68
+  _behaviorClass: Bowhead.Actors.Critter+Hover, Game, Version=0.0.0.0, Culture=neutral,
     PublicKeyToken=null
+  destinationTolerance: 1.5
+  hoverDistance: 4
+  walkSpeed: 0.4
+  waitTime: 2

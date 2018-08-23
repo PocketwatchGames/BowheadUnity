@@ -46,12 +46,14 @@ namespace Bowhead {
                 GameObject.Destroy(_mesh);
 				_mesh = null;
             }
-            if (data.prefab != null && owner != null) {
+            if (data.prefab != null && owner != null && owner.go != null) {
                 if (newSlot == (int)Player.InventorySlot.LEFT_HAND || newSlot == (int)Player.InventorySlot.RIGHT_HAND) {
                     var prefab = data.prefab.Load();
-                    _mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
-					UpdateAnimation(owner);
-					owner.SetSilhouetteDirty();
+					if (prefab != null) {
+						_mesh = GameObject.Instantiate(prefab, owner.go.transform, false);
+						UpdateAnimation(owner);
+						owner.SetSilhouetteDirty();
+					}
                 }
             }
 
@@ -67,19 +69,19 @@ namespace Bowhead {
 			}
 
 		}
-		public void Charge(float dt, int hand) {
+		public void Charge(float dt, int attackIndex) {
 
 			if (data.attacks.Length == 0) {
 				return;
 			}
 
-			if (hand >= data.attacks.Length) {
-				hand = 0;
+			if (attackIndex >= data.attacks.Length) {
+				return;
 			}
-			if (attackHand != hand) {
+			if (attackHand != attackIndex) {
 				chargeTime = 0;
 			}
-			attackHand = hand;
+			attackHand = attackIndex;
 
 			if (data.staminaUseDuringCharge > 0) {
 				staminaRechargeTimer = data.staminaRechargePause;
@@ -95,7 +97,7 @@ namespace Bowhead {
 		}
 
 
-		public bool Attack(Pawn owner) {
+		public bool Attack(Pawn owner, int attackIndex) {
 
 			if (data.attacks.Length == 0) {
 				return false;
@@ -110,6 +112,13 @@ namespace Bowhead {
 				return true;
 			}
 
+			if (attackIndex >= data.attacks.Length) {
+				return false;
+			}
+			if (attackHand != attackIndex) {
+				chargeTime = 0;
+			}
+			attackHand = attackIndex;
 			var attack = data.attacks[attackHand];
 
 			hitTargets.Clear();
@@ -303,7 +312,7 @@ namespace Bowhead {
 				else {
 					if (attackWhenCooldownComplete) {
 						attackWhenCooldownComplete = false;
-						Attack(owner);
+						Attack(owner, attackHand);
 					}
 				}
 			}
