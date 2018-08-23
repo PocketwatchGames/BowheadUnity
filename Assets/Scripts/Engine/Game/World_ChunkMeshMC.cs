@@ -954,8 +954,8 @@ public partial class World {
 								// multiple contents
 
 								for (int i = 0; i < 12; ++i) {
-									var v0 = _tables.cubeEdges[i*2+0];
-									var v1 = _tables.cubeEdges[i*2+1];
+									var v0 = _tables.sn_cubeEdges[i*2+0];
+									var v1 = _tables.sn_cubeEdges[i*2+1];
 									BoundsCheckAndThrow(v0, 0, 8);
 									BoundsCheckAndThrow(v1, 0, 8);
 									var v0v = new Voxel_t(grid[v0]);
@@ -979,7 +979,7 @@ public partial class World {
 								BoundsCheckAndThrow(m, 0, BUFFER_SIZE);
 								buffer[m] = vertIdx;
 								
-								var edgeMask = _tables.edgeTable[mask];
+								var edgeMask = _tables.sn_edgeTable[mask];
 								s[0] = 0; s[1] = 0; s[2] = 0;
 								var edgeCount = 0;
 
@@ -988,8 +988,8 @@ public partial class World {
 										continue;
 									}
 
-									var v0 = _tables.cubeEdges[i*2+0];
-									var v1 = _tables.cubeEdges[i*2+1];
+									var v0 = _tables.sn_cubeEdges[i*2+0];
+									var v1 = _tables.sn_cubeEdges[i*2+1];
 									BoundsCheckAndThrow(v0, 0, 8);
 									BoundsCheckAndThrow(v1, 0, 8);
 
@@ -1041,8 +1041,8 @@ public partial class World {
 											continue;
 										}
 
-										var v0 = _tables.cubeEdges[i*2+0];
-										var v1 = _tables.cubeEdges[i*2+1];
+										var v0 = _tables.sn_cubeEdges[i*2+0];
+										var v1 = _tables.sn_cubeEdges[i*2+1];
 
 										BoundsCheckAndThrow(v0, 0, 8);
 										BoundsCheckAndThrow(v1, 0, 8);

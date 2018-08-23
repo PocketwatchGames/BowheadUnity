@@ -547,8 +547,8 @@ public partial class World {
 		};
 
 		public class TableStorage : System.IDisposable {
-			public ConstIntArray1D_t cubeEdges;
-			public ConstIntArray1D_t edgeTable;
+			public ConstIntArray1D_t sn_cubeEdges;
+			public ConstIntArray1D_t sn_edgeTable;
 			public ConstIntArray2D_t voxelVerts;
 			public ConstIntArray2D_t voxelFaces;
 			public ConstIntArray2D_t voxelFaceNormal;
@@ -559,8 +559,8 @@ public partial class World {
 			public ConstFloatArray1D_t blockSmoothingFactors;
 			public ConstVoxelBlockContentsArray1D_t blockContents;
 
-			int[] _cubeEdges;
-			int[] _edgeTable;
+			int[] _sn_cubeEdges;
+			int[] _sn_edgeTable;
 			int[,] _voxelVerts;
 			int[,] _voxelFaces;
 			int[,] _voxelFaceNormal;
@@ -580,8 +580,8 @@ public partial class World {
 			GCHandle _pinnedBlockColors;
 			GCHandle _pinnedBlockSmoothingFactors;
 			GCHandle _pinnedBlockContents;
-			GCHandle _pinnedCubeEdges;
-			GCHandle _pinnedEdgeTable;
+			GCHandle _sn_pinnedCubeEdges;
+			GCHandle _sn_pinnedEdgeTable;
 
 			public static TableStorage New() {
 				var t = new TableStorage();
@@ -593,7 +593,7 @@ public partial class World {
 
 			void Init() {
 
-				_cubeEdges = new int[24];
+				_sn_cubeEdges = new int[24];
 				
 				{
 					int k = 0;
@@ -601,40 +601,40 @@ public partial class World {
 						for (int j = 1; j <= 4; j <<= 1) {
 							var spanVert = i^j;
 							if (i <= spanVert) {
-								_cubeEdges[k++] = i;
-								_cubeEdges[k++] = spanVert;
+								_sn_cubeEdges[k++] = i;
+								_sn_cubeEdges[k++] = spanVert;
 							}
 						}
 					}
 				}
 
-				_pinnedCubeEdges = GCHandle.Alloc(_cubeEdges, GCHandleType.Pinned);
+				_sn_pinnedCubeEdges = GCHandle.Alloc(_sn_cubeEdges, GCHandleType.Pinned);
 
 				unsafe {
-					cubeEdges = ConstIntArray1D_t.New((int*)_pinnedCubeEdges.AddrOfPinnedObject().ToPointer(), _cubeEdges.Length);
+					sn_cubeEdges = ConstIntArray1D_t.New((int*)_sn_pinnedCubeEdges.AddrOfPinnedObject().ToPointer(), _sn_cubeEdges.Length);
 				}
 
 				// make an edge map, each entry is a bitfield containing, a bit set means the vertex is inside the manifold, otherwise outside.
-				_edgeTable = new int[256];
+				_sn_edgeTable = new int[256];
 				for (int i = 0; i < 256; ++i) {
 					var mask = 0;
 					// i encodes the edge-bit field, 
 					for (int k = 0; k < 24; k += 2) {
-						var v0 = _cubeEdges[k];
-						var v1 = _cubeEdges[k+1];
+						var v0 = _sn_cubeEdges[k];
+						var v1 = _sn_cubeEdges[k+1];
 						var v0in = (i & (1 << v0)) != 0;
 						var v1in = (i & (1 << v1)) != 0;
 						if (v0in != v1in) {
 							mask |= (1 << (k / 2));
 						}
 					}
-					_edgeTable[i] = mask;
+					_sn_edgeTable[i] = mask;
 				}
 
-				_pinnedEdgeTable = GCHandle.Alloc(_edgeTable, GCHandleType.Pinned);
+				_sn_pinnedEdgeTable = GCHandle.Alloc(_sn_edgeTable, GCHandleType.Pinned);
 
 				unsafe {
-					edgeTable = ConstIntArray1D_t.New((int*)_pinnedEdgeTable.AddrOfPinnedObject().ToPointer(), _edgeTable.Length);
+					sn_edgeTable = ConstIntArray1D_t.New((int*)_sn_pinnedEdgeTable.AddrOfPinnedObject().ToPointer(), _sn_edgeTable.Length);
 				}
 
 				_voxelVerts = new int[8, 3] {
@@ -839,14 +839,14 @@ public partial class World {
 				_pinnedBlockColors.Free();
 				_pinnedBlockSmoothingGroups.Free();
 				_pinnedBlockSmoothingFactors.Free();
-				_pinnedCubeEdges.Free();
-				_pinnedEdgeTable.Free();
+				_sn_pinnedCubeEdges.Free();
+				_sn_pinnedEdgeTable.Free();
 			}
 		};
 
 		struct Tables {
-			public ConstIntArray1D_t cubeEdges;
-			public ConstIntArray1D_t edgeTable;
+			public ConstIntArray1D_t sn_cubeEdges;
+			public ConstIntArray1D_t sn_edgeTable;
 			public ConstIntArray2D_t voxelVerts;
 			public ConstIntArray2D_t voxelFaces;
 			public ConstIntArray2D_t voxelFaceNormal;
@@ -859,8 +859,8 @@ public partial class World {
 
 			public static Tables New(TableStorage storage) {
 				return new Tables {
-					cubeEdges = storage.cubeEdges,
-					edgeTable = storage.edgeTable,
+					sn_cubeEdges = storage.sn_cubeEdges,
+					sn_edgeTable = storage.sn_edgeTable,
 					voxelVerts = storage.voxelVerts,
 					voxelFaces = storage.voxelFaces,
 					voxelFaceNormal = storage.voxelFaceNormal,
