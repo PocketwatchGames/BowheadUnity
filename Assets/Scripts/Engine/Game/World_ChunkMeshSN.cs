@@ -883,6 +883,7 @@ public partial class World {
 					//}
 
 					byte* grid = stackalloc byte[8];
+					float* density = stackalloc float[8];
 					int* x = stackalloc int[3];
 					int* R = stackalloc int[3];
 					int* buffer = stackalloc int[BUFFER_SIZE];
@@ -944,6 +945,7 @@ public partial class World {
 											var neighbor = _area[chunkIndex];
 											var voxel = neighbor.valid != 0 ? neighbor.voxeldata[xofs + yofs + zofs] : EVoxelBlockType.Air;
 											grid[g] = voxel.raw;
+											density[g] = (voxel.density / 255f) * 2f - 1f;
 											if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
 												mask |= 1 << g;
 											}
@@ -998,8 +1000,9 @@ public partial class World {
 									//var v0c = _tables.blockContents[(int)v0v.type];
 									//var v1c = _tables.blockContents[(int)v1v.type];
 
-									var t = 0.5f;////(v0c < v1c) ? 0.5f : -0.5f; // we could modify this for density later...
-
+									var t = density[v0] - density[v1];
+									t = density[v0] / t;
+									
 									for (int j = 0, k = 1; j < 3; ++j, k <<= 1) {
 										var a = v0 & k;
 										var b = v1 & k;

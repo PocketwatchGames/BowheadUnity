@@ -166,17 +166,21 @@ public enum EVoxelBlockFlags : byte {
 
 public struct Voxel_t {
 	public byte raw;
+	public byte density;
 
 	public Voxel_t(byte raw) {
 		this.raw = raw;
+		density = (byte)((((EVoxelBlockType)(raw & (byte)(~EVoxelBlockFlags.AllFlags))) == EVoxelBlockType.Air) ? 0 : 255);
 	}
 
 	public Voxel_t(EVoxelBlockType type) {
 		raw = (byte)type;
+		density = (byte)((type == EVoxelBlockType.Air) ? 0 : 255);
 	}
 
 	public Voxel_t(EVoxelBlockType type, EVoxelBlockFlags flags) {
 		raw = (byte)((int)type | (int)flags);
+		density = (byte)((type == EVoxelBlockType.Air) ? 0 : 255);
 	}
 
 	public EVoxelBlockType type {
@@ -214,9 +218,10 @@ public struct Voxel_t {
 	}
 
 	public static implicit operator Voxel_t (EVoxelBlockType type) {
-		Voxel_t v = default(Voxel_t);
-		v.type = type;
-		return v;
+		return new Voxel_t() {
+			raw = (byte)type,
+			density = (byte)((type == EVoxelBlockType.Air) ? 0 : 255)
+		};
 	}
 };
 
