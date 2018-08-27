@@ -9,7 +9,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cbb8d9beb1b87d4ebf4c66db4ff0405, type: 3}
-  m_Name: SandRocky
+  m_Name: Stone
   m_EditorClassIdentifier: 
   physics: {fileID: 0}
-  textures: {fileID: 11400000, guid: 6ba1b3ed2f6e227438022920ac715a02, type: 2}
+  textures: {fileID: 11400000, guid: 724c1c4eb413f0c4d8e8b0fa5ddeef61, type: 2}

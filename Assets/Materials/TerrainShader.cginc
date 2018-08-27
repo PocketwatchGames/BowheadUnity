@@ -261,14 +261,14 @@ void terrainSurf(Input IN, inout SurfaceOutputStandard o) {
 	bumpNormals[1] = half3(worldNormal.xz, absNormal.y + 1);
 	bumpNormals[2] = half3(worldNormal.xy, absNormal.z + 1);
 		
-	o.Normal = float3(0,0,1);
-	o.Occlusion = 0;
-	o.Smoothness = 0;// _Glossiness;
+	//o.Normal = float3(0,0,1);
+	//o.Occlusion = 0;
+	//o.Smoothness = 0;// _Glossiness;
 
-	//half3 normal = sampleTerrainWorldNormal(uvs, triblend, signNormal, bumpNormals, height);
-	//o.Normal = WorldToTangentNormalVector(IN, normal);
-	//o.Occlusion = rho.y;
-	//o.Smoothness = rho.x;// _Glossiness;
+	half3 normal = sampleTerrainWorldNormal(uvs, triblend, signNormal, bumpNormals, height);
+	o.Normal = WorldToTangentNormalVector(IN, normal);
+	o.Occlusion = rho.y;
+	o.Smoothness = rho.x;// _Glossiness;
 
 
 #else

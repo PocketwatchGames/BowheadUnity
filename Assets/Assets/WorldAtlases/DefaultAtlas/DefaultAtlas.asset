@@ -26,6 +26,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 09b2c00280b2ee84e91ca055cdbd535e, type: 2}
   - {fileID: 11400000, guid: 64a6e0c01c2d77a4395588e52c2d5b16, type: 2}
   - {fileID: 11400000, guid: 0295ca7b56527584eb9ff69bc573cc47, type: 2}
+  - {fileID: 11400000, guid: 4ec5c1aa86e0c8a4c93bdaa5458b0d41, type: 2}
   - {fileID: 11400000, guid: d6969da2ff6427c479c3adeb194dd99b, type: 2}
   renderMaterials:
     solid: {fileID: 2100000, guid: f41d80efdaa48c240be21f819c2dcc42, type: 2}
