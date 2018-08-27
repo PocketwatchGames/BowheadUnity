@@ -16,7 +16,6 @@ namespace Bowhead {
 		public bool canClimbIce;
 		public float stealthBonusSound;
 		public float stealthBonusSight;
-		public float stealthBonusSmell;
 
 
 
@@ -47,9 +46,6 @@ namespace Bowhead {
 			if (stealthBonusSight != 0) {
 				pawn.stealthBonusSight -= stealthBonusSight;
 			}
-			if (stealthBonusSight != 0) {
-				pawn.stealthBonusSmell -= stealthBonusSmell;
-			}
 		}
 
 		public void Add(Actors.Pawn pawn) {
@@ -73,9 +69,6 @@ namespace Bowhead {
 			}
 			if (stealthBonusSight != 0) {
 				pawn.stealthBonusSight += stealthBonusSight;
-			}
-			if (stealthBonusSight != 0) {
-				pawn.stealthBonusSmell += stealthBonusSmell;
 			}
 		}
 	}

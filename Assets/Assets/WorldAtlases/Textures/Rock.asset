@@ -12,22 +12,22 @@ MonoBehaviour:
   m_Name: Rock
   m_EditorClassIdentifier: 
   albedo:
-    top: {fileID: 2800000, guid: b7b3c2feca0e90a4e80d5100b9cf485d, type: 3}
-    sides: {fileID: 2800000, guid: b7b3c2feca0e90a4e80d5100b9cf485d, type: 3}
-    bottom: {fileID: 2800000, guid: b7b3c2feca0e90a4e80d5100b9cf485d, type: 3}
+    top: {fileID: 2800000, guid: 05604f343b8ade34dac7719f84a79a59, type: 3}
+    sides: {fileID: 2800000, guid: 05604f343b8ade34dac7719f84a79a59, type: 3}
+    bottom: {fileID: 2800000, guid: 05604f343b8ade34dac7719f84a79a59, type: 3}
   normals:
-    top: {fileID: 2800000, guid: 022cd7464c2e3e84bb38a77a694fe399, type: 3}
-    sides: {fileID: 2800000, guid: 022cd7464c2e3e84bb38a77a694fe399, type: 3}
-    bottom: {fileID: 2800000, guid: 022cd7464c2e3e84bb38a77a694fe399, type: 3}
+    top: {fileID: 2800000, guid: 2891596629e04ee419fcbe7c1e3b53c2, type: 3}
+    sides: {fileID: 2800000, guid: 2891596629e04ee419fcbe7c1e3b53c2, type: 3}
+    bottom: {fileID: 2800000, guid: 2891596629e04ee419fcbe7c1e3b53c2, type: 3}
   roughness:
-    top: {fileID: 2800000, guid: ef25dff26c513a04bb0474c93ac574f9, type: 3}
-    sides: {fileID: 2800000, guid: ef25dff26c513a04bb0474c93ac574f9, type: 3}
-    bottom: {fileID: 2800000, guid: ef25dff26c513a04bb0474c93ac574f9, type: 3}
+    top: {fileID: 2800000, guid: 04f627f07a273fd45b166e0b7f4356ba, type: 3}
+    sides: {fileID: 2800000, guid: 04f627f07a273fd45b166e0b7f4356ba, type: 3}
+    bottom: {fileID: 2800000, guid: 04f627f07a273fd45b166e0b7f4356ba, type: 3}
   ao:
-    top: {fileID: 2800000, guid: 500b9ca35de50d446805ea2d97bfcc53, type: 3}
-    sides: {fileID: 2800000, guid: 500b9ca35de50d446805ea2d97bfcc53, type: 3}
-    bottom: {fileID: 2800000, guid: 500b9ca35de50d446805ea2d97bfcc53, type: 3}
+    top: {fileID: 2800000, guid: a5ddf4e0d4e61e44d8064568f67d1811, type: 3}
+    sides: {fileID: 2800000, guid: a5ddf4e0d4e61e44d8064568f67d1811, type: 3}
+    bottom: {fileID: 2800000, guid: a5ddf4e0d4e61e44d8064568f67d1811, type: 3}
   height:
-    top: {fileID: 2800000, guid: 79727227a3ba8794297450e24be396b4, type: 3}
-    sides: {fileID: 2800000, guid: 79727227a3ba8794297450e24be396b4, type: 3}
-    bottom: {fileID: 2800000, guid: 79727227a3ba8794297450e24be396b4, type: 3}
+    top: {fileID: 2800000, guid: 929e81a7a32dd3544b1cc44e285c9bda, type: 3}
+    sides: {fileID: 2800000, guid: 929e81a7a32dd3544b1cc44e285c9bda, type: 3}
+    bottom: {fileID: 2800000, guid: 929e81a7a32dd3544b1cc44e285c9bda, type: 3}

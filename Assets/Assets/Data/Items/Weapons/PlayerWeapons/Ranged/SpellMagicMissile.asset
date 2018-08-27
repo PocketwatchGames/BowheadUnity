@@ -33,7 +33,7 @@ MonoBehaviour:
     activeTime: 0
     cooldown: 0.1
     cooldownNextAttackQueueTime: 0.1
-    range: 0
+    range: 20
     radius: 0
     staminaUse: 0.2
     stepDistance: 0
@@ -44,7 +44,7 @@ MonoBehaviour:
     canMoveDuringActive: 1
     interruptOnHit: 0
     canBackstab: 0
-    canTarget: 0
+    canTarget: 1
     attackResultDirectHit:
       knockback: 0
       knockbackTime: 0

@@ -379,6 +379,7 @@ namespace Bowhead.Server {
 				{ EVoxelBlockType.Snow, 1},
 				{ EVoxelBlockType.Water, 6},
 				{ EVoxelBlockType.Wood, 2},
+				{ EVoxelBlockType.SandRocky, 1},
 			};
 
 		public WorldData.TerrainType GetTerrainData(Vector3 pos) {

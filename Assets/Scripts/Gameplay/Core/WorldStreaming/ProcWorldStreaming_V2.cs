@@ -504,20 +504,25 @@ namespace Bowhead {
 					}
 				}
 
+				float rock = GetRock(ref noise, x, y, z);
 				if (y == upperGroundHeight && y < waterLevel + 10 * (GetPerlinNormal(ref noise, x, y, z, 0.2f) * GetPerlinNormal(ref noise, x + 452, y + 784, z + 6432, 0.1f))) {
+					if (rock > 0.5f) {
+						return EVoxelBlockType.SandRocky;
+					}
 					return EVoxelBlockType.Sand;
 				}
 
-
-				float rock = GetRock(ref noise, x, y, z);
+				if (humidity < 0.25f) {
+					if (rock > 0.5f) {
+						return EVoxelBlockType.SandRocky;
+					}
+					return EVoxelBlockType.Sand;
+				}
 				if (y < upperGroundHeight) {
 					if (rock > 0.5f) {
-                        return EVoxelBlockType.Rock;
+						return EVoxelBlockType.Rock;
 					}
 					return EVoxelBlockType.Dirt;
-				}
-				if (humidity < 0.25f) {
-					return EVoxelBlockType.Sand;
 				} else if ((0.95f * GetPerlinNormal(ref noise, x, y, z, 0.01f) + 0.05f * GetPerlinNormal(ref noise, x + 5432, y + 874423, z + 12, 0.1f)) * humidity * Mathf.Pow(rock, 0.25f) < 0.1f) {
                     if (rock > 0.5f)
                     {

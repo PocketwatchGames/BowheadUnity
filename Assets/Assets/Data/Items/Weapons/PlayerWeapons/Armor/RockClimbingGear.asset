@@ -13,10 +13,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 47
-  displayName: 
+  displayName: Rock Climbing Gear
   description: 
   monetaryValue: 0
-  canUse: 1
   canDrop: 1
   traits:
   - {fileID: 11400000, guid: 72c3b09742c50e7459fff56156ee2e37, type: 2}

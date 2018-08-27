@@ -149,6 +149,7 @@ public enum EVoxelBlockType : byte {
 	Flowers2,
 	Flowers3,
 	Flowers4,
+	SandRocky,
 	NumBlockTypes // must be here because we require a constant for array initialization in TableStorage
 };
 

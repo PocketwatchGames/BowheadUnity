@@ -179,8 +179,6 @@ namespace Bowhead.Actors {
 					head.material.color = Color.yellow;
 				} else if (stunInvincibilityTimer > 0) {
 					head.material.color = Color.gray;
-				} else if (dodgeTimer > 0) {
-					head.material.color = Color.black;
 				} else if (skidding) {
 					head.material.color = Color.cyan;
 				} else {

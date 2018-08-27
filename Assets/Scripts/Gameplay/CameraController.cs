@@ -148,12 +148,12 @@ namespace Bowhead.Actors {
 				_oldMousePosition = m;
 			} else {
 				int delta = 0;
-				if (Input.GetButtonDown("ShoulderLeft")) {
-					delta--;
-				}
-				if (Input.GetButtonDown("ShoulderRight")) {
-					delta++;
-				}
+				//if (Input.GetButtonDown("ShoulderLeft")) {
+				//	delta--;
+				//}
+				//if (Input.GetButtonDown("ShoulderRight")) {
+				//	delta++;
+				//}
 				if (delta != 0) {
 					float curAngle = (Utils.NormalizeAngle(_yaw * Mathf.Rad2Deg + 45)) / (360);
 					int newDir = Mathf.FloorToInt(curAngle * 4) + delta;
@@ -289,18 +289,18 @@ namespace Bowhead.Actors {
 						_position = new Vector3(_position.x, Mathf.Max(_position.y, avgPlayerPosition.y), _position.z);
 
 						var firstTarget = _targets[0];
-						if (_targets.Count == 1 && firstTarget.activity == Pawn.Activity.Climbing) {
-							var desiredYaw = Mathf.Atan2(-firstTarget.climbingNormal.x, -firstTarget.climbingNormal.z);
-							if (Mathf.Abs(Utils.SignedMinAngleDelta(desiredYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) >= 0.1f) {
-								if (_isAdjustingYaw || _adjustYaw != desiredYaw) {
-									_isAdjustingYaw = true;
-									_adjustYaw = desiredYaw;
-								}
-							} else {
-								_isAdjustingYaw = false;
-								_adjustYaw = -1000;
-							}
-						}
+						//if (_targets.Count == 1 && firstTarget.activity == Pawn.Activity.Climbing) {
+						//	var desiredYaw = Mathf.Atan2(-firstTarget.climbingNormal.x, -firstTarget.climbingNormal.z);
+						//	if (Mathf.Abs(Utils.SignedMinAngleDelta(desiredYaw * Mathf.Rad2Deg, _yaw * Mathf.Rad2Deg)) >= 0.1f) {
+						//		if (_isAdjustingYaw || _adjustYaw != desiredYaw) {
+						//			_isAdjustingYaw = true;
+						//			_adjustYaw = desiredYaw;
+						//		}
+						//	} else {
+						//		_isAdjustingYaw = false;
+						//		_adjustYaw = -1000;
+						//	}
+						//}
 
 						if (_isAdjustingYaw) {
 
