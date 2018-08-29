@@ -12,14 +12,9 @@ namespace Bowhead {
 		struct ProcWorldStreaming_SineWave_Job_t : IJob {
 			PinnedChunkData_t chunk;
 			WorldChunkPos_t cpos;
-			bool checkSolid;
 
 			public void Execute() {
 				chunk = GenerateVoxelsSinWave(cpos, chunk);
-
-				if (checkSolid && IsSolidXZPlane(chunk)) {
-					chunk.flags |= EChunkFlags.SOLID_XZ_PLANE;
-				}
 
 				unsafe {
 					chunk.pinnedDecorationCount[0] = chunk.decorationCount;
@@ -72,11 +67,10 @@ namespace Bowhead {
 			}
 
 			public class Streaming : IWorldStreaming {
-				public JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk, bool checkSolid) {
+				public JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk) {
 					return new ProcWorldStreaming_SineWave_Job_t() {
 						cpos = cpos,
-						chunk = chunk,
-						checkSolid = checkSolid
+						chunk = chunk
 					}.Schedule();
 				}
 

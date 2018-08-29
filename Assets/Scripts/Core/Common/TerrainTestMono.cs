@@ -35,7 +35,7 @@ public class TerrainTestMono : MonoBehaviour {
 	}
 
 	JobHandle CreateGenVoxelsJob(WorldChunkPos_t pos, World.PinnedChunkData_t chunk) {
-		return _chunkStreaming.ScheduleChunkGenerationJob(pos, chunk, true);
+		return _chunkStreaming.ScheduleChunkGenerationJob(pos, chunk);
 	}
 
 	void Update() {

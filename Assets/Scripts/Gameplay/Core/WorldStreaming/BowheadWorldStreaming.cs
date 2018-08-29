@@ -17,7 +17,7 @@ namespace Bowhead {
 		}
 
 		public interface IWorldStreaming : System.IDisposable {
-			JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk, bool checkSolid);
+			JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk);
 			Streaming.IMMappedChunkData MMapChunkData(Streaming.IChunk chunk);
 			void WriteChunkData(Streaming.IChunkIO chunk);
             void GetElevationAndTopBlock(int x, int z, out int elevation, out EVoxelBlockType blockType);

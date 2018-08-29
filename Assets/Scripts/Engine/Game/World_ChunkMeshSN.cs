@@ -939,22 +939,22 @@ public partial class World {
 
 								// multiple contents
 
-								for (int i = 0; i < 12; ++i) {
-									var v0 = _tables.sn_cubeEdges[i*2+0];
-									var v1 = _tables.sn_cubeEdges[i*2+1];
-									BoundsCheckAndThrow(v0, 0, 8);
-									BoundsCheckAndThrow(v1, 0, 8);
-									var v0v = new Voxel_t(grid[v0]);
-									var v1v = new Voxel_t(grid[v1]);
-									var v0c = _tables.blockContents[(int)v0v.type];
-									var v1c = _tables.blockContents[(int)v1v.type];
+								//for (int i = 0; i < 12; ++i) {
+								//	var v0 = _tables.sn_cubeEdges[i*2+0];
+								//	var v1 = _tables.sn_cubeEdges[i*2+1];
+								//	BoundsCheckAndThrow(v0, 0, 8);
+								//	BoundsCheckAndThrow(v1, 0, 8);
+								//	var v0v = new Voxel_t(grid[v0]);
+								//	var v1v = new Voxel_t(grid[v1]);
+								//	var v0c = _tables.blockContents[(int)v0v.type];
+								//	var v1c = _tables.blockContents[(int)v1v.type];
 
-									if (v0c < v1c) {
-										mask |= 1 << v0;
-									} else if (v1c < v0c) {
-										mask |= 1 << v1;
-									}
-								}
+								//	if (v0c < v1c) {
+								//		mask |= 1 << v0;
+								//	} else if (v1c < v0c) {
+								//		mask |= 1 << v1;
+								//	}
+								//}
 
 								if ((mask == 0) || (mask == 255)) {
 									// no contents change

@@ -304,10 +304,9 @@ public partial class World {
 		NONE = 0,
 		AIR = 0x1,
 		SOLID = 0x2,
-		SOLID_XZ_PLANE = 0x4, // no vertical columns of air
-		LAYER_DEFAULT = 0x8,
-		LAYER_WATER = 0x10,
-		LAYER_TREES = 0x20,
+		LAYER_DEFAULT = 0x4,
+		LAYER_WATER = 0x8,
+		LAYER_TREES = 0x10,
 		ALL_LAYERS_FLAGS = LAYER_DEFAULT|LAYER_WATER|LAYER_TREES
 	};
 

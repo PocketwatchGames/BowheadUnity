@@ -9,7 +9,6 @@ namespace Bowhead {
 		struct ProcWorldStreaming_V2_Job_t : IJob {
 			WorldChunkPos_t cpos;
 			PinnedChunkData_t chunk;
-			bool checkSolid;
 
 			public void Execute() {
 
@@ -20,10 +19,6 @@ namespace Bowhead {
 				var start = Utils.ReadTimestamp();
 
 				chunk = GenerateVoxels(cpos, chunk);
-
-				if (checkSolid && IsSolidXZPlane(chunk)) {
-					chunk.flags |= EChunkFlags.SOLID_XZ_PLANE;
-				}
 
 				chunk.timing.voxelTime = Utils.ReadTimestamp() - start;
 
@@ -51,11 +46,10 @@ namespace Bowhead {
 					_worldFile = WorldFile.OpenOrCreate(path + "/EditorWorld");
 				}
 
-				public JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk, bool checkSolid) {
+				public JobHandle ScheduleChunkGenerationJob(WorldChunkPos_t cpos, PinnedChunkData_t chunk) {
 					return new ProcWorldStreaming_V2_Job_t() {
 						cpos = cpos,
-						chunk = chunk,
-						checkSolid = checkSolid
+						chunk = chunk
 					}.Schedule();
 				}
 
@@ -116,9 +110,11 @@ namespace Bowhead {
 				FastNoise_t noise = FastNoise_t.New();
 
 				chunk.decorationCount = 0;
-				chunk.flags = EChunkFlags.ALL_LAYERS_FLAGS;
+				chunk.flags = EChunkFlags.LAYER_DEFAULT;
 				bool solid = false;
 				bool air = true;
+				bool water = false;
+				bool trees = false;
 
 				var wpos = ChunkToWorld(cpos);
 				var v3 = WorldToVec3(wpos);
@@ -140,9 +136,9 @@ namespace Bowhead {
 								chunk.voxeldata[ofs] = EVoxelBlockType.Air;
 							}
 						} else {
-							AssignBlocks(ref chunk, ref noise, ref solid, v3, x, z, plateauElevation);
+							AssignBlocks(ref chunk, ref noise, ref solid, ref water, v3, x, z, plateauElevation);
 
-							CreateRivers(ref chunk, ref noise, v3, x, z, plateauElevation);
+							CreateRivers(ref chunk, ref noise, ref water, v3, x, z, plateauElevation);
 							hasRoad = CreateRoads(ref chunk, ref noise, v3, x, z, plateauElevation);
 						}
 
@@ -157,7 +153,15 @@ namespace Bowhead {
 				}
 
 				if (solid && air) {
-					AddDecorations(v3, hasRoad, ref chunk, ref noise);
+					AddDecorations(v3, hasRoad, ref chunk, ref noise, ref trees);
+				}
+
+				if (water) {
+					chunk.flags |= EChunkFlags.LAYER_WATER;
+				}
+
+				if (trees) {
+					chunk.flags |= EChunkFlags.LAYER_TREES;
 				}
 
 				return chunk;
@@ -187,7 +191,7 @@ namespace Bowhead {
 				}
 			}
 
-			private static void CreateRivers(ref PinnedChunkData_t chunk, ref FastNoise_t noise, Vector3 v3, int cx, int cz, int elevation) {
+			private static void CreateRivers(ref PinnedChunkData_t chunk, ref FastNoise_t noise, ref bool water, Vector3 v3, int cx, int cz, int elevation) {
 				var x = (int)v3.x + cx;
 				var z = (int)v3.z + cz;
 				if (IsRiver(ref noise, x, z, elevation)) {
@@ -200,6 +204,7 @@ namespace Bowhead {
 								chunk.voxeldata[ofs] = EVoxelBlockType.Ice;
 							} else {
 								chunk.voxeldata[ofs] = EVoxelBlockType.Water;
+								water = true;
 							}
 						}
 					}
@@ -278,7 +283,7 @@ namespace Bowhead {
 
 
 
-			private static void AssignBlocks(ref PinnedChunkData_t chunk, ref FastNoise_t noise, ref bool solid, Vector3 v3, int x, int z, float elevation) {
+			private static void AssignBlocks(ref PinnedChunkData_t chunk, ref FastNoise_t noise, ref bool solid, ref bool water, Vector3 v3, int x, int z, float elevation) {
 				var xpos = (int)v3.x + x;
 				var zpos = (int)v3.z + z;
 				bool fullVoxel = true;
@@ -300,6 +305,7 @@ namespace Bowhead {
 							}
 							else {
 								bt = EVoxelBlockType.Water;
+								water = true;
 							}
 						}
 						else {
@@ -319,7 +325,7 @@ namespace Bowhead {
 				}
 			}
 
-			private static void AddDecorations(Vector3 chunkPos, bool hasRoad, ref PinnedChunkData_t chunk, ref FastNoise_t noise) {
+			private static void AddDecorations(Vector3 chunkPos, bool hasRoad, ref PinnedChunkData_t chunk, ref FastNoise_t noise, ref bool trees) {
 				if (chunkPos.y < 0) {
 					return;
 				}
@@ -369,6 +375,7 @@ namespace Bowhead {
 										else
 											treeType = 1;
 										BuildTree(ref noise, x, y, z, treeType, chunk);
+										trees = true;
 										break;
 									}
 								}

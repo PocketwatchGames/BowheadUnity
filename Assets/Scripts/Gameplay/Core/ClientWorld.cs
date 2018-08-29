@@ -282,7 +282,7 @@ namespace Bowhead.Client {
 		}
 
 		protected override JobHandle CreateGenVoxelsJob(WorldChunkPos_t pos, PinnedChunkData_t chunk) {
-			return gameState.worldStreaming.ScheduleChunkGenerationJob(pos, chunk, true);
+			return gameState.worldStreaming.ScheduleChunkGenerationJob(pos, chunk);
 		}
 
 		protected override Streaming.IMMappedChunkData MMapChunkData(Streaming.IChunk chunk) {
