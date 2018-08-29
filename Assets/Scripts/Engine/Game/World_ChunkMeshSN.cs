@@ -860,11 +860,11 @@ public partial class World {
 				void Run(PinnedChunkData_t chunk) {
 					_smoothVerts.Init();
 
-					//if ((chunk.flags & EChunkFlags.SOLID) == 0) {
-					//	// no solid blocks in this chunk it can't have any visible faces.
-					//	_smoothVerts.Finish();
-					//	return;
-					//}
+					if ((chunk.flags & EChunkFlags.SOLID) == 0) {
+						// no solid blocks in this chunk it can't have any visible faces.
+						_smoothVerts.Finish();
+						return;
+					}
 
 					byte* grid = stackalloc byte[8];
 					float* density = stackalloc float[8];
@@ -1006,7 +1006,7 @@ public partial class World {
 								{
 									var avg = 1f / edgeCount;
 									// NOTE: swapped Z/Y for Y up
-									Vector3 v = new Vector3(x[0] + s[0]*avg, x[2] + s[2]*avg, x[1] + s[1]*avg);
+									Vector3 v = new Vector3(x[0] + s[0]*avg + 0.5f, x[2] + s[2]*avg + 0.5f, x[1] + s[1]*avg + 0.5f);
 									_smoothVerts.WriteVert(vertIdx, v);
 								}
 													

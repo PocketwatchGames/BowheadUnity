@@ -879,11 +879,11 @@ public partial class World {
 				void Run(PinnedChunkData_t chunk) {
 					_smoothVerts.Init();
 
-					//if ((chunk.flags & EChunkFlags.SOLID) == 0) {
-					//	// no solid blocks in this chunk it can't have any visible faces.
-					//	_smoothVerts.Finish();
-					//	return;
-					//}
+					if ((chunk.flags & EChunkFlags.SOLID) == 0) {
+						// no solid blocks in this chunk it can't have any visible faces.
+						_smoothVerts.Finish();
+						return;
+					}
 
 					byte* grid = stackalloc byte[8];
 					int* x = stackalloc int[3];
