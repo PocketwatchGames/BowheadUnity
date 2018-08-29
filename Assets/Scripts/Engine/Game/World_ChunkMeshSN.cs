@@ -65,10 +65,6 @@ public partial class World {
 			public struct VoxelStorage_t {
 				public const int NUM_VOXELS = MAX_VIS_VOXELS;
 
-				public VoxelArray1D voxels;
-				BlendedVoxel_t[] _voxels;
-				GCHandle _pinnedVoxels;
-
 #if DEBUG_VOXEL_MESH
 				public Debug.VoxelArray1D voxelsDebug;
 				Debug.BlendedVoxel_t[] _voxelsDebug;
@@ -79,16 +75,10 @@ public partial class World {
 #if DEBUG_VOXEL_MESH
 						_voxelsDebug = new Debug.BlendedVoxel_t[Debug.MAX_VIS_VOXELS],
 #endif
-						_voxels = new BlendedVoxel_t[NUM_VOXELS]
 					};
 				}
 
 				public void Pin() {
-					Assert(!_pinnedVoxels.IsAllocated);
-					_pinnedVoxels = GCHandle.Alloc(_voxels, GCHandleType.Pinned);
-					unsafe {
-						voxels = VoxelArray1D.New((BlendedVoxel_t*)_pinnedVoxels.AddrOfPinnedObject().ToPointer(), _voxels.Length);
-					}
 #if DEBUG_VOXEL_MESH
 					_pinnedVoxelsDebug = GCHandle.Alloc(_voxelsDebug, GCHandleType.Pinned);
 					unsafe {
@@ -98,10 +88,6 @@ public partial class World {
 				}
 
 				public void Unpin() {
-					Assert(_pinnedVoxels.IsAllocated);
-					voxels = new VoxelArray1D();
-					_pinnedVoxels.Free();
-
 #if DEBUG_VOXEL_MESH
 				voxelsDebug = new Debug.VoxelArray1D();
 				_pinnedVoxelsDebug.Free();
@@ -810,7 +796,6 @@ public partial class World {
 
 			unsafe struct GenerateChunkVerts_t : IJob {
 				SmoothingVertsOut_t _smoothVerts;
-				VoxelArray1D _voxels;
 				Tables _tables;
 				[ReadOnly]
 				NativeArray<PinnedChunkData_t> _area;
@@ -820,10 +805,9 @@ public partial class World {
 				VoxelNeighbors_t _vn;
 				VoxelNeighborContents_t _vnc;
 
-				public static GenerateChunkVerts_t New(SmoothingVertsOut_t smoothVerts, VoxelArray1D voxels, NativeArray<PinnedChunkData_t> area, TableStorage tableStorage, NativeArray<int> blockMaterials) {
+				public static GenerateChunkVerts_t New(SmoothingVertsOut_t smoothVerts, NativeArray<PinnedChunkData_t> area, TableStorage tableStorage, NativeArray<int> blockMaterials) {
 					return new GenerateChunkVerts_t {
 						_smoothVerts = smoothVerts,
-						_voxels = voxels,
 						_tables = Tables.New(tableStorage),
 						_blockMaterials = blockMaterials,
 						_area = area,
@@ -1093,7 +1077,7 @@ public partial class World {
 
 #if SURFACE_NETS
 			public unsafe static JobHandle NewGenTrisJob(ref CompiledChunkData jobData, ChunkTimingData_t* timing, NativeArray<int> blockMaterials, JobHandle dependsOn = default(JobHandle)) {
-				var genChunkVerts = GenerateChunkVerts_t.New(jobData.smoothVerts, jobData.voxelStorage.voxels, jobData.neighbors, tableStorage, blockMaterials).Schedule(dependsOn);
+				var genChunkVerts = GenerateChunkVerts_t.New(jobData.smoothVerts, jobData.neighbors, tableStorage, blockMaterials).Schedule(dependsOn);
 				return GenerateFinalVertices_t.New(SmoothingVertsIn_t.New(jobData.smoothVerts), jobData.outputVerts, timing).Schedule(genChunkVerts);
 			}
 #endif
