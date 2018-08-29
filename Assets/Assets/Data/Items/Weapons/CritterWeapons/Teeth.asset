@@ -48,7 +48,7 @@ MonoBehaviour:
     attackResultDirectHit:
       knockback: 0.5
       knockbackTime: 0
-      damage: 10
+      damage: 15
       stun: 0.5
       interrupt: 1
       unblockable: 0
@@ -59,7 +59,7 @@ MonoBehaviour:
     attackResultGlancingBlow:
       knockback: 0.2
       knockbackTime: 0
-      damage: 7
+      damage: 5
       stun: 0.2
       interrupt: 0
       unblockable: 0
@@ -102,7 +102,7 @@ MonoBehaviour:
     attackResultDirectHit:
       knockback: 0.2
       knockbackTime: 0
-      damage: 5
+      damage: 10
       stun: 0.25
       interrupt: 1
       unblockable: 0
@@ -113,7 +113,7 @@ MonoBehaviour:
     attackResultGlancingBlow:
       knockback: 0
       knockbackTime: 0
-      damage: 3
+      damage: 5
       stun: 0.1
       interrupt: 0
       unblockable: 0
@@ -124,7 +124,7 @@ MonoBehaviour:
     attackResultBackstab:
       knockback: 0.2
       knockbackTime: 0
-      damage: 10
+      damage: 15
       stun: 0.5
       interrupt: 1
       unblockable: 0

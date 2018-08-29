@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Name: Ice
   m_EditorClassIdentifier: 
   physics: {fileID: 0}
-  textures: {fileID: 11400000, guid: c1c0e88810883ab4eaa82310e60e863b, type: 2}
+  textures: {fileID: 11400000, guid: 5afbfa7e0b8a58f4bbb9f0ccd36657e4, type: 2}

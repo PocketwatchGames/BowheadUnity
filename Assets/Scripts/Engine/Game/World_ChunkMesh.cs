@@ -1088,6 +1088,8 @@ public partial class World {
 					EVoxelBlockContents.Solid,
 					EVoxelBlockContents.Solid,
 					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
+					EVoxelBlockContents.Solid,
 					EVoxelBlockContents.Solid
 				};
 
@@ -1113,7 +1115,9 @@ public partial class World {
 					new Color32(250, 250, 50, 255),
 					new Color32(200, 10, 0, 255),
 					new Color32(150, 0, 200, 255),
-					new Color32(50, 0, 200, 255)
+					new Color32(50, 0, 200, 255),
+					new Color32(250, 250, 50, 255),
+					new Color32(150, 0, 200, 255),
 				};
 
 				_pinnedBlockColors = GCHandle.Alloc(_blockColors, GCHandleType.Pinned);
@@ -1139,6 +1143,8 @@ public partial class World {
 					0,//BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS2
 					0,//BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS, // BLOCK_TYPE_FLOWERS3
 					0,//BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS // BLOCK_TYPE_FLOWERS4
+					0,//BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS // BLOCK_TYPE_FLOWERS4
+					0,//BLOCK_SMG_OTHER | BLOCK_BLEND_COLORS // BLOCK_TYPE_FLOWERS4
 				};
 
 				_pinnedBlockSmoothingGroups = GCHandle.Alloc(_blockSmoothingGroups, GCHandleType.Pinned);
@@ -1163,7 +1169,9 @@ public partial class World {
 					0.85f, // BLOCK_TYPE_FLOWERS1
 					0.85f, // BLOCK_TYPE_FLOWERS2
 					0.85f, // BLOCK_TYPE_FLOWERS3
-					0.85f  // BLOCK_TYPE_FLOWERS4
+					0.85f,  // BLOCK_TYPE_FLOWERS4
+					0.85f,  // BLOCK_TYPE_SANDROCKY
+					0.85f,  // BLOCK_TYPE_STONE
 				};
 
 				_pinnedBlockSmoothingFactors = GCHandle.Alloc(_blockSmoothingFactors, GCHandleType.Pinned);

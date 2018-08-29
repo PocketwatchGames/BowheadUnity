@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4129b2176e76c044b0c0646095d6faf, type: 3}
+  m_Name: Sand
+  m_EditorClassIdentifier: 
+  albedo:
+    top: {fileID: 2800000, guid: 09e824d335156074ea95d83cbabc5340, type: 3}
+    sides: {fileID: 2800000, guid: 09e824d335156074ea95d83cbabc5340, type: 3}
+    bottom: {fileID: 2800000, guid: 09e824d335156074ea95d83cbabc5340, type: 3}
+  normals:
+    top: {fileID: 2800000, guid: 95667db105f087a4fb1f54dc5c137095, type: 3}
+    sides: {fileID: 2800000, guid: 95667db105f087a4fb1f54dc5c137095, type: 3}
+    bottom: {fileID: 2800000, guid: 95667db105f087a4fb1f54dc5c137095, type: 3}
+  roughness:
+    top: {fileID: 2800000, guid: a192101958fd1cc4ba2e5c3ec9bd1908, type: 3}
+    sides: {fileID: 2800000, guid: a192101958fd1cc4ba2e5c3ec9bd1908, type: 3}
+    bottom: {fileID: 2800000, guid: a192101958fd1cc4ba2e5c3ec9bd1908, type: 3}
+  ao:
+    top: {fileID: 2800000, guid: a5ddf4e0d4e61e44d8064568f67d1811, type: 3}
+    sides: {fileID: 2800000, guid: a5ddf4e0d4e61e44d8064568f67d1811, type: 3}
+    bottom: {fileID: 2800000, guid: a5ddf4e0d4e61e44d8064568f67d1811, type: 3}
+  height:
+    top: {fileID: 2800000, guid: fd7bb2c0e2a6dbb4cb727f6db8d54ebd, type: 3}
+    sides: {fileID: 2800000, guid: fd7bb2c0e2a6dbb4cb727f6db8d54ebd, type: 3}
+    bottom: {fileID: 2800000, guid: fd7bb2c0e2a6dbb4cb727f6db8d54ebd, type: 3}

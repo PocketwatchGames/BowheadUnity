@@ -100,9 +100,7 @@ namespace Bowhead.Actors {
 					waitTimer += dt;
 				} else if (data.attackCount > 0 && attackCount == 0) {
 				} else if (isInAttackChain || canStartAttacking) {
-					if (canStartAttacking) {
-						input.look = _critter.lastKnownPosition - _critter.position;
-					}
+					input.look = _critter.lastKnownPosition - _critter.position;
 					if (weapon.CanCast()) {
 						if (_critter.CanSee(_critter.gameMode.players[0].playerPawn) > 0) {
 							input.attacks[weaponIndex] = new AttackState(weaponIndex, attackIndex, InputState.JustReleased);

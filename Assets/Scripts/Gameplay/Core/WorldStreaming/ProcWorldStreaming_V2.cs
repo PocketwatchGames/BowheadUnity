@@ -83,7 +83,7 @@ namespace Bowhead {
 					if (plateauElevation < waterLevel) {
 						blockType = EVoxelBlockType.Water;
 					} else if (IsRoad(ref noise, x, z, plateauElevation)) {
-						blockType = EVoxelBlockType.Dirt;
+						blockType = EVoxelBlockType.Stone;
 					} else if (IsRiver(ref noise, x, z, plateauElevation)) {
 						blockType = EVoxelBlockType.Water;
 					} else {
@@ -504,20 +504,25 @@ namespace Bowhead {
 					}
 				}
 
+				float rock = GetRock(ref noise, x, y, z);
 				if (y == upperGroundHeight && y < waterLevel + 10 * (GetPerlinNormal(ref noise, x, y, z, 0.2f) * GetPerlinNormal(ref noise, x + 452, y + 784, z + 6432, 0.1f))) {
+					if (rock > 0.5f) {
+						return EVoxelBlockType.SandRocky;
+					}
 					return EVoxelBlockType.Sand;
 				}
 
-
-				float rock = GetRock(ref noise, x, y, z);
+				if (humidity < 0.25f) {
+					if (rock > 0.5f) {
+						return EVoxelBlockType.SandRocky;
+					}
+					return EVoxelBlockType.Sand;
+				}
 				if (y < upperGroundHeight) {
 					if (rock > 0.5f) {
-                        return EVoxelBlockType.Rock;
+						return EVoxelBlockType.Rock;
 					}
 					return EVoxelBlockType.Dirt;
-				}
-				if (humidity < 0.25f) {
-					return EVoxelBlockType.Sand;
 				} else if ((0.95f * GetPerlinNormal(ref noise, x, y, z, 0.01f) + 0.05f * GetPerlinNormal(ref noise, x + 5432, y + 874423, z + 12, 0.1f)) * humidity * Mathf.Pow(rock, 0.25f) < 0.1f) {
                     if (rock > 0.5f)
                     {
@@ -691,10 +696,10 @@ namespace Bowhead {
 								var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 								chunk.flags |= EChunkFlags.SOLID;
 								if (k == towerHeight) {
-									chunk.voxeldata[ofs] = EVoxelBlockType.Rock.WithFlags(EVoxelBlockFlags.FullVoxel);
+									chunk.voxeldata[ofs] = EVoxelBlockType.Stone.WithFlags(EVoxelBlockFlags.FullVoxel);
 								}
 								else {
-									chunk.voxeldata[ofs] = EVoxelBlockType.Rock;
+									chunk.voxeldata[ofs] = EVoxelBlockType.Stone;
 								}
 							}
 						}
@@ -780,7 +785,7 @@ namespace Bowhead {
 							if (pos.x >= 0 && pos.x < VOXEL_CHUNK_SIZE_XZ && pos.z >= 0 && pos.z < VOXEL_CHUNK_SIZE_XZ && pos.y >= 0 && pos.y < VOXEL_CHUNK_SIZE_Y) {
 								var ofs = pos.x + (pos.z * VOXEL_CHUNK_SIZE_XZ) + (pos.y * VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ);
 								chunk.flags |= EChunkFlags.SOLID;
-								chunk.voxeldata[ofs] = EVoxelBlockType.Wood.WithFlags(EVoxelBlockFlags.FullVoxel);
+								chunk.voxeldata[ofs] = EVoxelBlockType.Stone.WithFlags(EVoxelBlockFlags.FullVoxel);
 							}
 						}
 					}

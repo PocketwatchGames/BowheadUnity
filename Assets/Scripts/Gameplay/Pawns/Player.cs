@@ -151,11 +151,17 @@ namespace Bowhead.Actors {
 					cmd.buttons |= 1 << (int)InputType.AttackRight;
 				}
 				if (Input.GetButton("AttackLeft" + pi) || Input.GetAxis("LeftTrigger" + pi) != 0) {
-					cmd.buttons |= 1 << (int)InputType.AttackLeft;
+					cmd.buttons |= 1 << (int)InputType.SprintDodge;
 				}
 				//if (Input.GetButton("ShoulderLeft" + pi)) {
 				//	cmd.buttons |= 1 << (int)InputType.AttackRangedLeft;
 				//}
+				if (Input.GetButton("ShoulderRight")) {
+					cmd.buttons |= 1 << (int)InputType.AttackLeft;
+				}
+				if (Input.GetButton("ShoulderLeft")) {
+					cmd.buttons |= 1 << (int)InputType.Jump;
+				}
 				if (Input.GetButton("R3" + pi)) {
 					cmd.buttons |= 1 << (int)InputType.Dodge;
 				}
@@ -469,6 +475,7 @@ namespace Bowhead.Actors {
 			SwapWeapons();
 			PickUp(ItemData.Get("SpellMagicMissile").CreateItem());
 			PickUp(ItemData.Get("SpellHeal").CreateItem());
+			PickUp(ItemData.Get("TreeClimbingGear").CreateItem());
 			SetMoney(50);
 
 			//Equip(new game.items.Clothing("Cloak"));

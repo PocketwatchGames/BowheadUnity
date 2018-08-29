@@ -232,6 +232,10 @@ namespace Bowhead {
 				}
 			}
 
+			if (attack.statusEffect != null) {
+				owner.AddStatusEffect(attack.statusEffect, attack.statusEffectTime);
+			}
+
         }
 
 		public Pawn GetProjectileTarget(Pawn owner, float yaw, float range) {

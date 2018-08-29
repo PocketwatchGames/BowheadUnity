@@ -22,25 +22,25 @@ MonoBehaviour:
     _editorPath: Assets/Assets/Prefabs/Resources/Items/Fist.prefab
   hand: 0
   staminaRechargeTime: 1
-  staminaRechargePause: 0
+  staminaRechargePause: 5
   staminaUseDuringCharge: 0
   moveSpeedChargeDelay: 0
   traits: []
   attacks:
   - chargeTime: 0
     maxCharge: 0
-    castTime: 0
+    castTime: 1
     activeTime: 0
     cooldown: 0.5
     cooldownNextAttackQueueTime: 0.1
     range: 0
     radius: 0
-    staminaUse: 0
+    staminaUse: 1
     stepDistance: 0
     moveSpeedWhileCharging: 0
     moveSpeedWhileFullyCharged: 0
     canMoveDuringCooldown: 1
-    canMoveDuringCast: 1
+    canMoveDuringCast: 0
     canMoveDuringActive: 1
     interruptOnHit: 0
     canBackstab: 0
@@ -78,22 +78,9 @@ MonoBehaviour:
       statusEffect: {fileID: 0}
       statusEffectTime: 0
       loudness: 0
-    projectile:
-      speed: 0
-      lifetime: 0
-      damage: 0
-      stun: 0
-      heatSeeking: 0
-      autoAimYaw: 0
-      autoAimPitch: 0
-      damageType: 0
-      statusEffect: {fileID: 0}
-      statusEffectTime: 0
-      prefab:
-        _assetPath: 
-        _editorPath: 
+    projectiles: []
     statusEffect: {fileID: 11400000, guid: dac19424df206fa479e52cdbbd028d09, type: 2}
-    statusEffectTime: 0
+    statusEffectTime: 5
   blockAngleRange: 0
   blockResultDirectHit:
     knockback: 0
@@ -124,4 +111,4 @@ MonoBehaviour:
     damageAbsorb: 0
     staminaUse: 0
   sprintSpeed: 0
-  jabChargeTime: 0
+  jabChargeTime: 1

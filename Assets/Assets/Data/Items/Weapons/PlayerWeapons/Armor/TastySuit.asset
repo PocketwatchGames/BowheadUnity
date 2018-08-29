@@ -13,10 +13,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 57
-  displayName: 
+  displayName: Tasty Suit
   description: 
   monetaryValue: 0
-  canUse: 1
   canDrop: 1
   traits:
   - {fileID: 11400000, guid: 5ef349ad403b3b9459d733d31bcaf5c1, type: 2}

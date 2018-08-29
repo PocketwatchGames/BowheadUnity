@@ -13,10 +13,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 0
   _index: 18
-  displayName: 
+  displayName: Platemail
   description: 
   monetaryValue: 50
-  canUse: 1
   canDrop: 1
   traits:
   - {fileID: 11400000, guid: 1cc87aa874d45214f95663df2170aa51, type: 2}
