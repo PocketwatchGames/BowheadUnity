@@ -384,7 +384,7 @@ public partial class World {
 					EmitTri(v0, v2, v3, smg, smoothingFactor, color, layer, material, isBorder);
 				}
 				
-				void EmitTri(int v0, int v1, int v2, uint smg, float smoothingFactor, Color32 color, int layer, int material, bool isBorder) {
+				public void EmitTri(int v0, int v1, int v2, uint smg, float smoothingFactor, Color32 color, int layer, int material, bool isBorder) {
 					Vector3 normal;
 					if (GetNormal(v0, v1, v2, out normal)) {
 						if (isBorder) {
@@ -845,14 +845,7 @@ public partial class World {
 					color = _tables.blockColors[(int)blocktype - 1];
 					smg = _tables.blockSmoothingGroups[(int)blocktype - 1];
 					smoothing = _tables.blockSmoothingFactors[(int)blocktype - 1];
-
-					if (blocktype == EVoxelBlockType.Water) {
-						layer = EChunkLayers.Water.ToIndex();
-					} else if ((blocktype == EVoxelBlockType.Leaves) || (blocktype == EVoxelBlockType.Needles) || (blocktype == EVoxelBlockType.Wood)) {
-						layer = EChunkLayers.Trees.ToIndex();
-					} else {
-						layer = EChunkLayers.Terrain.ToIndex();
-					}
+					layer = GetBlockLayer(blocktype);
 				}
 
 				const int BUFFER_SIZE = ((VOXEL_CHUNK_SIZE_XZ+5)*(VOXEL_CHUNK_SIZE_XZ+5))*2;
@@ -865,7 +858,23 @@ public partial class World {
 						_smoothVerts.Finish();
 						return;
 					}
+					
+					int chunkFlags = (int)chunk.flags;
 
+					for (int layer = 0; layer < MAX_CHUNK_LAYERS; ++layer) {
+
+						if ((chunkFlags & ((int)EChunkFlags.LAYER_DEFAULT << layer)) == 0) {
+							continue;
+						}
+
+						GenerateSNMesh(layer);
+
+					}
+
+					_smoothVerts.Finish();
+				}
+
+				void GenerateSNMesh(int layer) {
 					byte* grid = stackalloc byte[8];
 					float* density = stackalloc float[8];
 					int* x = stackalloc int[3];
@@ -894,9 +903,10 @@ public partial class World {
 
 								int g = 0;
 								int mask = 0;
+								var water = default(Voxel_t);
 
 								for (int zz = 0; zz < 2; ++zz) {
-									
+
 									var iz = x[2] + zz;
 									var zwrap = Wrap(iz, VOXEL_CHUNK_SIZE_Y);
 									var zofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*zwrap; // zofs is really yofs in voxel data
@@ -928,33 +938,80 @@ public partial class World {
 
 											var neighbor = _area[chunkIndex];
 											var voxel = neighbor.valid != 0 ? neighbor.voxeldata[xofs + yofs + zofs] : EVoxelBlockType.Air;
+											var type = voxel.type;
+											var blocklayer = GetBlockLayer(type);
+
+											if (blocklayer != layer) {
+												// Terrain should have air for trees.
+												// Trees should have air for terrain.
+												// Water should have terrain verts.
+												if ((layer == 0) || (layer == 2) || (blocklayer == 2)) {
+													voxel = EVoxelBlockType.Air;
+													type = voxel.type;
+												}
+											}
+
+											var contents = _tables.blockContents[(int)type];
+
+											if (contents == EVoxelBlockContents.None) {
+												mask |= 1 << g;
+											} else if (contents == EVoxelBlockContents.Water) {
+												water = voxel;
+											}
+
 											grid[g] = voxel.raw;
 											density[g] = (voxel.density / 255f) * 2f - 1f;
-											if (_tables.blockContents[(int)voxel.type] == EVoxelBlockContents.None) {
-												mask |= 1 << g;
-											}
 										}
 									}
 								}
 
-								// multiple contents
+								if ((layer == 1) && (water.raw == 0)) {
+									// not a water block, need to go one voxel out
+									for (int zz = 0; zz < 2; ++zz) {
 
-								//for (int i = 0; i < 12; ++i) {
-								//	var v0 = _tables.sn_cubeEdges[i*2+0];
-								//	var v1 = _tables.sn_cubeEdges[i*2+1];
-								//	BoundsCheckAndThrow(v0, 0, 8);
-								//	BoundsCheckAndThrow(v1, 0, 8);
-								//	var v0v = new Voxel_t(grid[v0]);
-								//	var v1v = new Voxel_t(grid[v1]);
-								//	var v0c = _tables.blockContents[(int)v0v.type];
-								//	var v1c = _tables.blockContents[(int)v1v.type];
+										var iz = x[2] + zz;
+										var zwrap = Wrap(iz, VOXEL_CHUNK_SIZE_Y);
+										var zofs = VOXEL_CHUNK_SIZE_XZ * VOXEL_CHUNK_SIZE_XZ*zwrap; // zofs is really yofs in voxel data
 
-								//	if (v0c < v1c) {
-								//		mask |= 1 << v0;
-								//	} else if (v1c < v0c) {
-								//		mask |= 1 << v1;
-								//	}
-								//}
+										var cz = (iz < 0) ? 0 : (iz <VOXEL_CHUNK_SIZE_Y) ? 1 : 2;
+
+										for (int yy = -1; yy < 3; ++yy) {
+											var iy = x[1] + yy;
+											var ywrap = Wrap(iy, VOXEL_CHUNK_SIZE_XZ);
+											var yofs = VOXEL_CHUNK_SIZE_XZ * ywrap; // yofs is really zofs in voxel data
+
+											var cy = (iy < 0) ? 0 : (iy < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
+
+											for (int xx = -1; xx < 3; xx += 3) {
+												var ix = x[0] + xx;
+
+												var xwrap = Wrap(ix, VOXEL_CHUNK_SIZE_XZ);
+												var xofs = xwrap;
+
+												var cx = (ix < 0) ? 0 : (ix < VOXEL_CHUNK_SIZE_XZ) ? 1 : 2;
+
+												var chunkIndex = cx + (cz*Y_PITCH) + (cy*Z_PITCH);
+												var POS_X = chunkIndex + 1;
+												var NEG_X = chunkIndex - 1;
+												var POS_Y = chunkIndex + Y_PITCH;
+												var NEG_Y = chunkIndex - Y_PITCH;
+												var POS_Z = chunkIndex + Z_PITCH;
+												var NEG_Z = chunkIndex - Z_PITCH;
+
+												var neighbor = _area[chunkIndex];
+												var voxel = neighbor.valid != 0 ? neighbor.voxeldata[xofs + yofs + zofs] : EVoxelBlockType.Air;
+												var type = voxel.type;
+												var contents = _tables.blockContents[(int)type];
+
+												if (contents == EVoxelBlockContents.Water) {
+													water = voxel;
+													goto found_water;
+												}
+											}
+										}
+									}
+								}
+					found_water:
 
 								if ((mask == 0) || (mask == 255)) {
 									// no contents change
@@ -964,7 +1021,7 @@ public partial class World {
 								var vertIdx = _smoothVerts.EmitVert();
 								BoundsCheckAndThrow(m, 0, BUFFER_SIZE);
 								buffer[m] = vertIdx;
-								
+
 								var edgeMask = _tables.sn_edgeTable[mask];
 								s[0] = 0; s[1] = 0; s[2] = 0;
 								var edgeCount = 0;
@@ -986,7 +1043,7 @@ public partial class World {
 
 									var t = density[v0] - density[v1];
 									t = density[v0] / t;
-									
+
 									for (int j = 0, k = 1; j < 3; ++j, k <<= 1) {
 										var a = v0 & k;
 										var b = v1 & k;
@@ -999,25 +1056,38 @@ public partial class World {
 											s[j] += (a != 0) ? 1.0f : 0;
 										}
 									}
-									
+
 									++edgeCount;
 								}
 
 								{
 									var avg = 1f / edgeCount;
+									var shift = (layer == 1) ? 0f : 0.5f;
 									// NOTE: swapped Z/Y for Y up
-									Vector3 v = new Vector3(x[0] + s[0]*avg + 0.5f, x[2] + s[2]*avg + 0.5f, x[1] + s[1]*avg + 0.5f);
+									Vector3 v = new Vector3(x[0] + s[0]*avg + shift, x[2] + s[2]*avg + shift, x[1] + s[1]*avg + shift);
 									_smoothVerts.WriteVert(vertIdx, v);
 								}
-													
+
 								// if we have 0-level edges on the root vertex, then we can emit a quad containing this vertex
 								// and the previous 3 verts
 								if (((edgeMask&7) != 0)) {
+
+									if (layer == 1) {
+										// for water edge blending
+										for (int i = 0; i < 8; ++i) {
+											var v = new Voxel_t(grid[i]);
+											if (_tables.blockContents[(int)v.type] == EVoxelBlockContents.Water) {
+												water = v;
+												break;
+											}
+										}
+									}
+
 									for (int i = 0; i < 3; ++i) {
 										if ((edgeMask&(1<<i)) == 0) {
 											continue;
 										}
-										
+
 										// ortho axis
 										var iu = (i+1)%3;
 										var iv = (i+2)%3;
@@ -1035,7 +1105,7 @@ public partial class World {
 										BoundsCheckAndThrow(v1, 0, 8);
 
 										// figure out the material face, which comes from the crossing edge
-										int mat, layer;
+										int mat, matLayer;
 										uint smg;
 										Color32 color;
 										float smoothing;
@@ -1045,12 +1115,25 @@ public partial class World {
 										var v0c = _tables.blockContents[(int)v0v.type];
 										var v1c = _tables.blockContents[(int)v1v.type];
 
-										if (v0c > v1c) {
-											GetBlockColorAndSmoothing(v0v.type, out color, out smg, out smoothing, out layer);
-											mat = _blockMaterials[(int)v0v.type - 1];
+										if (water.raw != 0) {
+											GetBlockColorAndSmoothing(water.type, out color, out smg, out smoothing, out matLayer);
+											mat = _blockMaterials[(int)water.type - 1];
 										} else {
-											GetBlockColorAndSmoothing(v1v.type, out color, out smg, out smoothing, out layer);
-											mat = _blockMaterials[(int)v1v.type - 1];
+											if (layer == 1) {
+												if (v0c == EVoxelBlockContents.Water) {
+													v1c = EVoxelBlockContents.None;
+												} else if (v1c == EVoxelBlockContents.Water) {
+													v0c = EVoxelBlockContents.None;
+												}
+											}
+
+											if (v0c > v1c) {
+												GetBlockColorAndSmoothing(v0v.type, out color, out smg, out smoothing, out matLayer);
+												mat = _blockMaterials[(int)v0v.type - 1];
+											} else {
+												GetBlockColorAndSmoothing(v1v.type, out color, out smg, out smoothing, out matLayer);
+												mat = _blockMaterials[(int)v1v.type - 1];
+											}
 										}
 
 										var du = R[iu];
@@ -1061,17 +1144,15 @@ public partial class World {
 										BoundsCheckAndThrow(m-du-dv, 0, BUFFER_SIZE);
 
 										if ((mask&1) != 0) {
-											_smoothVerts.EmitFace(vertIdx, buffer[m-du], buffer[m-du-dv], buffer[m-dv], smg, smoothing, color, layer, mat, isBorder);
+											_smoothVerts.EmitFace(vertIdx, buffer[m-du], buffer[m-du-dv], buffer[m-dv], smg, smoothing, color, matLayer, mat, isBorder);
 										} else {
-											_smoothVerts.EmitFace(vertIdx, buffer[m-dv], buffer[m-du-dv], buffer[m-du], smg, smoothing, color, layer, mat, isBorder);
+											_smoothVerts.EmitFace(vertIdx, buffer[m-dv], buffer[m-du-dv], buffer[m-du], smg, smoothing, color, matLayer, mat, isBorder);
 										}
 									}
 								}
 							}
 						}
 					}
-
-					_smoothVerts.Finish();
 				}
 			};
 

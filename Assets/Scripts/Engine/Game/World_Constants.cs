@@ -298,7 +298,17 @@ public partial class World {
 	public static int MaxVoxelChunkLine(int dim) {
 		return (dim*2) + 1;
 	}
-	
+
+	public static int GetBlockLayer(EVoxelBlockType blocktype) {
+		if (blocktype == EVoxelBlockType.Water) {
+			return EChunkLayers.Water.ToIndex();
+		} else if ((blocktype == EVoxelBlockType.Leaves) || (blocktype == EVoxelBlockType.Needles) || (blocktype == EVoxelBlockType.Wood)) {
+			return EChunkLayers.Trees.ToIndex();
+		}
+
+		return EChunkLayers.Terrain.ToIndex();
+	}
+
 	[Flags]
 	public enum EChunkFlags {
 		NONE = 0,

@@ -1285,14 +1285,7 @@ public partial class World {
 					color = _tables.blockColors[(int)blocktype - 1];
 					smg = _tables.blockSmoothingGroups[(int)blocktype - 1];
 					smoothing = _tables.blockSmoothingFactors[(int)blocktype - 1];
-
-					if (blocktype == EVoxelBlockType.Water) {
-						layer = EChunkLayers.Water.ToIndex();
-					} else if ((blocktype == EVoxelBlockType.Leaves) || (blocktype == EVoxelBlockType.Needles) || (blocktype == EVoxelBlockType.Wood)) {
-						layer = EChunkLayers.Trees.ToIndex();
-					} else {
-						layer = EChunkLayers.Terrain.ToIndex();
-					}
+					layer = GetBlockLayer(blocktype);
 				}
 
 				void EmitVoxelFaces(int index, int x, int y, int z, EVoxelBlockType blocktype, bool isBorderVoxel) {

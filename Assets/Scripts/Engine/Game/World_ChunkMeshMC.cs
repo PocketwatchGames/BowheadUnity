@@ -864,14 +864,7 @@ public partial class World {
 					color = _tables.blockColors[(int)blocktype - 1];
 					smg = _tables.blockSmoothingGroups[(int)blocktype - 1];
 					smoothing = _tables.blockSmoothingFactors[(int)blocktype - 1];
-
-					if (blocktype == EVoxelBlockType.Water) {
-						layer = EChunkLayers.Water.ToIndex();
-					} else if ((blocktype == EVoxelBlockType.Leaves) || (blocktype == EVoxelBlockType.Needles) || (blocktype == EVoxelBlockType.Wood)) {
-						layer = EChunkLayers.Trees.ToIndex();
-					} else {
-						layer = EChunkLayers.Terrain.ToIndex();
-					}
+					layer = GetBlockLayer(blocktype);
 				}
 
 				const int BUFFER_SIZE = ((VOXEL_CHUNK_SIZE_XZ+5)*(VOXEL_CHUNK_SIZE_XZ+5))*2;
@@ -891,9 +884,9 @@ public partial class World {
 					byte* edgeBlocks = stackalloc byte[24];
 					float* nv = stackalloc float[3];
 					
-					for (x[2] = -1; x[2] < VOXEL_CHUNK_SIZE_Y; ++x[2]) {
-						for (x[1] = -1; x[1] < VOXEL_CHUNK_SIZE_XZ; ++x[1]) {
-							for (x[0] = -1; x[0] < VOXEL_CHUNK_SIZE_XZ; ++x[0]) {
+					for (x[2] = -2; x[2] < VOXEL_CHUNK_SIZE_Y+1; ++x[2]) {
+						for (x[1] = -2; x[1] < VOXEL_CHUNK_SIZE_XZ+1; ++x[1]) {
+							for (x[0] = -2; x[0] < VOXEL_CHUNK_SIZE_XZ+1; ++x[0]) {
 
 								// read voxels around this vertex
 								// note the mask, and grid verts for the cubes are X/Y/Z, but unity
@@ -964,7 +957,7 @@ public partial class World {
 									var t = 0.5f;
 
 									for (int j = 0; j < 3; ++j) {
-										nv[j] = (x[j] + v0[j]) + t * (v1[j] - v0[j]);
+										nv[j] = (x[j] + v0[j] + 0.5f) + t * (v1[j] - v0[j]);
 									}
 
 									edges[i] = _smoothVerts.EmitVert(new Vector3(nv[0], nv[2], nv[1]));
