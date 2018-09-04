@@ -36,6 +36,8 @@ public partial class World {
 		public struct CountersTotal_t {
 			public uint completedJobs;
 			public long chunksGenerated;
+			public long jobTime;
+			public long queTime;
 			public long totalTime;
 			public long copyTime;
 			public ChunkTimingData_t chunkTiming;
@@ -45,6 +47,10 @@ public partial class World {
 			public uint submittedJobs;
 			public uint pendingJobs;
 			public uint completedJobs;
+			public long jobTime;
+			public long queTime;
+			public long totalTime;
+			public uint mainQueue;
 			public uint chunksGenerated;
 			public uint chunksCopiedToScene;
 			public long chunkSceneCopyTime;
@@ -68,6 +74,7 @@ public partial class World {
 
 		public CountersThisFrame_t countersThisFrame;
 		public CountersTotal_t countersTotal;
+		public ChunkTimingData_t lastChunkTiming;
 
 		public enum EAsyncChunkReadResult {
 			Pending,
@@ -391,6 +398,8 @@ public partial class World {
 				++countersThisFrame.pendingJobs;
 			}
 
+			countersThisFrame.mainQueue = (uint)MainThreadTaskQueue.Length<CompleteJobTask>();
+
 #if DEBUG_DRAW
 			if (debugDraw) {
 				foreach (var volume in _streamingVolumes) {
@@ -447,12 +456,26 @@ public partial class World {
 					if ((chunk.jobData == null) || ((chunk.jobData.flags & EJobFlags.TRIS) == 0)) {
 						if (chunk.jobData == null) {
 							if (TryMMapLoad(chunk)) {
+#if DEBUG_DRAW
+								chunk.dbgDraw.state = EDebugDrawState.GENERATING_TRIS;
+#endif
+							
 								if (chunk.jobData != null) {
 									return true;
 								}
 							} else {
 								return false;
 							}
+						}
+
+						var timing = chunk.chunkData.timing[0];
+						if (timing.didGenTris == 0) {
+							timing.didGenTris = 1;
+							timing.latency = Utils.ReadTimestamp();
+							chunk.chunkData.timing[0] = timing;
+#if DEBUG_DRAW
+							chunk.dbgDraw.state = EDebugDrawState.GENERATING_TRIS;
+#endif
 						}
 
 						var canGenerateTris = true;
@@ -488,8 +511,14 @@ public partial class World {
 						if (canGenerateTris) {
 							return QueueGenTrisJob(chunk);
 						} else if (!chunk.hasVoxelData && (chunk.jobData == null)) {
-							return QueueGenVoxelsJob(chunk);
-						}
+							if (QueueGenVoxelsJob(chunk)) {
+#if DEBUG_DRAW
+								chunk.dbgDraw.state = EDebugDrawState.GENERATING_TRIS;
+#endif
+								return true;
+							}
+							return false;
+						} 
 					}
 				}
 			}
@@ -521,10 +550,6 @@ public partial class World {
 			jobData.chunk = chunk;
 			jobData.hasSubJob = false;
 			chunk.jobData = jobData;
-
-#if DEBUG_DRAW
-			chunk.dbgDraw.state = EDebugDrawState.GENERATING_VOXELS;
-#endif
 
 			jobData.mmappedChunkData = mmap;
 
@@ -572,12 +597,6 @@ public partial class World {
 			jobData.hasSubJob = false;
 			chunk.jobData = jobData;
 
-			{
-				var timing = default(ChunkTimingData_t);
-				timing.latency = Utils.ReadTimestamp();
-				chunk.chunkData.timing[0] = timing;
-			}
-
 #if DEBUG_DRAW
 			chunk.dbgDraw.state = EDebugDrawState.GENERATING_VOXELS;
 #endif
@@ -607,9 +626,6 @@ public partial class World {
 
 			if (!(existingJob || chunk.hasVoxelData)) {
 				AddRef(chunk);
-				var timing = default(ChunkTimingData_t);
-				timing.latency = Utils.ReadTimestamp();
-				chunk.chunkData.timing[0] = timing;
 				chunk.jobData.flags |= EJobFlags.VOXELS;
 				chunk.chunkData.Pin();
 				chunk.jobData.jobHandle = _createGenVoxelsJob(chunk.pos, ChunkMeshGen.NewPinnedChunkData_t(chunk.chunkData));
@@ -617,10 +633,6 @@ public partial class World {
 				chunk.jobData.hasSubJob = true;
 			} else if (existingJob) {
 				chunk.jobData.flags |= EJobFlags.VOXELS;
-			} else { // just measure timing from tris gen
-				var timing = chunk.chunkData.timing[0];
-				timing.latency = Utils.ReadTimestamp();
-				chunk.chunkData.timing[0] = timing;
 			}
 
 			chunk.jobData.jobData.voxelStorage.Pin();
@@ -645,6 +657,10 @@ public partial class World {
 			var depJobs = JobHandle.CombineDependencies(dependencies);
 
 			unsafe {
+				var timing = chunk.chunkData.timing[0];
+				timing.jobTime = Utils.ReadTimestamp();
+				chunk.chunkData.timing[0] = timing;
+
 				chunk.jobData.jobHandle = NewGenTrisJob(ref chunk.jobData.jobData, chunk.chunkData.pinnedTimingData, _blockMaterialIndices, depJobs);
 #if DEBUG_VOXEL_MESH
 				chunk.jobData.jobHandleDebug = NewGenTrisDebugJob(ref chunk.jobData.jobData, _blockMaterialIndices, depJobs);
@@ -773,6 +789,9 @@ public partial class World {
 		};
 
 		void QueueJobCompletion(ChunkJobData job) {
+			var timing = job.chunk.chunkData.timing[0];
+			timing.queTime = Utils.ReadTimestamp();
+			job.chunk.chunkData.timing[0] = timing;
 			MainThreadTaskQueue.Queue(CompleteJobTask.New(this, job));
 		}
 
@@ -796,14 +815,6 @@ public partial class World {
 							Release(neighbor);
 						}
 					}
-
-					var timing = chunk.chunkData.timing[0];
-					timing.latency = Utils.ReadTimestamp() - timing.latency;
-
-					++countersTotal.chunksGenerated;
-					countersTotal.chunkTiming += timing;
-					++countersThisFrame.chunksGenerated;
-					countersThisFrame.chunkTiming += timing;
 				}
 			}
 
@@ -831,11 +842,32 @@ public partial class World {
 					chunk.InvokeVoxelsUpdated();
 				}
 				if (chunk.hasTrisData) {
+					var timing = chunk.chunkData.timing[0];
+
+					timing.jobTime = timing.queTime - timing.jobTime;
+					timing.queTime = Utils.ReadTimestamp() - timing.queTime; // time spent in waiting in mainthread task queue
+					
 					var start = Utils.ReadTimestamp();
 					CopyToMesh(job, chunk);
 					var total = Utils.ReadTimestamp() - start;
 					countersThisFrame.chunkSceneCopyTime += total;
 					countersTotal.copyTime += total;
+										
+					timing.latency = Utils.ReadTimestamp() - timing.latency;
+
+					++countersTotal.chunksGenerated;
+					countersTotal.chunkTiming += timing;
+					++countersThisFrame.chunksGenerated;
+					countersThisFrame.chunkTiming += timing;
+					lastChunkTiming = timing;
+
+#if false
+					{
+						var div = Utils.TimestampFrequencyPerMicro;
+						Debug.Log("Chunk (Total us): Latency: " + timing.latency/(double)Utils.TimestampFrequencyPerTick + " | Qtime: " + timing.jobTime/div + "/" + timing.queTime/div + " | GenVoxels: " + timing.voxelTime/div + " | GenVerts: " + timing.verts1/div + " | SmoothVerts: " + timing.verts2/div);
+					}
+#endif
+
 					if (!chunk.hasLoaded) {
 						onChunkLoaded?.Invoke(chunk);
 					}
@@ -1187,6 +1219,46 @@ public partial class World {
 			get {
 				return _loading;
 			}
+		}
+
+		public void DrawDebugHUD() {
+			GUI.contentColor = Color.gray;
+			GUI.Box(new Rect(0, 0, 900, 300), string.Empty);
+			GUI.contentColor = Color.yellow;
+			GUILayout.BeginHorizontal();
+			GUILayout.Space(10);
+			GUILayout.BeginVertical();
+			GUILayout.Label("WorldStreaming");
+			GUILayout.Space(10);
+			GUILayout.Label("Frame:");
+			GUILayout.Label("Jobs: Submitted: " + countersThisFrame.submittedJobs + " | Pending: " + countersThisFrame.pendingJobs + "/" + countersThisFrame.mainQueue + " | Completed: " + countersThisFrame.completedJobs);
+			GUILayout.Label("Chunks: Built:" + countersThisFrame.chunksGenerated + " | Copied: " + countersThisFrame.chunksCopiedToScene + "/" + (countersThisFrame.chunkSceneCopyTime/Utils.TimestampFrequencyPerMicro) + "us");
+
+			var div = Utils.TimestampFrequencyPerMicro;
+			var div2 = div * (countersThisFrame.chunksGenerated > 0 ? countersThisFrame.chunksGenerated : 1);
+
+			{
+				var timing = countersThisFrame.chunkTiming;
+				GUILayout.Label("Chunk (Total us): Latency: " + timing.latency/div + " | Qtime: " + timing.jobTime/div + "/" + timing.queTime/div + " | GenVoxels: " + timing.voxelTime/div + " | GenVerts: " + timing.verts1/div + " | SmoothVerts: " + timing.verts2/div);
+				GUILayout.Label("Chunk (Avg us)  : Latency: " + timing.latency/div2 + " | Qtime: " + timing.jobTime/div2 + "/" + timing.queTime/div2 + " | GenVoxels: " + timing.voxelTime/div2 + " | GenVerts: " + timing.verts1/div2 + " | SmoothVerts: " + timing.verts2/div2);
+			}
+
+			GUILayout.Space(10);
+			div2 = div * (countersTotal.chunksGenerated > 0 ? countersTotal.chunksGenerated : 1);
+
+			{
+				var timing = countersTotal.chunkTiming;
+				GUILayout.Label("Total:");
+				GUILayout.Label("Time (seconds): " + countersTotal.totalTime/Utils.TimestampFrequencyPerMilli/1000f + " Generated: " + countersTotal.chunksGenerated + " | CompletedJobs: " + countersTotal.completedJobs);
+				GUILayout.Label("Chunk (Total us): Latency: " + timing.latency/div + " | Qtime: " + timing.jobTime/div + "/" + timing.queTime/div + " | GenVoxels: " + timing.voxelTime/div + " | GenVerts: " + timing.verts1/div + " | SmoothVerts: " + timing.verts2/div + " | Copy: " + countersTotal.copyTime / div);
+				GUILayout.Label("Chunk (Avg us)  : Latency: " + timing.latency/div2 + " | Qtime: " + timing.jobTime/div2 + "/" + timing.queTime/div2 + " | GenVoxels: " + timing.voxelTime/div2 + " | GenVerts: " + timing.verts1/div2 + " | SmoothVerts: " + timing.verts2/div2 + " | Copy: " + countersTotal.copyTime / div2);
+
+				timing = lastChunkTiming;
+				GUILayout.Label("Last Chunk (Total us): Latency: " + timing.latency/div + " | Qtime: " + timing.jobTime/div + "/" + timing.queTime/div + " | GenVoxels: " + timing.voxelTime/div + " | GenVerts: " + timing.verts1/div + " | SmoothVerts: " + timing.verts2/div);
+			}
+
+			GUILayout.EndVertical();
+			GUILayout.EndHorizontal();
 		}
 
 #if DEBUG_DRAW

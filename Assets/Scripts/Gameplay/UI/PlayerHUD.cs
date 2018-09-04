@@ -59,42 +59,7 @@ public class PlayerHUD : MonoBehaviour {
 			}
 
 			if (showDebug) {
-				var streaming = _target.world.worldStreaming;
-
-				GUI.contentColor = Color.gray;
-				GUI.Box(new Rect(0, 0, 800, 280), string.Empty);
-				GUI.contentColor = Color.yellow;
-				GUILayout.BeginHorizontal();
-				GUILayout.Space(10);
-				GUILayout.BeginVertical();
-				GUILayout.Label("WorldStreaming");
-				GUILayout.Space(10);
-				GUILayout.Label("Frame:");
-				GUILayout.Label("Jobs: Submitted: " + streaming.countersThisFrame.submittedJobs + " | Pending: " + streaming.countersThisFrame.pendingJobs + " | Completed: " + streaming.countersThisFrame.completedJobs);
-				GUILayout.Label("Chunks: Built:" + streaming.countersThisFrame.chunksGenerated + " | Copied: " + streaming.countersThisFrame.chunksCopiedToScene + "/" + (streaming.countersThisFrame.chunkSceneCopyTime/Utils.TimestampFrequencyPerMicro) + "us");
-
-				var div = Utils.TimestampFrequencyPerMicro;
-				var div2 = div * (streaming.countersThisFrame.chunksGenerated > 0 ? streaming.countersThisFrame.chunksGenerated : 1);
-
-				{
-					var timing = streaming.countersThisFrame.chunkTiming;
-					GUILayout.Label("Chunk (Total us): Latency: " + timing.latency/div + " | GenVoxels: " + timing.voxelTime/div + " | GenVerts: " + timing.verts1/div + " | SmoothVerts: " + timing.verts2/div);
-					GUILayout.Label("Chunk (Avg us)  : Latency: " + timing.latency/div2 + " | GenVoxels: " + timing.voxelTime/div2 + " | GenVerts: " + timing.verts1/div2 + " | SmoothVerts: " + timing.verts2/div2);
-				}
-
-				GUILayout.Space(10);
-				div2 = div * (streaming.countersTotal.chunksGenerated > 0 ? streaming.countersTotal.chunksGenerated : 1);
-
-				{
-					var timing = streaming.countersTotal.chunkTiming;
-					GUILayout.Label("Total:");
-					GUILayout.Label("Time (seconds): " + streaming.countersTotal.totalTime/Utils.TimestampFrequencyPerMilli/1000f + " Generated: " + streaming.countersTotal.chunksGenerated + " | CompletedJobs: " + streaming.countersTotal.completedJobs);
-					GUILayout.Label("Chunk (Total us): Latency: " + timing.latency/div + " | GenVoxels: " + timing.voxelTime/div + " | GenVerts: " + timing.verts1/div + " | SmoothVerts: " + timing.verts2/div + " | Copy: " + streaming.countersTotal.copyTime / div);
-					GUILayout.Label("Chunk (Avg us)  : Latency: " + timing.latency/div2 + " | GenVoxels: " + timing.voxelTime/div2 + " | GenVerts: " + timing.verts1/div2 + " | SmoothVerts: " + timing.verts2/div2 + " | Copy: " + streaming.countersTotal.copyTime / div2);
-				}
-
-				GUILayout.EndVertical();
-				GUILayout.EndHorizontal();
+				_target.world.worldStreaming.DrawDebugHUD();
 			}
 		}
 	}

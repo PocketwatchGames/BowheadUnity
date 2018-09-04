@@ -1,6 +1,8 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
+#if UNITY_EDITOR
 #define BOUNDS_CHECK
+#endif
 //#define NO_SMOOTHING
 
 using System;
@@ -31,6 +33,9 @@ public partial class World {
 		public long voxelTime;
 		public long verts1;
 		public long verts2;
+		public long queTime;
+		public long jobTime;
+		public int didGenTris;
 
 		public static ChunkTimingData_t operator + (ChunkTimingData_t a, ChunkTimingData_t b) {
 			var z = default(ChunkTimingData_t);
@@ -38,6 +43,8 @@ public partial class World {
 			z.voxelTime = a.voxelTime + b.voxelTime;
 			z.verts1 = a.verts1 + b.verts1;
 			z.verts2 = a.verts2 + b.verts2;
+			z.queTime = a.queTime + b.queTime;
+			z.jobTime = a.jobTime + b.jobTime;
 			return z;
 		}
 	};

@@ -153,6 +153,9 @@ public partial class World {
 				int _layerIndexOfs;
 				int _layer;
 
+				NativeArray<int> _vtoi;
+				NativeArray<int> _vtoiCounts;
+
 				public static FinalMeshVerts_t New() {
 					var verts = new FinalMeshVerts_t {
 						positions = AllocatePersistentNoInit<Vector3>(ushort.MaxValue),
@@ -163,6 +166,8 @@ public partial class World {
 						counts = AllocatePersistentNoInit<int>(3*MAX_CHUNK_LAYERS),
 						submeshes = AllocatePersistentNoInit<int>(MAX_CHUNK_SUBMESHES*MAX_CHUNK_LAYERS),
 						submeshTextures = AllocatePersistentNoInit<TexBlend_t>(MAX_CHUNK_SUBMESHES*MAX_CHUNK_LAYERS),
+						_vtoi = AllocatePersistentNoInit<int>(ushort.MaxValue*BANK_SIZE),
+						_vtoiCounts = AllocatePersistentNoInit<int>(ushort.MaxValue)
 					};
 					return verts;
 				}
@@ -176,6 +181,8 @@ public partial class World {
 					counts.Dispose();
 					submeshes.Dispose();
 					submeshTextures.Dispose();
+					_vtoi.Dispose();
+					_vtoiCounts.Dispose();
 				}
 
 				public void Init() {
@@ -191,6 +198,10 @@ public partial class World {
 					_layer = layer;
 					_layerVertOfs = _vertCount;
 					_layerIndexOfs = _indexCount;
+
+					for (int i = 0; i < _vtoiCounts.Length; ++i) {
+						_vtoiCounts[i] = 0;
+					}
 				}
 
 				public void FinishLayer(int maxSubmesh) {
@@ -206,18 +217,22 @@ public partial class World {
 					(a.a == b.a);
 				}
 
-				public void EmitVert(Vector3 position, Vector3 normal, Color32 color, Vector4 textureBlending) {
-					Assert((_vertCount-_layerVertOfs) < ushort.MaxValue);
+				public void EmitVert(int vnum, Vector3 position, Vector3 normal, Color32 color, Vector4 textureBlending) {
+					BoundsCheckAndThrow((_vertCount-_layerVertOfs), 0, ushort.MaxValue);
 
-					// this is slow as fuck
-					for (int i = _layerVertOfs; i < _vertCount; ++i) {
-						if (Vector3.Equals(positions[i], position) &&
-							Vector3.Equals(normals[i], normal) &&
-							Vector4.Equals(this.textureBlending[i], textureBlending)) {
-							EmitIndex(i);
+					// existing vertex?
+					int vtoiCount = _vtoiCounts[vnum];
+					for (int i = 0; i < vtoiCount; ++i) {
+						int idx = _vtoi[(vnum*BANK_SIZE)+i];
+						if (Vector3.Equals(positions[idx], position) &&
+							Vector3.Equals(normals[idx], normal) &&
+							Vector4.Equals(this.textureBlending[idx], textureBlending)) {
+							EmitIndex(idx);
 							return;
 						}
 					}
+
+					BoundsCheckAndThrow(vtoiCount, 0, BANK_SIZE);
 
 					positions[_vertCount] = position;
 					normals[_vertCount] = normal;
@@ -225,6 +240,10 @@ public partial class World {
 					this.textureBlending[_vertCount] = textureBlending;
 
 					EmitIndex(_vertCount);
+
+					_vtoi[(vnum*BANK_SIZE)+vtoiCount] = _vertCount;
+					_vtoiCounts[vnum] = vtoiCount + 1;
+
 					_vertCount++;
 				}
 
@@ -421,26 +440,26 @@ public partial class World {
 					var c = positions[v2];
 
 					var u = (b - a);
-					if (u.sqrMagnitude < 1e-4f) {
-						return false;
-					}
+					//if (u.sqrMagnitude < 1e-4f) {
+					//	return false;
+					//}
 					u.Normalize();
 					
 					var v = (c - a);
-					if (v.sqrMagnitude < 1e-4f) {
-						return false;
-					}
+					//if (v.sqrMagnitude < 1e-4f) {
+					//	return false;
+					//}
 
 					v.Normalize();
 
-					if (Mathf.Abs(Vector3.Dot(u, v)) >= 0.9999f) {
-						return false;
-					}
+					//if (Mathf.Abs(Vector3.Dot(u, v)) >= 0.9999f) {
+					//	return false;
+					//}
 
 					n = Vector3.Cross(u, v);
-					if (n.sqrMagnitude < 1e-4f) {
-						return false;
-					}
+					//if (n.sqrMagnitude < 1e-4f) {
+					//	return false;
+					//}
 					n.Normalize();
 
 					return true;
@@ -714,15 +733,15 @@ public partial class World {
 
 													BlendVertex(vertNum0, vertOfs0, bankedIndex0, out p, out n, out c);
 													blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum0);
-													_finalVerts.EmitVert(p, n, c, blendFactor);
+													_finalVerts.EmitVert(vertNum0, p, n, c, blendFactor);
 
 													BlendVertex(vertNum1, vertOfs1, bankedIndex1, out p, out n, out c);
 													blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum1);
-													_finalVerts.EmitVert(p, n, c, blendFactor);
+													_finalVerts.EmitVert(vertNum0, p, n, c, blendFactor);
 
 													BlendVertex(vertNum2, vertOfs2, bankedIndex2, out p, out n, out c);
 													blendFactor = GetTriVertTexBlendFactor(texBlend, layer, vertNum2);
-													_finalVerts.EmitVert(p, n, c, blendFactor);
+													_finalVerts.EmitVert(vertNum0, p, n, c, blendFactor);
 
 													numSubmeshVerts += 3;
 
@@ -868,7 +887,6 @@ public partial class World {
 						}
 
 						GenerateSNMesh(layer);
-
 					}
 
 					_smoothVerts.Finish();

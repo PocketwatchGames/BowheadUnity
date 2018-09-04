@@ -36,6 +36,10 @@ public sealed class TaskQueue {
 		}
 	}
 
+	public Queue<ITask> GetQueue() {
+		return tasks;
+	}
+
 }
 
 public abstract class PooledTaskQueueTask<T> : TaskQueue.ITask where T : PooledTaskQueueTask<T> {
@@ -181,6 +185,16 @@ public sealed class MainThreadTaskQueue {
 
 	public static void Flush() {
 		queue.Flush();
+	}
+
+	public static int Length<T>() {
+		int l = 0;
+		foreach (var t in queue.GetQueue()) {
+			if (t is T) {
+				++l;
+			}
+		}
+		return l;
 	}
 
 	public static void Run() {

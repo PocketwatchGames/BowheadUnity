@@ -53,4 +53,21 @@ public class TerrainTestMono : MonoBehaviour {
 		_streaming.Dispose();
 		World.Streaming.StaticShutdown();
 	}
+
+	bool showDebug;
+
+	void OnGUI() {
+
+		if (_streaming != null) {
+			if (Event.current.type == EventType.KeyDown) {
+				if (Event.current.keyCode == KeyCode.F3) {
+					showDebug = !showDebug;
+				}
+			}
+
+			if (showDebug) {
+				_streaming.DrawDebugHUD();
+			}
+		}
+	}
 }
