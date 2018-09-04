@@ -1,5 +1,7 @@
 ﻿// Copyright (c) 2018 Pocketwatch Games LLC.
 
+#define LOWPOLY_WATER
+
 #if UNITY_EDITOR
 #define DEBUG_DRAW
 using UnityEditor;
@@ -245,14 +247,29 @@ public partial class World {
 			_materials = new WorldAtlas.RenderMaterials_t[MAX_MATERIALS_PER_SUBMESH];
 			for (int i = 0; i < MAX_MATERIALS_PER_SUBMESH; ++i) {
 				_materials[i].solid = new Material(clientData.renderMaterials.solid);
+#if LOWPOLY_WATER
+				_materials[i].water = clientData.renderMaterials.water;
+#else
 				_materials[i].water = new Material(clientData.renderMaterials.water);
+#endif
 
 				if (i > 0) {
 					_materials[i].solid.EnableKeyword(MATERIAL_KEYWORDS[i-1]);
+#if !LOWPOLY_WATER
 					_materials[i].water.EnableKeyword(MATERIAL_KEYWORDS[i-1]);
+#endif
 				}
 			}
-			
+
+#if LOWPOLY_WATER
+			{
+				var w = clientData.renderMaterials.water;
+				w.EnableKeyword("WATER_EDGEBLEND_ON");
+				w.EnableKeyword("WATER_SIMPLE");
+				w.EnableKeyword("WATER_VERTEX_DISPLACEMENT_ON");
+			}
+#endif
+
 			SetMaterialTextureArray(ShaderID._AlbedoTextureArray, clientData.albedo.textureArray);
 			SetMaterialTextureArray(ShaderID._NormalsTextureArray, clientData.normals.textureArray);
 			SetMaterialTextureArray(ShaderID._RHOTextureArray, clientData.rho.textureArray);
@@ -264,12 +281,16 @@ public partial class World {
 				if (_highQualityShader) {
 					for (int i = 0; i < MAX_MATERIALS_PER_SUBMESH; ++i) {
 						_materials[i].solid.EnableKeyword("HIGH_QUALITY");
+#if !LOWPOLY_WATER
 						_materials[i].water.EnableKeyword("HIGH_QUALITY");
+#endif
 					}
 				} else {
 					for (int i = 0; i < MAX_MATERIALS_PER_SUBMESH; ++i) {
 						_materials[i].solid.DisableKeyword("HIGH_QUALITY");
+#if !LOWPOLY_WATER
 						_materials[i].water.DisableKeyword("HIGH_QUALITY");
+#endif
 					}
 				}
 			}
@@ -296,7 +317,9 @@ public partial class World {
 			if (_materials != null) {
 				foreach (var m in _materials) {
 					GameObject.Destroy(m.solid);
+#if !LOWPOLY_WATER
 					GameObject.Destroy(m.water);
+#endif
 				}
 				_materials = null;
 			}
@@ -305,7 +328,9 @@ public partial class World {
 		void SetMaterialTextureArray(int name, Texture2DArray texArray) {
 			foreach (var m in _materials) {
 				m.solid.SetTexture(name, texArray);
+#if !LOWPOLY_WATER
 				m.water.SetTexture(name, texArray);
+#endif
 			}
 		}
 

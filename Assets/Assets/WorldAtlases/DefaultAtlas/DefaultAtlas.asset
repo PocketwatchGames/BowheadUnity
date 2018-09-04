@@ -30,4 +30,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d6969da2ff6427c479c3adeb194dd99b, type: 2}
   renderMaterials:
     solid: {fileID: 2100000, guid: f41d80efdaa48c240be21f819c2dcc42, type: 2}
-    water: {fileID: 2100000, guid: a42887ae7d1a1b540a40ab5e91eade23, type: 2}
+    water: {fileID: 2100000, guid: dba33a2bf8b23400bacf323fc2816a51, type: 2}
